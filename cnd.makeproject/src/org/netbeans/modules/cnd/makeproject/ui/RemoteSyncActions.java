@@ -469,12 +469,12 @@ class RemoteSyncActions {
     }
 
     private static void gatherFiles(Collection<File> files, Node node) {
-        DataObject dataObject = node.getCookie(DataObject.class);
+        DataObject dataObject = node.getLookup().lookup(DataObject.class);
         if (dataObject != null) {
             FileObject fo = dataObject.getPrimaryFile();
             if (fo != null) {
                 File file = FileUtil.toFile(fo); // XXX:fullRemote
-                if (!file.isDirectory()) {
+                if (file != null && !file.isDirectory()) {
                     files.add(file);
                 }
             }

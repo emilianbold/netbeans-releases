@@ -61,7 +61,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.csl.editor.semantic.MarkOccurrencesHighlighter;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
-import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
+import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 
@@ -108,7 +108,7 @@ public final class GoToMarkOccurrencesAction extends BaseAction {
     
     @SuppressWarnings("empty-statement")
     private static int findOccurrencePosition(boolean directionForward, Document doc, int curPos) {
-        OffsetsBag bag = MarkOccurrencesHighlighter.getHighlightsBag(doc);
+        AbstractHighlightsContainer bag = MarkOccurrencesHighlighter.getHighlightsBag(doc);
         HighlightsSequence hs = bag.getHighlights(0, doc.getLength());
 
         if (hs.moveNext()) {

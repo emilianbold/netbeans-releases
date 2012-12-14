@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.completion.spi.dynhelp.CompletionDocumentationPr
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.MethodParamsTipPaintComponent;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
@@ -390,15 +391,21 @@ public class CsmCompletionProvider implements CompletionProvider {
             List<CompletionItem> ret = new ArrayList<CompletionItem>(1024);
             for (CompletionItem itm : data) {
                 // TODO: filter
-                if (matchPrefix(itm.getInsertPrefix().toString(), prefix, caseSensitive)) {
+                if (matchPrefix(itm.getInsertPrefix(), prefix, caseSensitive)) {
                     ret.add(itm);
                 }
             }
             return ret;
         }
 
-        private boolean matchPrefix(String text, String prefix, boolean caseSensitive) {
-            return caseSensitive ? text.startsWith(prefix) : text.toLowerCase().startsWith(prefix.toLowerCase());
+        private boolean matchPrefix(CharSequence text, String prefix, boolean caseSensitive) {
+            if (CharSequenceUtils.startsWith(text, prefix)) {
+                return true;
+            }
+            if (!caseSensitive) {
+                return CharSequenceUtils.startsWithIgnoreCase(text, prefix);
+            }
+            return false;
         }
 
         private String getFilteredTitle(String title, String prefix) {

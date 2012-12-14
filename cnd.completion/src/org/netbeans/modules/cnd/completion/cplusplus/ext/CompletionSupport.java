@@ -46,6 +46,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
@@ -87,7 +88,6 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -154,7 +154,19 @@ public final class CompletionSupport implements DocumentListener {
         return false;
     }
 
-    public static boolean isIncludeCompletionEnabled(Document doc, int offset) {
+    public static boolean isIncludeCompletionEnabled(final Document doc, final int offset) {
+        final AtomicBoolean out = new AtomicBoolean(false);
+        doc.render(new Runnable() {
+
+            @Override
+            public void run() {
+                out.set(isIncludeCompletionEnabledImpl(doc, offset));
+            }            
+        });
+        return out.get();
+    }
+    
+    private static boolean isIncludeCompletionEnabledImpl(Document doc, int offset) {
         TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, offset, false, true);
         if (ts == null) {
             return false;

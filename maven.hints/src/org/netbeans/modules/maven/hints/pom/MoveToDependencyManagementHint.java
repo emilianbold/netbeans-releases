@@ -105,11 +105,9 @@ public class MoveToDependencyManagementHint implements SelectionPOMFixProvider {
         if (comp1 == null || comp2 == null) { //#157213
             return err;
         }
-        String exp1 = model.getXPathExpression(comp1);
-        String exp2 = model.getXPathExpression(comp2);
-        boolean inDepManag = exp1.contains("dependencyManagement") || exp2.contains("dependencyManagement"); //NOI18N
-        boolean inPlugin = exp1.contains("plugin") || exp2.contains("plugin"); //NOI18N
-        if (!inDepManag && !inPlugin && exp1.contains("dependencies") && exp2.contains("dependencies")) { //NOI18N
+ 
+        List<Dependency> deps = getSelectedDependencies(model, selectionStart, selectionEnd);
+        if (deps != null && !deps.isEmpty()) { //NOI18N
             try {
                 Line line = NbEditorUtilities.getLine(model.getBaseDocument(), selectionEnd, false);
                 err.add(ErrorDescriptionFactory.createErrorDescription(
@@ -170,22 +168,10 @@ public class MoveToDependencyManagementHint implements SelectionPOMFixProvider {
                         fl = FileUtil.toFile(obj);
                     }
                     assert fl != null;
-                    DocumentComponent comp1 = mdl.findComponent(start);
-
-                    POMComponent pc = findEnclosing(comp1);
-                    List<Dependency> dps = null;
-                    if (pc instanceof org.netbeans.modules.maven.model.pom.Project) {
-                        org.netbeans.modules.maven.model.pom.Project modprj = (org.netbeans.modules.maven.model.pom.Project)pc;
-                        dps = modprj.getDependencies();
-                    } else if (pc instanceof Profile) {
-                        Profile prf = (Profile)pc;
-                        dps = prf.getDependencies();
-                    }
-                    if (dps == null) {
+                    List<Dependency> deps = getSelectedDependencies(mdl, start, end);
+                    if (deps == null || deps.isEmpty()) {
                         return;
                     }
-                    List<Dependency> deps = extractSelectedDeps(dps, start, end);
-
                     MoveToDependencyManagementPanel pnl = new MoveToDependencyManagementPanel(fl, project);
                     DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(MoveToDependencyManagementHint.class, "TIT_MoveDepMan"));
                     Object ret = DialogDisplayer.getDefault().notify(dd);
@@ -255,6 +241,24 @@ public class MoveToDependencyManagementHint implements SelectionPOMFixProvider {
         }
     }
 
+    private static List<Dependency> getSelectedDependencies(POMModel mdl, int start, int end) {
+        DocumentComponent comp1 = mdl.findComponent(start);
+
+        POMComponent pc = findEnclosing(comp1);
+        List<Dependency> dps = null;
+        if (pc instanceof org.netbeans.modules.maven.model.pom.Project) {
+            org.netbeans.modules.maven.model.pom.Project modprj = (org.netbeans.modules.maven.model.pom.Project) pc;
+            dps = modprj.getDependencies();
+        } else if (pc instanceof Profile) {
+            Profile prf = (Profile) pc;
+            dps = prf.getDependencies();
+        }
+        if (dps == null) {
+            return null;
+        }
+        return extractSelectedDeps(dps, start, end);
+    }
+
     private static void openParent(final int offset, final POMModel model) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -274,7 +278,8 @@ public class MoveToDependencyManagementHint implements SelectionPOMFixProvider {
         List<Dependency> toRet = new ArrayList<Dependency>();
         for (Dependency d : dps) {
             int pos = d.findPosition();
-            if (pos >= selectionStart && pos <= selectionEnd) {
+            int endPos = d.findEndPosition();
+            if (pos >= selectionStart && endPos <= selectionEnd) {
                 if (d.getVersion() != null) {
                     toRet.add(d);
                 }

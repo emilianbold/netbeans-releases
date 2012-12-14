@@ -44,6 +44,8 @@
 
 package org.openide.nodes;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -434,6 +436,53 @@ public class FilterNodeTest extends NbTestCase {
         fn_both.setValue("val1", "item3");
         assertTrue("Should still detegate getValue", fn_both.getValue("val3") == null);
         assertEquals("Should propagate setValue", "item3", node.getValue("val1"));
+    }
+    
+    public void testListenersAreRemoved() throws Exception {
+        AbstractNode n = new AbstractNode(new Children.Array());
+        n.setName("original");
+        
+        FilterNode fn = new FilterNode(n);
+        class P implements PropertyChangeListener {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+            }
+        }
+        P p = new P();
+        fn.addPropertyChangeListener(p);
+        class N implements NodeListener {
+            @Override
+            public void childrenAdded(NodeMemberEvent ev) {
+            }
+            @Override
+            public void childrenRemoved(NodeMemberEvent ev) {
+            }
+            @Override
+            public void childrenReordered(NodeReorderEvent ev) {
+            }
+            @Override
+            public void nodeDestroyed(NodeEvent ev) {
+            }
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+            }
+        }
+        N nl = new N();
+        fn.addNodeListener(nl);
+        
+        assertEquals("One pc listener on original", 1, n.getPropertyChangeListenersCount());
+        assertEquals("One node listener", 1, n.getNodeListenerCount());
+
+        Reference<FilterNode> ref = new WeakReference<FilterNode>(fn);
+        fn = null;
+        assertGC("Filter node can disappear", ref);
+        
+        n.setName("fire some property");
+        n.firePropertyChange("some prp", null, null);
+        
+        assertEquals("No pc listener anymore", 0, n.getPropertyChangeListenersCount());
+        assertEquals("No node listener anymore", 0, n.getNodeListenerCount());
+        
     }
     
     public void testChildrenFireCorrectEvents () throws Exception {

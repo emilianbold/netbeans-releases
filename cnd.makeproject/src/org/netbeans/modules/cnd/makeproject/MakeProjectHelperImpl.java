@@ -228,24 +228,40 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
         projectXmlValid = true;
         assert projectXml != null;
         fileListener = new FileListener();
+    }
+
+    private void attachProjectFilesListener() {
         FileObject resolveFileObject = resolveFileObject(PROJECT_XML_PATH);
         if (resolveFileObject != null) {
+            resolveFileObject.removeFileChangeListener(fileListener);
             resolveFileObject.addFileChangeListener(fileListener);
         } else {
             FileSystemProvider.addFileChangeListener(fileListener, fileSystem, PROJECT_XML_PATH);
         }
         resolveFileObject = resolveFileObject(PRIVATE_XML_PATH);
         if (resolveFileObject != null) {
+            resolveFileObject.removeFileChangeListener(fileListener);
             resolveFileObject.addFileChangeListener(fileListener);
         } else {
             FileSystemProvider.addFileChangeListener(fileListener, fileSystem, PRIVATE_XML_PATH);
+        }        
+    }
+
+    private void detachProjectFilesListener() {
+        FileObject resolveFileObject = resolveFileObject(PROJECT_XML_PATH);
+        if (resolveFileObject != null) {
+            resolveFileObject.removeFileChangeListener(fileListener);
         }
+        resolveFileObject = resolveFileObject(PRIVATE_XML_PATH);
+        if (resolveFileObject != null) {
+            resolveFileObject.removeFileChangeListener(fileListener);
+        }        
     }
     
     public FileSystem getFileSystem() {
         return fileSystem;
     }
-
+    
     @Override
     public FileObject resolveFileObject(String filename) throws IllegalArgumentException {
         if (filename == null) {
@@ -485,6 +501,9 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
     @Override
     public void addMakeProjectListener(MakeProjectListener listener) {
         synchronized (listeners) {
+            if (listeners.isEmpty()) {
+                attachProjectFilesListener();
+            }
             listeners.add(listener);
         }
     }
@@ -498,6 +517,9 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
     public void removeMakeProjectListener(MakeProjectListener listener) {
         synchronized (listeners) {
             listeners.remove(listener);
+            if (listeners.isEmpty()) {
+                detachProjectFilesListener();
+            }
         }
     }
 
@@ -603,6 +625,9 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
     @Override
     public void notifyDeleted() {
         state.notifyDeleted();
+        synchronized (listeners) {
+            detachProjectFilesListener();
+        }
     }
 
     /**

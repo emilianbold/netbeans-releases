@@ -1309,7 +1309,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         final Reference<Document> ref = activeDocumentRef;
         Document activeDocument = ref == null ? null : ref.get();
 
-        Pair<URL, FileObject> root = getOwningSourceRoot(document);
+        final Pair<URL, FileObject> root = getOwningSourceRoot(document);
         if (root != null) {
             if (root.second == null) {
                 LOGGER.log(
@@ -1344,12 +1344,23 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
                     TransientUpdateSupport.setTransientUpdate(true);
                     try {
+                        final Callable<FileObject> indexFolderFactory =
+                            new Callable<FileObject>() {
+                                private FileObject cache;
+                                @Override
+                                public FileObject call() throws Exception {
+                                    if (cache == null) {
+                                        cache = CacheFolder.getDataFolder(root.first);
+                                    }
+                                    return cache;
+                                }
+                            };
                         Collection<? extends IndexerCache.IndexerInfo<CustomIndexerFactory>> cifInfos = IndexerCache.getCifCache().getIndexersFor(mimeType, true);
                         for(IndexerCache.IndexerInfo<CustomIndexerFactory> info : cifInfos) {
                             try {
-                                CustomIndexerFactory factory = info.getIndexerFactory();
-                                Context ctx = SPIAccessor.getInstance().createContext(
-                                        CacheFolder.getDataFolder(root.first),
+                                final CustomIndexerFactory factory = info.getIndexerFactory();
+                                final Context ctx = SPIAccessor.getInstance().createContext(
+                                        indexFolderFactory,
                                         root.first,
                                         factory.getIndexerName(),
                                         factory.getIndexVersion(),
@@ -1369,9 +1380,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         Collection<? extends IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos = collectEmbeddingIndexers(mimeType);
                         for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> info : eifInfos) {
                             try {
-                                EmbeddingIndexerFactory factory = info.getIndexerFactory();
-                                Context ctx = SPIAccessor.getInstance().createContext(
-                                        CacheFolder.getDataFolder(root.first),
+                                final EmbeddingIndexerFactory factory = info.getIndexerFactory();
+                                final Context ctx = SPIAccessor.getInstance().createContext(
+                                        indexFolderFactory,
                                         root.first,
                                         factory.getIndexerName(),
                                         factory.getIndexVersion(),
@@ -5111,24 +5122,27 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     // coalesce ordinary jobs
                     Work absorbedBy = null;
                     if (!wait) {
-                        boolean allowAbsorb = true;
+                        Work lastDel = null;
 
                         //XXX (#198565): don't let FileListWork forerun delete works:
                         if (work instanceof FileListWork) {
+                            final FileListWork flw = (FileListWork) work;
                             for (Work w : todo) {
-                                if (w instanceof DeleteWork) {
-                                    allowAbsorb = false;
-                                    break;
+                                if (w instanceof DeleteWork &&
+                                    ((DeleteWork)w).root.equals(flw.root)) {
+                                    lastDel = w;
                                 }
                             }
                         }
 
-                        if (allowAbsorb) {
-                            for(Work w : todo) {
+                        for(Work w : todo) {
+                            if (lastDel == null) {
                                 if (w.absorb(work)) {
                                     absorbedBy = w;
                                     break;
                                 }
+                            } else if (w == lastDel) {
+                                lastDel = null;
                             }
                         }
                     }

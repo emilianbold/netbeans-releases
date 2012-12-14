@@ -350,6 +350,34 @@ public class FileObjectTestHid extends TestBaseHid {
         fileDataCreatedAssert("parent should fire fileDataCreated",1);
     }
     
+    /** Test of copy method, of class org.openide.filesystems.FileObject. */
+    public void  testCopyFolderWith() throws IOException {
+        checkSetUp();
+        FileObject fold = getTestFolder1(root);
+        FileObject target;
+        FileObject src;
+        FileObject data;
+        try {
+            target = fold.createFolder("target");
+            src = fold.createFolder("s.r.c");
+            data = src.createData("x.txt");
+        } catch (IOException iex) {
+            fsAssert("expected copy will success on writable FS",
+            fs.isReadOnly() || fold.isReadOnly());
+            return;
+        }
+        assertEquals("Folder name", "s.r.c", src.getNameExt());
+        assertEquals("Folder name", "s.r", src.getName());
+        assertEquals("Folder name", "c", src.getExt());
+        
+        src.copy(target, src.getNameExt(), null);
+        FileObject ffo = fold.getFileObject("target/s.r.c");
+        assertNotNull("Copied folder found: " + Arrays.asList(target.getChildren()), ffo);
+
+        FileObject fo = fold.getFileObject("target/s.r.c/x.txt");
+        assertNotNull("Copied file found: " + Arrays.asList(target.getFileObject("s.r.c").getChildren()), fo);
+    }
+    
     public void  testCopyToMemory() throws IOException {
         checkSetUp();
         FileObject fold = getTestFolder1(root);

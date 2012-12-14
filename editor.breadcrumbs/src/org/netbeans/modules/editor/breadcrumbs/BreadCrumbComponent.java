@@ -242,7 +242,9 @@ public class BreadCrumbComponent<T extends JLabel&Renderer> extends JComponent i
         List<Node> path = new ArrayList<Node>();
         Node sel = manager.getExploredContext();
 
-        while (sel != null) {
+        // see #223480; root context need not be the root of the node structure.
+        Node stopAt = manager.getRootContext().getParentNode();
+        while (sel != null && sel != stopAt) {
             path.add(sel);
             sel = sel.getParentNode();
         }

@@ -176,7 +176,7 @@ public class FixImportsHelper {
     }
 
     private static int getImportPosition(BaseDocument doc) {
-        TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(doc, 1);
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, 1);
 
         int importEnd = -1;
         int packageOffset = -1;

@@ -298,7 +298,7 @@ public class ImportExecutable implements PropertyChangeListener {
                                 try {
                                     extension.apply(map, lastSelectedProject);
                                     discoverScripts(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getBuildResult());
-                                    DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(lastSelectedProject, false);
+                                    DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(lastSelectedProject, null);
                                     if (projectKind == ProjectKind.CreateDependencies && (additionalDependencies == null || additionalDependencies.isEmpty())) {
                                         cd = new CreateDependencies(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getDependencies(), dependencies,
                                                 DiscoveryWizardDescriptor.adaptee(map).getSearchPaths(), DiscoveryWizardDescriptor.adaptee(map).getBuildResult());
@@ -772,7 +772,7 @@ public class ImportExecutable implements PropertyChangeListener {
             return null;
         }
         if (root.isDiskFolder()) {
-            String AbsRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), root.getRoot());
+            String AbsRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDirFileObject(), root.getRoot());
             return RemoteFileUtil.normalizeAbsolutePath(AbsRootPath, configurationDescriptor.getProject());
         }
         List<String> candidates = new ArrayList<String>();

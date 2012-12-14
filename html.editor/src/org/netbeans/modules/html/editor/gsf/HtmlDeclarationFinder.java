@@ -391,9 +391,7 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
             //find out if there's the opening curly bracket
             String lineText = entryHandle.entry().getLineText().toString();
             assert lineText != null;
-            int curlyBracketIndex = lineText.indexOf('{'); //NOI18N
-            String croppedLineText = curlyBracketIndex == -1 ? lineText : lineText.substring(0, curlyBracketIndex);
-
+            
             //split the text to three parts: the element text itself, its prefix and postfix
             //then render the element test in bold
             String elementTextPrefix;
@@ -408,29 +406,43 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
                     elementTextPrefix = "";
             }
             String elementText = elementTextPrefix + entryHandle.entry().getName();
-            int elementTextIndex = croppedLineText.indexOf(elementText);
-            if(elementTextIndex == -1) {
-                String msg = "A parsing error occured when trying to extract display name for html declaration finder."
-                        + "elementText='" + elementText
-                        + "'; lineText='" + lineText + "'; croppedLineText='"
-                        + croppedLineText + "'; elementTextPrefix='" + elementTextPrefix + "'"; //NOI18N
-                Logger.getAnonymousLogger().log(Level.INFO, msg, new IllegalStateException());//NOI18N
-
-                return entryHandle.entry().getName();
+            
+            String prefix = "";
+            String postfix = "";
+            //strip the line to the body start
+            int elementIndex = lineText.indexOf(elementText);
+            if(elementIndex >= 0) {
+                //find the closest opening curly bracket or NL forward
+                int to;
+                for(to = elementIndex; to < lineText.length(); to++) {
+                    char c = lineText.charAt(to);
+                    if(c == '{' || c == '\n') {
+                        break;
+                    }
+                }
+                //now find nearest closing curly bracket or newline backward
+                int from;
+                for(from = elementIndex; from >= 0; from--) {
+                    char ch = lineText.charAt(from);
+                    if(ch == '}' || ch == '\n') {
+                        break;
+                    }
+                }
+                
+                prefix = lineText.substring(from + 1, elementIndex).trim();
+                postfix = lineText.substring(elementIndex + elementText.length(), to).trim();
+                
+                //now strip the prefix and postfix so the whole text is not longer than SELECTOR_TEXT_MAX_LENGTH
+                int overlap = (prefix.length() + elementText.length() + postfix.length()) - SELECTOR_TEXT_MAX_LENGTH;
+                if (overlap > 0) {
+                    //strip
+                    int stripFromPrefix = Math.min(overlap / 2, prefix.length());
+                    prefix = ".." + prefix.substring(stripFromPrefix);
+                    int stripFromPostfix = Math.min(overlap - stripFromPrefix, postfix.length());
+                    postfix = postfix.substring(0, postfix.length() - stripFromPostfix) + "..";
+                }
             }
-            String prefix = croppedLineText.substring(0, elementTextIndex).trim();
-            String postfix = croppedLineText.substring(elementTextIndex + elementText.length()).trim();
-
-            //now strip the prefix and postfix so the whole text is not longer than SELECTOR_TEXT_MAX_LENGTH
-            int overlap = croppedLineText.length() - SELECTOR_TEXT_MAX_LENGTH;
-            if (overlap > 0) {
-                //strip
-                int stripFromPrefix = Math.min(overlap / 2, prefix.length());
-                prefix = ".." + prefix.substring(stripFromPrefix);
-                int stripFromPostfix = Math.min(overlap - stripFromPrefix, postfix.length());
-                postfix = postfix.substring(0, postfix.length() - stripFromPostfix) + "..";
-            }
-
+            
             b.append("<font color=007c00>");//NOI18N
             b.append(prefix);
             b.append(' '); //NOI18N

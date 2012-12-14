@@ -140,6 +140,7 @@ public class ClipboardHandler {
                     copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
 
                     TreePath context = copy.getTreeUtilities().pathFor(caret);
+                    Scope scope = copy.getTrees().getScope(context);
                     List<Position[]> spans = new ArrayList<Position[]>(inSpans);
 
                     Collections.sort(spans, new Comparator<Position[]>() {
@@ -164,7 +165,10 @@ public class ClipboardHandler {
                                 handled = SourceUtils.resolveImport(copy, context, fqn);
                             } else {
                                 CompilationUnitTree cut = (CompilationUnitTree) copy.resolveRewriteTarget(copy.getCompilationUnit());
-                                copy.rewrite(copy.getCompilationUnit(), GeneratorUtilities.get(copy).addImports(cut, Collections.singleton(e)));
+                                if (e.getModifiers().contains(Modifier.STATIC) && copy.getTreeUtilities().isAccessible(scope, e, e.getEnclosingElement().asType())
+                                        && copy.getElementUtilities().outermostTypeElement(e) != copy.getElementUtilities().outermostTypeElement(scope.getEnclosingClass())) {
+                                    copy.rewrite(copy.getCompilationUnit(), GeneratorUtilities.get(copy).addImports(cut, Collections.singleton(e)));
+                                }
                                 handled = e.getSimpleName().toString();
                             }
                             imported.put(currentSimpleName, handled);
@@ -267,7 +271,8 @@ public class ClipboardHandler {
                         Element elm = cc.getTrees().getElement(new TreePath(tp, ((MemberSelectTree) simpleName).getExpression()));
                         if (el.equals(elm)) continue;
                     } else {
-                        if (!cc.getTreeUtilities().isAccessible(context, el, el.getEnclosingElement().asType())) continue;
+                        if (!cc.getTreeUtilities().isAccessible(context, el, el.getEnclosingElement().asType())
+                                || cc.getElementUtilities().outermostTypeElement(el) == cc.getElementUtilities().outermostTypeElement(context.getEnclosingClass())) continue;
                         for (ImportTree importTree : cc.getCompilationUnit().getImports()) {
                             if (importTree.isStatic() && importTree.getQualifiedIdentifier().getKind() == Tree.Kind.MEMBER_SELECT) {
                                 MemberSelectTree mst = (MemberSelectTree) importTree.getQualifiedIdentifier();
@@ -447,7 +452,9 @@ public class ClipboardHandler {
                                                 simple2ImportFQN.put(el.getSimpleName().toString(), ((TypeElement) el).getQualifiedName().toString());
                                                 spans.add(new int[] {s - start, e - start});
                                             }
-                                        } else if ((el.getKind().isField() || el.getKind() == ElementKind.METHOD) && el.getModifiers().contains(Modifier.STATIC)) {
+                                        } else if ((el.getKind().isField() || el.getKind() == ElementKind.METHOD)
+                                                && el.getModifiers().contains(Modifier.STATIC)
+                                                && !el.getModifiers().contains(Modifier.PRIVATE)) {
                                             simple2ImportFQN.put(el.getSimpleName().toString(), ((TypeElement) el.getEnclosingElement()).getQualifiedName().toString() + '.' + el.getSimpleName().toString());
                                             spans.add(new int[] {s - start, e - start});
                                         }

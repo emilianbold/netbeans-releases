@@ -45,7 +45,9 @@ package org.netbeans.modules.favorites.templates;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -65,10 +67,12 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -113,6 +117,7 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
@@ -179,7 +184,13 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     }
     
     private static class TemplateTreeView extends BeanTreeView {
+        
         private Action startEditing;
+        
+        private TemplateTreeView() {
+            tree.getActionMap().put ("startEditing", new RenameTemplateAction()); // NOI18N
+        }
+        
         private void invokeInplaceEditing () {
             if (startEditing == null) {
                 Object o = tree.getActionMap ().get ("startEditing"); // NOI18N
@@ -590,15 +601,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     }
 
     private void deleteButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
-        Node [] nodes = manager.getSelectedNodes (); 
-        for (int i = 0; i < nodes.length; i++) {
-            try {
-                nodes[i].destroy();
-            }
-            catch (IOException ioe) {
-                Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ioe);
-            }
-        }
+        getActionMap().get("delete").actionPerformed(evt);
     }//GEN-LAST:event_deleteButtonActionPerformed
 
     private void duplicateButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_duplicateButtonActionPerformed
@@ -686,7 +689,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                                     SystemAction.get (PasteAction.class),
                                     null,
                                     SystemAction.get (DeleteAction.class),
-                                    SystemAction.get (RenameTemplateAction.class),
+                                    new RenameTemplateAction(),
                                     null,
                                     SystemAction.get (PropertiesAction.class),
         };
@@ -700,7 +703,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                                     SystemAction.get (PasteAction.class),
                                     null,
                                     SystemAction.get (DeleteAction.class),
-                                    SystemAction.get (RenameTemplateAction.class),
+                                    new RenameTemplateAction(),
         };
 
         public TemplateNode (Node n) { 
@@ -795,28 +798,39 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             setDisplayName (origDisplayName);
         }
 
+        @Override
+        public PasteType[] getPasteTypes(Transferable t) {
+            PasteType[] pasteTypes = super.getPasteTypes(t);
+            if (pasteTypes.length > 1) {
+                pasteTypes = new PasteType[] { pasteTypes[0] }; // COPY only
+            }
+            return pasteTypes;
+        }
+        
     }
 
-    private static class RenameTemplateAction extends NodeAction {
-
-        @Override
-        protected boolean surviveFocusChange() {
-            return false;
-        }
+    private static class RenameTemplateAction extends AbstractAction implements HelpCtx.Provider {
 
         @Messages("Action_Rename=&Rename")
         @Override
-        public String getName() {
-            return Action_Rename();
+        public Object getValue(String key) {
+            if (Action.NAME.equals(key)) {
+                return Action_Rename();
+            }
+            if (Action.ACCELERATOR_KEY.equals(key)) {
+                return KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0);
+            }
+            return super.getValue(key);
         }
-
+        
         @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx("org.netbeans.modules.favorites.templates.TemplatesPanel$RenameTemplateAction");
         }
 
         @Override
-        protected boolean enable(Node[] activatedNodes) {
+        public boolean isEnabled() {
+            Node[] activatedNodes = manager.getSelectedNodes();
             // exactly one node should be selected
             if ((activatedNodes == null) || (activatedNodes.length != 1)) {
                 return false;
@@ -824,10 +838,10 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
 
             return true;
         }
-
+        
         @Override
-        protected void performAction(Node[] activatedNodes) {
-            TemplateNode n = (TemplateNode) activatedNodes[0]; // we supposed that one node is activated
+        public void actionPerformed(ActionEvent e) {
+            TemplateNode n = (TemplateNode) manager.getSelectedNodes()[0];
             showRename(n);
         }
 
@@ -1358,8 +1372,10 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         RenameTemplatePanel editPanel = new RenameTemplatePanel(isUserFile(fo));
         editPanel.setFileName(name);
         editPanel.setFileDisplayName(displayName);
+        editPanel.setOtherFileNames(getOtherFileNames(n));
         String title = RenameTemplatePanel_title_text();
         DialogDescriptor dd = new DialogDescriptor(editPanel, title);
+        editPanel.setDescriptor(dd);
         Object res = DialogDisplayer.getDefault().notify(dd);
         if (DialogDescriptor.OK_OPTION.equals(res)) {
             name = editPanel.getFileName();
@@ -1373,6 +1389,30 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             }
             n.setDisplayName(displayName);
         }
+    }
+    
+    private static Set<String> getOtherFileNames(FileObject fo) {
+        FileObject parent = fo.getParent();
+        FileObject[] children = parent.getChildren();
+        Set<String> siblings = new HashSet<String>(children.length);
+        for (FileObject ch : children) {
+            if (ch != fo) {
+                siblings.add(ch.getNameExt());
+            }
+        }
+        return siblings;
+    }
+
+    private static Set<String> getOtherFileNames(TemplateNode n) {
+        Node parent = n.getParentNode();
+        Node[] children = parent.getChildren().getNodes();
+        Set<String> siblings = new HashSet<String>(children.length);
+        for (Node ch : children) {
+            if (ch != n) {
+                siblings.add(((TemplateNode) ch).getFileName());
+            }
+        }
+        return siblings;
     }
 
     /** Test if the file physically exists on disk and thus was created by user and can be renamed. */

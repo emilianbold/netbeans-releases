@@ -110,7 +110,6 @@ DiscountCode.prototype = {
          this.uri = discountCode['@uri'];
          this.discountCode = this.findValue(this.discountCode, discountCode['discountCode']);
          this.rate = this.findValue(this.rate, discountCode['rate']);
-         this.customers = new Customers(discountCode['customerCollection']['@uri']);
 
          this.initialized = true;
       }
@@ -136,23 +135,6 @@ DiscountCode.prototype = {
       return remote.deleteJson_();
    },
 
-   toString : function() {
-      if(!this.initialized)
-         this.init();
-      var myObj = 
-         '{'+
-         '"@uri":"'+this.uri+'"'+
-                  ', "discountCode":"'+this.discountCode+'"'+
-         ', "rate":"'+this.rate+'"'+
-         ', "customerCollection":{"@uri":"'+this.customers.getUri()+'"}'+
-
-         '}';
-      if(useWrapDiscountCode) {
-          myObj = '"discountCode":'+myObj;
-      }
-      return myObj;
-   },
-
    getFields : function() {
       var fields = [];
          fields.push('discountCode');
@@ -164,7 +146,7 @@ DiscountCode.prototype = {
 }
 
 function DiscountCodeRemote(uri_) {
-    this.uri = uri_+'?expandLevel=1';
+    this.uri = uri_;
 }
 
 DiscountCodeRemote.prototype = {

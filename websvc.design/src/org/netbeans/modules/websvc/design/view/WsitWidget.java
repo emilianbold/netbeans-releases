@@ -79,6 +79,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Ajit Bhate
  */
+@org.netbeans.api.annotations.common.SuppressWarnings("SE_BAD_FIELD")
 public class WsitWidget extends AbstractTitledWidget {
     
     private transient FileObject implementationClass;
@@ -199,7 +200,7 @@ public class WsitWidget extends AbstractTitledWidget {
         return key;
     }
     
-    class ConfigWidgetAction extends AbstractAction{
+    static class ConfigWidgetAction extends AbstractAction{
         WSConfiguration config;
         public ConfigWidgetAction(WSConfiguration config){
             this.config = config;
@@ -260,7 +261,7 @@ public class WsitWidget extends AbstractTitledWidget {
         }
     }
     
-    final class WSConfigurationListener implements PropertyChangeListener {
+    final static class WSConfigurationListener implements PropertyChangeListener {
 
         private WsitWidget widget;
         private WSConfigurationListener(WsitWidget widget) {

@@ -1,4 +1,4 @@
-<?xml version="1.1" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.5" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
@@ -17,14 +17,15 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Component id="includesScrollPane" alignment="0" pref="513" max="32767" attributes="0"/>
-          <Group type="102" alignment="0" attributes="0">
-              <Component id="addSpringButton" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="cbSpringVersion" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="159" max="-2" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <Component id="springNotOnClassPathLabel" min="-2" max="-2" attributes="0"/>
+          <Group type="102" attributes="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="addSpringButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="cbSpringVersion" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Component id="springNotOnClassPathLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+              </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -55,19 +56,20 @@
         <Component class="javax.swing.JTable" name="includesTable">
           <Properties>
             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-              <Table columnCount="2" rowCount="10">
+              <Table columnCount="2" rowCount="11">
                 <Column editable="true" title="" type="java.lang.Boolean"/>
                 <Column editable="false" title="" type="java.lang.String">
-                  <Data value="aop - http://www.springframework.org/schema/aop/spring-aop-2.5.xsd"/>
-                  <Data value="context - http://www.springframework.org/schema/context/spring-context-2.5.xsd"/>
-                  <Data value="flow - http://www.springframework.org/schema/webflow-config/spring-webflow-config-1.0.xsd"/>
-                  <Data value="jms - http://www.springframework.org/schema/jms/spring-jms-2.5.xsd"/>
-                  <Data value="jee - http://www.springframework.org/schema/jee/spring-jee-2.5.xsd"/>
-                  <Data value="lang - http://www.springframework.org/schema/lang/spring-lang-2.5.xsd"/>
-                  <Data value="osgi - http://www.springframework.org/schema/osgi/spring-osgi.xsd"/>
-                  <Data value="tx - http://www.springframework.org/schema/tx/spring-tx-2.5.xsd"/>
-                  <Data value="util - http://www.springframework.org/schema/util/spring-util-2.5.xsd"/>
+                  <Data value="aop - http://www.springframework.org/schema/aop"/>
+                  <Data value="c - http://www.springframework.org/schema/c"/>
+                  <Data value="context - http://www.springframework.org/schema/context"/>
+                  <Data value="flow - http://www.springframework.org/schema/webflow-config"/>
+                  <Data value="jee - http://www.springframework.org/schema/jee"/>
+                  <Data value="jms - http://www.springframework.org/schema/jms"/>
+                  <Data value="lang - http://www.springframework.org/schema/lang"/>
+                  <Data value="osgi - http://www.springframework.org/schema/osgi"/>
                   <Data value="p - http://www.springframework.org/schema/p"/>
+                  <Data value="tx - http://www.springframework.org/schema/tx"/>
+                  <Data value="util - http://www.springframework.org/schema/util"/>
                 </Column>
               </Table>
             </Property>

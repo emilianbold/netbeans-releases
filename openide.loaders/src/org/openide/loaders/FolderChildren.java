@@ -142,7 +142,28 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     @Override
     public void stateChanged(ChangeEvent e) {
         // Filtering changed need to recompute children
-        refreshChildren(RefreshMode.DEEP);
+        Object source = e.getSource();
+        FileObject fo = null;
+        if (source instanceof DataObject) {
+            DataObject dobj = (DataObject) source;
+            fo = dobj.getPrimaryFile();
+        } else if (source instanceof FileObject) {
+            fo = (FileObject) source;
+        }
+        boolean doRefresh;
+        if (fo != null) {
+            FileObject folderFO = folder.getPrimaryFile();
+            if (!fo.isFolder()) {
+                doRefresh = (fo.getParent() == folderFO);
+            } else {
+                doRefresh = (fo == folderFO);
+            }
+        } else {
+            doRefresh = true;
+        }
+        if (doRefresh) {
+            refreshChildren(RefreshMode.DEEP);
+        }
     }
 
     private enum RefreshMode {SHALLOW, SHALLOW_IMMEDIATE, DEEP, DEEP_LATER, CLEAR}
@@ -470,7 +491,8 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     
     private final class DelayedNode extends FilterNode implements Runnable {
         final FolderChildrenPair pair;
-        private volatile RequestProcessor.Task task;
+        /** @GuardedBy("this") */
+        private RequestProcessor.Task task;
 
         public DelayedNode(FolderChildrenPair pair) {
             this(pair, new DelayedLkp(new InstanceContent()));
@@ -498,15 +520,20 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             } else {
                 refreshKey(pair);
             }
-            task = null;
+            synchronized (this) {
+                task = null;
+            }
             err.log(Level.FINE, "delayed node refreshed {0} original: {1}", new Object[]{this, n});
         }
         
         /* @return true if there was some change in the node while waiting */
         public final boolean waitFinished() {
-            RequestProcessor.Task t = task;
-            if (t == null) {
-                return false;
+            RequestProcessor.Task t;
+            synchronized (this) {
+                t = task;
+                if (t == null) {
+                    return false;
+                }
             }
             err.log(Level.FINE, "original before wait: {0}", getOriginal());
             t.waitFinished();
@@ -515,7 +542,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             return true;
         }
 
-        final void scheduleRefresh(String by) {
+        final synchronized void scheduleRefresh(String by) {
             task = DataNodeUtils.reqProcessor().post(this);
             err.log(Level.FINE, "Task initialized by {0} to {1} for {2}", new Object[] { by, task, this });
         }

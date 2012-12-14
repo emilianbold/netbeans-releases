@@ -50,5 +50,6 @@ import java.net.URL;
  */
 public interface SiblingProvider {
     URL getSibling();
+    boolean isInSourceRoot();
     boolean hasSibling();
 }

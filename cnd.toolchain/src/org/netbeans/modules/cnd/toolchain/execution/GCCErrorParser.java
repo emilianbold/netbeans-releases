@@ -43,7 +43,6 @@
 package org.netbeans.modules.cnd.toolchain.execution;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -139,7 +138,7 @@ public final class GCCErrorParser extends ErrorParser {
     }
 
     @Override
-    public Result handleLine(String line) throws IOException {
+    public Result handleLine(String line) {
         for (Pattern p : patterns) {
             Matcher m = p.matcher(line);
             boolean found = m.find();
@@ -150,7 +149,7 @@ public final class GCCErrorParser extends ErrorParser {
         return null;
     }
 
-    private Result handleLine(String line, Matcher m) throws IOException {
+    private Result handleLine(String line, Matcher m) {
         if (m.pattern() == GCC_DIRECTORY_ENTER || m.pattern() == GCC_DIRECTORY_LEAVE) {
             String levelString = m.group(1);
             int level = levelString == null ? 0 : Integer.valueOf(levelString);

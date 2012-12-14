@@ -56,6 +56,7 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
+import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.comp.AttrContext;
@@ -178,7 +179,10 @@ public class TreeLoader extends LazyTreeLoader {
                             jti.analyze(jti.enter(jti.parse(jfo)));
                             if (persist) {
                                 if (canWrite(cpInfo)) {
-                                    dumpSymFile(ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo), jti, clazz);
+                                    Env<AttrContext> env = Enter.instance(context).getEnv(clazz);
+                                    if (env != null && pruneTree(env.tree, Symtab.instance(context))) {
+                                        dumpSymFile(ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo), jti, clazz);
+                                    }
                                 } else {
                                     final JavaFileObject cfo = clazz.classfile;
                                     final FileObject cFileObject = URLMapper.findFileObject(cfo.toUri().toURL());
@@ -276,24 +280,21 @@ public class TreeLoader extends LazyTreeLoader {
         this.partialReparse = false;
     }
 
-    public static void dumpSymFile(JavaFileManager jfm, JavacTaskImpl jti, ClassSymbol clazz) throws IOException {
-        Env<AttrContext> env = Enter.instance(jti.getContext()).getEnv(clazz);
-        if (env == null)
-            return;
-        final AtomicBoolean cancel = new AtomicBoolean();
+    public static boolean pruneTree(final JCTree tree, final Symtab syms) {
+        final AtomicBoolean ret = new AtomicBoolean(true);
         new TreeScanner() {
             @Override
             public void visitMethodDef(JCMethodDecl tree) {
                 super.visitMethodDef(tree);
-                if (tree.sym == null || tree.type == null)
-                    cancel.set(true);
+                if (tree.sym == null || tree.type == null || tree.type == syms.unknownType)
+                    ret.set(false);
                 tree.body = null;
             }
             @Override
             public void visitVarDef(JCVariableDecl tree) {
                 super.visitVarDef(tree);
-                if (tree.sym == null || tree.type == null)
-                    cancel.set(true);
+                if (tree.sym == null || tree.type == null || tree.type == syms.unknownType)
+                    ret.set(false);
                 tree.init = null;
             }
             @Override
@@ -315,10 +316,14 @@ public class TreeLoader extends LazyTreeLoader {
                         prev = l;
                     }
                 }
+                if (tree.sym == null || tree.type == null || tree.type == syms.unknownType)
+                    ret.set(false);
             }
-        }.scan(env.toplevel);
-        if (cancel.get())
-            return;
+        }.scan(tree);
+        return ret.get();
+    }
+    
+    public static void dumpSymFile(JavaFileManager jfm, JavacTaskImpl jti, ClassSymbol clazz) throws IOException {
         Log log = Log.instance(jti.getContext());
         JavaFileObject prevLogTo = log.useSource(null);
         boolean oldSuppress = log.suppressErrorsAndWarnings;

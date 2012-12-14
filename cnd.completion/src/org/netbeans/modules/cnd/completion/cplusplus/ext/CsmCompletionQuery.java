@@ -79,6 +79,7 @@ import org.netbeans.modules.cnd.api.model.CsmEnumForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFile.FileType;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
@@ -328,7 +329,7 @@ abstract public class CsmCompletionQuery {
                 if(etp instanceof CsmExpandedTokenProcessor) {
                     tp.setMacroCallback((CsmExpandedTokenProcessor)etp);
                 }
-                tp.enableTemplateSupport(true);
+                tp.enableTemplateSupport(getCsmFile().getFileType() != FileType.SOURCE_C_FILE);
                 doc.readLock();
                 try {
                     CndTokenUtilities.processTokens(etp, doc, lastSepOffset, offset);
@@ -998,7 +999,13 @@ abstract public class CsmCompletionQuery {
 
                             CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(initialValue.getEndOffset(), initialValue.getStartOffset());
                             tp.enableTemplateSupport(true);
-                            CndTokenUtilities.processTokens(tp, getBaseDocument(), initialValue.getStartOffset(), initialValue.getEndOffset());
+                            BaseDocument bDoc = getBaseDocument();
+                            bDoc.readLock();
+                            try {
+                                CndTokenUtilities.processTokens(tp, bDoc, initialValue.getStartOffset(), initialValue.getEndOffset());
+                            } finally {
+                                bDoc.readUnlock();
+                            }
                             CsmCompletionExpression exp = tp.getResultExp();
 
                             resolveType = resolveType(exp);

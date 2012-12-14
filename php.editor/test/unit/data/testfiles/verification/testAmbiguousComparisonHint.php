@@ -29,5 +29,17 @@ function is10($a)
     return $a == 10;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
+info($error === null);
+
+class Issue223549 {
+
+    function info($param) {
+        $this->info($error === null);
+    }
+
+}
+
 //END
 ?>

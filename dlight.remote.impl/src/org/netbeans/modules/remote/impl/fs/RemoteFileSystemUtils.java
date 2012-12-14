@@ -270,18 +270,13 @@ public class RemoteFileSystemUtils {
     }
 
     public static RemoteFileObjectBase getCanonicalFileObject(RemoteFileObjectBase fileObject) throws IOException {
-        int level = 0;
-        while (fileObject instanceof RemoteLinkBase) {
-            if (++level > MAXSYMLINKS) {
-                throw new IOException("Number of symbolic links encountered during path name traversal exceeds MAXSYMLINKS"); //NOI18N
-            }
-            RemoteFileObjectBase delegate = ((RemoteLinkBase) fileObject).getDelegate();
+        if (fileObject instanceof RemoteLinkBase) {
+            RemoteFileObjectBase delegate = ((RemoteLinkBase) fileObject).getCanonicalDelegate();
             if (delegate == null) {
                 throw new FileNotFoundException("Null delegate for remote link " + fileObject); //NOI18N
-            } else {
-                fileObject = delegate;
             }
-        }
+            return delegate;
+        }                 
         return fileObject;
     }
 

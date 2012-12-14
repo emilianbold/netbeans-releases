@@ -340,7 +340,7 @@ public class JavacParser extends Parser {
                 parseImpl(snapshot, task, event);
             }
         } catch (FileObjects.InvalidFileException ife) {
-            invalidate();
+            //pass - already invalidated in parseImpl
         } catch (IOException ioe) {
             throw new ParseException ("JavacParser failure", ioe); //NOI18N
         }
@@ -381,51 +381,59 @@ public class JavacParser extends Parser {
         parseId++;
         parserCanceled.set(false);
         indexCanceled.set(false);
+        cachedSnapShot = snapshot;
         LOGGER.log(Level.FINE, "parse: task: {0}\n{1}", new Object[]{   //NOI18N
             task.toString(),
             snapshot == null ? "null" : snapshot.getText()});      //NOI18N
-        CompilationInfoImpl oldInfo = ciImpl;
-        switch (this.sourceCount) {
-            case 0:
-                ClasspathInfo _tmpInfo = null;
-                if (task instanceof ClasspathInfoProvider &&
-                    (_tmpInfo = ((ClasspathInfoProvider)task).getClasspathInfo()) != null) {
-                    cpInfo = _tmpInfo;
-                    ciImpl = new CompilationInfoImpl(cpInfo);
-                }
-                else {
-                    throw new IllegalArgumentException("No classpath provided by task: " + task);
-                }
-                break;
-            case 1:
-                init (snapshot, task, true);
-                boolean needsFullReparse = true;
-                if (supportsReparse) {
-                    final Pair<DocPositionRegion,MethodTree> _changedMethod = changedMethod.getAndSet(null);
-                    if (_changedMethod != null && ciImpl != null) {
-                        LOGGER.log(Level.FINE, "\t:trying partial reparse:\n{0}", _changedMethod.first.getText());                           //NOI18N
-                        needsFullReparse = !reparseMethod(ciImpl, snapshot, _changedMethod.second, _changedMethod.first.getText());
-                        if (!needsFullReparse) {
-                            ciImpl.setChangedMethod(_changedMethod);
+        final CompilationInfoImpl oldInfo = ciImpl;
+        boolean success = false;
+        try {
+            switch (this.sourceCount) {
+                case 0:
+                    ClasspathInfo _tmpInfo = null;
+                    if (task instanceof ClasspathInfoProvider &&
+                        (_tmpInfo = ((ClasspathInfoProvider)task).getClasspathInfo()) != null) {
+                        cpInfo = _tmpInfo;
+                        ciImpl = new CompilationInfoImpl(cpInfo);
+                    }
+                    else {
+                        throw new IllegalArgumentException("No classpath provided by task: " + task);
+                    }
+                    break;
+                case 1:
+                    init (snapshot, task, true);
+                    boolean needsFullReparse = true;
+                    if (supportsReparse) {
+                        final Pair<DocPositionRegion,MethodTree> _changedMethod = changedMethod.getAndSet(null);
+                        if (_changedMethod != null && ciImpl != null) {
+                            LOGGER.log(Level.FINE, "\t:trying partial reparse:\n{0}", _changedMethod.first.getText());                           //NOI18N
+                            needsFullReparse = !reparseMethod(ciImpl, snapshot, _changedMethod.second, _changedMethod.first.getText());
+                            if (!needsFullReparse) {
+                                ciImpl.setChangedMethod(_changedMethod);
+                            }
                         }
                     }
-                }
-                if (needsFullReparse) {
-                    positions.clear();
-                    ciImpl = createCurrentInfo (this, file, root, snapshot, null, null);
-                    LOGGER.fine("\t:created new javac");                                    //NOI18N
-                }
-                break;
-            default:
-                init (snapshot, task, false);
-                ciImpl = createCurrentInfo(this, file, root, snapshot,
-                    ciImpl == null ? null : ciImpl.getJavacTask(),
-                    ciImpl == null ? null : ciImpl.getDiagnosticListener());
+                    if (needsFullReparse) {
+                        positions.clear();
+                        ciImpl = createCurrentInfo (this, file, root, snapshot, null, null);
+                        LOGGER.fine("\t:created new javac");                                    //NOI18N
+                    }
+                    break;
+                default:
+                    init (snapshot, task, false);
+                    ciImpl = createCurrentInfo(this, file, root, snapshot,
+                        ciImpl == null ? null : ciImpl.getJavacTask(),
+                        ciImpl == null ? null : ciImpl.getDiagnosticListener());
+            }
+            success = true;
+        } finally {
+            if (!success) {
+                invalidate();
+            }
+            if (oldInfo != ciImpl && oldInfo != null) {
+                oldInfo.dispose();
+            }
         }
-        if (oldInfo != ciImpl && oldInfo != null) {
-            oldInfo.dispose();
-        }
-        cachedSnapShot = snapshot;
     }
 
     //@GuardedBy (org.netbeans.modules.parsing.impl.TaskProcessor.parserLock)

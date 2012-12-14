@@ -317,9 +317,25 @@ public class Reformatter implements ReformatTask {
                     TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
                     if (ts != null) {
                         ts.move(endOffset);
-                        if (ts.moveNext() && ts.token().id() == WHITESPACE) {
-                            String t = ts.token().text().toString();
-                            t = t.substring(endOffset - ts.offset());
+                        String t = null;
+                        if (ts.moveNext()) {
+                            switch (ts.token().id()) {
+                                case WHITESPACE:
+                                    t = ts.token().text().toString();
+                                    t = t.substring(endOffset - ts.offset());
+                                    break;
+                                case JAVADOC_COMMENT:
+                                case BLOCK_COMMENT:
+                                    t = ts.token().text().toString();
+                                    int idx = endOffset - ts.offset();
+                                    while (idx < t.length() && (t.charAt(idx) <= ' ')) {
+                                        idx++;
+                                    }
+                                    t = t.substring(endOffset - ts.offset(), idx);
+                                    break;
+                            }
+                        }
+                        if (t != null) {
                             int idx1, idx2;
                             while ((idx1 = t.lastIndexOf('\n')) >=0 && (idx2 = text.lastIndexOf('\n')) >= 0) { //NOI18N
                                 t = t.substring(0, idx1);

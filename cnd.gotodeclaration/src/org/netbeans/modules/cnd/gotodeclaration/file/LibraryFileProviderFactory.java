@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.gotodeclaration.file;
 
 import java.util.HashMap;
@@ -74,8 +73,8 @@ import org.openide.filesystems.FileObject;
  */
 // we use position less than MakeProjectFileProviderFactory to be called by infrastructure
 // and have a chance to contribute libraries even if MakeProjectFileProviderFactory consumes src root
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.jumpto.file.FileProviderFactory.class, position=900)
-public class LibraryFileProviderFactory implements FileProviderFactory {
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.spi.jumpto.file.FileProviderFactory.class, position = 900)
+public final class LibraryFileProviderFactory implements FileProviderFactory {
 
     @Override
     public String name() {
@@ -93,13 +92,14 @@ public class LibraryFileProviderFactory implements FileProviderFactory {
     }
 
     private final static class FileProviderImpl implements FileProvider {
+
         private final Map<CsmProject, Set<CsmUID<CsmFile>>> cache = new HashMap<CsmProject, Set<CsmUID<CsmFile>>>();
         private final AtomicBoolean cancel = new AtomicBoolean(false);
         private String cachedTextPrefix = null;
         private String lastText = null;
         private SearchType lastSearchType = null;
         private Context lastQueriedContext;
-                
+
         @Override
         public boolean computeFiles(Context context, Result result) {
             cancel.set(false);
@@ -131,7 +131,7 @@ public class LibraryFileProviderFactory implements FileProviderFactory {
                         }
                         // check only libraries
                         libs.addAll(csmProject.getLibraries());
-                    } 
+                    }
                     for (CsmProject lib : libs) {
                         if (cancel.get()) {
                             break;
@@ -167,8 +167,8 @@ public class LibraryFileProviderFactory implements FileProviderFactory {
         public void cancel() {
             cancel.set(true);
         }
-    }    
-    
+    }
+
     private static final class LibraryFileFD extends FileDescriptor {
 
         private final CsmUID<CsmFile> file;
@@ -189,7 +189,7 @@ public class LibraryFileProviderFactory implements FileProviderFactory {
             String ownerPath = CsmFileInfoQuery.getDefault().getAbsolutePath(file).toString();
             if (ownerPath.startsWith(project.getName().toString())) {
                 // make relative path
-                ownerPath = ownerPath.substring(project.getName().length()+1);
+                ownerPath = ownerPath.substring(project.getName().length() + 1);
             }
             int indx = ownerPath.lastIndexOf('/'); // NOI18N
             if (indx < 0) {
@@ -199,7 +199,7 @@ public class LibraryFileProviderFactory implements FileProviderFactory {
                 ownerPath = ownerPath.substring(0, indx);
             } else {
                 ownerPath = "";
-            }       
+            }
             return ownerPath;
         }
 
@@ -224,12 +224,25 @@ public class LibraryFileProviderFactory implements FileProviderFactory {
 
         @Override
         public void open() {
-            CsmUtilities.openSource(file.getObject());
+            final Runnable r = new Runnable() {
+
+                @Override
+                public void run() {
+                    CsmUtilities.openSource(file.getObject());
+                }
+            };
+            CsmModelAccessor.getModel().enqueue(r, "LibraryFileFD.open(" + getFileDisplayPath() + ")"); // NOI18N
         }
 
         @Override
         public FileObject getFileObject() {
             return CsmUtilities.getFileObject(file.getObject());
         }
-    }    
+
+        @Override
+        public String getFileDisplayPath() {
+            final CharSequence path = CsmFileInfoQuery.getDefault().getAbsolutePath(file);
+            return path == null ? "" : path.toString(); // NOI18N
+        }
+    }
 }

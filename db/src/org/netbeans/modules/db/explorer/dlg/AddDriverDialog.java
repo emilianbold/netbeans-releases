@@ -104,6 +104,7 @@ public final class AddDriverDialog extends javax.swing.JPanel {
     private static final Logger LOGGER = Logger.getLogger(AddDriverDialog.class.getName());
     private JDBCDriver drv;
     private final AddConnectionWizard wd;
+    private volatile URLClassLoader jarClassLoader = null;
 
     /** Creates new AddDriverDialog.
      * @param driverNode driver node to be customized or null to create a new one
@@ -578,6 +579,7 @@ public final class AddDriverDialog extends javax.swing.JPanel {
                 //PENDING
             }
         }
+        getJarClassLoader(); // init class loader while the JAR file is cached
     }
     
     private void findDriverClassByInspection() {
@@ -587,13 +589,7 @@ public final class AddDriverDialog extends javax.swing.JPanel {
             @Override
             public void run() {
                 startProgress();
-                                     
-                // This classloader is used to load classes
-                // from the jar files for the driver.  We can then use
-                // introspection to see if a class in one of these jar files
-                // implements java.sql.Driver
-                URLClassLoader jarloader = 
-                    new URLClassLoader(drvs.toArray(new URL[drvs.size ()]),this.getClass ().getClassLoader ());
+                URLClassLoader jarloader = getJarClassLoader();
 
                 for (int i = 0; i < dlm.size(); i++) {
                     try {
@@ -631,6 +627,16 @@ public final class AddDriverDialog extends javax.swing.JPanel {
         }, 0);
     }
     
+    private URLClassLoader getJarClassLoader() {
+        // This classloader is used to load classes
+        // from the jar files for the driver.  We can then use
+        // introspection to see if a class in one of these jar files
+        // implements java.sql.Driver
+        jarClassLoader =
+                new URLClassLoader(drvs.toArray(new URL[drvs.size()]),
+                this.getClass().getClassLoader());
+        return jarClassLoader;
+    }
     private void addDriverClass(String drv) {
         if (((DefaultComboBoxModel) drvClassComboBox.getModel()).getIndexOf(drv) < 0) {
             drvClassComboBox.addItem(drv);
@@ -692,6 +698,9 @@ public final class AddDriverDialog extends javax.swing.JPanel {
             }
         } else if (drvClassComboBox.getEditor().getItem().toString().length() == 0) {
             message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverMissingClass");
+        } else if (jarClassLoader != null && !isDriverClass(jarClassLoader,
+                drvClassComboBox.getEditor().getItem().toString())) {
+            message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverNotJavaSqlDriver"); //NOI18N
         } else if (nameTextField.getText().length() == 0) {
             message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverMissingName");
         } else if (!customizer && nameTextField.getText().length() > 0) {

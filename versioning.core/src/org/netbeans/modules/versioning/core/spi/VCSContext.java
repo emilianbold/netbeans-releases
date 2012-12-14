@@ -303,6 +303,11 @@ public final class VCSContext {
         }
         return false;
     }
+
+    static synchronized void flushCached () {
+        contextNodesCached.clear();
+        contextCached.clear();
+    }
         
     private static void addProjectFiles(Collection<VCSFileProxy> rootFiles, Collection<VCSFileProxy> rootFilesExclusions, Project project) {
         Sources sources = ProjectUtils.getSources(project);

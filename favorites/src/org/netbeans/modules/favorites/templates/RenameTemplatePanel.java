@@ -42,17 +42,29 @@
 
 package org.netbeans.modules.favorites.templates;
 
+import java.util.Set;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.openide.DialogDescriptor;
+import org.openide.NotificationLineSupport;
+import org.openide.util.NbBundle;
+
 /**
  * Handles rename of a template file name and display name.
  * 
  * @author Martin Entlicher
  */
 public class RenameTemplatePanel extends java.awt.Panel {
+    
+    private Set<String> otherFileNames;
+    private DialogDescriptor dd;
+    private NotificationLineSupport notificationLineSupport;
 
     /** Creates new form RenameTemplatePanel */
     public RenameTemplatePanel(boolean isUserFile) {
         initComponents();
         fileNameTextField.setEditable(isUserFile);
+        fileNameTextField.getDocument().addDocumentListener(new NameDocumentListener());
     }
 
     /** This method is called from within the constructor to
@@ -126,6 +138,52 @@ public class RenameTemplatePanel extends java.awt.Panel {
 
     String getFileDisplayName() {
         return displayNameTextField.getText();
+    }
+
+    void setOtherFileNames(Set<String> otherFileNames) {
+        this.otherFileNames = otherFileNames;
+    }
+
+    void setDescriptor(DialogDescriptor dd) {
+        this.dd = dd;
+        this.notificationLineSupport = dd.createNotificationLineSupport();
+    }
+
+    @NbBundle.Messages("Err_FileNameExists=Template with this file name already exists.")
+    private void checkName() {
+        if (otherFileNames == null) {
+            return ;
+        }
+        String name = fileNameTextField.getText();
+        boolean clash = otherFileNames.contains(name);
+        if (clash) {
+            notificationLineSupport.setErrorMessage(Bundle.Err_FileNameExists());
+        } else {
+            notificationLineSupport.clearMessages();
+        }
+        dd.setValid(!clash);
+    }
+
+    private class NameDocumentListener implements DocumentListener {
+
+        public NameDocumentListener() {
+        }
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            checkName();
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            checkName();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            checkName();
+        }
+        
     }
 
 }

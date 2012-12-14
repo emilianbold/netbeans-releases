@@ -167,6 +167,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     public static final String DEFAULT_PROJECT_MAKFILE_NAME = "Makefile"; // NOI18N
     private String projectMakefileName = DEFAULT_PROJECT_MAKFILE_NAME;
     private Task initTask = null;
+    private volatile Task initFoldersTask = null;
     private CndVisibilityQuery folderVisibilityQuery = null;
     private boolean defaultConfigurationsRestored = false;
     
@@ -193,6 +194,13 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     void opened() {
         ToolsPanelSupport.addCompilerSetModifiedListener(this);
+        for (Item item : getProjectItems()) {
+            item.onOpen();
+        }        
+        Task foldersTask = this.initFoldersTask;
+        if (foldersTask != null) {
+            foldersTask.schedule(0);
+        }
     }
 
     /*
@@ -595,7 +603,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (CndPathUtilitities.isPathAbsolute(path)) {
                 newPath = CndPathUtilitities.toRelativePath(getBaseDir(), CndPathUtilitities.naturalizeSlashes(path));
             } else {
-                newPath = CndPathUtilitities.toAbsolutePath(getBaseDir(), path);
+                newPath = CndPathUtilitities.toAbsolutePath(getBaseDirFileObject(), path);
             }
             newPath = CndPathUtilitities.normalizeSlashes(newPath);
             item = projectItems.get(newPath);
@@ -616,7 +624,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (CndPathUtilitities.isPathAbsolute(path)) {
                 newPath = CndPathUtilitities.toRelativePath(getBaseDir(), CndPathUtilitities.naturalizeSlashes(path));
             } else {
-                newPath = CndPathUtilitities.toAbsolutePath(getBaseDir(), path);
+                newPath = CndPathUtilitities.toAbsolutePath(getBaseDirFileObject(), path);
             }
             newPath = CndPathUtilitities.normalizeSlashes(newPath);
             item = externalFileItems.findItemByPath(newPath);
@@ -687,7 +695,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         boolean projectChanged = false;
         VectorConfiguration<String> cIncludeDirectories = null;
         BooleanConfiguration cInheritIncludes = null;
-        VectorConfiguration<String> cPpreprocessorOption = null;
+        VectorConfiguration<String> cPreprocessorOption = null;
         BooleanConfiguration cInheritMacros = null;
         VectorConfiguration<String> cPreprocessorUndefinedOption = null;
         BooleanConfiguration cInheritUndefinedMacros = null;
@@ -721,7 +729,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             }
             cIncludeDirectories = folderConfiguration.getCCompilerConfiguration().getIncludeDirectories();
             cInheritIncludes = folderConfiguration.getCCompilerConfiguration().getInheritIncludes();
-            cPpreprocessorOption = folderConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
+            cPreprocessorOption = folderConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
             cInheritMacros = folderConfiguration.getCCompilerConfiguration().getInheritPreprocessor();
             cPreprocessorUndefinedOption = folderConfiguration.getCCompilerConfiguration().getUndefinedPreprocessorConfiguration();
             cInheritUndefinedMacros = folderConfiguration.getCCompilerConfiguration().getInheritUndefinedPreprocessor();
@@ -754,7 +762,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 cIncludeDirectories = itemConfiguration.getCCompilerConfiguration().getIncludeDirectories();
                 cInheritIncludes = itemConfiguration.getCCompilerConfiguration().getInheritIncludes();
                 cInheritMacros = itemConfiguration.getCCompilerConfiguration().getInheritPreprocessor();
-                cPpreprocessorOption = itemConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
+                cPreprocessorOption = itemConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
                 cPreprocessorUndefinedOption = itemConfiguration.getCCompilerConfiguration().getUndefinedPreprocessorConfiguration();
                 cInheritUndefinedMacros = itemConfiguration.getCCompilerConfiguration().getInheritUndefinedPreprocessor();
                 if (itemConfiguration.getCCompilerConfiguration().getCommandLineConfiguration().getDirty()){
@@ -808,7 +816,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                     || makeConfiguration.getLinkerConfiguration().getLibrariesConfiguration().getDirty();
             cIncludeDirectories = makeConfiguration.getCCompilerConfiguration().getIncludeDirectories();
             cInheritIncludes = makeConfiguration.getCCompilerConfiguration().getInheritIncludes();
-            cPpreprocessorOption = makeConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
+            cPreprocessorOption = makeConfiguration.getCCompilerConfiguration().getPreprocessorConfiguration();
             cPreprocessorUndefinedOption = makeConfiguration.getCCompilerConfiguration().getUndefinedPreprocessorConfiguration();
             if (makeConfiguration.getCCompilerConfiguration().getCommandLineConfiguration().getDirty()){
                 makeConfiguration.getCCompilerConfiguration().getCommandLineConfiguration().setDirty(false);
@@ -847,11 +855,11 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         }
 
         if (cIncludeDirectories != null
-                && (cIncludeDirectories.getDirty() || cPpreprocessorOption.getDirty()
+                && (cIncludeDirectories.getDirty() || cPreprocessorOption.getDirty()
                 || cInheritIncludes.getDirty() || cInheritMacros.getDirty() || cPreprocessorUndefinedOption.getDirty() || cInheritUndefinedMacros.getDirty())) {
             cFiles = true;
             cIncludeDirectories.setDirty(false);
-            cPpreprocessorOption.setDirty(false);
+            cPreprocessorOption.setDirty(false);
             cInheritIncludes.setDirty(false);
             cInheritMacros.setDirty(false);
             cPreprocessorUndefinedOption.setDirty(false);
@@ -1072,6 +1080,14 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         Object lock = new Object();
         Object oldLock = projectWriteLocks.putIfAbsent(project.getProjectDirectory().getPath(), lock);
         return (oldLock == null) ? lock : oldLock;
+    }
+
+    public void setFoldersTask(Task task) {
+        RequestProcessor.Task prevTask = this.initFoldersTask;
+        if (prevTask != null) {
+            prevTask.cancel();
+        }
+        this.initFoldersTask = task;
     }
 
     private class SaveRunnable implements Runnable {
@@ -1444,7 +1460,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     }
 
     private void addTestRoot(String path) {
-        String absPath = CndPathUtilitities.toAbsolutePath(getBaseDir(), path);
+        String absPath = CndPathUtilitities.toAbsolutePath(getBaseDirFileObject(), path);
         String relPath = CndPathUtilitities.normalizeSlashes(CndPathUtilitities.toRelativePath(getBaseDir(), path));
         boolean addPath = true;
 

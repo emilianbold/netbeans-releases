@@ -104,7 +104,7 @@ public class AddPropertyAction extends AbstractAction {
                     ResultIterator ri = WebUtils.getResultIterator(resultIterator, "text/css");
                     if (ri != null) {
                         CssParserResult result = (CssParserResult) ri.getParserResult();
-                        model_ref.set(Model.getModel(result));
+                        model_ref.set(Model.createModel(result));
                     }
                 }
             });

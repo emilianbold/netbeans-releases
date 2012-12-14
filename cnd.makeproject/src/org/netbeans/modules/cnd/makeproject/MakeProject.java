@@ -180,28 +180,30 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
     private final Set<String> cExtensions = MakeProject.createExtensionSet();
     private final Set<String> cppExtensions = MakeProject.createExtensionSet();
     private String sourceEncoding = null;
-    private final AtomicBoolean isOpenHookDone = new AtomicBoolean(false);
+    // lock and open/close state of make project
+    private final AtomicBoolean openStateAndLock = new AtomicBoolean(false);
     private final AtomicBoolean isDeleted = new AtomicBoolean(false);
     private final AtomicBoolean isDeleting = new AtomicBoolean(false);
     private final MakeSources sources;
     private final MutableCP sourcepath;
-    private final PropertyChangeListener indexerListener = new IndexerOptionsListener();
+    private final PropertyChangeListener indexerListener;
     private /*final*/ RemoteProject.Mode remoteMode;
     private final String remoteBaseDir;
     private ExecutionEnvironment fileSystemHost;
     private String configurationXMLComment;
 
     public MakeProject(MakeProjectHelper helper) throws IOException {
-        LOGGER.log(Level.FINE, "Start of creation MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getNameExt()}); // NOI18N
+        LOGGER.log(Level.FINE, "Start of creation MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory()}); // NOI18N
         this.kind = MakeBasedProjectFactorySingleton.TYPE_INSTANCE;
         this.helper = helper;
         //eval = createEvaluator();
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
         //refHelper = new ReferenceHelper(helper, aux, eval);
         projectDescriptorProvider = new ConfigurationDescriptorProvider(this, helper.getProjectDirectory());
-        LOGGER.log(Level.FINE, "Create ConfigurationDescriptorProvider@{0} for MakeProject@{1} {2}", new Object[]{System.identityHashCode(projectDescriptorProvider), System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getNameExt()}); // NOI18N
+        LOGGER.log(Level.FINE, "Create ConfigurationDescriptorProvider@{0} for MakeProject@{1} {2}", new Object[]{System.identityHashCode(projectDescriptorProvider), System.identityHashCode(MakeProject.this), helper.getProjectDirectory()}); // NOI18N
         sources = new MakeSources(this, helper);
         sourcepath = new MutableCP(sources);
+        indexerListener = new IndexerOptionsListener(this);
         lookup = createLookup(aux);
         nativeProject = lookup.lookup(NativeProject.class);
 
@@ -252,7 +254,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                 DataLoaderPool.getDefault().addOperationListener(templateListener = new MakeTemplateListener());
             }
         }
-        LOGGER.log(Level.FINE, "End of creation MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getNameExt()}); // NOI18N
+        LOGGER.log(Level.FINE, "End of creation MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory()}); // NOI18N
     }
 
     private void readProjectExtension(Element data, String key, Set<String> set) {
@@ -318,8 +320,8 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
     }
 
     private Lookup createLookup(AuxiliaryConfiguration aux) {
-        SubprojectProvider spp = new MakeSubprojectProvider(); //refHelper.createSubprojectProvider();
-        Info info = new Info();
+        SubprojectProvider spp = new MakeSubprojectProvider(this); //refHelper.createSubprojectProvider();
+        Info info = new Info(this);
         Object[] lookups = new Object[] {
                     info,
                     aux,
@@ -327,8 +329,8 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                     new MakeActionProvider(this),
                     new MakeLogicalViewProvider(this),
                     new MakeCustomizerProvider(this, projectDescriptorProvider),
-                    new MakeArtifactProviderImpl(),
-                    UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
+                    new MakeArtifactProviderImpl(this),
+                    UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl(this)),
                     new MakeSharabilityQuery(projectDescriptorProvider, getProjectDirectory()),
                     sources,
                     helper,
@@ -340,9 +342,9 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                     new MakeProjectSearchInfo(projectDescriptorProvider),
                     kind,
                     new MakeProjectEncodingQueryImpl(this),
-                    new RemoteProjectImpl(),
-                    new ToolchainProjectImpl(),
-                    new CPPImpl(sources, isOpenHookDone),
+                    new RemoteProjectImpl(this),
+                    new ToolchainProjectImpl(this),
+                    new CPPImpl(sources, openStateAndLock),
                     new CacheDirectoryProviderImpl(helper.getProjectDirectory()),
                     this
                 };
@@ -365,7 +367,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         return LookupProviderSupport.createCompositeLookup(lkp, kind.getLookupMergerPath());
     }
 
-    private static class CacheDirectoryProviderImpl extends ProjectOpenedHook implements CacheDirectoryProvider {
+    private static final class CacheDirectoryProviderImpl extends ProjectOpenedHook implements CacheDirectoryProvider {
         
         private final FileObject projectDirectory;
         private FileObject cacheDirectory;
@@ -575,15 +577,15 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
     }
 
     private synchronized void registerClassPath(boolean register) {
-        if (isOpenHookDone.get()) {
-            if (register) {
+        if (register) {
+            if (MakeOptions.getInstance().isFullFileIndexer()) {
                 GlobalPathRegistry.getDefault().register(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
-            } else {
-                try {
-                    GlobalPathRegistry.getDefault().unregister(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
-                } catch (Throwable ex) {
-                    // do nothing because register depends on make options
-                }
+            }
+        } else {
+            try {
+                GlobalPathRegistry.getDefault().unregister(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
+            } catch (Throwable ex) {
+                // do nothing because register depends on make options
             }
         }
     }
@@ -1007,8 +1009,13 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
     }
     }
      */
-    private class MakeSubprojectProvider implements SubprojectProvider {
+    private static final class MakeSubprojectProvider implements SubprojectProvider {
+        private final MakeProject project;
 
+        public MakeSubprojectProvider(MakeProject prj) {
+            this.project = prj;
+        }
+        
         // Add a listener to changes in the set of subprojects.
         @Override
         public void addChangeListener(ChangeListener listener) {
@@ -1021,8 +1028,8 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
             Set<String> subProjectLocations = new HashSet<String>();
 
             // Try project.xml first if project not already read (this is cheap)
-            Element data = helper.getPrimaryConfigurationData(true);
-            if (!projectDescriptorProvider.gotDescriptor() && data.getElementsByTagName(MakeProjectTypeImpl.MAKE_DEP_PROJECTS).getLength() > 0) {
+            Element data = project.helper.getPrimaryConfigurationData(true);
+            if (!project.projectDescriptorProvider.gotDescriptor() && data.getElementsByTagName(MakeProjectTypeImpl.MAKE_DEP_PROJECTS).getLength() > 0) {
                 NodeList nl4 = data.getElementsByTagName(MakeProjectTypeImpl.MAKE_DEP_PROJECT);
                 if (nl4.getLength() > 0) {
                     for (int i = 0; i < nl4.getLength(); i++) {
@@ -1036,7 +1043,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                 }
             } else {
                 // Then read subprojects from configuration.zml (expensive)
-                ConfigurationDescriptor projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
+                ConfigurationDescriptor projectDescriptor = project.projectDescriptorProvider.getConfigurationDescriptor();
                 if (projectDescriptor == null) {
                     // Something serious wrong. Return nothing...
                     return subProjects;
@@ -1044,7 +1051,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                 subProjectLocations = ((MakeConfigurationDescriptor) projectDescriptor).getSubprojectLocations();
             }
 
-            FileObject baseDir = getProjectDirectory();
+            FileObject baseDir = project.getProjectDirectory();
             for (String loc : subProjectLocations) {
                 String location = CndPathUtilitities.toAbsolutePath(baseDir, loc);
                 try {
@@ -1084,12 +1091,14 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         void setName(String name);
     }
 
-    private final class Info implements InfoInterface {
+    private final static class Info implements InfoInterface {
 
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
         private String name;
+        private final MakeProject project;
 
-        Info() {
+        Info(MakeProject prj) {
+            this.project = prj;
         }
 
         @Override
@@ -1128,7 +1137,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
 
                 @Override
                 public String run() {
-                    Element data = helper.getPrimaryConfigurationData(true);
+                    Element data = project.helper.getPrimaryConfigurationData(true);
                     Element nameEl =  getNameElement(data);
                     if (nameEl != null) {
                         NodeList nl = nameEl.getChildNodes();
@@ -1136,7 +1145,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                             return ((Text) nl.item(0)).getNodeValue();
                         }
                     }
-                    FileObject fo = MakeProject.this.getProjectDirectory();
+                    FileObject fo = project.getProjectDirectory();
                     if (fo != null && fo.isValid()) {
                         return fo.getNameExt();
                     }
@@ -1151,7 +1160,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
 
                 @Override
                 public Void run() {
-                    Element data = helper.getPrimaryConfigurationData(true);
+                    Element data = project.helper.getPrimaryConfigurationData(true);
                     Element nameEl =  getNameElement(data);
                     if (nameEl != null) {
                         NodeList deadKids = nameEl.getChildNodes();
@@ -1163,7 +1172,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                         data.insertBefore(nameEl, data.getChildNodes().item(0));
                     }
                     nameEl.appendChild(data.getOwnerDocument().createTextNode(name));
-                    helper.putPrimaryConfigurationData(data, true);
+                    project.helper.putPrimaryConfigurationData(data, true);
                     return null;
                 }
             });
@@ -1192,7 +1201,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
             String aName = _getName();
 
             if (PROJECT_NAME_WITH_HIDDEN_PATHS != null) {
-                FileObject fo = MakeProject.this.getProjectDirectory();
+                FileObject fo = project.getProjectDirectory();
                 if (fo != null && fo.isValid()) {
                     String prjDirDispName = FileUtil.getFileDisplayName(fo);
                     String[] split = PROJECT_NAME_WITH_HIDDEN_PATHS.split(":"); // NOI18N
@@ -1239,7 +1248,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         }
 
         private int getProjectType() {
-            int aProjectType = getActiveConfigurationType();
+            int aProjectType = project.getActiveConfigurationType();
             if (aProjectType != -1) {
                 return aProjectType;
             }
@@ -1252,7 +1261,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
             Icon icon = MakeConfigurationDescriptor.MAKEFILE_ICON;
             switch (type) {
                 case MakeConfiguration.TYPE_MAKEFILE: {
-                    MakeConfiguration activeConfiguration = MakeProject.this.getActiveConfiguration();
+                    MakeConfiguration activeConfiguration = project.getActiveConfiguration();
                     if (activeConfiguration != null) {
                         String outputValue = activeConfiguration.getOutputValue();
                         if (outputValue != null) {
@@ -1293,7 +1302,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                     icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/projects-Qt-static.png", false); // NOI18N
                     break;
                 case MakeConfiguration.TYPE_CUSTOM:
-                    MakeProjectCustomizer makeProjectCustomizer = getProjectCustomizer(getProjectCustomizerId());
+                    MakeProjectCustomizer makeProjectCustomizer = project.getProjectCustomizer(project.getProjectCustomizerId());
                     if (makeProjectCustomizer != null) {
                         icon = ImageUtilities.loadImageIcon(makeProjectCustomizer.getIconPath(), false); // NOI18N
                     }
@@ -1320,7 +1329,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
 
         @Override
         public Project getProject() {
-            return MakeProject.this;
+            return project;
         }
 
         @Override
@@ -1351,13 +1360,17 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         onProjectOpened();
     }
 
-    private synchronized void onProjectOpened() {
-        if (!isOpenHookDone.getAndSet(true)) {
+    private void onProjectOpened() {
+        synchronized (openStateAndLock) {
+            if (openStateAndLock.get()) {
+                return;
+            }
             FileObject dir = getProjectDirectory();
             if (dir != null) { // high resistance mode paranoia
                 final ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(dir);
                 ConnectionHelper.INSTANCE.ensureConnection(env);
-            }            
+            }     
+            helper.removeMakeProjectListener(MakeProject.this);
             helper.addMakeProjectListener(MakeProject.this);
             checkNeededExtensions();
             if (openedTasks != null) {
@@ -1367,80 +1380,105 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                 openedTasks.clear();
                 openedTasks = null;
             }
-            if (MakeOptions.getInstance().isFullFileIndexer()) {
-                registerClassPath(true);
-            }
             MakeOptions.getInstance().addPropertyChangeListener(indexerListener);
+            registerClassPath(true);
+            MakeProjectClassPathProvider.addProjectSources(sources);
+            // project is in opened state
+            openStateAndLock.set(true);
+            // post-initialize configurations in external worker
             RP.post(new Runnable() {
                 @Override
                 public void run() {
+                    synchronized (openStateAndLock) {
+                        if (!openStateAndLock.get()) {
+                            return;
+                        }
+                    }
                     projectDescriptorProvider.opened();
-                    if(nativeProject instanceof NativeProjectProvider) {
-                        NativeProjectRegistry.getDefault().register(nativeProject);
+                    synchronized (openStateAndLock) {
+                        if (openStateAndLock.get()) {
+                            if (nativeProject instanceof NativeProjectProvider) {
+                                NativeProjectRegistry.getDefault().register(nativeProject);
+                            }
+                        }
                     }
                 }
             });
-            MakeProjectClassPathProvider.addProjectSources(sources);
-        }        
+        }
     }
 
     void setDeleted() {
-        LOGGER.log(Level.FINE, "set deleted MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getNameExt()}); // NOI18N
+        LOGGER.log(Level.FINE, "set deleted MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory()}); // NOI18N
         isDeleted.set(true);
     }
 
     void setDeleting(boolean value) {
-        LOGGER.log(Level.FINE, "set deleting MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getNameExt()}); // NOI18N
+        LOGGER.log(Level.FINE, "set deleting MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory()}); // NOI18N
         isDeleting.set(value);
     }
 
-    private synchronized void onProjectClosed() {
-        LOGGER.log(Level.FINE, "on project close MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getNameExt()}); // NOI18N
-        helper.removeMakeProjectListener(this);
-        save();
-        projectDescriptorProvider.closed();
-        MakeOptions.getInstance().removePropertyChangeListener(indexerListener);
-        if (isOpenHookDone.getAndSet(false)) {
+    private void onProjectClosed() {
+        synchronized (openStateAndLock) {
+            if (!openStateAndLock.get()) {
+                LOGGER.log(Level.WARNING, "on project close for not opened MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory()}); // NOI18N
+                return;
+            }
+            LOGGER.log(Level.FINE, "on project close MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory()}); // NOI18N
+            helper.removeMakeProjectListener(this);
+            save();
+            projectDescriptorProvider.closed();
+            MakeOptions.getInstance().removePropertyChangeListener(indexerListener);
             registerClassPath(false);
+            MakeProjectFileProviderFactory.removeSearchBase(this);
+            if(nativeProject instanceof NativeProjectProvider) {
+                NativeProjectRegistry.getDefault().unregister(nativeProject);
+            }
+            MakeProjectClassPathProvider.removeProjectSources(sources);
+            // project is in closed state
+            openStateAndLock.set(false);
         }
-        MakeProjectFileProviderFactory.removeSearchBase(this);
-        if(nativeProject instanceof NativeProjectProvider) {
-            NativeProjectRegistry.getDefault().unregister(nativeProject);
-        }
-        MakeProjectClassPathProvider.removeProjectSources(sources);
     }
 
-    public synchronized void save() {
-        if (!isDeleted.get() && !isDeleting.get()) {
-            if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
-                projectDescriptorProvider.getConfigurationDescriptor().save();
+    public void save() {
+        synchronized (openStateAndLock) {
+            if (!isDeleted.get() && !isDeleting.get()) {
+                if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
+                    projectDescriptorProvider.getConfigurationDescriptor().save();
+                }
             }
         }
     }
 
-    private final class ProjectOpenedHookImpl extends ProjectOpenedHook {
-
-        ProjectOpenedHookImpl() {
+    private final static class ProjectOpenedHookImpl extends ProjectOpenedHook {
+        private final MakeProject project;
+        
+        ProjectOpenedHookImpl(MakeProject prj) {
+            this.project = prj;
         }
 
         @Override
         protected void projectOpened() {
-            onProjectOpened();
+            project.onProjectOpened();
         }
 
         @Override
         protected void projectClosed() {
-            onProjectClosed();
+            project.onProjectClosed();
         }
     }
 
-    private final class MakeArtifactProviderImpl implements MakeArtifactProvider {
+    private final static class MakeArtifactProviderImpl implements MakeArtifactProvider {
+        private final MakeProject project;
+
+        private MakeArtifactProviderImpl(MakeProject prj) {
+            this.project = prj;
+        }                
 
         @Override
         public MakeArtifact[] getBuildArtifacts() {
             List<MakeArtifact> artifacts = new ArrayList<MakeArtifact>();
 
-            MakeConfigurationDescriptor projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
+            MakeConfigurationDescriptor projectDescriptor = project.projectDescriptorProvider.getConfigurationDescriptor();
             if (projectDescriptor != null) {
                 Configuration[] confs = projectDescriptor.getConfs().toArray();
                 for (int i = 0; i < confs.length; i++) {
@@ -1452,7 +1490,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         }
     }
 
-    private static class MakeProjectSearchInfo extends SearchInfoDefinition {
+    private static final class MakeProjectSearchInfo extends SearchInfoDefinition {
 
         private ConfigurationDescriptorProvider projectDescriptorProvider;
 
@@ -1526,30 +1564,35 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         return (dc == null) ? null : dc.getExecutionEnvironment();
     }
 
-    private class RemoteProjectImpl implements RemoteProject {
+    private static final class RemoteProjectImpl implements RemoteProject {
+        private final MakeProject project;
+
+        private RemoteProjectImpl(MakeProject prj) {
+            this.project = prj;
+        }
         
         @Override
         public ExecutionEnvironment getDevelopmentHost() {
-            DevelopmentHostConfiguration devHost = getDevelopmentHostConfiguration();
+            DevelopmentHostConfiguration devHost = project.getDevelopmentHostConfiguration();
             return (devHost == null) ? null : devHost.getExecutionEnvironment();
         }
 
         @Override
         public ExecutionEnvironment getSourceFileSystemHost() {
-            if (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) {
-                return fileSystemHost;
+            if (project.remoteMode == RemoteProject.Mode.REMOTE_SOURCES) {
+                return project.fileSystemHost;
             } else {
-                return FileSystemProvider.getExecutionEnvironment(helper.getProjectDirectory());
+                return FileSystemProvider.getExecutionEnvironment(project.helper.getProjectDirectory());
             }
         }
 
         @Override
         public FileSystem getSourceFileSystem() {
-            if (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) {
-                return FileSystemProvider.getFileSystem(fileSystemHost);
+            if (project.remoteMode == RemoteProject.Mode.REMOTE_SOURCES) {
+                return FileSystemProvider.getFileSystem(project.fileSystemHost);
             } else {
                 try {
-                    return getProjectDirectory().getFileSystem();
+                    return project.getProjectDirectory().getFileSystem();
                 } catch (FileStateInvalidException ex) {
                     throw new IllegalStateException(ex);
                 }
@@ -1559,17 +1602,17 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         
         @Override
         public Mode getRemoteMode() {
-            return remoteMode;
+            return project.remoteMode;
         }
 
         @Override
         public RemoteSyncFactory getSyncFactory() {
             // TODO:fullRemote: think over, should mode be checked here?
             // Probably noit sice fixed factory is set to configurations in the cae of full remote
-            switch (remoteMode) {
+            switch (project.remoteMode) {
                 case LOCAL_SOURCES:
                 {
-                    MakeConfiguration activeConfiguration = getActiveConfiguration();
+                    MakeConfiguration activeConfiguration = project.getActiveConfiguration();
                     if (activeConfiguration != null) {
                         if (CndFileUtils.isLocalFileSystem(activeConfiguration.getBaseFSPath().getFileSystem())) {
                             return activeConfiguration.getRemoteSyncFactory();                            
@@ -1584,10 +1627,10 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                     return RemoteSyncFactory.fromID(RemoteProject.FULL_REMOTE_SYNC_ID);
                 default:
                 {
-                    CndUtils.assertTrue(false, "Unexpected remote mode " + remoteMode); //NOI18N
-                    MakeConfiguration activeConfiguration = getActiveConfiguration();
+                    CndUtils.assertTrue(false, "Unexpected remote mode " + project.remoteMode); //NOI18N
+                    MakeConfiguration activeConfiguration = project.getActiveConfiguration();
                     if (activeConfiguration != null) {
-                        return getActiveConfiguration().getRemoteSyncFactory();
+                        return project.getActiveConfiguration().getRemoteSyncFactory();
                     } else {
                         return null;
                     }
@@ -1597,25 +1640,25 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
 
         @Override
         public String getSourceBaseDir() {
-            return (remoteBaseDir == null) ? helper.getProjectDirectory().getPath() : remoteBaseDir;
+            return (project.remoteBaseDir == null) ? project.helper.getProjectDirectory().getPath() : project.remoteBaseDir;
         }
 
         @Override
         public FileObject getSourceBaseDirFileObject() {
-            if (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) {
-                CndUtils.assertNotNull(remoteBaseDir, "Null remote base directory"); //NOI18N
-                if (remoteBaseDir != null) {
-                    return FileSystemProvider.getFileObject(fileSystemHost, remoteBaseDir);
+            if (project.remoteMode == RemoteProject.Mode.REMOTE_SOURCES) {
+                CndUtils.assertNotNull(project.remoteBaseDir, "Null remote base directory"); //NOI18N
+                if (project.remoteBaseDir != null) {
+                    return FileSystemProvider.getFileObject(project.fileSystemHost, project.remoteBaseDir);
                 }
             }
-            return getProjectDirectory();
+            return project.getProjectDirectory();
         }
 
         @Override
         public String resolveRelativeRemotePath(String path) {
             if (!CndPathUtilitities.isPathAbsolute(path)) {
-                if (remoteMode == RemoteProject.Mode.REMOTE_SOURCES && remoteBaseDir != null && !remoteBaseDir.isEmpty()) {
-                    String resolved = remoteBaseDir;
+                if (project.remoteMode == RemoteProject.Mode.REMOTE_SOURCES && project.remoteBaseDir != null && !project.remoteBaseDir.isEmpty()) {
+                    String resolved = project.remoteBaseDir;
                     if (!resolved.endsWith("/")) { //NOI18N
                         resolved += "/"; //NOI18N
                     }
@@ -1627,11 +1670,16 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         }
     }
 
-    private class ToolchainProjectImpl implements ToolchainProject {
+    private static final class ToolchainProjectImpl implements ToolchainProject {
+        private final MakeProject project;
+
+        private ToolchainProjectImpl(MakeProject prj) {
+            this.project = prj;
+        }
 
         @Override
         public CompilerSet getCompilerSet() {
-            MakeConfiguration conf = getActiveConfiguration();
+            MakeConfiguration conf = project.getActiveConfiguration();
             if (conf != null) {
                 return conf.getCompilerSet().getCompilerSet();
             }
@@ -1666,6 +1714,11 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
             SourceGroup[] groups = sources.getSourceGroups("generic"); // NOI18N
             for (SourceGroup g : groups) {
                 FileObject rootFolder = g.getRootFolder();
+                //bz#215822 - exception when starting IDE where expected drive is missing
+                //should not add invalid objects to the list of resources
+                if (!rootFolder.isValid()) {
+                    continue;
+                }
                 URL url = rootFolder.toURL();
                 // A workaround for #196328 - IllegalArgumentException on save Project properties
                 if (rootFolder.isFolder() && !url.toExternalForm().endsWith("/")) { //NOI18N
@@ -1765,20 +1818,22 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
     private static final class CPPImpl implements ClassPathProvider {
 
         private final MakeSources sources;
-        private final AtomicBoolean isOpenHookDone;
+        private final AtomicBoolean projectOpenStateAndLock;
 
-        public CPPImpl(MakeSources sources, AtomicBoolean isOpenHookDone) {
+        public CPPImpl(MakeSources sources, AtomicBoolean projectOpenStateAndLock) {
             this.sources = sources;
-            this.isOpenHookDone = isOpenHookDone;
+            this.projectOpenStateAndLock = projectOpenStateAndLock;
         }
 
         @Override
         public ClassPath findClassPath(FileObject file, String type) {
-            if (isOpenHookDone.get()) {
-                if (MakeProjectPaths.SOURCES.equals(type)) {
-                    for (SourceGroup sg : sources.getSourceGroups(MakeSources.GENERIC)) {
-                        if (sg.getRootFolder().equals(file)) {
-                            return ClassPathSupport.createClassPath(Arrays.asList(new PathResourceImpl(ClassPathSupport.createResource(file.toURL()))));
+            synchronized (projectOpenStateAndLock) {
+                if (projectOpenStateAndLock.get()) {
+                    if (MakeProjectPaths.SOURCES.equals(type)) {
+                        for (SourceGroup sg : sources.getSourceGroups(MakeSources.GENERIC)) {
+                            if (sg.getRootFolder().equals(file)) {
+                                return ClassPathSupport.createClassPath(Arrays.asList(new PathResourceImpl(ClassPathSupport.createResource(file.toURL()))));
+                            }
                         }
                     }
                 }
@@ -1787,12 +1842,17 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         }
     }
 
-    private final class IndexerOptionsListener implements PropertyChangeListener {
+    private final static class IndexerOptionsListener implements PropertyChangeListener {
+        private final MakeProject project;
 
+        private IndexerOptionsListener(MakeProject prj) {
+            this.project = prj;
+        }
+        
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (FullFileIndexer.FULL_FILE_INDEXER.equals(evt.getPropertyName())) {
-                registerClassPath(Boolean.TRUE.equals(evt.getNewValue()));
+                project.registerClassPath(Boolean.TRUE.equals(evt.getNewValue()));
             }
         }
     }

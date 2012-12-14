@@ -235,6 +235,9 @@ public class CreateRulePanel extends javax.swing.JPanel {
      * @param context file context, must not be null.
      * @param handle html source element handle, can be null.
      */
+    @NbBundle.Messages({
+        "CreateRulePanel_no_stylesheet=No stylesheet available."
+    })
     public CreateRulePanel(FileObject context, HtmlSourceElementHandle handle) {
         assert context != null;
         this.context = context;
@@ -272,7 +275,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
         };
 
         initComponents();
-
+        
         //listens on changes of the selector type list
         selectorTypeList.addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -455,6 +458,14 @@ public class CreateRulePanel extends javax.swing.JPanel {
         selectorTypeList.setSelectedIndex(0); //class
         
         updateAtRules();
+        
+         //disable the dialog as there's no stylesheet we may operate on
+        if(STYLESHEETS_MODEL.getSize() == 0) {
+            selectorCB.setEnabled(false);
+            selectorCB.setEditable(false);
+            selectorTypeList.setEnabled(false);
+            descriptionPane.setText(Bundle.CreateRulePanel_no_stylesheet());
+        }
 
     }
 
@@ -730,7 +741,9 @@ public class CreateRulePanel extends javax.swing.JPanel {
                 return;
             }
             CssIndex index = CssIndex.create(project);
-            for (FileObject file : index.getAllIndexedFiles()) {
+            DependenciesGraph dependencies = index.getDependencies(context);
+            
+            for (FileObject file : dependencies.getAllReferedFiles()) {
                 if ("text/css".equals(file.getMIMEType())) {
                     items.add(file);
                 }

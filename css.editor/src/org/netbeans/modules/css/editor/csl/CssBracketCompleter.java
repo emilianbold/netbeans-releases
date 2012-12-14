@@ -66,6 +66,7 @@ import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.web.indent.api.LexUtilities;
 
 /**
  *
@@ -106,7 +107,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
             //handle curly bracket skipping
             //if there is a matching opening bracket and there is no opened unpaired bracket before
             //then just skip the typed char
-            TokenSequence<CssTokenId> ts = getCssTokenSequence(doc, dot);
+            TokenSequence<CssTokenId> ts = getCssTokenSequence(doc, dot, true);
             if (ts != null) {
                 ts.move(dot);
                 if (ts.moveNext()) {
@@ -136,7 +137,51 @@ public class CssBracketCompleter implements KeystrokeHandler {
         if (ch == '\'' || ch == '"') {
             //handle quotations
 
-            TokenSequence<CssTokenId> ts = getCssTokenSequence(doc, dot);
+            //issue 189711 workaround - if the css code is embedde in html attribute value
+            //and user types " at the end of the value additional quotation is incorrectly
+            //added: <div id="myid| + " => <div id="myid""
+            //
+            //we need to check if the actuall css code is embedded in an attribute
+            //value w/o depending on the html module. An SPI in web.common could do it as well
+            TokenSequence<CssTokenId> ts_no_bounds_check = getCssTokenSequence(doc, dot, false);
+            LanguagePath langPath = ts_no_bounds_check.languagePath();
+            LanguagePath parentPath = langPath.parent();
+            if (parentPath != null) {
+                //we are embedded
+                Language in = parentPath.innerLanguage();
+                if ("text/html".equals(in.mimeType())) {
+                    //in html
+                    TokenHierarchy<Document> hi = TokenHierarchy.get(doc);
+                    //try backward
+                    boolean bw = true;
+                    List<TokenSequence<?>> embedded = hi.embeddedTokenSequences(dot, true);
+                    if(embedded.size() <= 1) {
+                        //try forward
+                        bw = false;
+                        embedded = hi.embeddedTokenSequences(dot, false);
+                    }
+                    if (embedded.size() > 1) {
+                        //at least the CSS + HTML as a parent
+                        TokenSequence<?> htmlts = embedded.get(embedded.size() - 2); //parent index (html) == len - 2
+                        if (htmlts.languagePath().equals(parentPath)) {
+                            //it relly looks like our parent ts
+                            int ediff = htmlts.move(dot);
+                            if (ediff == 0 && bw && htmlts.movePrevious() || htmlts.moveNext()) {
+                                TokenId id = htmlts.token().id();
+                                //XXX !!!! DEPENDENCY to HtmlTokenId !!!!
+                                if (id.name().equals("VALUE_CSS")) { //NOI18N
+                                    //we are in a css value, do not complete the quote
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+
+
+                }
+            }
+            
+            TokenSequence<CssTokenId> ts = getCssTokenSequence(doc, dot, true);
             if (ts != null) {
                 int diff = ts.move(dot);
                 if (ts.moveNext()) {
@@ -154,42 +199,6 @@ public class CssBracketCompleter implements KeystrokeHandler {
                         }
                     }
                 }
-
-                //issue 189711 workaround - if the css code is embedde in html attribute value
-                //and user types " at the end of the value additional quotation is incorrectly
-                //added: <div id="myid| + " => <div id="myid""
-                //
-                //we need to check if the actuall css code is embedded in an attribute
-                //value w/o depending on the html module. An SPI in web.common could do it as well
-                LanguagePath langPath = ts.languagePath();
-                LanguagePath parentPath = langPath.parent();
-                if (parentPath != null) {
-                    //we are embedded
-                    Language top = parentPath.topLanguage();
-                    if ("text/html".equals(top.mimeType())) {
-                        //in html
-                        TokenHierarchy<Document> hi = TokenHierarchy.get(doc);
-                        List<TokenSequence<?>> embedded = hi.embeddedTokenSequences(dot, true);
-                        if (embedded.size() > 1) {
-                            TokenSequence<?> htmlts = embedded.get(embedded.size() - 2);
-                            if (htmlts.languagePath().equals(parentPath)) {
-                                //it relly looks like our parent ts
-                                htmlts.move(dot);
-                                if (htmlts.moveNext() || htmlts.movePrevious()) {
-                                    TokenId id = htmlts.token().id();
-                                    //XXX !!!! DEPENDENCY to HtmlTokenId !!!!
-                                    if (id.name().equals("VALUE_CSS")) { //NOI18N
-                                        //we are in a css value, do not complete the quote
-                                        return false;
-                                    }
-                                }
-                            }
-                        }
-
-
-                    }
-                }
-
 
                 //cover "text| and user types "
                 //in such case just the quotation should be added
@@ -371,7 +380,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
         }
     }
 
-    private static TokenSequence<CssTokenId> getCssTokenSequence(Document doc, int offset) {
+    private static TokenSequence<CssTokenId> getCssTokenSequence(Document doc, int offset, boolean checkBoundaries) {
         TokenHierarchy hi = TokenHierarchy.get(doc);
 
         //if we are at the border of the tokensequence then,
@@ -391,19 +400,21 @@ public class CssBracketCompleter implements KeystrokeHandler {
         //check boundaries of the token sequence - if the skip lenghts are used the token 
         //sequence is returned even for offsets outside of the tokenSequence content
 
-        //test beginning
-        ts.moveStart();
-        if (ts.moveNext()) {
-            if (ts.offset() > offset) {
-                return null;
+        if(checkBoundaries) {
+            //test beginning
+            ts.moveStart();
+            if (ts.moveNext()) {
+                if (ts.offset() > offset) {
+                    return null;
+                }
             }
-        }
 
-        //test end
-        ts.moveEnd();
-        if (ts.movePrevious()) {
-            if (ts.offset() + ts.token().length() < offset) {
-                return null;
+            //test end
+            ts.moveEnd();
+            if (ts.movePrevious()) {
+                if (ts.offset() + ts.token().length() < offset) {
+                    return null;
+                }
             }
         }
 

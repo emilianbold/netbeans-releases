@@ -528,39 +528,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
         Collection<TypeUsage> resolveTypeFromExpression = new ArrayList<TypeUsage>();
         resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(request.result.getModel(), jsIndex, expChain, request.anchor));
 
-        int cycle = 0;
-        boolean resolvedAll = false;
-        while(!resolvedAll && cycle < 10) {
-            cycle++;
-            resolvedAll = true;
-            Collection<TypeUsage> resolved = new ArrayList<TypeUsage>();
-            for (TypeUsage typeUsage : resolveTypeFromExpression) {
-                if(!((TypeUsageImpl)typeUsage).isResolved()) {
-                    resolvedAll = false;
-                    String sexp = typeUsage.getType();
-                    if (sexp.startsWith("@exp;")) {
-                        sexp = sexp.substring(5);
-                        List<String> nExp = new ArrayList<String>();
-                        String[] split = sexp.split("@");
-                        for (int i = split.length - 1; i > -1; i--) {
-                            nExp.add(split[i].substring(split[i].indexOf(';') + 1));
-                            if (split[i].startsWith("call;")) {
-                                nExp.add("@mtd");
-                            } else {
-                                nExp.add("@pro");
-                            }
-                        }
-                        resolved.addAll(ModelUtils.resolveTypeFromExpression(request.result.getModel(), jsIndex, nExp, cycle));
-                    } else {
-                        resolved.add(new TypeUsageImpl(typeUsage.getType(), typeUsage.getOffset(), true));
-                    }
-                } else {
-                    resolved.add(typeUsage);
-                }
-            }
-            resolveTypeFromExpression.clear();
-            resolveTypeFromExpression.addAll(resolved);
-        }
+        resolveTypeFromExpression = ModelUtils.resolveTypes(resolveTypeFromExpression, request.result);
+        
         Collection<String> prototypeChain = new ArrayList<String>();
         for (TypeUsage typeUsage : resolveTypeFromExpression) {
             prototypeChain.addAll(ModelUtils.findPrototypeChain(typeUsage.getType(), jsIndex));

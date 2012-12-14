@@ -56,25 +56,25 @@ public class CompletionContext {
 
     // b2    b1      |       a1        a2
     // class MyClass extends BaseClass {
-    public Token<? extends GroovyTokenId> beforeLiteral;
-    public Token<? extends GroovyTokenId> before2;
-    public Token<? extends GroovyTokenId> before1;
-    public Token<? extends GroovyTokenId> active;
-    public Token<? extends GroovyTokenId> after1;
-    public Token<? extends GroovyTokenId> after2;
-    public Token<? extends GroovyTokenId> afterLiteral;
-    public TokenSequence<?> ts; // we keep the sequence with us.
+    public Token<GroovyTokenId> beforeLiteral;
+    public Token<GroovyTokenId> before2;
+    public Token<GroovyTokenId> before1;
+    public Token<GroovyTokenId> active;
+    public Token<GroovyTokenId> after1;
+    public Token<GroovyTokenId> after2;
+    public Token<GroovyTokenId> afterLiteral;
+    public TokenSequence<GroovyTokenId> ts; // we keep the sequence with us.
 
     
     public CompletionContext(
-        Token<? extends GroovyTokenId> beforeLiteral,
-        Token<? extends GroovyTokenId> before2,
-        Token<? extends GroovyTokenId> before1,
-        Token<? extends GroovyTokenId> active,
-        Token<? extends GroovyTokenId> after1,
-        Token<? extends GroovyTokenId> after2,
-        Token<? extends GroovyTokenId> afterLiteral,
-        TokenSequence<?> ts) {
+        Token<GroovyTokenId> beforeLiteral,
+        Token<GroovyTokenId> before2,
+        Token<GroovyTokenId> before1,
+        Token<GroovyTokenId> active,
+        Token<GroovyTokenId> after1,
+        Token<GroovyTokenId> after2,
+        Token<GroovyTokenId> afterLiteral,
+        TokenSequence<GroovyTokenId> ts) {
 
         this.beforeLiteral = beforeLiteral;
         this.before2 = before2;

@@ -59,18 +59,20 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
 import static org.netbeans.modules.java.hints.bugs.NPECheck.State.*;
-import org.netbeans.modules.java.hints.introduce.Flow;
 import org.netbeans.spi.java.hints.*;
 import org.netbeans.spi.java.hints.Hint.Options;
 
-/**XXX: null initializer to a non-null variable!
+/**
  *
  * @author lahvac
  */
 @Hint(displayName="#DN_NPECheck", description="#DESC_NPECheck", category="bugs", options=Options.QUERY, suppressWarnings = {"null", "ConstantConditions"})
 public class NPECheck {
 
-    @TriggerPattern("$var = $expr")
+    @TriggerPatterns({
+        @TriggerPattern("$mods$ $type $var = $expr;"),
+        @TriggerPattern("$var = $expr")
+    })
     public static ErrorDescription assignment(HintContext ctx) {
         Element e = ctx.getInfo().getTrees().getElement(ctx.getVariables().get("$var"));
 
@@ -86,7 +88,7 @@ public class NPECheck {
         if (elementState != null && elementState.isNotNull()) {
             String key = null;
 
-            if (r == NULL) {
+            if (r == NULL || r == NULL_HYPOTHETICAL) {
                 key = "ERR_AssigningNullToNotNull";
             }
 
@@ -107,7 +109,7 @@ public class NPECheck {
         TreePath select = ctx.getVariables().get("$select");
         State r = computeExpressionsState(ctx.getInfo()).get(select.getLeaf());
         
-        if (r == State.NULL) {
+        if (r == NULL || r == NULL_HYPOTHETICAL) {
             String displayName = NbBundle.getMessage(NPECheck.class, "ERR_DereferencingNull");
             
             return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
@@ -147,7 +149,7 @@ public class NPECheck {
         for (VariableElement param : params) {
             if (getStateFromAnnotations(param) == NOT_NULL && (!ee.isVarArgs() || param != params.get(params.size() - 1))) {
                 switch (paramStates.get(index)) {
-                    case NULL:
+                    case NULL: case NULL_HYPOTHETICAL:
                         result.add(ErrorDescriptionFactory.forTree(ctx, mit.getArguments().get(index), NbBundle.getMessage(NPECheck.class, "ERR_NULL_TO_NON_NULL_ARG")));
                         break;
                     case POSSIBLE_NULL_REPORT:
@@ -203,7 +205,7 @@ public class NPECheck {
         String key = null;
 
         switch (returnState) {
-            case NULL:
+            case NULL: case NOT_NULL_HYPOTHETICAL:
                 if (expected.isNotNull()) key = "ERR_ReturningNullFromNonNull";
                 break;
             case POSSIBLE_NULL_REPORT:
@@ -357,7 +359,7 @@ public class NPECheck {
             State expr = scan(node.getExpression(), p);
             boolean wasNPE = false;
             
-            if (expr == State.NULL || expr == State.POSSIBLE_NULL || expr == State.POSSIBLE_NULL_REPORT) {
+            if (expr == State.NULL || expr == State.NULL_HYPOTHETICAL || expr == State.POSSIBLE_NULL || expr == State.POSSIBLE_NULL_REPORT) {
                 wasNPE = true;
             }
             
@@ -481,7 +483,7 @@ public class NPECheck {
                     Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getLeftOperand()));
                     
                     if (isVariableElement(e) && !hasDefiniteValue(e)) {
-                        variable2State.put((VariableElement) e, State.NULL);
+                        variable2State.put((VariableElement) e, State.NULL_HYPOTHETICAL);
                         
                         return null;
                     }
@@ -490,7 +492,7 @@ public class NPECheck {
                     Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getRightOperand()));
                     
                     if (isVariableElement(e) && !hasDefiniteValue(e)) {
-                        variable2State.put((VariableElement) e, State.NULL);
+                        variable2State.put((VariableElement) e, State.NULL_HYPOTHETICAL);
                         
                         return null;
                     }
@@ -502,7 +504,7 @@ public class NPECheck {
                     Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getLeftOperand()));
                     
                     if (isVariableElement(e) && !hasDefiniteValue(e)) {
-                        variable2State.put((VariableElement) e, State.NOT_NULL);
+                        variable2State.put((VariableElement) e, State.NOT_NULL_HYPOTHETICAL);
                         
                         return null;
                     }
@@ -511,7 +513,7 @@ public class NPECheck {
                     Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getRightOperand()));
                     
                     if (isVariableElement(e) && !hasDefiniteValue(e)) {
-                        variable2State.put((VariableElement) e, State.NOT_NULL);
+                        variable2State.put((VariableElement) e, State.NOT_NULL_HYPOTHETICAL);
                         
                         return null;
                     }
@@ -890,19 +892,12 @@ public class NPECheck {
         }
         
         private void mergeHypotheticalVariable2State(Map<VariableElement, State> original) {
-            Map<VariableElement, State> hypothetical = variable2State;
-            
-            variable2State = original;
-            
-            for (Entry<VariableElement, State> e : original.entrySet()) {
+            for (Entry<VariableElement, State> e : variable2State.entrySet()) {
                 State t = e.getValue();
-                State el = hypothetical.get(e.getKey());
                 
-                if (el == State.NOT_NULL_BE_NPE) {
-                    variable2State.put(e.getKey(), State.NOT_NULL_BE_NPE);
-                } if (   (t == null || t == State.POSSIBLE_NULL)
-                      && (el == State.NOT_NULL || el == State.NULL || el == State.POSSIBLE_NULL_REPORT)) {
-                    variable2State.put(e.getKey(), State.POSSIBLE_NULL_REPORT);
+                if (t == State.NULL_HYPOTHETICAL || t == State.NOT_NULL_HYPOTHETICAL) {
+                    State originalValue = original.get(e.getKey());
+                    e.setValue(originalValue == State.POSSIBLE_NULL || originalValue == null ? State.POSSIBLE_NULL_REPORT : originalValue);
                 }
             }
         }
@@ -916,32 +911,38 @@ public class NPECheck {
     
     static enum State {
         NULL,
+        NULL_HYPOTHETICAL,
         POSSIBLE_NULL,
         POSSIBLE_NULL_REPORT,
         NOT_NULL,
+        NOT_NULL_HYPOTHETICAL,
         NOT_NULL_BE_NPE;
         
         public @CheckForNull State reverse() {
             switch (this) {
                 case NULL:
                     return NOT_NULL;
+                case NULL_HYPOTHETICAL:
+                    return NOT_NULL_HYPOTHETICAL;
                 case POSSIBLE_NULL:
                 case POSSIBLE_NULL_REPORT:
                     return this;
                 case NOT_NULL:
                 case NOT_NULL_BE_NPE:
                     return NULL;
+                case NOT_NULL_HYPOTHETICAL:
+                    return NULL_HYPOTHETICAL;
                 default: throw new IllegalStateException();
             }
         }
         
         public boolean isNotNull() {
-            return this == NOT_NULL || this == NOT_NULL_BE_NPE;
+            return this == NOT_NULL || this == NOT_NULL_BE_NPE || this == NOT_NULL_HYPOTHETICAL;
         }
         
         public static State collect(State s1, State s2) {
             if (s1 == s2) return s1;
-            if (s1 == NULL || s2 == NULL) return POSSIBLE_NULL_REPORT;
+            if (s1 == NULL || s2 == NULL || s1 == NULL_HYPOTHETICAL || s2 == NULL_HYPOTHETICAL) return POSSIBLE_NULL_REPORT;
             if (s1 == POSSIBLE_NULL_REPORT || s2 == POSSIBLE_NULL_REPORT) return POSSIBLE_NULL_REPORT;
             if (s1 != null && s2 != null && s1.isNotNull() && s2.isNotNull()) return NOT_NULL;
             

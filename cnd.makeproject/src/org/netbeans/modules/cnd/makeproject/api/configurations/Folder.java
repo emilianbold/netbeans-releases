@@ -173,8 +173,8 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     private void refreshDiskFolder(Set<String> antiLoop, boolean useOldSchemeBehavior) {
-        if (log.isLoggable(Level.FINER)) {
-            log.log(Level.FINER, "----------refreshDiskFolder {0}", getPath()); // NOI18N
+        if (log.isLoggable(Level.FINEST)) {
+            log.log(Level.FINEST, "----------refreshDiskFolder {0}", getPath()); // NOI18N
         }
         String rootPath = getRootPath();
         FileObject folderFile = getThisFolder();
@@ -325,7 +325,7 @@ public class Folder implements FileChangeListener, ChangeListener {
             CndFileVisibilityQuery.getDefault().addChangeListener(this);
             getConfigurationDescriptor().getFolderVisibilityQuery().addChangeListener(this);
             if (log.isLoggable(Level.FINER)) {
-                log.log(Level.FINER, "-----------attachFilterListener {0}", getPath()); // NOI18N
+                log.log(Level.FINER, "-----------attachFilterListener {0}:{1} ({2})", new Object[] {getPath(), absRootPath, System.identityHashCode(this)}); // NOI18N
             }
             try {
                 if (!UNCHANGED_PROJECT_MODE) {
@@ -333,12 +333,12 @@ public class Folder implements FileChangeListener, ChangeListener {
                 }
                 listenerAttached = true;
                 if (log.isLoggable(Level.FINER)) {
-                    log.log(Level.FINER, "-----------attachFileChangeListener {0}", getPath()); // NOI18N
+                    log.log(Level.FINER, "-----------attachFileChangeListener {0}:{1} ({2})", new Object[] {getPath(), absRootPath, System.identityHashCode(this)}); // NOI18N
                 }
             } catch (IllegalArgumentException iae) {
                 // Can happen if trying to attach twice...
                 if (log.isLoggable(Level.FINER)) {
-                    log.log(Level.FINER, "-----------attachFileChangeListener duplicate error{0}", getPath()); // NOI18N
+                    log.log(Level.FINER, "-----------attachFileChangeListener duplicate error {0}:{1} ({2})", new Object[] {getPath(), absRootPath, System.identityHashCode(this)}); // NOI18N
                 }
             }
             return;
@@ -353,12 +353,11 @@ public class Folder implements FileChangeListener, ChangeListener {
 
     public void detachListener() {
         if (!listenerAttached) {
+            if (isDiskFolder() && getRoot() != null && log.isLoggable(Level.FINER)) {
+                log.log(Level.FINER, "----------- skip detaching FileChangeListener {0}: ({1})", new Object[]{getPath(), System.identityHashCode(this)}); // NOI18N
+            }
             return;
         }
-        if (log.isLoggable(Level.FINER)) {
-            log.log(Level.FINER, "-----------detachFileChangeListener {0}", getPath()); // NOI18N
-        }
-
         if (configurationDescriptor == null) {
             CndUtils.assertTrueInConsole(false, "null configurationDescriptor for " + this.name);
             return;
@@ -368,16 +367,26 @@ public class Folder implements FileChangeListener, ChangeListener {
         FileSystem fileSystem = configurationDescriptor.getBaseDirFileSystem();
         String absRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDirFileObject(), rootPath);
 
-        if (!UNCHANGED_PROJECT_MODE) {
-            FileSystemProvider.removeRecursiveListener(this, fileSystem, absRootPath);
+        if (log.isLoggable(Level.FINER)) {
+            log.log(Level.FINER, "-----------detachFileChangeListener {0}:{1} ({2})", new Object[]{getPath(), absRootPath, System.identityHashCode(this)}); // NOI18N
         }
-        listenerAttached = false;
+
+        try {
+            if (!UNCHANGED_PROJECT_MODE) {
+                FileSystemProvider.removeRecursiveListener(this, fileSystem, absRootPath);
+            }
+        } catch(IllegalArgumentException iae) {
+            // Can happen if trying to detach twice or folder was GCed...
+            log.log(Level.INFO, "-----------detachFileChangeListener not-attached error {0}:{1} ({2})", new Object[] {getPath(), absRootPath, System.identityHashCode(this)}); // NOI18N
+        } finally {
+            listenerAttached = false;
+        }
         if (isDiskFolder() && getRoot() != null) {
             VisibilityQuery.getDefault().removeChangeListener(this);
             CndFileVisibilityQuery.getDefault().removeChangeListener(this);
             getConfigurationDescriptor().getFolderVisibilityQuery().removeChangeListener(this);
             if (log.isLoggable(Level.FINER)) {
-                log.log(Level.FINER, "-----------detachFilterListener {0}", getPath()); // NOI18N
+                log.log(Level.FINER, "-----------detachFilterListener {0}:{1} ({2})", new Object[]{getPath(), absRootPath, System.identityHashCode(this)}); // NOI18N
             }
         }
 
@@ -900,13 +909,7 @@ public class Folder implements FileChangeListener, ChangeListener {
 
         // Remove item from the dataObject's lookup
         if (isProjectFiles()) {
-            DataObject dataObject = item.getDataObject();
-            if (dataObject != null) {
-                NativeFileItemSet myNativeFileItemSet = dataObject.getLookup().lookup(NativeFileItemSet.class);
-                if (myNativeFileItemSet != null) {
-                    myNativeFileItemSet.remove(item);
-                }
-            }
+            item.onClose();
         }
 
 //	item.setFolder(null);

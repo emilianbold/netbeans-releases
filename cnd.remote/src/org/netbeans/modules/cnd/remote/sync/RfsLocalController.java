@@ -94,6 +94,8 @@ import org.openide.util.Utilities;
 
 class RfsLocalController extends NamedRunnable {
 
+    public static final int SKEW_THRESHOLD = Integer.getInteger("cnd.remote.skew.threshold", 1); // NOI18N
+
     private final RfsSyncWorker.RemoteProcessController remoteController;
     private final BufferedReader requestReader;
     private final PrintWriter responseStream;
@@ -531,8 +533,9 @@ class RfsLocalController extends NamedRunnable {
         }   
         try {
             long fsSkew = Long.parseLong(line.substring(8));
-            if (Math.abs(fsSkew) > 10) {
-                FsSkewNotifier.getInstance().notify(execEnv);
+            fsSkew /=  1000;
+            if (Math.abs(fsSkew) > SKEW_THRESHOLD) {
+                FsSkewNotifier.getInstance().notify(execEnv, fsSkew);
             }
             return skew + fsSkew;
         } catch (NumberFormatException nfe) {
@@ -911,7 +914,11 @@ class RfsLocalController extends NamedRunnable {
                         return;
                 }
             } else {
-                newState = FileState.INEXISTENT;
+                if (info != null && info.state == FileState.UNCONTROLLED) {
+                    newState = FileState.UNCONTROLLED;
+                } else {
+                    newState = FileState.INEXISTENT;
+                }            
             }
             CndUtils.assertTrue(newState == FileState.INITIAL || newState == FileState.COPIED
                     || newState == FileState.TOUCHED || newState == FileState.UNCONTROLLED

@@ -76,28 +76,15 @@ public class FingerprintScanner {
             return new ResultImpl(Kind.SystemPath, removeQuotes(line));
         } else if (line.startsWith(SYSTEM_MACRO)) {
             line = line.substring(SYSTEM_MACRO.length()).trim();
-            int sepIdx = -1; // index of space separating macro name and body
-            int parCount = 0; // parenthesis counter
-            loop:for (int i = 0; i < line.length(); ++i) {
-                switch (line.charAt(i)) {
-                    case '(':
-                        ++parCount;
-                        break;
-                    case ')':
-                        --parCount;
-                        break;
-                    case ' ':
-                        if (parCount == 0) {
-                            sepIdx = i;
-                            break loop;
-                        }
+            String[] macro = CCCCompiler.getMacro(line);
+            if (CCCCompiler.isValidMacroName(macro[0])) {
+                if (macro[1] != null) {
+                    line = macro[0] + "=" + macro[1]; // NOI18N
+                } else {
+                    line = macro[0];
                 }
+                return new ResultImpl(Kind.SystemMacro, line);
             }
-            if (sepIdx > 0) {
-                line = line.substring(0, sepIdx) + "=" + line.substring(sepIdx + 1); // NOI18N
-            }
-            return new ResultImpl(Kind.SystemMacro, line);
-
         }
         return null;
     }

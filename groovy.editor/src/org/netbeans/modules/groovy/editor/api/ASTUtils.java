@@ -478,9 +478,9 @@ public class ASTUtils {
         doc.render(new Runnable() {
             @Override
             public void run() {
-                TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, startOffset);
+                TokenSequence<GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, startOffset);
                 if (ts != null) {
-                    Token<? extends GroovyTokenId> token = ts.token();
+                    Token<GroovyTokenId> token = ts.token();
                     if (token != null && token.id() == GroovyTokenId.IDENTIFIER && TokenUtilities.equals(token.text(), identifier)) {
                         int offset = ts.offset();
                         result[0] = new OffsetRange(offset, offset + identifier.length());

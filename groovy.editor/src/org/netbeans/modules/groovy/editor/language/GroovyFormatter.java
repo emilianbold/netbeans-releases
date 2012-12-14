@@ -136,7 +136,7 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
 
     /** Compute the initial balance of brackets at the given offset. */
     private int getFormatStableStart(BaseDocument doc, int offset) {
-        TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
         if (ts == null) {
             return 0;
         }
@@ -150,7 +150,7 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
         // Look backwards to find a suitable context - a class, module or method definition
         // which we will assume is properly indented and balanced
         do {
-            Token<?extends GroovyTokenId> token = ts.token();
+            Token<GroovyTokenId> token = ts.token();
             TokenId id = token.id();
 
             if (id == GroovyTokenId.LITERAL_class) {
@@ -161,8 +161,8 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
         return ts.offset();
     }
 
-    private int getTokenBalanceDelta(TokenId id, Token<? extends GroovyTokenId> token,
-            BaseDocument doc, TokenSequence<? extends GroovyTokenId> ts, boolean includeKeywords) {
+    private int getTokenBalanceDelta(TokenId id, Token<GroovyTokenId> token,
+            BaseDocument doc, TokenSequence<GroovyTokenId> ts, boolean includeKeywords) {
         if (id == GroovyTokenId.IDENTIFIER) {
             // In some cases, the [ shows up as an identifier, for example in this expression:
             //  for k, v in sort{|a1, a2| a1[0].id2name <=> a2[0].id2name}
@@ -214,11 +214,11 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
                 TokenId id = token.id();
                 
                 if (id.primaryCategory().equals("groovy")) { // NOI18N
-                    TokenSequence<? extends GroovyTokenId> ts = t.embedded(GroovyTokenId.language());
+                    TokenSequence<GroovyTokenId> ts = t.embedded(GroovyTokenId.language());
                     ts.move(begin);
                     ts.moveNext();
                     do {
-                        Token<?extends GroovyTokenId> groovyToken = ts.token();
+                        Token<GroovyTokenId> groovyToken = ts.token();
                         if (groovyToken == null) {
                             break;
                         }
@@ -230,7 +230,7 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
 
             } while (t.moveNext() && (t.offset() < end));
         } else {
-            TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, begin);
+            TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, begin);
             if (ts == null) {
                 return 0;
             }
@@ -242,7 +242,7 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
             }
 
             do {
-                Token<?extends GroovyTokenId> token = ts.token();
+                Token<GroovyTokenId> token = ts.token();
                 TokenId id = token.id();
                 
                 balance += getTokenBalanceDelta(id, token, doc, ts, includeKeywords);
@@ -257,7 +257,7 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
             throws BadLocationException {
         int pos = Utilities.getRowFirstNonWhite(doc, offset);
         if(pos != -1) {
-            Token<?extends GroovyTokenId> token = LexUtilities.getToken(doc, pos);
+            Token<GroovyTokenId> token = LexUtilities.getToken(doc, pos);
             if(token != null) {
                 TokenId id = token.id();
                 if(id == GroovyTokenId.BLOCK_COMMENT) {
@@ -287,7 +287,7 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
             // I can't look at the first position on the line, since
             // for a string array that is indented, the indentation portion
             // is recorded as a blank identifier
-            Token<?extends GroovyTokenId> token = LexUtilities.getToken(doc, pos);
+            Token<GroovyTokenId> token = LexUtilities.getToken(doc, pos);
 
             if (token != null) {
                 TokenId id = token.id();
@@ -304,7 +304,7 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
                 
                 if (id == GroovyTokenId.STRING_END || id == GroovyTokenId.QUOTED_STRING_END) {
                     // Possibly a heredoc
-                    TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, pos);
+                    TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, pos);
                     ts.move(pos);
                     OffsetRange range = LexUtilities.findHeredocBegin(ts, token);
                     if (range != OffsetRange.NONE) {
@@ -322,7 +322,7 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
             }
         } else {
             // Empty line inside a string, documentation etc. literal?
-            Token<?extends GroovyTokenId> token = LexUtilities.getToken(doc, offset);
+            Token<GroovyTokenId> token = LexUtilities.getToken(doc, offset);
 
             if (token != null) {
                 TokenId id = token.id();
@@ -345,15 +345,15 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
     /** 
      * Get the first token on the given line. 
      */
-    private Token<? extends GroovyTokenId> getFirstToken(BaseDocument doc, int offset) throws BadLocationException {
+    private Token<GroovyTokenId> getFirstToken(BaseDocument doc, int offset) throws BadLocationException {
         int lineBegin = Utilities.getRowFirstNonWhite(doc, offset);
 
         if (lineBegin != -1) {
             if (isGspDocument) {
-                TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, lineBegin);
+                TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, lineBegin);
                 if (ts != null) {
                     ts.moveNext();
-                    Token<?extends GroovyTokenId> token = ts.token();
+                    Token<GroovyTokenId> token = ts.token();
                     while (token != null && token.id() == GroovyTokenId.WHITESPACE) {
                         if (!ts.moveNext()) {
                             return null;
@@ -374,7 +374,7 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
         int lineBegin = Utilities.getRowFirstNonWhite(doc, offset);
 
         if (lineBegin != -1) {
-            Token<?extends GroovyTokenId> token = getFirstToken(doc, offset);
+            Token<GroovyTokenId> token = getFirstToken(doc, offset);
             
             if (token == null) {
                 return false;
@@ -400,7 +400,7 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
         }
 
         
-        TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
 
         if (ts == null) {
             return false;
@@ -411,7 +411,7 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
             return false;
         }
 
-        Token<?extends GroovyTokenId> token = ts.token();
+        Token<GroovyTokenId> token = ts.token();
 
         if (token != null) {
             TokenId id = token.id();

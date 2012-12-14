@@ -82,6 +82,7 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
     private WebProjectProperties uiProperties;
     private List<WebModuleExtender> newExtenders = new LinkedList<WebModuleExtender>();
     private List<WebFrameworkProvider> usedFrameworks = new LinkedList<WebFrameworkProvider>();
+    private List<String> addedFrameworks = new LinkedList<String>();
     private Map<WebFrameworkProvider, WebModuleExtender> extenders = new IdentityHashMap<WebFrameworkProvider, WebModuleExtender>();
     private ExtenderController controller = ExtenderController.create();
     private boolean initialized = false;
@@ -237,7 +238,6 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         inner.add(panel, gridBagConstraints);
  
-        List<String> addedFrameworks = new LinkedList<String>();
         DialogDescriptor desc = new DialogDescriptor(inner, NbBundle.getMessage(CustomizerFrameworks.class, "LBL_SelectWebExtension_DialogTitle")); //NOI18N
         Object res = DialogDisplayer.getDefault().notify(desc);
         if (res.equals(NotifyDescriptor.YES_OPTION)) {

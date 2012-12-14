@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.completion.cplusplus.ext;
 import org.netbeans.api.lexer.TokenId;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
@@ -88,6 +89,13 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
 
     // isMacro callback
     private MacroCallback macroCallback = null;
+    
+    private List<OffsetableToken> lookaheadTokens = new ArrayList<OffsetableToken>();
+    private int lookaheadTokensParensLevel = 0;
+    private int lookaheadTokensBracketsLevel = 0;
+    private int lookaheadTokensBracesLevel = 0;
+    private int lookaheadTokensLtgtsLevel = 0;
+    
     
     CsmCompletionTokenProcessor(int endScanOffset, int lastSeparatorOffset) {
         this.endScanOffset = endScanOffset;
@@ -275,7 +283,179 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
         exp.setType(buf.toString());
         exp.setExpID(TYPE);
     }
+    
+    @Override
+    public boolean token(Token<TokenId> token, int tokenOffset) {
+        if(!(token.id() instanceof CppTokenId)) {
+            return false;
+        }
+        if (inPP == null) { // not yet initialized
+            inPP = (token.id() == CppTokenId.PREPROCESSOR_DIRECTIVE);
+        }
+        if (token.id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
+            return inPP;
+        }
+        
+        lookahead(token, tokenOffset);
+        return false;
+    }
+    
+    private void lookahead(Token<TokenId> token, int tokenOffset) {
+        boolean lookahead = false;
+        if(isTemplateAmbiguity(token)) {
+            if(isLookaheadNeeded(token)) {
+                lookahead = true;
+                lookaheadTokens.add(new OffsetableToken(token, tokenOffset, isMacroExpansion(), inPP));
+                switch ((CppTokenId) token.id()) {
+                    case LT:
+                        lookaheadTokensLtgtsLevel++;
+                        break;
+                    case GT:
+                        lookaheadTokensLtgtsLevel--;
+                        break;
+                    case LPAREN:
+                        lookaheadTokensParensLevel++;
+                        break;
+                    case RPAREN:
+                        lookaheadTokensParensLevel--;
+                        break;
+                    case LBRACKET:
+                        lookaheadTokensBracketsLevel++;
+                        break;
+                    case RBRACKET:
+                        lookaheadTokensBracketsLevel--;
+                        break;
+                    case LBRACE:
+                        lookaheadTokensBracesLevel++;
+                        break;
+                    case RBRACE:
+                        lookaheadTokensBracesLevel--;
+                        break;
+                }            
+            }
+        } 
+        if(!lookahead) {
+            if(lookaheadTokens.isEmpty()) {
+                tokenImpl(token, tokenOffset, isMacroExpansion());                
+            } else {
+                Boolean oldInPP = inPP;
+                for (OffsetableToken offsetableToken : lookaheadTokens) {
+                    inPP = offsetableToken.inPP;
+                    tokenImpl(offsetableToken.token, offsetableToken.offset, offsetableToken.macro);
+                }
+                lookaheadTokens.clear();                
+                tokenImpl(token, tokenOffset, isMacroExpansion());
+                inPP = oldInPP;
+                lookaheadTokensParensLevel = 0;
+                lookaheadTokensBracketsLevel = 0;
+                lookaheadTokensBracesLevel = 0;
+                lookaheadTokensLtgtsLevel = 0;
+            }
+        }
+    }
+    
+    private boolean isLookaheadNeeded(Token<TokenId> token) {
+        int tempLookaheadTokensParensLevel = lookaheadTokensParensLevel;
+        int tempLookaheadTokensBracketsLevel = lookaheadTokensBracketsLevel;
+        int tempLookaheadTokensBracesLevel = lookaheadTokensBracesLevel;
+        int tempLookaheadTokensLtgtsLevel = lookaheadTokensLtgtsLevel;
+        
+        switch ((CppTokenId) token.id()) {
+            case LT:
+                tempLookaheadTokensLtgtsLevel++;
+                break;
+            case GT:
+                tempLookaheadTokensLtgtsLevel--;
+                break;
+            case LPAREN:
+                tempLookaheadTokensParensLevel++;
+                break;
+            case RPAREN:
+                tempLookaheadTokensParensLevel--;
+                break;
+            case LBRACKET:
+                tempLookaheadTokensBracketsLevel++;
+                break;
+            case RBRACKET:
+                tempLookaheadTokensBracketsLevel--;
+                break;
+            case LBRACE:
+                tempLookaheadTokensBracesLevel++;
+                break;
+            case RBRACE:
+                tempLookaheadTokensBracesLevel--;
+                break;
+        }        
+        if (!lookaheadTokens.isEmpty()) {
+            return !(tempLookaheadTokensParensLevel == 0 && tempLookaheadTokensBracketsLevel == 0 && tempLookaheadTokensBracesLevel == 0 && tempLookaheadTokensLtgtsLevel == 0);
+        } else {
+            return true;
+        }
+    }
+    
+    private boolean isTemplateAmbiguity(Token<TokenId> token) {
+        if(supportTemplates && (token.id() == CppTokenId.LT || 
+                (!lookaheadTokens.isEmpty() && lookaheadTokens.get(0).token.id() == CppTokenId.LT))) {
+            CsmCompletionExpression top = peekExp();
+            if(top != null) {
+                // from rule about generic types in tokenImpl
+                switch(top.getExpID()) {
+                    case VARIABLE:
+                    case DOT:
+                    case ARROW:
+                    case SCOPE:
+                    case MEMBER_POINTER:
+                        return true;
 
+                    default:
+                        break;   
+                }
+            }
+        }    
+        return false;
+    }
+    
+    private OffsetableToken isSupportTemplates() {
+        LinkedList<CppTokenId> stack = new LinkedList<CppTokenId>();
+        for (OffsetableToken offsetableToken : lookaheadTokens) {
+            switch((CppTokenId)offsetableToken.token.id()) {
+                case LT:
+                    stack.push(CppTokenId.LT);
+                    break;
+                case GT:
+                    if(!stack.isEmpty() && stack.pop() != CppTokenId.LT) {
+                        return offsetableToken;
+                    }
+                    break;
+                case LPAREN:
+                    stack.push(CppTokenId.LPAREN);
+                    break;
+                case RPAREN:
+                    if(!stack.isEmpty() && stack.pop() != CppTokenId.LPAREN) {
+                        return offsetableToken;
+                    }
+                    break;
+                case LBRACKET:
+                    stack.push(CppTokenId.LBRACKET);
+                    break;
+                case RBRACKET:
+                    if(!stack.isEmpty() && stack.pop() != CppTokenId.LBRACKET) {
+                        return offsetableToken;
+                    }
+                    break;
+                case LBRACE:
+                    stack.push(CppTokenId.LBRACE);
+                    break;
+                case RBRACE:
+                    if(!stack.isEmpty() && stack.pop() != CppTokenId.LBRACE) {
+                        return offsetableToken;
+                    }
+                    break;
+            }
+        }
+        return null;
+    }
+    
     /** Check whether there can be any joining performed
      * for current expressions on the stack.
      * @param tokenID tokenID of the current token
@@ -436,9 +616,12 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                         case SCOPE_OPEN:
                             if (isSeparatorOrOperator(tokenID)) {
                                 switch (tokenID) {
-                                    case LT:
                                     case LPAREN:
                                         break;
+                                    case LT:
+                                        if(supportTemplates) {
+                                            break;
+                                        }
                                     default:
                                         popExp();
                                         top2.addParameter(top);
@@ -647,21 +830,11 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
     }
 
     @SuppressWarnings("fallthrough")
-    @Override
-    public boolean token(Token<TokenId> token, int tokenOffset) {
-        if(!(token.id() instanceof CppTokenId)) {
-            return false;
-        }
-        if (inPP == null) { // not yet initialized
-            inPP = (token.id() == CppTokenId.PREPROCESSOR_DIRECTIVE);
-        }
-        if (token.id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
-            return inPP;
-        }
+    private void tokenImpl(Token<TokenId> token, int tokenOffset, boolean macro) {
         int tokenLen = token.length();
         tokenOffset += bufferOffsetDelta;
         CppTokenId tokenID = (CppTokenId)token.id();
-        if (!isMacroExpansion() && tokenID != null) {
+        if (!macro && tokenID != null) {
             String category = tokenID.primaryCategory();
             if (CppTokenId.KEYWORD_CATEGORY.equals(category) || CppTokenId.KEYWORD_DIRECTIVE_CATEGORY.equals(category)) {
                 if (tokenOffset + tokenLen == endScanOffset) {
@@ -1816,6 +1989,13 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                             top3.addParameter(top2);
                                             top3.setExpID(CONVERSION);
                                             addTokenTo(top3);
+                                        } else if(getValidExpID(top3) == METHOD_OPEN) {
+                                            popExp();
+                                            popExp();
+                                            top3.addParameter(top);
+                                            top = top3;
+                                            mtd = true;
+                                            break;
                                         }
                                         break;
                                     case PARENTHESIS_OPEN:
@@ -2257,14 +2437,11 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                 pushExp(createTokenExp(VARIABLE));
                 errorState = false;
             } else {
-                if(!isMacroExpansion()) {
+                if(!macro) {
                     lastSeparatorOffset = tokenOffset;
                 }
             }
         }
-
-//        return !stopped;
-        return false;
     }
     private int lastSeparatorOffset = -1;
     private Boolean inPP;
@@ -2280,6 +2457,24 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
     @SuppressWarnings("fallthrough")
     @Override
     public void end(int offset, int lastTokenOffset) {
+        boolean oldSupportTemplates = supportTemplates;
+        Boolean oldInPP = inPP;
+        int lookaheadSize = lookaheadTokens.size();
+        OffsetableToken disableTillToken = isSupportTemplates();
+        supportTemplates = disableTillToken == null;
+        for (int i = 0; i < lookaheadSize; i++) {
+            OffsetableToken currentToken = lookaheadTokens.remove(0);
+            inPP = currentToken.inPP;
+            tokenImpl(currentToken.token, currentToken.offset, currentToken.macro);
+            if(currentToken == disableTillToken) {
+                disableTillToken = isSupportTemplates();
+                supportTemplates = disableTillToken == null;
+            }
+        }
+        lookaheadTokens.clear();
+        supportTemplates = oldSupportTemplates;
+        inPP = oldInPP;
+
         if (lastValidTokenID != null) {
             // if space or comment occurs as last token
             // add empty variable to save last position
@@ -2567,5 +2762,25 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
     public boolean isStopped() {
         return false;
     }
+    
+    private class OffsetableToken {
+        Token<TokenId> token;
+        int offset;
+        boolean macro;
+        Boolean inPP;
+
+        public OffsetableToken(Token<TokenId> token, int offset, boolean macro, Boolean inPP) {
+            this.token = token;
+            this.offset = offset;
+            this.macro = macro;
+            this.inPP = inPP;
+        }
+
+        @Override
+        public String toString() {
+            return token.id().toString();
+        }
+    }
+    
 }
 

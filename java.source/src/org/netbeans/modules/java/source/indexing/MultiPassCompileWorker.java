@@ -45,6 +45,7 @@ package org.netbeans.modules.java.source.indexing;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.code.Types;
@@ -420,42 +421,53 @@ final class MultiPassCompileWorker extends CompileWorker {
 
     private void dumpSymFiles(JavaFileManager jfm, JavacTaskImpl jti, Set<File> alreadyCreated) throws IOException {
         if (jti != null) {
-            final Types types = Types.instance(jti.getContext());
-            final Enter enter = Enter.instance(jti.getContext());
-            class ScanNested extends TreeScanner {
-                private Env<AttrContext> env;
-                private Set<Env<AttrContext>> dependencies = new LinkedHashSet<Env<AttrContext>>();
-                public ScanNested(Env<AttrContext> env) {
-                    this.env = env;
-                }
-                @Override
-                public void visitClassDef(JCClassDecl node) {
-                    if (node.sym != null) {
-                        Type st = types.supertype(node.sym.type);
-                        if (st.hasTag(TypeTag.CLASS)) {
-                            ClassSymbol c = st.tsym.outermostClass();
-                            Env<AttrContext> stEnv = enter.getEnv(c);
-                            if (stEnv != null && env != stEnv) {
-                                if (dependencies.add(stEnv))
-                                    scan(stEnv.tree);
+            checkForMemLow = false;
+            try {
+                final Types types = Types.instance(jti.getContext());
+                final Enter enter = Enter.instance(jti.getContext());
+                final Symtab syms = Symtab.instance(jti.getContext());
+                class ScanNested extends TreeScanner {
+                    private Env<AttrContext> env;
+                    private Set<Env<AttrContext>> checked = new HashSet<Env<AttrContext>>();
+                    private List<Env<AttrContext>> dependencies = new LinkedList<Env<AttrContext>>();
+                    public ScanNested(Env<AttrContext> env) {
+                        this.env = env;
+                    }
+                    @Override
+                    public void visitClassDef(JCClassDecl node) {
+                        if (node.sym != null) {
+                            Type st = types.supertype(node.sym.type);
+                            if (st.hasTag(TypeTag.CLASS)) {
+                                ClassSymbol c = st.tsym.outermostClass();
+                                Env<AttrContext> stEnv = enter.getEnv(c);
+                                if (stEnv != null && env != stEnv) {
+                                    if (checked.add(stEnv)) {
+                                        scan(stEnv.tree);
+                                        if (TreeLoader.pruneTree(stEnv.tree, syms))
+                                            dependencies.add(stEnv);
+                                    }
+                                }
                             }
                         }
+                        super.visitClassDef(node);
                     }
-                    super.visitClassDef(node);
                 }
-            }
-            final Set<Env<AttrContext>> processedEnvs = new HashSet<Env<AttrContext>>();
-            for (Env<AttrContext> env : jti.getTodo()) {
-                if (processedEnvs.add(env)) {
-                    ScanNested scanner = new ScanNested(env);
-                    scanner.scan(env.tree);
-                    for (Env<AttrContext> dep: scanner.dependencies) {
-                        if (processedEnvs.add(dep)) {
-                            dumpSymFile(jfm, jti, dep.enclClass.sym, alreadyCreated);
+                final Set<Env<AttrContext>> processedEnvs = new HashSet<Env<AttrContext>>();
+                for (Env<AttrContext> env : jti.getTodo()) {
+                    if (processedEnvs.add(env)) {
+                        ScanNested scanner = new ScanNested(env);
+                        scanner.scan(env.tree);
+                        for (Env<AttrContext> dep: scanner.dependencies) {
+                            if (processedEnvs.add(dep)) {
+                                dumpSymFile(jfm, jti, dep.enclClass.sym, alreadyCreated);
+                            }
                         }
+                        if (TreeLoader.pruneTree(env.tree, syms))
+                            dumpSymFile(jfm, jti, env.enclClass.sym, alreadyCreated);
                     }
-                    dumpSymFile(jfm, jti, env.enclClass.sym, alreadyCreated);
                 }
+            } finally {
+                checkForMemLow = true;
             }
         }
     }
@@ -473,12 +485,7 @@ final class MultiPassCompileWorker extends CompileWorker {
         JavaFileObject file = jfm.getJavaFileForOutput(StandardLocation.CLASS_OUTPUT,
                 cs.flatname.toString(), JavaFileObject.Kind.CLASS, cs.sourcefile);
         if (file instanceof FileObjects.FileBase && !alreadyCreated.contains(((FileObjects.FileBase)file).getFile())) {
-            checkForMemLow = false;
-            try {
-                TreeLoader.dumpSymFile(jfm, jti, cs);
-            } finally {
-                checkForMemLow = true;
-            }
+            TreeLoader.dumpSymFile(jfm, jti, cs);
         }
     }
 }

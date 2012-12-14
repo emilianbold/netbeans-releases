@@ -158,7 +158,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                 return ExtensionManager.ExtensitionStatus.MISSING;
             }
             JSONObject settings = (JSONObject)extensions.get("settings");
-            if (extensions == null) {
+            if (settings == null) {
                 return ExtensionManager.ExtensitionStatus.MISSING;
             }
             for (Object item : settings.entrySet()) {
