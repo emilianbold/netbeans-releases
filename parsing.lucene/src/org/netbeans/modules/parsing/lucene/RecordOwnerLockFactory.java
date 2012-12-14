@@ -44,6 +44,7 @@ package org.netbeans.modules.parsing.lucene;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -87,12 +88,21 @@ class RecordOwnerLockFactory extends NativeFSLockFactory {
      * @throws IOException if lock(s) cannot be freed.
      */
     synchronized void forceRemoveLock() throws IOException {
-        try {
-            for (RecordOwnerLock l : locked) {
-                l.forceRemoveLock();
+        final Collection<? extends RecordOwnerLock> safeIt = new ArrayList<RecordOwnerLock>(locked);
+        Throwable cause = null;
+        for (RecordOwnerLock l : safeIt) {
+            try {
+                l.release();
+            } catch (Throwable t) {
+                if (t instanceof ThreadDeath) {
+                    throw (ThreadDeath) t;
+                } else if (cause == null) {
+                    cause = t;
+                }
             }
-        } finally {
-            locked.clear();
+        }
+        if (cause != null) {
+            throw new IOException(cause);
         }
     }
     
@@ -160,27 +170,5 @@ class RecordOwnerLockFactory extends NativeFSLockFactory {
         public boolean isLocked() throws IOException {
             return delegate.isLocked();
         }
-
-        private void forceRemoveLock() throws IOException {
-            try {
-                final Class<? extends Lock> delegateClass = delegate.getClass();
-                final Field lockPathField = delegateClass.getDeclaredField("path"); //NOI18N
-                lockPathField.setAccessible(true);
-                final File path = (File) lockPathField.get(delegate);
-                final Field lockHeldField = delegateClass.getDeclaredField("LOCK_HELD"); //NOI18N
-                lockHeldField.setAccessible(true);
-                Collection lockHeld = (Collection) lockHeldField.get(null);
-                synchronized (lockHeld) {
-                    lockHeld.remove(path.getCanonicalPath());
-                }
-                path.delete();
-            } catch (NoSuchFieldException nfe) {
-                throw new IOException(nfe);
-            } catch (IllegalAccessException iae) {
-                throw new IOException(iae);
-            }
-        }
-    
-    }
-    
+    }    
 }
