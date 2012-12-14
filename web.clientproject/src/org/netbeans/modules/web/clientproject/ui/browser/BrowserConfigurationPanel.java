@@ -53,15 +53,15 @@ import org.netbeans.modules.web.clientproject.browser.ClientProjectConfiguration
  */
 public class BrowserConfigurationPanel extends javax.swing.JPanel {
 
-    private boolean integration;
+    private ClientProjectConfigurationImpl.BrowserIntegration integration;
     
     /**
      * Creates new form BrowserConfigurationPanel
      */
     public BrowserConfigurationPanel(ClientSideProject project, ClientProjectConfigurationImpl cfg, WebBrowser browser) {
         initComponents();
-        integration = cfg.getBrowserIntegration() == Boolean.TRUE;
-        if (cfg.getBrowserIntegration() != Boolean.TRUE) {
+        integration = cfg.getBrowserIntegration();
+        if (integration != ClientProjectConfigurationImpl.BrowserIntegration.ENABLED) {
             jAutoRefreshCheckBox.setVisible(false);
             jHighlightSelectionCheckBox.setVisible(false);
         }
@@ -121,7 +121,7 @@ public class BrowserConfigurationPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     private void updateEnablement() {
-        jAutoRefreshCheckBox.setEnabled(integration);
-        jHighlightSelectionCheckBox.setEnabled(integration);
+        jAutoRefreshCheckBox.setEnabled(integration == ClientProjectConfigurationImpl.BrowserIntegration.ENABLED);
+        jHighlightSelectionCheckBox.setEnabled(integration == ClientProjectConfigurationImpl.BrowserIntegration.ENABLED);
     }
 }
