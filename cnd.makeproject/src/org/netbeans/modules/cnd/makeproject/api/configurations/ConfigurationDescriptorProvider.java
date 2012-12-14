@@ -440,8 +440,7 @@ public class ConfigurationDescriptorProvider {
             boolean first = true;
             for (String path : new String[]{
                         "nbproject/configurations.xml", //NOI18N
-                        "nbproject/private/configurations.xml"}) {
-                //NOI18N
+                        "nbproject/private/configurations.xml"}) { //NOI18N
                 FileObject fo = projectDirectory.getFileObject(path);
                 if (fo != null) {
                     // We have to store tracked files somewhere.
