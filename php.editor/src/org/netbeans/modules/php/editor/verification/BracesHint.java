@@ -52,7 +52,6 @@ import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTError;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
@@ -330,11 +329,6 @@ public abstract class BracesHint extends AbstractHint {
             this.fileObject = fileObject;
             this.baseDocument = baseDocument;
             this.hints = new LinkedList<Hint>();
-        }
-
-        @Override
-        public void visit(ASTError astError) {
-            super.visit(astError);
         }
 
         protected void addHint(Statement enclosingStatement, Statement node, String description) {
