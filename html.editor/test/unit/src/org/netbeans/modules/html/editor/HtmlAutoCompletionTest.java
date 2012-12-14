@@ -264,6 +264,24 @@ public class HtmlAutoCompletionTest extends TestBase {
         //do not autocomplete in this case
         ctx.assertDocumentTextEquals("<a x=\"|test\"");
         
+        //different quotes
+        ctx = new Context(new HtmlKit(), "<a x=\"|test\"");
+        ctx.typeChar('\b');
+        ctx.assertDocumentTextEquals("<a x=|test\"");
+        ctx.typeChar('\'');
+        
+        //do not autocomplete in this case
+        ctx.assertDocumentTextEquals("<a x=\'|test\"");
+
+        //no closing quote
+        ctx = new Context(new HtmlKit(), "<a x=\"|test");
+        ctx.typeChar('\b');
+        ctx.assertDocumentTextEquals("<a x=|test");
+        ctx.typeChar('\'');
+        
+        //do not autocomplete in this case
+        ctx.assertDocumentTextEquals("<a x=\'|test");
+        
     }
     
     public void testInClassDoNotAutocompleteQuoteInValue() throws InterruptedException, InvocationTargetException, Exception {
@@ -274,6 +292,24 @@ public class HtmlAutoCompletionTest extends TestBase {
         
         //do not autocomplete in this case
         ctx.assertDocumentTextEquals("<a class=\"|test\"");
+        
+        //different quotes
+        ctx = new Context(new HtmlKit(), "<a class=\"|test\"");
+        ctx.typeChar('\b');
+        ctx.assertDocumentTextEquals("<a class=|test\"");
+        ctx.typeChar('\'');
+        
+        //do not autocomplete in this case
+        ctx.assertDocumentTextEquals("<a class=\'|test\"");
+        
+        //no closing quote
+        ctx = new Context(new HtmlKit(), "<a class=\"|test");
+        ctx.typeChar('\b');
+        ctx.assertDocumentTextEquals("<a class=|test");
+        ctx.typeChar('\'');
+        
+        //do not autocomplete in this case
+        ctx.assertDocumentTextEquals("<a class=\'|test");
         
     }
     
