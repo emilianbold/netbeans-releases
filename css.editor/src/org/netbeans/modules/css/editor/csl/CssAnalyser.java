@@ -154,6 +154,12 @@ public class CssAnalyser implements ErrorsProvider {
                                         if(isNonCss21CompatiblePropertyValue(unexpectedToken.toString())) {
                                             return false;
                                         }
+                                        
+                                        CharSequence unexpectedTokenImg = unexpectedToken.image();
+                                        if(Css3Utils.isVendorSpecificPropertyValue(file, unexpectedTokenImg)) {
+                                            //the unexpected token is a vendor property value, ignore
+                                            return false;
+                                        }
 
                                         if (errorMsg == null) {
                                             errorMsg = NbBundle.getMessage(CssAnalyser.class, INVALID_PROPERTY_VALUE, unexpectedToken.image().toString());

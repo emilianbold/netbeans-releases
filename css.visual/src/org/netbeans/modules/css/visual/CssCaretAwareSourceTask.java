@@ -217,7 +217,10 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserRes
                                 //end and there're only WS between,
                                 //activate the rule
                                 CharSequence source = snapshot.getText();
-                                for(int i = astOffset - 1; i >= 0; i--) {
+                                
+                                //weird - looks like parsing.api bug - the astoffset may point beond the snapshot's length?!?!?
+                                int adjustedAstOffset = Math.min(source.length(), astOffset);
+                                for(int i = adjustedAstOffset - 1; i >= 0; i--) {
                                     if(i == rule.getEndOffset()) {
                                         ruleRef.set(rule);
                                         return ;
