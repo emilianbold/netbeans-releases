@@ -439,8 +439,8 @@ public class ConfigurationDescriptorProvider {
             trackedConfigFiles.clear();
             boolean first = true;
             for (String path : new String[]{
-                        "nbproject/configurations.xml", //NOI18N
-                        "nbproject/private/configurations.xml"}) { //NOI18N
+                        MakeConfiguration.NBPROJECT_FOLDER + '/' + MakeConfiguration.CONFIGURATIONS_XML, //NOI18N
+                        MakeConfiguration.NBPROJECT_PRIVATE_FOLDER + '/' + MakeConfiguration.CONFIGURATIONS_XML}) { //NOI18N
                 FileObject fo = projectDirectory.getFileObject(path);
                 if (fo != null) {
                     // We have to store tracked files somewhere.
