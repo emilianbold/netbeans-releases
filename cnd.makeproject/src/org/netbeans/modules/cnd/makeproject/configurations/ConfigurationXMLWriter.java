@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.SmartOutputStream;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -77,10 +78,10 @@ public class ConfigurationXMLWriter extends XMLDocWriter {
 
         encoder = new ConfigurationXMLCodec(tag, null, projectDescriptor, null);
         assert projectDescriptor.getState() != State.READING;
-        write("nbproject/configurations.xml"); // NOI18N
+        write(MakeConfiguration.NBPROJECT_FOLDER + '/' + MakeConfiguration.CONFIGURATIONS_XML); // NOI18N
 
         encoder = new AuxConfigurationXMLCodec(tag, projectDescriptor);
-        write("nbproject/private/configurations.xml"); // NOI18N
+        write(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER + '/' + MakeConfiguration.CONFIGURATIONS_XML); // NOI18N
     }
 
     /*

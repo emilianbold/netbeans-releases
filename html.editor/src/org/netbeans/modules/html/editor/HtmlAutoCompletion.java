@@ -70,6 +70,10 @@ import org.openide.util.Exceptions;
  */
 public class HtmlAutoCompletion {
 
+    /* test */ static boolean adjust_quote_type_after_eq = true; //can be disabled in unit tests
+    
+    /* test */ static char default_quote_char_after_eq = '"'; //TODO expose in UI options
+    
     private static DocumentInsertIgnore insertIgnore;
 
     /**
@@ -193,10 +197,10 @@ public class HtmlAutoCompletion {
             if (HtmlPreferences.autocompleteQuotesAfterEqualSign()) {
                 completeQuotes(doc, dotPos, caret);
             }
-        } else if (ch == '\'') { //NOI18N
+        } else if (ch == '\'' || ch == '"') { //NOI18N
             // #189561
             if (HtmlPreferences.autocompleteQuotesAfterEqualSign()) {
-                transformQuotesToApostrophes(doc, dotPos, caret);
+                transformQuotesType(doc, dotPos, caret, ch);
             }
         } else if (ch == '{') { //NOI18N
             //user has pressed quotation mark
@@ -339,16 +343,11 @@ public class HtmlAutoCompletion {
                 }
 
             } else if (token.id() == HTMLTokenId.OPERATOR) {
-                //check if the next token isn't a value closed already by the same quote
+                //check if the next token is a value 
                 if(ts.moveNext()) {
                     Token<HTMLTokenId> next = ts.token();
                     if(isHtmlValueToken(next)) {
-                        if(next.length() > 0) {
-                            char last = next.text().charAt(next.length() - 1);
-                            if(last == qchar) {
-                                return false; //ignore
-                            }
-                        }
+                        return false; //ignore
                     }
                 }
                 
@@ -389,7 +388,8 @@ public class HtmlAutoCompletion {
         int dotPosAfterTypedChar = dotPos + 1;
         if (token != null && token.id() == HTMLTokenId.OPERATOR) {
             try {
-                doc.insertString(dotPosAfterTypedChar, "\"\"", null); // NOI18N
+                String insert = new StringBuilder().append(default_quote_char_after_eq).append(default_quote_char_after_eq).toString();
+                doc.insertString(dotPosAfterTypedChar, insert , null); // NOI18N
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -397,7 +397,7 @@ public class HtmlAutoCompletion {
         }
     }
 
-    private static void transformQuotesToApostrophes(final BaseDocument doc, final int dotPos, final Caret caret) {
+    private static void transformQuotesType(final BaseDocument doc, final int dotPos, final Caret caret, char expected) {
         TokenSequence<HTMLTokenId> ts = LexUtilities.getTokenSequence((BaseDocument) doc, dotPos, HTMLTokenId.language());
         if (ts == null) {
             return; //no html ts at the caret position
@@ -410,16 +410,23 @@ public class HtmlAutoCompletion {
         Token<HTMLTokenId> token = ts.token();
 
         int dotPosBeforeTypedChar = dotPos - 1;
-        final String text = token.text().toString();
-        if (text.contentEquals("\"'\"")) { // NOI18N
+        String text = token.text().toString();
+        
+        String pattern = expected == '\'' ? "\"'\"" : "'\"'";
+        if (text.contentEquals(pattern)) { // NOI18N
             try {
                 doc.remove(dotPosBeforeTypedChar, 1);
-                doc.insertString(dotPosBeforeTypedChar, "\'", null); // NOI18N
+                doc.insertString(dotPosBeforeTypedChar, "" + expected, null); // NOI18N
                 doc.remove(dotPosBeforeTypedChar + 2, 1);
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
             caret.setDot(dotPosBeforeTypedChar + 1);
+        }
+        
+        //remember that user changed the default type so next time we'll autocomplete the wanted one
+        if(adjust_quote_type_after_eq) {
+            default_quote_char_after_eq = expected;
         }
     }
 
