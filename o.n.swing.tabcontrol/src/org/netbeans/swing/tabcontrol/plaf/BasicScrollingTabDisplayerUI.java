@@ -192,6 +192,7 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
             btnScrollLeft.setBounds( width, 0, prefDim.width, prefDim.height );
             width += prefDim.width;
             height = prefDim.height;
+            width += getScrollButtonPadding();
 
             //create scroll-right button
             a = scroll().getForwardAction();
@@ -234,6 +235,10 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
             controlButtons = buttonsPanel;
         }
         return controlButtons;
+    }
+
+    int getScrollButtonPadding() {
+        return 0;
     }
     
     @Override

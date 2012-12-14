@@ -114,10 +114,20 @@ public final class CloseButtonFactory{
         return isWindowsLaF() && (isWindowsVista() || isWindows7()) && isWindowsXPLaF();
     }
 
+    private static boolean isWindows8LaF() {
+        return isWindowsLaF() && isWindows8() && isWindowsXPLaF();
+    }
+
     private static boolean isWindowsVista() {
         String osName = System.getProperty ("os.name");
         return osName.indexOf("Vista") >= 0
             || (osName.equals( "Windows NT (unknown)" ) && "6.0".equals( System.getProperty("os.version") ));
+    }
+
+    private static boolean isWindows8() {
+        String osName = System.getProperty ("os.name");
+        return osName.indexOf("Windows 8") >= 0
+            || (osName.equals( "Windows NT (unknown)" ) && "6.2".equals( System.getProperty("os.version") ));
     }
 
     private static boolean isWindows7() {
@@ -147,7 +157,9 @@ public final class CloseButtonFactory{
 
     private static Image getCloseTabImage() {
         if( null == closeTabImage ) {
-            if( isWindowsVistaLaF() ) {
+            if( isWindows8LaF() ) {
+                closeTabImage = ImageUtilities.loadImage("org/openide/awt/resources/win8_bigclose_enabled.png"); // NOI18N
+            } else if( isWindowsVistaLaF() ) {
                 closeTabImage = ImageUtilities.loadImage("org/openide/awt/resources/vista_close_enabled.png"); // NOI18N
             } else if( isWindowsXPLaF() ) {
                 closeTabImage = ImageUtilities.loadImage("org/openide/awt/resources/xp_close_enabled.png"); // NOI18N
@@ -166,7 +178,9 @@ public final class CloseButtonFactory{
 
     private static Image getCloseTabPressedImage() {
         if( null == closeTabPressedImage ) {
-            if( isWindowsVistaLaF() ) {
+            if( isWindows8LaF() ) {
+                closeTabPressedImage = ImageUtilities.loadImage("org/openide/awt/resources/win8_bigclose_pressed.png"); // NOI18N
+            } else if( isWindowsVistaLaF() ) {
                 closeTabPressedImage = ImageUtilities.loadImage("org/openide/awt/resources/vista_close_pressed.png"); // NOI18N
             } else if( isWindowsXPLaF() ) {
                 closeTabPressedImage = ImageUtilities.loadImage("org/openide/awt/resources/xp_close_pressed.png"); // NOI18N
@@ -185,7 +199,9 @@ public final class CloseButtonFactory{
 
     private static Image getCloseTabRolloverImage() {
         if( null == closeTabMouseOverImage ) {
-            if( isWindowsVistaLaF() ) {
+            if( isWindows8LaF() ) {
+                closeTabMouseOverImage = ImageUtilities.loadImage("org/openide/awt/resources/win8_bigclose_rollover.png"); // NOI18N
+            } else if( isWindowsVistaLaF() ) {
                 closeTabMouseOverImage = ImageUtilities.loadImage("org/openide/awt/resources/vista_close_rollover.png"); // NOI18N
             } else if( isWindowsXPLaF() ) {
                 closeTabMouseOverImage = ImageUtilities.loadImage("org/openide/awt/resources/xp_close_rollover.png"); // NOI18N
@@ -205,7 +221,9 @@ public final class CloseButtonFactory{
 
     private static Image getBigCloseTabImage() {
         if( null == bigCloseTabImage ) {
-            if( isWindowsVistaLaF() ) {
+            if( isWindows8LaF() ) {
+                bigCloseTabImage = ImageUtilities.loadImage("org/openide/awt/resources/win8_bigclose_enabled.png"); // NOI18N
+            } else if( isWindowsVistaLaF() ) {
                 bigCloseTabImage = ImageUtilities.loadImage("org/openide/awt/resources/vista_bigclose_enabled.png"); // NOI18N
             } else if( isWindowsXPLaF() ) {
                 bigCloseTabImage = ImageUtilities.loadImage("org/openide/awt/resources/xp_bigclose_enabled.png"); // NOI18N
@@ -224,7 +242,9 @@ public final class CloseButtonFactory{
 
     private static  Image getBigCloseTabPressedImage() {
         if( null == bigCloseTabPressedImage ) {
-            if( isWindowsVistaLaF() ) {
+            if( isWindows8LaF() ) {
+                bigCloseTabPressedImage = ImageUtilities.loadImage("org/openide/awt/resources/win8_bigclose_pressed.png"); // NOI18N
+            } else if( isWindowsVistaLaF() ) {
                 bigCloseTabPressedImage = ImageUtilities.loadImage("org/openide/awt/resources/vista_bigclose_pressed.png"); // NOI18N
             } else if( isWindowsXPLaF() ) {
                 bigCloseTabPressedImage = ImageUtilities.loadImage("org/openide/awt/resources/xp_bigclose_pressed.png"); // NOI18N
@@ -243,7 +263,9 @@ public final class CloseButtonFactory{
 
     private static Image getBigCloseTabRolloverImage() {
         if( null == bigCloseTabMouseOverImage ) {
-            if( isWindowsVistaLaF() ) {
+            if( isWindows8LaF() ) {
+                bigCloseTabMouseOverImage = ImageUtilities.loadImage("org/openide/awt/resources/win8_bigclose_rollover.png"); // NOI18N
+            } else if( isWindowsVistaLaF() ) {
                 bigCloseTabMouseOverImage = ImageUtilities.loadImage("org/openide/awt/resources/vista_bigclose_rollover.png"); // NOI18N
             } else if( isWindowsXPLaF() ) {
                 bigCloseTabMouseOverImage = ImageUtilities.loadImage("org/openide/awt/resources/xp_bigclose_rollover.png"); // NOI18N
