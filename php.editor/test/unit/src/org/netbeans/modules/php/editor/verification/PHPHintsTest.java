@@ -187,4 +187,8 @@ public class PHPHintsTest extends PHPHintsTestBase {
         checkHintsInStartEndFile(new SuperglobalsHint.EnvSuperglobalHint(), "testEnvSuperglobalsHint.php");
     }
 
+    public void testEmptyStatementHint() throws Exception {
+        checkHintsInStartEndFile(new EmptyStatementHint(), "testEmptyStatementHint.php");
+    }
+
 }
