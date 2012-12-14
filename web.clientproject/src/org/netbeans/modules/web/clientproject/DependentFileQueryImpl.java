@@ -57,10 +57,10 @@ import org.openide.util.lookup.ServiceProvider;
 public class DependentFileQueryImpl implements DependentFileQueryImplementation {
 
     @Override
-    public Boolean isDependent(FileObject master, FileObject dependent) {
+    public Dependency isDependent(FileObject master, FileObject dependent) {
         Project p = FileOwnerQuery.getOwner(master);
         if (p == null) {
-            return null;
+            return Dependency.UNKNOWN;
         }
         try {
             HtmlIndex.AllDependenciesMaps all = HtmlIndex.get(p).getAllDependencies();
@@ -68,11 +68,11 @@ public class DependentFileQueryImpl implements DependentFileQueryImplementation 
             if (c != null) {
                 for (FileReference fr : c) {
                     if (fr.target().equals(dependent)) {
-                        return Boolean.TRUE;
+                        return Dependency.YES;
                     }
                 }
             }
-            return Boolean.FALSE;
+            return Dependency.NO;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
