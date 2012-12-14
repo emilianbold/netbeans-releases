@@ -3984,6 +3984,16 @@ public class Term extends JComponent implements Accessible {
                     break;
             }
         }
+
+        @Override
+        public void logUnrecognizedSequence(String toString) {
+            Term.this.logUnrecognizedSequence(toString);
+        }
+
+        @Override
+        public void logCompletedSequence(String toString) {
+            Term.this.logCompletedSequence(toString);
+        }
     }
 
     /**
@@ -5540,5 +5550,44 @@ public class Term extends JComponent implements Accessible {
             int totalScrollAmount = e.getUnitsToScroll() * scrollbar.getUnitIncrement();
             scrollbar.setValue(scrollbar.getValue() + totalScrollAmount);
         }
+    }
+
+    /*
+     * Logging.
+     */
+    private boolean sequenceLogging;
+    private Set<String> completedSequences;
+    private Set<String> unrecognizedSequences;
+
+    public final void setSequenceLogging(boolean sequenceLogging) {
+        this.sequenceLogging = sequenceLogging;
+    }
+
+    public final boolean isSequenceLogging() {
+        return sequenceLogging;
+    }
+
+    public final Set<String> getCompletedSequences() {
+        return completedSequences;
+    }
+
+    public final Set<String> getUnrecognizedSequences() {
+        return unrecognizedSequences;
+    }
+
+    private void logCompletedSequence(String sequence) {
+        if (!sequenceLogging)
+            return;
+        if (completedSequences == null)
+            completedSequences = new HashSet<String>();
+        completedSequences.add(sequence);
+    }
+
+    private void logUnrecognizedSequence(String sequence) {
+        if (!sequenceLogging)
+            return;
+        if (unrecognizedSequences == null)
+            unrecognizedSequences = new HashSet<String>();
+        unrecognizedSequences.add(sequence);
     }
 }

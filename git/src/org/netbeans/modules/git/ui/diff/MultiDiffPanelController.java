@@ -73,6 +73,8 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import org.netbeans.api.diff.DiffController;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.libs.git.GitClient.DiffMode;
@@ -91,7 +93,6 @@ import org.netbeans.modules.versioning.util.status.VCSStatusTableModel;
 import org.netbeans.modules.git.ui.status.StatusAction;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.util.status.VCSStatusTable;
-import org.netbeans.modules.versioning.diff.DiffLookup;
 import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.netbeans.modules.versioning.diff.EditorSaveCookie;
 import org.netbeans.modules.versioning.diff.SaveBeforeClosingDiffConfirmation;
@@ -108,7 +109,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
-import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -165,7 +165,6 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
 
     private File currentFile;
     private boolean fileTableSetSelectedIndexContext;
-    private final DiffLookup lookup = new DiffLookup();
 
     private GitProgressSupport statusRefreshSupport;
     private PreferenceChangeListener prefList;
@@ -259,10 +258,6 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         Git.getInstance().getFileStatusCache().addPropertyChangeListener(list = WeakListeners.propertyChange(this, Git.getInstance().getFileStatusCache()));
         GitModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(
                 prefList = WeakListeners.create(PreferenceChangeListener.class, this, GitModuleConfig.getDefault().getPreferences()));
-    }
-
-    Lookup getLookup () {
-        return lookup;
     }
 
     boolean canClose() {
@@ -393,6 +388,22 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         fileTable.addPropertyChangeListener(this);
         panel.splitPane.setTopComponent(fileTable.getComponent());
         panel.splitPane.setBottomComponent(getInfoPanelLoading());
+        panel.addAncestorListener(new AncestorListener() {
+            @Override
+            public void ancestorAdded (AncestorEvent event) {
+                JComponent parent = (JComponent) panel.getParent();
+                parent.getActionMap().put("jumpNext", nextAction); //NOI18N
+                parent.getActionMap().put("jumpPrev", prevAction); //NOI18N
+            }
+
+            @Override
+            public void ancestorRemoved (AncestorEvent event) {
+            }
+
+            @Override
+            public void ancestorMoved (AncestorEvent event) {
+            }
+        });
     }
 
     private void initToolbarButtons () {
@@ -552,17 +563,10 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             }
             view = setup.getView();
 
-            // enable Select in .. action
-            FileObject fileObj = FileUtil.toFileObject(currentFile);
-            EditorCookie.Observable observableEditorCookie = null;
             TopComponent tc = (TopComponent) panel.getClientProperty(TopComponent.class);
             if (tc != null) {
                 Node node = setup.getNode();
                 tc.setActivatedNodes(new Node[] {node == null ? Node.EMPTY : node});
-            }
-            EditorCookie editorCookie = editorCookies.get(currentFile);
-            if (editorCookie instanceof EditorCookie.Observable) {
-                observableEditorCookie = (EditorCookie.Observable) editorCookie;
             }
 
             diffView = null;
@@ -586,11 +590,8 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                 diffView = new NoContentPanel(NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoContent"));
                 displayDiffView();
             }
-            lookup.setData(fileObj, observableEditorCookie, diffView.getActionMap());
         } else {
-            lookup.setData();
             diffView = new NoContentPanel(NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoFileSelected"));
-            lookup.setData(diffView.getActionMap());
             displayDiffView();
         }
 
@@ -809,13 +810,6 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             panel.repaint();
         }
 
-        protected Map<File, Setup> computeSetups(List<DiffNode> nodes) {
-            Map<File, Setup> newSetups = new HashMap<File, Setup>(nodes.size());
-            for (DiffNode node : nodes) {
-                newSetups.put(node.getFile(), new Setup(node, mode));
-            }
-            return newSetups;
-        }
     }
 
     private final class RefreshNodesTask extends RefreshViewTask implements Runnable {
@@ -825,13 +819,18 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             final List<DiffNode> nodes = new LinkedList<DiffNode>();
             Git git = Git.getInstance();
             File[] interestingFiles = git.getFileStatusCache().listFiles(context.getRootFiles(), displayStatuses);
+            final Map<File, Setup> localSetups = new HashMap<File, Setup>(interestingFiles.length);
             for (File f : interestingFiles) {
                 File root = git.getRepositoryRoot(f);
                 if (root != null) {
-                    nodes.add(new DiffNode(new GitFileNode(root, f), mode));
+                    GitFileNode fNode = new GitFileNode(root, f);
+                    Setup setup = new Setup(fNode, mode);
+                    DiffNode diffNode = new DiffNode(fNode, DiffUtils.getEditorCookie(setup), mode);
+                    nodes.add(diffNode);
+                    setup.setNode(diffNode);
+                    localSetups.put(f, setup);
                 }
             }
-            final Map<File, Setup> localSetups = computeSetups(nodes);
             final Map<File, EditorCookie> cookies = getCookiesFromSetups(localSetups);
             Mutex.EVENT.readAccess(new Runnable() {
                 @Override
@@ -876,17 +875,25 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             final List<DiffNode> toRemove = new LinkedList<DiffNode>();
             final List<DiffNode> toRefresh = new LinkedList<DiffNode>();
             final List<DiffNode> toAdd = new LinkedList<DiffNode>();
+            final Map<File, Setup> localSetups = new HashMap<File, Setup>(nodes.size());
             for (FileStatusCache.ChangedEvent evt : events) {
                 FileInformation newInfo = evt.getNewInfo();
                 DiffNode node = nodes.get(evt.getFile());
                 if (newInfo.containsStatus(displayStatuses)) {
                     if (node != null) {
                         toRefresh.add(node);
+                        Setup setup = new Setup(node.getFileNode(), mode);
+                        setup.setNode(node);
+                        localSetups.put(evt.getFile(), setup);
                         LOG.log(Level.FINE, "ApplyChanges: refreshing node {0}", node);
                     } else {
                         File root = git.getRepositoryRoot(evt.getFile());
                         if (root != null) {
-                            DiffNode toAddNode = new DiffNode(new GitFileNode(root, evt.getFile()), mode);
+                            GitFileNode fNode = new GitFileNode(root, evt.getFile());
+                            Setup setup = new Setup(fNode, mode);
+                            DiffNode toAddNode = new DiffNode(fNode, DiffUtils.getEditorCookie(setup), mode);
+                            setup.setNode(toAddNode);
+                            localSetups.put(evt.getFile(), setup);
                             toAdd.add(toAddNode);
                             LOG.log(Level.FINE, "ApplyChanges: adding node {0}", toAddNode);
                         }
@@ -897,9 +904,6 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                 }
             }
 
-            // new setups and editor cookies
-            final Map<File, Setup> localSetups = computeSetups(toAdd);
-            localSetups.putAll(computeSetups(toRefresh));
             final Map<File, EditorCookie> cookies = getCookiesFromSetups(localSetups);
             Mutex.EVENT.readAccess(new Runnable() {
                 @Override

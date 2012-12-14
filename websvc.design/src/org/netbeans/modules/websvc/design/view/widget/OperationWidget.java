@@ -316,7 +316,7 @@ public class OperationWidget extends AbstractTitledWidget implements Flushable {
 
         protected Shape createImage(int width, int height) {
             GeneralPath path = new GeneralPath();
-            float gap = width/5;
+            float gap = width/5f;
             path.moveTo(gap, height/4);
             path.lineTo(width-gap, height/4);
             path.moveTo(gap, height/2);
@@ -339,14 +339,14 @@ public class OperationWidget extends AbstractTitledWidget implements Flushable {
 
         protected Shape createImage(int width, int height) {
             GeneralPath path = new GeneralPath();
-            path.moveTo(1, height/6);
-            path.lineTo(2*width/3, height/6);
-            path.moveTo(1, height/3+1);
-            path.lineTo(width-1, height/3+1);
-            path.moveTo(width/3, height/6+1);
-            path.lineTo(width/3, height/3);
-            path.moveTo(2*width/3, height/6+1);
-            path.lineTo(2*width/3, height/3);
+            path.moveTo(1, height/6f);
+            path.lineTo(2*width/3f, height/6f);
+            path.moveTo(1, height/3f+1);
+            path.lineTo(width-1, height/3f+1);
+            path.moveTo(width/3f, height/6f+1);
+            path.lineTo(width/3f, height/3f);
+            path.moveTo(2*width/3f, height/6f+1);
+            path.lineTo(2*width/3f, height/3f);
             return path;
         }
     }

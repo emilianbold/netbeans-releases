@@ -128,7 +128,7 @@ public class ClientExplorerPanel extends DefaultClientSelectionPanel {
         return node.getLookup().lookup(WsdlOperation.class) != null;
     }
 
-    private class ProjectNode extends AbstractNode {
+    private static class ProjectNode extends AbstractNode {
         private Node rootNode;
 
         ProjectNode(Children children, Node rootNode) {
@@ -148,7 +148,7 @@ public class ClientExplorerPanel extends DefaultClientSelectionPanel {
         }
     }
 
-    private class NoServicesNode extends AbstractNode {
+    private static class NoServicesNode extends AbstractNode {
 
         NoServicesNode() {
             super(Children.LEAF);

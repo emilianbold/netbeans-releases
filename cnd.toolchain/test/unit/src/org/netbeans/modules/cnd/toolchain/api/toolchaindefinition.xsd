@@ -32,7 +32,7 @@
 
     <xs:element name="all">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
@@ -72,7 +72,7 @@
 
     <xs:element name="automatic">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
             <xs:attribute name="default" type="xs:string" use="optional" />
         </xs:complexType>
     </xs:element>
@@ -96,20 +96,20 @@
 
     <xs:element name="binary_standard">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
             <xs:attribute name="default" type="xs:string" use="optional" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="bits_32">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="bits_64">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
@@ -140,19 +140,19 @@
 
     <xs:element name="change_directory">
         <xs:complexType>
-            <xs:attribute name="pattern" type="xs:string" use="optional" />
+            <xs:attribute name="pattern" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="making_all_in_directory">
         <xs:complexType>
-            <xs:attribute name="pattern" type="xs:string" use="optional" />
+            <xs:attribute name="pattern" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="classic">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
@@ -185,13 +185,13 @@
 
     <xs:element name="compiler">
         <xs:complexType>
-            <xs:attribute name="name" type="xs:string" use="optional" />
+            <xs:attribute name="name" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="conforming_standard">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
@@ -243,35 +243,35 @@
     
     <xs:element name="c89">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
             <xs:attribute name="default" type="xs:string" use="optional" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="c99">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
             <xs:attribute name="default" type="xs:string" use="optional" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="cpp11">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
             <xs:attribute name="default" type="xs:string" use="optional" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="cpp98">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
             <xs:attribute name="default" type="xs:string" use="optional" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="debug">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
             <xs:attribute name="default" type="xs:string" use="optional" />
         </xs:complexType>
     </xs:element>
@@ -289,7 +289,7 @@
 
     <xs:element name="default">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
             <xs:attribute name="default" type="xs:string" use="optional" />
         </xs:complexType>
     </xs:element>
@@ -304,13 +304,13 @@
 
     <xs:element name="dependency_generation">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="dependency_support">
         <xs:complexType>
-            <xs:attribute name="code" type="xs:string" use="optional" />
+            <xs:attribute name="code" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
@@ -330,7 +330,7 @@
 
     <xs:element name="diagnosable_release">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
@@ -345,51 +345,51 @@
 
     <xs:element name="drive_letter_prefix">
         <xs:complexType>
-            <xs:attribute name="stringvalue" type="xs:string" use="optional" />
+            <xs:attribute name="stringvalue" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="dynamic_library">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="dynamic_library_basic">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="dynamic_library_search">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="enter_directory">
         <xs:complexType>
-            <xs:attribute name="pattern" type="xs:string" use="optional" />
+            <xs:attribute name="pattern" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="error">
         <xs:complexType>
-            <xs:attribute name="pattern" type="xs:string" use="optional" />
-            <xs:attribute name="severity" type="xs:string" use="optional" />
+            <xs:attribute name="pattern" type="xs:string" use="required" />
+            <xs:attribute name="severity" type="xs:string" use="required" />
             <xs:attribute name="language" type="xs:string" use="optional" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="fast_build">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="filter_out">
         <xs:complexType>
-            <xs:attribute name="pattern" type="xs:string" use="optional" />
+            <xs:attribute name="pattern" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
@@ -422,13 +422,13 @@
 
     <xs:element name="leave_directory">
         <xs:complexType>
-            <xs:attribute name="pattern" type="xs:string" use="optional" />
+            <xs:attribute name="pattern" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="legacy">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
@@ -446,19 +446,19 @@
 
     <xs:element name="library_flag">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="library_prefix">
         <xs:complexType>
-            <xs:attribute name="stringvalue" type="xs:string" use="optional" />
+            <xs:attribute name="stringvalue" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="library_search">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
@@ -482,7 +482,7 @@
 
     <xs:element name="macro">
         <xs:complexType>
-            <xs:attribute name="stringvalue" type="xs:string"/>
+            <xs:attribute name="stringvalue" type="xs:string" use="required"/>
             <xs:attribute name="hide" type="xs:string" use="optional" />
             <xs:attribute name="flags" type="xs:string" use="optional" />
         </xs:complexType>
@@ -501,19 +501,19 @@
 
     <xs:element name="makefile_writer">
         <xs:complexType>
-            <xs:attribute name="class" type="xs:string" use="optional" />
+            <xs:attribute name="class" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="modern">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="more_warnings">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
@@ -536,32 +536,32 @@
 
     <xs:element name="none">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
             <xs:attribute name="default" type="xs:string" use="optional" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="old">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="open_mp">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="output_file">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="output_object_file">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
@@ -575,13 +575,13 @@
 
     <xs:element name="performance_debug">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="performance_release">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
@@ -593,7 +593,7 @@
 
     <xs:element name="PIC">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
@@ -637,19 +637,19 @@
 
     <xs:element name="release">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="runtime">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="safe">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
@@ -671,13 +671,13 @@
 
     <xs:element name="stack_header">
         <xs:complexType>
-            <xs:attribute name="pattern" type="xs:string" use="optional" />
+            <xs:attribute name="pattern" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="stack_next">
         <xs:complexType>
-            <xs:attribute name="pattern" type="xs:string" use="optional" />
+            <xs:attribute name="pattern" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
@@ -694,19 +694,19 @@
 
     <xs:element name="static_library">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="strip">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="strip_flag">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
@@ -731,22 +731,22 @@
 
     <xs:element name="test_coverage">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="tool">
         <xs:complexType>
-            <xs:attribute name="name" type="xs:string" use="optional" />
+            <xs:attribute name="name" type="xs:string" use="required" />
             <xs:attribute name="skip" type="xs:string" use="optional" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="toolchain">
         <xs:complexType>
-            <xs:attribute name="name" type="xs:string" use="optional" />
-            <xs:attribute name="family" type="xs:string" use="optional" />
-            <xs:attribute name="display" type="xs:string" use="optional" />
+            <xs:attribute name="name" type="xs:string" use="required" />
+            <xs:attribute name="family" type="xs:string" use="required" />
+            <xs:attribute name="display" type="xs:string" use="required" />
             <xs:attribute name="qmakespec" type="xs:string" use="optional" />
             <xs:attribute name="abstract" type="xs:string" use="optional" />
             <xs:attribute name="auto_detected" type="xs:string" use="optional" />
@@ -757,19 +757,19 @@
 
     <xs:element name="user_include">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="user_macro">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 
     <xs:element name="version">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
             <xs:attribute name="pattern" type="xs:string" use="optional" />
             <xs:attribute name="fingerprint_flags" type="xs:string" use="optional" />
             <xs:attribute name="fingerprint_pattern" type="xs:string" use="optional" />
@@ -778,7 +778,7 @@
 
     <xs:element name="warning2error">
         <xs:complexType>
-            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="flags" type="xs:string" use="required" />
         </xs:complexType>
     </xs:element>
 

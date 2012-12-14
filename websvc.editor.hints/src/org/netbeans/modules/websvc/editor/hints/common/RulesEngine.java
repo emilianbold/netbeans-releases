@@ -60,7 +60,7 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  * @author Tomasz.Slota@Sun.COM
  */
 public abstract class RulesEngine extends ElementKindVisitor6<Void, ProblemContext> {
-    private ProblemContext ctx;
+    //private ProblemContext ctx;
     private List<ErrorDescription> problemsFound = new ArrayList<ErrorDescription>();
     
     @Override public Void visitTypeAsClass(TypeElement javaClass, ProblemContext ctx){

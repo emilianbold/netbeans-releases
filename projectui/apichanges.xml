@@ -67,7 +67,7 @@ made subject to such option by the copyright holder.
                     Implementations of this interface are to be put into project's lookup. If not present, standard layer ordering rules apply.
                 </p>
             </description>
-            <class package="org.netbeans.modules.project.ui.spi" name="TemplatesCategorySorter"/>
+            <class package="org.netbeans.modules.project.ui.spi" name="TemplateCategorySorter"/>
             <issue number="206126"/>
         </change>
         <change id="ProjectTemplates">

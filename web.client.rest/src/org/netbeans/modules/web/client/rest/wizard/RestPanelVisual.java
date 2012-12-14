@@ -208,7 +208,6 @@ public final class RestPanelVisual extends JPanel  {
     void read(WizardDescriptor wizardDescriptor) {
         myBackbone = null;
         Project project = Templates.getProject(wizardDescriptor);
-        FileObject projectDirectory = project.getProjectDirectory();
         FileObject libs = JSClientIterator.getRootFolder(project).
                 getFileObject(WebClientLibraryManager.LIBS); 
         boolean backboneExists = false; 

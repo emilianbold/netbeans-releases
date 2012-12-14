@@ -75,7 +75,7 @@ public final class GroovyBracesMatcher implements BracesMatcher {
 
             int offset = context.getSearchOffset();
 
-            TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
+            TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
 
             if (ts != null) {
                 ts.move(offset);
@@ -84,7 +84,7 @@ public final class GroovyBracesMatcher implements BracesMatcher {
                     return null;
                 }
 
-                Token<?extends GroovyTokenId> token = ts.token();
+                Token<GroovyTokenId> token = ts.token();
 
                 if (token == null) {
                     return null;
@@ -127,7 +127,7 @@ public final class GroovyBracesMatcher implements BracesMatcher {
             
             int offset = context.getSearchOffset();
 
-            TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
+            TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
 
             if (ts != null) {
                 ts.move(offset);
@@ -136,7 +136,7 @@ public final class GroovyBracesMatcher implements BracesMatcher {
                     return null;
                 }
 
-                Token<?extends GroovyTokenId> token = ts.token();
+                Token<GroovyTokenId> token = ts.token();
 
                 if (token == null) {
                     return null;

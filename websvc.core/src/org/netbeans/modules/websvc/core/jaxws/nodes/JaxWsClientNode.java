@@ -221,6 +221,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
         fireIconChange();
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     private EditCookie getEditCookie() {
         try {
             String relativePath = client.getLocalWsdlFile();

@@ -59,18 +59,20 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
 import static org.netbeans.modules.java.hints.bugs.NPECheck.State.*;
-import org.netbeans.modules.java.hints.introduce.Flow;
 import org.netbeans.spi.java.hints.*;
 import org.netbeans.spi.java.hints.Hint.Options;
 
-/**XXX: null initializer to a non-null variable!
+/**
  *
  * @author lahvac
  */
 @Hint(displayName="#DN_NPECheck", description="#DESC_NPECheck", category="bugs", options=Options.QUERY, suppressWarnings = {"null", "ConstantConditions"})
 public class NPECheck {
 
-    @TriggerPattern("$var = $expr")
+    @TriggerPatterns({
+        @TriggerPattern("$mods$ $type $var = $expr;"),
+        @TriggerPattern("$var = $expr")
+    })
     public static ErrorDescription assignment(HintContext ctx) {
         Element e = ctx.getInfo().getTrees().getElement(ctx.getVariables().get("$var"));
 

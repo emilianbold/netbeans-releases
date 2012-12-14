@@ -157,7 +157,7 @@ public class JavaEEWSOpenHook extends ProjectOpenedHook {
                 }
             }
 
-    private class WebservicesChangeListener implements PropertyChangeListener {
+    private static class WebservicesChangeListener implements PropertyChangeListener {
 
         MetadataModel<WebservicesMetadata> wsModel;
         Project prj;

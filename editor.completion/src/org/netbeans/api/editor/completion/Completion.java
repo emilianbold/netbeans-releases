@@ -158,5 +158,17 @@ public final class Completion {
     public void hideAll() {
         CompletionImpl.get().hideAll();
     }
+    
+     /**
+     * Workaround for http://netbeans.org/bugzilla/show_bug.cgi?id=223290 .
+     * 
+     * Client needs to explicitly repaint its CompletionItem-s when their full 
+     * state is computation is finished in a background thread.
+     * 
+     * Called by reflection.
+     */
+    private void repaintCompletionView() {
+        CompletionImpl.get().repaintCompletionView();
+    }
 
 }

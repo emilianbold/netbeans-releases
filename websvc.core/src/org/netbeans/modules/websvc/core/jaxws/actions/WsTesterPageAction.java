@@ -105,9 +105,7 @@ public class WsTesterPageAction extends NodeAction {
                         } catch (java.io.IOException ex) {
                             Logger.getLogger(WsTesterPageAction.class.getName()).log(Level.INFO, "URLConnection problem", ex); //NOI18N
                         } finally {
-                            if (httpConnection != null) {
-                                httpConnection.disconnect();
-                            }
+                            httpConnection.disconnect();
                         }
                         
                         // logging usage of action

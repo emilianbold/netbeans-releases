@@ -104,7 +104,10 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.php.zend2</friend>
+                <package>org.netbeans.modules.php.composer.api</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

@@ -51,8 +51,10 @@ import org.netbeans.modules.git.ui.diff.DiffAction;
 import org.netbeans.modules.versioning.util.status.VCSStatusNode;
 import org.openide.nodes.PropertySupport.ReadOnly;
 import org.openide.nodes.Sheet;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -62,7 +64,11 @@ public class GitStatusNode extends VCSStatusNode<GitFileNode> {
     private final Mode mode;
 
     public GitStatusNode (GitFileNode node, Mode mode) {
-        super(node);
+        this(node, mode, Lookups.fixed(node.getLookupObjects()));
+    }
+
+    public GitStatusNode (GitFileNode node, Mode mode, Lookup lkp) {
+        super(node, lkp);
         this.mode = mode;
         initProperties();
     }

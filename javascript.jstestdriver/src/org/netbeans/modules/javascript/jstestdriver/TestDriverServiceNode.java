@@ -147,7 +147,7 @@ public class TestDriverServiceNode extends AbstractNode {
 
         @Override
         public String getName() {
-            return "Start";
+            return NbBundle.getMessage(TestDriverServiceNode.class, "ACTION_START");
         }
 
 
@@ -178,7 +178,7 @@ public class TestDriverServiceNode extends AbstractNode {
 
         @Override
         public String getName() {
-            return "Stop";
+            return NbBundle.getMessage(TestDriverServiceNode.class, "ACTION_STOP");
         }
 
 
@@ -208,7 +208,7 @@ public class TestDriverServiceNode extends AbstractNode {
 
         @Override
         public String getName() {
-            return "Configure";
+            return NbBundle.getMessage(TestDriverServiceNode.class, "ACTION_CONFIGURE");
         }
 
 

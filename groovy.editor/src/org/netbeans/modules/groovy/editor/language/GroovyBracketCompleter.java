@@ -142,7 +142,7 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
             return -1;
         }
         
-        TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
 
         if (ts == null) {
             return -1;
@@ -154,7 +154,7 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
             return -1;
         }
 
-        Token<?extends GroovyTokenId> token = ts.token();
+        Token<GroovyTokenId> token = ts.token();
         TokenId id = token.id();
 
         // Insert an end statement? Insert a } marker?
@@ -262,7 +262,7 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
         // brace on the line below the insert position, and indent properly.
         // Catch this scenario and handle it properly.
         if ((id == GroovyTokenId.RBRACE || id == GroovyTokenId.RBRACKET) && offset > 0) {
-            Token<? extends GroovyTokenId> prevToken = LexUtilities.getToken(doc, offset - 1);
+            Token<GroovyTokenId> prevToken = LexUtilities.getToken(doc, offset - 1);
             if (prevToken != null) {
                 GroovyTokenId prevTokenId = prevToken.id();
                 if (id == GroovyTokenId.RBRACE && prevTokenId == GroovyTokenId.LBRACE ||
@@ -359,7 +359,7 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
             if (rowStart > 0) {                
                 int prevBegin = Utilities.getRowFirstNonWhite(doc, rowStart-1);
                 if (prevBegin != -1) {
-                    Token<? extends GroovyTokenId> firstToken = LexUtilities.getToken(doc, prevBegin);
+                    Token<GroovyTokenId> firstToken = LexUtilities.getToken(doc, prevBegin);
                     if (firstToken != null && firstToken.id() == GroovyTokenId.LINE_COMMENT) {
                         previousLineWasComment = true;
                     }                
@@ -369,7 +369,7 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
             if (rowEnd < doc.getLength()) {
                 int nextBegin = Utilities.getRowFirstNonWhite(doc, rowEnd+1);
                 if (nextBegin != -1) {
-                    Token<? extends GroovyTokenId> firstToken = LexUtilities.getToken(doc, nextBegin);
+                    Token<GroovyTokenId> firstToken = LexUtilities.getToken(doc, nextBegin);
                     if (firstToken != null && firstToken.id() == GroovyTokenId.LINE_COMMENT) {
                         nextLineIsComment = true;
                     }                
@@ -390,7 +390,7 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
                 } else if (CONTINUE_COMMENTS) {
                     // See if the "continue comments" options is turned on, and this is a line that
                     // contains only a comment (after leading whitespace)
-                    Token<? extends GroovyTokenId> firstToken = LexUtilities.getToken(doc, begin);
+                    Token<GroovyTokenId> firstToken = LexUtilities.getToken(doc, begin);
                     if (firstToken.id() == GroovyTokenId.LINE_COMMENT) {
                         continueComment = true;
                     }
@@ -402,7 +402,7 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
                     if (nextLine < doc.getLength()) {
                         int nextLineFirst = Utilities.getRowFirstNonWhite(doc, nextLine);
                         if (nextLineFirst != -1) {
-                            Token<? extends GroovyTokenId> firstToken = LexUtilities.getToken(doc, nextLineFirst);
+                            Token<GroovyTokenId> firstToken = LexUtilities.getToken(doc, nextLineFirst);
                             if (firstToken != null && firstToken.id() == GroovyTokenId.LINE_COMMENT) {
                                 continueComment = true;
                             }
@@ -564,7 +564,7 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
                     if (firstChar != ch) {
                         int start = target.getSelectionStart();
                         int end = target.getSelectionEnd();
-                        TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, start);
+                        TokenSequence<GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, start);
                         if (ts != null && ts.token().id() != GroovyTokenId.STRING_LITERAL) { // Not inside strings!
                             int lastChar = selection.charAt(selection.length()-1);
                             // Replace the surround-with chars?
@@ -591,7 +591,7 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
             }
         }
 
-        TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, caretOffset);
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, caretOffset);
 
         if (ts == null) {
             return false;
@@ -603,7 +603,7 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
             return false;
         }
 
-        Token<?extends GroovyTokenId> token = ts.token();
+        Token<GroovyTokenId> token = ts.token();
         TokenId id = token.id();
         TokenId[] stringTokens = null;
         TokenId beginTokenId = null;
@@ -720,7 +720,7 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
                 // Revert indentation iff the character at the insert position does
                 // not start a new token (e.g. the previous token that we reindented
                 // was not complete)
-                TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, dotPos);
+                TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, dotPos);
 
                 if (ts != null) {
                     ts.move(dotPos);
@@ -759,11 +759,17 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
         case '[': {
             
             if (!isInsertMatchingEnabled(doc)) {
+                // Reindent blocks (won't do anything if } is not at the beginning of a line
+                if (ch == '}') {
+                    reindent(doc, dotPos, GroovyTokenId.RBRACE, caret);
+                } else if (ch == ']') {
+                    reindent(doc, dotPos, GroovyTokenId.RBRACKET, caret);
+                }
                 return false;
             }
 
             
-            Token<?extends GroovyTokenId> token = LexUtilities.getToken(doc, dotPos);
+            Token<GroovyTokenId> token = LexUtilities.getToken(doc, dotPos);
             if (token == null) {
                 return true;
             }
@@ -836,7 +842,7 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
             // Bracket matching for regular expressions has to be done AFTER the
             // character is inserted into the document such that I can use the lexer
             // to determine whether it's a division (e.g. x/y) or a regular expression (/foo/)
-            TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, dotPos);
+            TokenSequence<GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, dotPos);
             if (ts != null) {
                 Token token = ts.token();
                 TokenId id = token.id();
@@ -875,7 +881,7 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
     
     private void reindent(BaseDocument doc, int offset, TokenId id, Caret caret)
         throws BadLocationException {
-        TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
 
         if (ts != null) {
             ts.move(offset);
@@ -884,7 +890,7 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
                 return;
             }
 
-            Token<?extends GroovyTokenId> token = ts.token();
+            Token<GroovyTokenId> token = ts.token();
 
             if ((token.id() == id)) {
                 final int rowFirstNonWhite = Utilities.getRowFirstNonWhite(doc, offset);
@@ -1045,7 +1051,7 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
 
         boolean skipClosingBracket = false; // by default do not remove
 
-        TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, caretOffset);
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, caretOffset);
 
         if (ts == null) {
             return false;
@@ -1059,7 +1065,7 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
             return false;
         }
 
-        Token<?extends GroovyTokenId> token = ts.token();
+        Token<GroovyTokenId> token = ts.token();
 
         // Check whether character follows the bracket is the same bracket
         if ((token != null) && (token.id() == bracketId)) {
@@ -1071,7 +1077,7 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
             // Skip all the brackets of the same type that follow the last one
             ts.moveNext();
 
-            Token<?extends GroovyTokenId> nextToken = ts.token();
+            Token<GroovyTokenId> nextToken = ts.token();
 
             while ((nextToken != null) && (nextToken.id() == bracketId)) {
                 token = nextToken;
@@ -1088,7 +1094,7 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
             // Search would stop on an extra opening left brace if found
             int braceBalance = 0; // balance of '{' and '}'
             int bracketBalance = -1; // balance of the brackets or parenthesis
-            Token<?extends GroovyTokenId> lastRBracket = token;
+            Token<GroovyTokenId> lastRBracket = token;
             ts.movePrevious();
             token = ts.token();
 
@@ -1265,7 +1271,7 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
             return false;
         }
 
-        TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, dotPos);
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, dotPos);
 
         if (ts == null) {
             return false;
@@ -1277,8 +1283,8 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
             return false;
         }
 
-        Token<?extends GroovyTokenId> token = ts.token();
-        Token<?extends GroovyTokenId> previousToken = null;
+        Token<GroovyTokenId> token = ts.token();
+        Token<GroovyTokenId> previousToken = null;
 
         if (ts.movePrevious()) {
             previousToken = ts.token();
@@ -1516,9 +1522,9 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
 //            }
 
             
-            TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, caretOffset);
+            TokenSequence<GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, caretOffset);
             if (ts != null) {
-                Token<?extends GroovyTokenId> token = ts.token();
+                Token<GroovyTokenId> token = ts.token();
 
                 if (token != null && token.id() == GroovyTokenId.BLOCK_COMMENT) {
                     // First add a range for the current line
@@ -1610,7 +1616,7 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
     // UGH - this method has gotten really ugly after successive refinements based on unit tests - consider cleaning up
     public int getNextWordOffset(Document document, int offset, boolean reverse) {
         BaseDocument doc = (BaseDocument)document;
-        TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
         if (ts == null) {
             return -1;
         }
@@ -1624,7 +1630,7 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
             }
         }
 
-        Token<? extends GroovyTokenId> token = ts.token();
+        Token<GroovyTokenId> token = ts.token();
         TokenId id = token.id();
 
         if (id == GroovyTokenId.WHITESPACE) {
@@ -1738,10 +1744,10 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
 
     private static boolean moveSemicolon(BaseDocument doc, int dotPos, Caret caret) throws BadLocationException {
         int eolPos = Utilities.getRowEnd(doc, dotPos);
-        TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, dotPos);
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, dotPos);
         int lastParenPos = dotPos;
 
-        Token<? extends GroovyTokenId> token;
+        Token<GroovyTokenId> token;
         while (ts.moveNext() && ts.offset() < eolPos) {
             token = ts.token();
             GroovyTokenId tokenId = token.id();
@@ -1761,8 +1767,8 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
         return true;
     }
 
-    private static boolean isForLoopSemicolon(TokenSequence<? extends GroovyTokenId> ts) {
-        Token<? extends GroovyTokenId> token = ts.token();
+    private static boolean isForLoopSemicolon(TokenSequence<GroovyTokenId> ts) {
+        Token<GroovyTokenId> token = ts.token();
         if (token == null || token.id() != GroovyTokenId.SEMI) {
             return false;
         }
@@ -1806,9 +1812,9 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
     }
 
     private static boolean posWithinAnyQuote(BaseDocument doc, int dotPos) {
-        TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, dotPos);
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, dotPos);
         if (ts != null) {
-            Token<? extends GroovyTokenId> token = ts.token();
+            Token<GroovyTokenId> token = ts.token();
             if (token != null && token.id() == GroovyTokenId.STRING_LITERAL) {
                 return true;
             }

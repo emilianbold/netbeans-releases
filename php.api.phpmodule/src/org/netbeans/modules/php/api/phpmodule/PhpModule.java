@@ -96,7 +96,7 @@ public abstract class PhpModule {
 
     /**
      * Get the source directory for this PHP module.
-     * @return the source directory, <b>can be <code>null</code> or {@link FileObject#isValid() invalid} if the project is {@link #isBroken() broken}.</b>
+     * @return the source directory, <b>can be <code>null</code> or {@link org.openide.filesystems.FileObject#isValid() invalid} if the project is {@link #isBroken() broken}.</b>
      */
     @CheckForNull
     public abstract FileObject getSourceDirectory();

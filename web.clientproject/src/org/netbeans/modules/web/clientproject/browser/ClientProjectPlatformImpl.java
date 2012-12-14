@@ -62,7 +62,6 @@ import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectPlatform
 public class ClientProjectPlatformImpl implements ClientProjectPlatformImplementation {
 
     private Project p;
-    private BrowserSupport bs;
     private List<ClientProjectConfigurationImpl> configs;
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
 
@@ -104,13 +103,18 @@ public class ClientProjectPlatformImpl implements ClientProjectPlatformImplement
         int others = 400;
         for (WebBrowser browser : WebBrowsers.getInstance().getAll(false)) {
             if (browser.getBrowserFamily() == BrowserFamilyId.JAVAFX_WEBVIEW) {
-                l.add(new ClientProjectConfigurationImpl((ClientSideProject)p, browser, this, Boolean.TRUE, 100, false));
+                l.add(new ClientProjectConfigurationImpl((ClientSideProject)p, browser, this, 
+                        ClientProjectConfigurationImpl.BrowserIntegration.ENABLED, 100, false));
             } else if (browser.getBrowserFamily() == BrowserFamilyId.CHROME || browser.getId().endsWith("ChromeBrowser")) { //NOI18N
-                l.add(new ClientProjectConfigurationImpl((ClientSideProject)p, browser, this, Boolean.TRUE, chrome++, false));
-                l.add(new ClientProjectConfigurationImpl((ClientSideProject)p, browser, this, Boolean.FALSE, chrome++, true));
+                l.add(new ClientProjectConfigurationImpl((ClientSideProject)p, browser, this,
+                        ClientProjectConfigurationImpl.BrowserIntegration.ENABLED, chrome++, false));
+                l.add(new ClientProjectConfigurationImpl((ClientSideProject)p, browser, this,
+                        ClientProjectConfigurationImpl.BrowserIntegration.DISABLE, chrome++, true));
             } else if (browser.getBrowserFamily() == BrowserFamilyId.CHROMIUM || browser.getId().endsWith("ChromiumBrowser")) { //NOI18N
-                l.add(new ClientProjectConfigurationImpl((ClientSideProject)p, browser, this, Boolean.TRUE, chromium++, false));
-                l.add(new ClientProjectConfigurationImpl((ClientSideProject)p, browser, this, Boolean.FALSE, chromium++, true));
+                l.add(new ClientProjectConfigurationImpl((ClientSideProject)p, browser, this,
+                        ClientProjectConfigurationImpl.BrowserIntegration.ENABLED, chromium++, false));
+                l.add(new ClientProjectConfigurationImpl((ClientSideProject)p, browser, this,
+                        ClientProjectConfigurationImpl.BrowserIntegration.DISABLE, chromium++, true));
             } else {
                 l.add(new ClientProjectConfigurationImpl((ClientSideProject)p, browser, this, null, others++, false));
             }

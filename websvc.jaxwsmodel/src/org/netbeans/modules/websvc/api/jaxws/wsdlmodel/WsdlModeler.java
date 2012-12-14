@@ -293,7 +293,7 @@ public class WsdlModeler {
         }
     }
 
-    private class IdeErrorReceiver extends ErrorReceiver {
+    private static class IdeErrorReceiver extends ErrorReceiver {
 
         private WsdlErrorHandler errorHandler;
 
@@ -380,7 +380,7 @@ public class WsdlModeler {
         }
     }
 
-    private class CatchFirstErrorHandler implements WsdlErrorHandler {
+    private static class CatchFirstErrorHandler implements WsdlErrorHandler {
 
         private SAXParseException firstError;
 
