@@ -134,12 +134,15 @@ public final class NewTestActionFactory {
             this.project = project;
             this.context = context;
             this.generateCode = generateCode;
-            
-            MakeConfigurationDescriptor mcd = MakeConfigurationDescriptor.getMakeConfigurationDescriptor(project);
-            if(mcd != null) {
-                MakeConfiguration activeConfiguration = mcd.getActiveConfiguration();
-                if(activeConfiguration != null && activeConfiguration.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
-                    this.setEnabled(false);
+            this.setEnabled(false);
+            ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+            if (pdp != null && pdp.gotDescriptor()) {
+                MakeConfigurationDescriptor mcd = pdp.getConfigurationDescriptor();
+                if(mcd != null) {
+                    MakeConfiguration activeConfiguration = mcd.getActiveConfiguration();
+                    if(activeConfiguration != null && activeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE) {
+                        this.setEnabled(true);
+                    }
                 }
             }
         }
