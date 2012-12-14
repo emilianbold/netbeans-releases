@@ -47,7 +47,6 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
 import org.openide.nodes.PropertySupport;
-import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.util.SvnUtils;
@@ -58,6 +57,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.SvnFileNode;
 import org.netbeans.modules.subversion.SvnModuleConfig;
+import org.netbeans.modules.versioning.diff.DiffLookup;
+import org.netbeans.modules.versioning.diff.DiffUtils;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -152,10 +154,19 @@ public class DiffNode extends AbstractNode {
     }
 
     private static org.openide.util.Lookup getLookupFor (Setup setup, Object[] lookupObjects) {
-        Object[] allLookupObjects = new Object[lookupObjects.length + 1];
+        EditorCookie eCookie = DiffUtils.getEditorCookie(setup);
+        Object[] allLookupObjects;
+        if (eCookie == null) {
+            allLookupObjects = new Object[lookupObjects.length + 1];
+        } else {
+            allLookupObjects = new Object[lookupObjects.length + 2];
+            allLookupObjects[allLookupObjects.length - 1] = eCookie;
+        }
         allLookupObjects[0] = setup;
         System.arraycopy(lookupObjects, 0, allLookupObjects, 1, lookupObjects.length);
-        return Lookups.fixed(allLookupObjects);
+        DiffLookup lkp = new DiffLookup();
+        lkp.setData(allLookupObjects);
+        return lkp;
     }
 
     private abstract class DiffNodeProperty extends PropertySupport.ReadOnly<String> {
