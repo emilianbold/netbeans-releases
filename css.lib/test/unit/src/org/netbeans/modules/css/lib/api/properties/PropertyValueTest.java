@@ -160,7 +160,7 @@ public class PropertyValueTest extends CssTestBase {
 //    }
     public void testPaddingAlternatives() {
         PropertyDefinition p = Properties.getPropertyDefinition( "padding");
-        assertAlternatives(p.getGrammar(), "", "auto", "!percentage", "!length", "-", "calc");
+        assertAlternatives(p.getGrammar(), "", "auto", "!percentage", "!length", "-", "calc", "inherit", "initial");
 
     }
 
