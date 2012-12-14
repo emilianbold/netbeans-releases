@@ -339,16 +339,11 @@ public class HtmlAutoCompletion {
                 }
 
             } else if (token.id() == HTMLTokenId.OPERATOR) {
-                //check if the next token isn't a value closed already by the same quote
+                //check if the next token is a value 
                 if(ts.moveNext()) {
                     Token<HTMLTokenId> next = ts.token();
                     if(isHtmlValueToken(next)) {
-                        if(next.length() > 0) {
-                            char last = next.text().charAt(next.length() - 1);
-                            if(last == qchar) {
-                                return false; //ignore
-                            }
-                        }
+                        return false; //ignore
                     }
                 }
                 
