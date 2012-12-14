@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractListModel;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
@@ -63,6 +64,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.versioning.util.CollectionUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -306,26 +308,35 @@ public class FilesModifiedConfirmation {
         DialogDisplayer.getDefault().notify(errDialog);
     }
 
+    @NbBundle.Messages({
+        "# {0} - file name", "MSG_SavingFile=Saving {0}"
+    })
     private String save(int index, boolean removeSavedFromList) {
         final SaveCookie saveCookie = listModel.getElementAt(index);
 
-        String errMsg = null;
-        try {
-            saveCookie.save();
-            // only remove the object if the save succeeded
-            if (removeSavedFromList) {
-                listModel.removeItem(index);
+        final AtomicReference<String> errMsg = new AtomicReference<String>();
+        ProgressUtils.showProgressDialogAndRun(new Runnable() {
+            @Override
+            public void run () {
+                try {
+                    saveCookie.save();
+                } catch (IOException ex) {
+                    String msg = Exceptions.findLocalizedMessage(ex);
+                    errMsg.set(msg);
+                    if (msg == null) {
+                        msg = getMessage("MSG_exception_while_saving",       //NOI18N
+                                            saveCookie.toString());
+                        ex = Exceptions.attachLocalizedMessage(ex, msg);
+                    }
+                    Exceptions.printStackTrace(ex);
+                }
             }
-        } catch (IOException ex) {
-            errMsg = Exceptions.findLocalizedMessage(ex);
-            if (errMsg == null) {
-                errMsg = getMessage("MSG_exception_while_saving",       //NOI18N
-                                    saveCookie.toString());
-                ex = Exceptions.attachLocalizedMessage(ex, errMsg);
-            }
-            Exceptions.printStackTrace(ex);
+        }, Bundle.MSG_SavingFile(saveCookie.toString()));
+        // only remove the object if the save succeeded
+        if (errMsg.get() == null && removeSavedFromList) {
+            listModel.removeItem(index);
         }
-        return errMsg;
+        return errMsg.get();
     }
 
     protected void anotherActionPerformed(Object source) {}

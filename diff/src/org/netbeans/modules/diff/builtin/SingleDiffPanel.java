@@ -70,10 +70,10 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.netbeans.modules.diff.options.DiffOptionsController;
 import org.openide.awt.UndoRedo;
-import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -169,7 +169,13 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
     public void activateNodes () {
         TopComponent tc = (TopComponent) getClientProperty(TopComponent.class);
         if (tc != null) {
-            Node node = new AbstractNode(Children.LEAF, Lookups.singleton(modified));
+            Node node;
+            try {
+                DataObject dobj = DataObject.find(modified);
+                node = dobj.getNodeDelegate();
+            } catch (DataObjectNotFoundException e) {
+                node = new AbstractNode(Children.LEAF, Lookups.singleton(modified));
+            }
             tc.setActivatedNodes(new Node[] {node});
         }
     }
