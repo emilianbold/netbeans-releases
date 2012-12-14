@@ -119,6 +119,7 @@ public class OrganizeMembers {
                 CompilationUnitTree cut = context.getPath().getCompilationUnit();
                 ClassTree clazz = (ClassTree) context.getPath().getLeaf();
                 for (Tree member : clazz.getMembers()) {
+                    if (context.getInfo().getTreeUtilities().isSynthetic(new TreePath(context.getPath(), member))) continue;
                     if (sp.getStartPosition(cut, member) >= offset) {
                         return ErrorDescriptionFactory.forTree(context, member, NbBundle.getMessage(OrganizeMembers.class, "MSG_OragnizeMembers"), fix); //NOI18N
                     }
@@ -137,6 +138,7 @@ public class OrganizeMembers {
         ClassTree nue = maker.Class(clazz.getModifiers(), clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), clazz.getImplementsClause(), Collections.<Tree>emptyList());
         List<Tree> members = new ArrayList<Tree>(clazz.getMembers().size());
         for (Tree tree : clazz.getMembers()) {
+            if (copy.getTreeUtilities().isSynthetic(new TreePath(path, tree))) continue;
             Tree member;
             switch (tree.getKind()) {
                 case VARIABLE:

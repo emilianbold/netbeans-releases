@@ -110,24 +110,36 @@ implements ActionListener, Runnable, Callable<JButton> {
         if ("KILL_PENDING_TASKS".equals(record.getMessage())) { //NOI18N
             exiting = true;
         }
-        if (!exiting && "SCAN_CANCELLED".equals(record.getMessage())) { //NOI18N
-            if (shouldReportScanCancel()) {
-                class WriteOut implements Runnable {
-                    public LogRecord r;
-                    @Override
-                    public void run() {
-                        Installer.writeOut(r);
-                        SUPPORT.firePropertyChange(null, null, null);
-                        r = null;
-                        TimeToFailure.logAction();
-                        Installer.displaySummary("ERROR_URL", true, false, true); //NOI18N
+        if (!exiting) { 
+            if ("SCAN_CANCELLED".equals(record.getMessage())) { //NOI18N
+                if (shouldReportScanCancel()) {
+                    class WriteOut implements Runnable {
+                        public LogRecord r;
+                        @Override
+                        public void run() {
+                            Installer.writeOut(r);
+                            SUPPORT.firePropertyChange(null, null, null);
+                            r = null;
+                            TimeToFailure.logAction();
+                            Installer.displaySummary("ERROR_URL", true, false, true); //NOI18N
+                        }
                     }
+                    WriteOut wo = new WriteOut();
+                    wo.r = record;
+                    lastRecord = FLUSH.post(wo);
                 }
-                WriteOut wo = new WriteOut();
-                wo.r = record;
-                lastRecord = FLUSH.post(wo);
+                return;
+            } else if ("SCAN_CANCELLED_EARLY".equals(record.getMessage())) { // NOI18N
+                final NotifyDescriptor nd = new NotifyDescriptor(
+                    NbBundle.getMessage(UIHandler.class, "MSG_SCAN_CANCELLED_EARLY"),
+                    NbBundle.getMessage(UIHandler.class, "TITLE_SCAN_CANCELLED_EARLY"),
+                    NotifyDescriptor.DEFAULT_OPTION,
+                    NotifyDescriptor.INFORMATION_MESSAGE,
+                    new Object[] {DialogDescriptor.OK_OPTION},
+                    NotifyDescriptor.OK_OPTION);
+                DialogDisplayer.getDefault().notify(nd);
+                return;
             }
-            return;
         }
 
         if (exceptionOnly) {
