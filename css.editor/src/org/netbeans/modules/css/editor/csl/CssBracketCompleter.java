@@ -143,42 +143,10 @@ public class CssBracketCompleter implements KeystrokeHandler {
             //
             //we need to check if the actuall css code is embedded in an attribute
             //value w/o depending on the html module. An SPI in web.common could do it as well
-            TokenSequence<CssTokenId> ts_no_bounds_check = getCssTokenSequence(doc, dot, false);
-            LanguagePath langPath = ts_no_bounds_check.languagePath();
-            LanguagePath parentPath = langPath.parent();
-            if (parentPath != null) {
-                //we are embedded
-                Language in = parentPath.innerLanguage();
-                if ("text/html".equals(in.mimeType())) {
-                    //in html
-                    TokenHierarchy<Document> hi = TokenHierarchy.get(doc);
-                    //try backward
-                    boolean bw = true;
-                    List<TokenSequence<?>> embedded = hi.embeddedTokenSequences(dot, true);
-                    if(embedded.size() <= 1) {
-                        //try forward
-                        bw = false;
-                        embedded = hi.embeddedTokenSequences(dot, false);
-                    }
-                    if (embedded.size() > 1) {
-                        //at least the CSS + HTML as a parent
-                        TokenSequence<?> htmlts = embedded.get(embedded.size() - 2); //parent index (html) == len - 2
-                        if (htmlts.languagePath().equals(parentPath)) {
-                            //it relly looks like our parent ts
-                            int ediff = htmlts.move(dot);
-                            if (ediff == 0 && bw && htmlts.movePrevious() || htmlts.moveNext()) {
-                                TokenId id = htmlts.token().id();
-                                //XXX !!!! DEPENDENCY to HtmlTokenId !!!!
-                                if (id.name().equals("VALUE_CSS")) { //NOI18N
-                                    //we are in a css value, do not complete the quote
-                                    return false;
-                                }
-                            }
-                        }
-                    }
-
-
-                }
+            TokenHierarchy<Document> hi = TokenHierarchy.get(doc);
+            if(findHtmlValueToken(hi, dot)) {
+                //we are in a css value, do not complete the quote
+                return false;
             }
             
             TokenSequence<CssTokenId> ts = getCssTokenSequence(doc, dot, true);
@@ -233,6 +201,27 @@ public class CssBracketCompleter implements KeystrokeHandler {
         caret.setDot(dot + 1);
         return true;
 
+    }
+    
+    private static boolean findHtmlValueToken(TokenHierarchy<?> hi, int offset)  {
+        boolean found = findHtmlValueToken(hi, offset, true);
+        return found ? true : findHtmlValueToken(hi, offset, false);
+    }
+    
+    private static boolean findHtmlValueToken(TokenHierarchy<?> hi, int offset, boolean backward)  {
+        List<TokenSequence<?>> embeddedTokenSequences = hi.embeddedTokenSequences(offset, backward);
+        for(TokenSequence<?> htmlts : embeddedTokenSequences) {
+            if(htmlts.language().mimeType().equals("text/html")) {
+                 //it relly looks like our parent ts
+                int ediff = htmlts.move(offset);
+                if (ediff == 0 && backward && htmlts.movePrevious() || htmlts.moveNext()) {
+                    TokenId id = htmlts.token().id();
+                    //XXX !!!! DEPENDENCY to HtmlTokenId !!!!
+                    return id.name().equals("VALUE_CSS");
+                }
+            }
+        }
+        return false;
     }
 
     @Override
