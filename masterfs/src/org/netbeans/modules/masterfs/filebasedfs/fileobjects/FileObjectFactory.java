@@ -86,7 +86,15 @@ public final class FileObjectFactory {
     private static final Logger LOG_REFRESH = Logger.getLogger("org.netbeans.modules.masterfs.REFRESH"); // NOI18N
 
     public static enum Caller {
-        ToFileObject, GetFileObject, GetChildern, GetParent, Others
+        ToFileObject, GetFileObject, GetChildern, GetParent, Refresh, Others;
+
+        boolean asynchFire() {
+            if (this == Refresh || this == Others) {
+                return false;
+            } else {
+                return true;
+            }
+        }
     }
         
     private FileObjectFactory(final File rootFile) {
@@ -198,7 +206,7 @@ public final class FileObjectFactory {
         if (initTouch == -1  && FileBasedFileSystem.isModificationInProgress()) {
             initTouch = file.exists() ? 1 : 0;
         }
-        return issueIfExist(file, caller, parent, child, initTouch, !caller.equals(Caller.Others));
+        return issueIfExist(file, caller, parent, child, initTouch, caller.asynchFire());
     }
 
 
@@ -263,6 +271,11 @@ public final class FileObjectFactory {
         //use cached info as much as possible + do refresh if something is wrong
         //exist = (parent != null) ? child != null : (((foForFile = get(file)) != null && foForFile.isValid()) || touchExists(file, realExists));
         foForFile = getCachedOnly(file);
+        if (caller == Caller.Refresh && foForFile != null && !foForFile.isValid()) {
+            // clear the impeach state, we know the file exists
+            fcb.impeachExistence(file, true);
+            foForFile = null;
+        }
         if (parent != null && parent.isValid()) {
             if (child != null) {
                 if (foForFile == null) {
