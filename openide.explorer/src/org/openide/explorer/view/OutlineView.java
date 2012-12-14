@@ -487,7 +487,7 @@ public class OutlineView extends JScrollPane {
     }
     
     /**
-     * Getter for the embeded table component.
+     * Getter for the embedded table component.
      */
     public Outline getOutline() {
         return outline;
@@ -1222,7 +1222,7 @@ public class OutlineView extends JScrollPane {
     /** Actions constants comes from {@link java.awt.dnd.DnDConstants}.
     * All actions are allowed by default.
     * @return int representing set of actions which are allowed when dropping
-    * into the asociated component.
+    * into the associated component.
     */
     public int getAllowedDropActions() {
         return allowedDropActions;
@@ -1231,7 +1231,7 @@ public class OutlineView extends JScrollPane {
     /** Actions constants from {@link java.awt.dnd.DnDConstants}.
     * @param t The transferable for which the allowed drop actions are requested
     * @return int representing set of actions which are allowed when dropping
-    * into the asociated component. By default it returns {@link #getAllowedDropActions()}.
+    * into the associated component. By default it returns {@link #getAllowedDropActions()}.
     */
     protected int getAllowedDropActions(Transferable t) {
         return getAllowedDropActions();
