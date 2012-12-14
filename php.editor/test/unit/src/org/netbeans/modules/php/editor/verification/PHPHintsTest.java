@@ -139,4 +139,28 @@ public class PHPHintsTest extends PHPHintsTestBase {
         checkSuggestion(new AddUseImportSuggestion(), "testAddUseImportSuggestion_02.php", "new Foox\\Barx();^");
     }
 
+    public void testIfBracesHint_01() throws Exception {
+        checkHintsInStartEndFile(new BracesHint.IfBracesHint(), "testIfBracesHint_01.php");
+    }
+
+    public void testIfBracesHint_02() throws Exception {
+        checkHintsInStartEndFile(new BracesHint.IfBracesHint(), "testIfBracesHint_02.php");
+    }
+
+    public void testDoWhileBracesHint() throws Exception {
+        checkHintsInStartEndFile(new BracesHint.DoWhileBracesHint(), "testDoWhileBracesHint.php");
+    }
+
+    public void testWhileBracesHint() throws Exception {
+        checkHintsInStartEndFile(new BracesHint.WhileBracesHint(), "testWhileBracesHint.php");
+    }
+
+    public void testForBracesHint() throws Exception {
+        checkHintsInStartEndFile(new BracesHint.ForBracesHint(), "testForBracesHint.php");
+    }
+
+    public void testForEachBracesHint() throws Exception {
+        checkHintsInStartEndFile(new BracesHint.ForEachBracesHint(), "testForEachBracesHint.php");
+    }
+
 }
