@@ -59,7 +59,6 @@ import java.util.logging.Level;
 import org.netbeans.modules.subversion.SvnFileNode;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 
@@ -123,7 +122,7 @@ public class DiffNode extends AbstractNode {
     @SuppressWarnings("unchecked") // Adding getCookie(Class<Cookie> klass) results in name clash
     @Override
     public Cookie getCookie(Class klass) {
-        FileObject fo = FileUtil.toFileObject(getSetup().getBaseFile());
+        FileObject fo = getLookup().lookup(FileObject.class);
         if (fo != null) {
             try {
                 DataObject dobj = DataObject.find(fo);
