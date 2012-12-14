@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.module.main;
+package org.netbeans.modules.css.editor;
+
+import javax.swing.text.BadLocationException;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.css.lib.TestUtil;
+import org.netbeans.modules.css.lib.api.CssParserResult;
+import org.netbeans.modules.css.lib.api.NodeUtil;
+import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
  *
- * @author mfukala@netbeans.org
+ * @author marekfukala
  */
-public class TextModuleTest extends CssModuleTestBase {
+public class CssErrorFiltersTest extends NbTestCase {
 
-    public TextModuleTest(String testName) {
-        super(testName);
+    public CssErrorFiltersTest(String name) {
+        super(name);
+    }
+
+    public void testIEHack() throws ParseException, BadLocationException {
+        String source = "div { color: ble \\9; } ";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertEquals(0, result.getDiagnostics().size());
+
     }
     
-    public void testProperties() {
-        assertPropertyValues("hanging-punctuation", "first force-end");
-        assertPropertyValues("hyphenate-limit-chars", "auto", "1", "1 2", "1 2 3");
-        assertPropertyValues("text-align", "start center", "center");
+    public void testIEStarHack() throws ParseException, BadLocationException {
+        String source = "div { *color: ble; } ";
+
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertEquals(0, result.getDiagnostics().size());
+
     }
-    
-    public void testTextOverflow() {
-        assertPropertyValues("text-overflow-ellipsis", "\"one\"");
-        assertPropertyValues("text-overflow-ellipsis", "\"one\" \"two\"");
-        assertPropertyValues("text-overflow-ellipsis", "url(http://sg.sg)");
-        
-        assertPropertyValues("text-overflow-mode", "clip");
-        
-        assertPropertyValues("text-overflow", "clip");
-        assertPropertyValues("text-overflow", "ellipsis");
-        assertPropertyValues("text-overflow", "ellipsis-word");
-        
-        assertPropertyValues("text-overflow", "\"one\" url(htpp://sg.sg)");
-     
-    }
-    
-    public void testWord_OverflowWrap() {
-        assertPropertyValues("word-wrap", "normal");
-        assertPropertyValues("word-wrap", "break-word");
-        assertPropertyValues("word-wrap", "inherit");
-        
-        assertPropertyValues("overflow-wrap", "normal");
-        assertPropertyValues("overflow-wrap", "break-word");
-        assertPropertyValues("overflow-wrap", "inherit");
-        
-   }
-    
 }
