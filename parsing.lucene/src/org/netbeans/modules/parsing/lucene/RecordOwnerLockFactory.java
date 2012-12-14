@@ -63,6 +63,8 @@ class RecordOwnerLockFactory extends NativeFSLockFactory {
     private final Set</*@GuardedBy("this")*/RecordOwnerLock> locked = Collections.newSetFromMap(new IdentityHashMap<RecordOwnerLock, Boolean>());
     //@GuardedBy("this")
     private Thread owner;
+    //@GuardedBy("this")
+    private Exception caller;
 
     RecordOwnerLockFactory() throws IOException {
         super();
@@ -71,7 +73,12 @@ class RecordOwnerLockFactory extends NativeFSLockFactory {
     @CheckForNull
     Thread getOwner() {
         return owner;
-    }    
+    }
+
+    @CheckForNull
+    Exception getCaller() {
+        return caller;
+    }
 
     /**
      * Force freeing of lock file.
@@ -98,7 +105,10 @@ class RecordOwnerLockFactory extends NativeFSLockFactory {
     @Override
     public void clearLock(String lockName) throws IOException {
         super.clearLock(lockName);
-        owner = null;
+        synchronized (this) {
+            owner = null;
+            caller = null;
+        }
     }
 
 
@@ -107,7 +117,10 @@ class RecordOwnerLockFactory extends NativeFSLockFactory {
         @NonNull final RecordOwnerLock l) {
         Parameters.notNull("t", t); //NOI18N
         Parameters.notNull("l", l); //NOI18N
-        owner = t;
+        if (owner != t) {
+            owner = t;
+            caller = new Exception();
+        }
         locked.add(l);
     }
 
@@ -116,6 +129,7 @@ class RecordOwnerLockFactory extends NativeFSLockFactory {
         Parameters.notNull("l", l); //NOI18N
         locked.remove(l);
         owner = null;
+        caller = null;
     }
     
     private class RecordOwnerLock extends Lock {

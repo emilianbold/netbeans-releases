@@ -1079,6 +1079,10 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                         message.append("owner:").append(ownerThread).             //NOI18N
                         append("(").append(ownerThread.getId()).append(")");      //NOI18N
                     }
+                    final Exception caller = ((RecordOwnerLockFactory)lockFactory).getCaller();
+                    if (caller != null) {
+                        message.append(" from: ").append(Arrays.asList(caller.getStackTrace())); //NOI18N
+                    }
                 }
             }
             return Exceptions.attachMessage(ioe, message.toString());

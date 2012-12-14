@@ -238,7 +238,9 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                 ListenersImpl.getImpl().fireProjectOpened(prj);
             }
         } else {
-            disabledProjects.add(id);
+            synchronized (lock) {
+                disabledProjects.add(id);
+            }
         }
         return prj;
     }
@@ -313,6 +315,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                     prj = (prj == null) ? (ProjectBase) UIDCsmConverter.UIDtoProject(uid) : prj;
                     assert prj != null : "null object for UID " + uid;
                 }
+                disabledProjects.remove(platformProjectKey);
             }
             cleanModel = (platf2csm.isEmpty());
         }

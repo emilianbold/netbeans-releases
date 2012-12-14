@@ -47,6 +47,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
@@ -72,8 +73,7 @@ import org.openide.util.Parameters;
 //@NotThreadSafe
 public final class Context {
 
-    private final URL rootURL;
-    private final FileObject indexBaseFolder;
+    private final URL rootURL;    
     private final String indexerName;
     private final int indexerVersion;
     private final boolean followUpJob;
@@ -83,16 +83,21 @@ public final class Context {
     private final SuspendStatus suspendedStatus;
     private final LogContext logContext;
     private final Map<String,Object> props;
+    private final Callable<FileObject> indexBaseFolderFactory;
     private FileObject indexFolder;
     private boolean allFilesJob;
     private FileObject root;
+    private FileObject indexBaseFolder;
     private IndexingSupport indexingSupport;    
 
     private final IndexFactoryImpl factory;
 
-    Context (final FileObject indexBaseFolder,
-             final URL rootURL, final String indexerName, final int indexerVersion,
-             final IndexFactoryImpl factory, boolean followUpJob,
+    Context (@NonNull final FileObject indexBaseFolder,
+             @NonNull final URL rootURL,
+             @NonNull final String indexerName,
+             final int indexerVersion,
+             @NullAllowed final IndexFactoryImpl factory,
+             final boolean followUpJob,
              final boolean checkForEditorModifications,
              final boolean sourceForBinaryRoot,
              @NonNull final SuspendStatus suspendedStatus,
@@ -102,7 +107,37 @@ public final class Context {
         assert indexBaseFolder != null;
         assert rootURL != null;
         assert indexerName != null;
+        this.indexBaseFolderFactory = null;
         this.indexBaseFolder = indexBaseFolder;
+        this.rootURL = rootURL;
+        this.indexerName = indexerName;
+        this.indexerVersion = indexerVersion;
+        this.factory = factory != null ? factory : LuceneIndexFactory.getDefault();
+        this.followUpJob = followUpJob;
+        this.checkForEditorModifications = checkForEditorModifications;
+        this.sourceForBinaryRoot = sourceForBinaryRoot;
+        this.cancelRequest = cancelRequest;
+        this.suspendedStatus = suspendedStatus;
+        this.logContext = logContext;
+        this.props = new HashMap<String, Object>();
+    }
+
+    Context (@NonNull final Callable<FileObject> indexBaseFolderFactory,
+             @NonNull final URL rootURL,
+             @NonNull final String indexerName,
+             final int indexerVersion,
+             @NullAllowed final IndexFactoryImpl factory,
+             final boolean followUpJob,
+             final boolean checkForEditorModifications,
+             final boolean sourceForBinaryRoot,
+             @NonNull final SuspendStatus suspendedStatus,
+             @NullAllowed final CancelRequest cancelRequest,
+             @NullAllowed final LogContext logContext
+    ) throws IOException {
+        assert indexBaseFolderFactory != null;
+        assert rootURL != null;
+        assert indexerName != null;
+        this.indexBaseFolderFactory = indexBaseFolderFactory;
         this.rootURL = rootURL;
         this.indexerName = indexerName;
         this.indexerVersion = indexerVersion;
@@ -129,6 +164,19 @@ public final class Context {
         if (this.indexFolder == null) {
             try {
                 final String path = getIndexerPath(indexerName, indexerVersion);
+                if (this.indexBaseFolder == null) {
+                    try {
+                        this.indexBaseFolder = this.indexBaseFolderFactory.call();
+                    } catch (Exception ex) {
+                        throw new IllegalStateException(ex);
+                    }
+                    if (this.indexBaseFolder == null) {
+                        throw new IllegalStateException(
+                            String.format(
+                                "Factory %s returned null index base folder.",  //NOI18N
+                                this.indexBaseFolderFactory));
+                    }
+                }
                 this.indexFolder = FileUtil.createFolder(this.indexBaseFolder,path);
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
