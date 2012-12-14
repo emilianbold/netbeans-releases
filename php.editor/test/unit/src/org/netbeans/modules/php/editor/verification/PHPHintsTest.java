@@ -163,4 +163,24 @@ public class PHPHintsTest extends PHPHintsTestBase {
         checkHintsInStartEndFile(new BracesHint.ForEachBracesHint(), "testForEachBracesHint.php");
     }
 
+    public void testGetSuperglobalsHint() throws Exception {
+        checkHintsInStartEndFile(new SuperglobalsHint.GetSuperglobalHint(), "testGetSuperglobalsHint.php");
+    }
+
+    public void testPostSuperglobalsHint() throws Exception {
+        checkHintsInStartEndFile(new SuperglobalsHint.PostSuperglobalHint(), "testPostSuperglobalsHint.php");
+    }
+
+    public void testCookieSuperglobalsHint() throws Exception {
+        checkHintsInStartEndFile(new SuperglobalsHint.CookieSuperglobalHint(), "testCookieSuperglobalsHint.php");
+    }
+
+    public void testServerSuperglobalsHint() throws Exception {
+        checkHintsInStartEndFile(new SuperglobalsHint.ServerSuperglobalHint(), "testServerSuperglobalsHint.php");
+    }
+
+    public void testEnvSuperglobalsHint() throws Exception {
+        checkHintsInStartEndFile(new SuperglobalsHint.EnvSuperglobalHint(), "testEnvSuperglobalsHint.php");
+    }
+
 }
