@@ -152,6 +152,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
     private static final String XHTML_MIME_TYPE = "text/xhtml"; // NOI18N
     private static final String PHP_MIME_TYPE = "text/x-php5"; // NOI18N
     private static final String TPL_MIME_TYPE = "text/x-tpl"; // NOI18N
+    private static final String TWIG_MIME_TYPE = "text/x-twig"; // NOI18N
     //private static final String GSP_TAG_MIME_TYPE = "application/x-gsp"; // NOI18N
     private static final Map<String, Translator> translators = new HashMap<String, Translator>();
 
@@ -163,6 +164,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         translators.put(XHTML_MIME_TYPE, new XhtmlTranslator());
         translators.put(PHP_MIME_TYPE, new PhpTranslator());
         translators.put(TPL_MIME_TYPE, new TplTranslator());
+        translators.put(TWIG_MIME_TYPE, new TwigTranslator());
     }
     // If you change this, update the testcase reference
     private static final String GENERATED_IDENTIFIER = "__UNKNOWN__"; // NOI18N
@@ -393,6 +395,37 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
             return embeddings;
         }
     } // End of TplTranslator class
+
+    private static final class TwigTranslator implements Translator {
+
+        @Override
+        public List<Embedding> translate(Snapshot snapshot) {
+            TokenHierarchy<?> th = snapshot.getTokenHierarchy();
+            if (th == null) {
+                //likely the twig language couldn't be found
+                LOG.info("Cannot get TokenHierarchy from snapshot " + snapshot); //NOI18N
+                return Collections.emptyList();
+            }
+
+            TokenSequence<? extends TokenId> tokenSequence = th.tokenSequence();
+            List<Embedding> embeddings = new ArrayList<Embedding>();
+
+            JsAnalyzerState state = new JsAnalyzerState();
+            while (tokenSequence.moveNext()) {
+                Token<? extends TokenId> token = tokenSequence.token();
+
+                if (token.id().name().equals("T_HTML") || token.id().name().equals("T_TWIG_RAW")) { //NOI18N
+                    TokenSequence<? extends HTMLTokenId> ts = tokenSequence.embedded(HTMLTokenId.language());
+                    if (ts == null) {
+                        continue;
+                    }
+                    extractJavaScriptFromHtml(snapshot, ts, state, embeddings);
+                }
+            }
+
+            return embeddings;
+        }
+    } // End of TwigTranslator class
 
     private static final class RhtmlTranslator implements Translator {
 
