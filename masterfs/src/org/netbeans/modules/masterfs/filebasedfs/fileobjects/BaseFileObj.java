@@ -476,10 +476,14 @@ public abstract class BaseFileObj extends FileObject {
         }
         //TODO: RELOCK
         LockForFile.relock(file, file2Rename);
-
+        
+        afterRename();
+        
         fireFileRenamedEvent(originalName, originalExt);    
     }
 
+    protected void afterRename() {
+    }
 
     public final void rename(final FileLock lock, final String name, final String ext) throws IOException {
         FSCallable<Boolean> c = new FSCallable<Boolean>() {
@@ -892,6 +896,8 @@ public abstract class BaseFileObj extends FileObject {
         }
         assert newRoot != null;
         fileName = newRoot;
+        
+        afterRename();
     }
     
 
