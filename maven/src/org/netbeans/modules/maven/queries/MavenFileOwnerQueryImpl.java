@@ -277,7 +277,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
         //#223841 at least one project opened is a stronger condition, embedder gets sometimes reset.
         //once we have the project loaded, not loaded embedder doesn't matter anymore, we have to process.
         // sometimes the embedder is loaded even though a maven project is not yet loaded, it doesn't hurt to proceed then.
-        if (!NbMavenProjectFactory.isAtLeastOneMavenProjectAround() || !EmbedderFactory.isProjectEmbedderLoaded()) { 
+        if (!NbMavenProjectFactory.isAtLeastOneMavenProjectAround() && !EmbedderFactory.isProjectEmbedderLoaded()) { 
             return null;
         }
 
