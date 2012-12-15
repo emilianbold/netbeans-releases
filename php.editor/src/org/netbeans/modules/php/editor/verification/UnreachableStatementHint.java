@@ -49,6 +49,8 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
+import org.netbeans.modules.php.editor.parser.astnodes.BreakStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.ContinueStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
@@ -56,6 +58,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
+import org.netbeans.modules.php.editor.parser.astnodes.SwitchCase;
+import org.netbeans.modules.php.editor.parser.astnodes.ThrowStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
@@ -176,6 +180,14 @@ public class UnreachableStatementHint extends AbstractHint {
         }
 
         @Override
+        public void visit(SwitchCase node) {
+            scan(node.getValue());
+            blocks.push(new CheckedBlock());
+            scan(node.getActions());
+            processedBlocks.add(blocks.pop());
+        }
+
+        @Override
         public void visit(Program node) {
             blocks.push(new CheckedBlock());
             super.visit(node);
@@ -192,9 +204,31 @@ public class UnreachableStatementHint extends AbstractHint {
         @Override
         public void visit(ReturnStatement node) {
             super.visit(node);
+            processLastStatement(node);
+        }
+
+        @Override
+        public void visit(BreakStatement node) {
+            super.visit(node);
+            processLastStatement(node);
+        }
+
+        @Override
+        public void visit(ContinueStatement node) {
+            super.visit(node);
+            processLastStatement(node);
+        }
+
+        @Override
+        public void visit(ThrowStatement node) {
+            super.visit(node);
+            processLastStatement(node);
+        }
+
+        private void processLastStatement(Statement node) {
             if (!blocks.empty()) {
                 CheckedBlock lastCheckedBlock = blocks.peek();
-                lastCheckedBlock.setReturnStatement(node);
+                lastCheckedBlock.setLastStatement(node);
             }
         }
 
@@ -202,7 +236,7 @@ public class UnreachableStatementHint extends AbstractHint {
         public void scan(ASTNode node) {
             if (!blocks.empty()) {
                 CheckedBlock lastCheckedBlock = blocks.peek();
-                if (lastCheckedBlock.hasReturnStatement() && lastCheckedBlock.getUnreachableStatement() == null) {
+                if (lastCheckedBlock.hasLastStatement() && lastCheckedBlock.getUnreachableStatement() == null) {
                     lastCheckedBlock.setUnreachableStatement(node);
                 }
             }
@@ -212,15 +246,15 @@ public class UnreachableStatementHint extends AbstractHint {
     }
 
     private static final class CheckedBlock {
-        private ReturnStatement returnStatement;
+        private Statement lastStatement;
         private ASTNode unreachableStatement;
 
-        public void setReturnStatement(ReturnStatement returnStatement) {
-            this.returnStatement = returnStatement;
+        public void setLastStatement(Statement lastStatement) {
+            this.lastStatement = lastStatement;
         }
 
-        public boolean hasReturnStatement() {
-            return returnStatement != null;
+        public boolean hasLastStatement() {
+            return lastStatement != null;
         }
 
         public void setUnreachableStatement(ASTNode unreachableStatement) {
@@ -239,7 +273,7 @@ public class UnreachableStatementHint extends AbstractHint {
     }
 
     @Override
-    @NbBundle.Messages("UnreachableStatementHintDesc=Detects unreachable statements after Return statement.")
+    @NbBundle.Messages("UnreachableStatementHintDesc=Detects unreachable statements after return, throw, break and continue statements.")
     public String getDescription() {
         return Bundle.UnreachableStatementHintDesc();
     }
