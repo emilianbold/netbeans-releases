@@ -343,14 +343,17 @@
                     <file name="org-netbeans-modules-php-editor-verification-UninitializedVariableHint.instance">
                         <attr name="position" intvalue="700" />
                     </file>
-                    <file name="org-netbeans-modules-php-editor-verification-UnusedUsesHint.instance">
+                    <file name="org-netbeans-modules-php-editor-verification-UnreachableStatementHint.instance">
                         <attr name="position" intvalue="800" />
                     </file>
-                    <file name="org-netbeans-modules-php-editor-verification-UnusedVariableHint.instance">
+                    <file name="org-netbeans-modules-php-editor-verification-UnusedUsesHint.instance">
                         <attr name="position" intvalue="900" />
                     </file>
-                    <file name="org-netbeans-modules-php-editor-verification-WrongOrderOfArgsHint.instance">
+                    <file name="org-netbeans-modules-php-editor-verification-UnusedVariableHint.instance">
                         <attr name="position" intvalue="1000" />
+                    </file>
+                    <file name="org-netbeans-modules-php-editor-verification-WrongOrderOfArgsHint.instance">
+                        <attr name="position" intvalue="1100" />
                     </file>
                 </folder>
                 <folder name="suggestions">

@@ -191,4 +191,8 @@ public class PHPHintsTest extends PHPHintsTestBase {
         checkHintsInStartEndFile(new EmptyStatementHint(), "testEmptyStatementHint.php");
     }
 
+    public void testUnreachableStatementHint() throws Exception {
+        checkHintsInStartEndFile(new UnreachableStatementHint(), "testUnreachableStatementHint.php");
+    }
+
 }
