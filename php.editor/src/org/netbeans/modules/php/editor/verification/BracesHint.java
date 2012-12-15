@@ -108,7 +108,7 @@ public abstract class BracesHint extends AbstractHint {
                     addHint(node, trueStatement, Bundle.IfBracesHintText());
                 }
                 Statement falseStatement = node.getFalseStatement();
-                if (falseStatement != null && !(falseStatement instanceof Block)) {
+                if (falseStatement != null && !(falseStatement instanceof Block) && !(falseStatement instanceof IfStatement)) {
                     addHint(node, falseStatement, Bundle.IfBracesHintText());
                 }
             }

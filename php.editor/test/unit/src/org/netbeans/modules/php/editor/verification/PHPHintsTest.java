@@ -151,6 +151,10 @@ public class PHPHintsTest extends PHPHintsTestBase {
         checkHintsInStartEndFile(new BracesHint.IfBracesHint(), "testIfBracesHint_02.php");
     }
 
+    public void testIfBracesHint_03() throws Exception {
+        checkHintsInStartEndFile(new BracesHint.IfBracesHint(), "testIfBracesHint_03.php");
+    }
+
     public void testDoWhileBracesHint() throws Exception {
         checkHintsInStartEndFile(new BracesHint.DoWhileBracesHint(), "testDoWhileBracesHint.php");
     }

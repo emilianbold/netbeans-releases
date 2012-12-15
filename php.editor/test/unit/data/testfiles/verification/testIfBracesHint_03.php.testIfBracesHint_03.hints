@@ -2,11 +2,11 @@
             --------
 HINT:If-Else Statements Must Use Braces
 FIX:Add Braces
-                echo "";
-                --------
+            echo "";
+            --------
 HINT:If-Else Statements Must Use Braces
 FIX:Add Braces
-                echo "";
-                --------
+            echo "";
+            --------
 HINT:If-Else Statements Must Use Braces
 FIX:Add Braces
