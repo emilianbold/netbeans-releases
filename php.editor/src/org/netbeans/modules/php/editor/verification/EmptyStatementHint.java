@@ -78,7 +78,7 @@ public class EmptyStatementHint extends AbstractHint {
     private final class CheckVisitor extends DefaultVisitor {
         private final FileObject fileObject;
         private final BaseDocument baseDocument;
-        private final LinkedList<Hint> hints;
+        private final List<Hint> hints;
 
         public CheckVisitor(FileObject fileObject, BaseDocument baseDocument) {
             this.fileObject = fileObject;
