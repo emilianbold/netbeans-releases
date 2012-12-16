@@ -654,7 +654,18 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testIssue223823_02() throws Exception {
         checkOccurrences("testfiles/markoccurences/issue223823.js","            scope[name] = v^al;", true);
     }
-        
+    
+    public void testIssue223891_01() throws Exception {
+        checkOccurrences("testfiles/structure/issue223891/issue223891.js"," * @param {Date} a^a", true);
+    }
+     
+    public void testIssue223891_02() throws Exception {
+        checkOccurrences("testfiles/structure/issue223891/issue223891.js"," * @returns {Utils22^3891}", true);
+    }
+    
+    public void testIssue223891_03() throws Exception {
+        checkOccurrences("testfiles/structure/issue223891/issue223891.js","    this.t^est = aa.getDay();", true);
+    }
     private String getTestPath() {
         return getTestFolderPath() + "/" + getTestName() + ".js";//NOI18N
     }
