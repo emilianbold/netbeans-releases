@@ -101,13 +101,11 @@ public class FileObjTest extends NbTestCase {
         fileObject1.rename(lock, fileObject1.getName(), null);
         lock.releaseLock();
         assertFalse("fileObject1 should remain invalid after rename.", fileObject1.isValid());
-
-        try {
-            fileObject1.getOutputStream();
-            fail("Should not be possible to get OutputStream on invalid FileObject.");
-        } catch (Exception e) {
-            // OK - fileObject1 is invalid
-        }
+        
+        OutputStream os = fileObject1.getOutputStream();
+        assertTrue("Valid file", FileUtil.toFile(fileObject1).exists());
+        assertFalse("Invalid file object", fileObject1.isValid());
+        assertNotNull("Since #211483 it is possible to obtain OutputStream for valid file/invalid fo", os);
     }
 
     /** #165406 - tests that only one event is fired for single change. */
@@ -191,37 +189,42 @@ public class FileObjTest extends NbTestCase {
 //        doFileObjectForBrokenLink(false);
 //    }
     
-    private void doFileObjectForBrokenLink(boolean listFirst) throws Exception {
+    private void doFileObjectForBrokenLink (boolean listFirst) throws Exception {
         clearWorkDir();
         File wd = new File(getWorkDir(), "wd");
         wd.mkdirs();
-        
+
         File original = new File(wd, "original");
 //        original.createNewFile();
         File lockFile = new File(wd, "wlock");
-        try {
-            ProcessBuilder pb = new ProcessBuilder().directory(wd).command(
-                new String[] { "ln", "-s", original.getName(), lockFile.getName() }
-            );
-            pb.start().waitFor();
-            final List<String> names = Arrays.asList(lockFile.getParentFile().list());
-            assertEquals("One file", 1, names.size());
-            // file exists, or at least dir.listFiles lists the file
-            assertTrue(names.contains(lockFile.getName()));
-            // java.io.File.exists returns false
-            assertFalse(lockFile.exists());
+        for (int i = 1; i <= 2; ++i) {
+            try {
+                lockFile.delete();
+                FileUtil.toFileObject(wd).refresh();
+                ProcessBuilder pb = new ProcessBuilder().directory(wd).command(
+                    new String[] { "ln", "-s", original.getName(), lockFile.getName() }
+                );
+                pb.start().waitFor();
+                final List<String> names = Arrays.asList(lockFile.getParentFile().list());
+                assertEquals("One file", 1, names.size());
+                // file exists, or at least dir.listFiles lists the file
+                assertTrue(names.contains(lockFile.getName()));
+                // java.io.File.exists returns false
+                assertFalse(lockFile.exists());
 
-            if (listFirst) {
-                FileObject root = FileUtil.toFileObject(wd);
-                List<FileObject> arr = Arrays.asList(root.getChildren());
-                assertEquals("One files: " + arr, 1, arr.size());
-                assertEquals("Has the right name", lockFile.getName(), arr.get(0).getName());
+                if (listFirst) {
+                    FileObject root = FileUtil.toFileObject(wd);
+                    root.refresh();
+                    List<FileObject> arr = Arrays.asList(root.getChildren());
+                    assertEquals("Round " + i + " One files: " + arr, 1, arr.size());
+                    assertEquals("Round " + i + "Has the right name", lockFile.getName(), arr.get(0).getName());
+                }
+
+                // and no FileObject is reated for such a file
+                assertNotNull(FileUtil.toFileObject(lockFile));
+            } finally {
+                lockFile.delete();
             }
-
-            // and no FileObject is reated for such a file
-            assertNotNull(FileUtil.toFileObject(lockFile));
-        } finally {
-            lockFile.delete();
         }
     }
 }
