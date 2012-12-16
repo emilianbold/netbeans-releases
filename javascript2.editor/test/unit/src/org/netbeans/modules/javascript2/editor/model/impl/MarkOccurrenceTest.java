@@ -666,6 +666,15 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testIssue223891_03() throws Exception {
         checkOccurrences("testfiles/structure/issue223891/issue223891.js","    this.t^est = aa.getDay();", true);
     }
+    
+    public void testIssue217938_01() throws Exception {
+        checkOccurrences("testfiles/structure/issue217938.js","    this.par1 = pa^r1; // this one is not in navigator", true);
+    }
+    
+    public void testIssue217938_02() throws Exception {
+        checkOccurrences("testfiles/structure/issue217938.js","    this.pa^r1 = par1; // this one is not in navigator", true);
+    }
+    
     private String getTestPath() {
         return getTestFolderPath() + "/" + getTestName() + ".js";//NOI18N
     }
