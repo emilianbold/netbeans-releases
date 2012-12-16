@@ -51,6 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.StreamHandler;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *
@@ -62,6 +63,7 @@ public class DispatchingHandlerTest extends NbTestCase {
         super(s);
     }
     
+    @RandomlyFails // NB-Core-Build #9138, #9370: Unstable
     public void testContinuousMessagesShouldNotPreventOutput() throws InterruptedException {
         class MyHandler extends Handler {
             final List<LogRecord> records = new CopyOnWriteArrayList<LogRecord>();

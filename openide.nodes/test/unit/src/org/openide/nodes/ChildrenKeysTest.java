@@ -398,6 +398,7 @@ public class ChildrenKeysTest extends NbTestCase {
 
     }
 
+    @RandomlyFails // NB-Core-Build #8615, #9022, #9163, #9332, #9370
     public void testGCWhenGetNodesTrue() throws Exception {
 
 
