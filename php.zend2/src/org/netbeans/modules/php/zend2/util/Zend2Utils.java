@@ -44,14 +44,13 @@ package org.netbeans.modules.php.zend2.util;
 import java.io.File;
 import java.util.regex.Pattern;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.filesystems.FileObject;
 
 public final class Zend2Utils {
 
     // controllers
     private static final String CONTROLLER_DIRECTORY = "Controller"; // NOI18N
     private static final String CONTROLLER_FILE_SUFFIX = "Controller.php"; // NOI18N
-    private static final String CONTROLLER_CLASS_SUFFIX = "Controller"; // NOI18N
+    public static final String CONTROLLER_CLASS_SUFFIX = "Controller"; // NOI18N
     private static final String CONTROLLER_METHOD_SUFFIX = "Action"; // NOI18N
     // views
     private static final String VIEW_DIRECTORY = "view"; // NOI18N
@@ -95,7 +94,7 @@ public final class Zend2Utils {
                 && file.getParentFile().getName().equals(CONTROLLER_DIRECTORY);
     }
 
-    static File getController(File view) {
+    public static File getController(File view) {
         String namespace = getNamespace(view);
         String controllerName = getControllerName(view);
         File controller = PropertyUtils.resolveFile(view.getParentFile(), String.format(CONTROLLER_RELATIVE_FILE, namespace, controllerName));
@@ -115,6 +114,14 @@ public final class Zend2Utils {
 
     static String getControllerName(String viewFolderName) {
         return undashize(viewFolderName, false) + CONTROLLER_CLASS_SUFFIX;
+    }
+
+    public static String getActionName(File view) {
+        return getActionName(view.getName().substring(0, view.getName().length() - FILE_VIEW_EXTENSION.length()));
+    }
+
+    static String getActionName(String viewName) {
+        return undashize(viewName, true) + CONTROLLER_METHOD_SUFFIX;
     }
 
     // AllJobs -> all-jobs

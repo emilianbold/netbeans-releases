@@ -41,33 +41,56 @@
  */
 package org.netbeans.modules.php.zend2.ui.actions;
 
-import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
+import java.io.File;
+import org.netbeans.modules.csl.api.UiUtils;
+import org.netbeans.modules.php.api.editor.EditorSupport;
+import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.spi.framework.actions.GoToActionAction;
-import org.netbeans.modules.php.spi.framework.actions.GoToViewAction;
 import org.netbeans.modules.php.zend2.util.Zend2Utils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 
-public class Zend2PhpModuleActionsExtender extends PhpModuleActionsExtender {
+public class Zend2GoToActionAction extends GoToActionAction {
 
-    @Override
-    public boolean isViewWithAction(FileObject fo) {
-        return Zend2Utils.isViewWithAction(FileUtil.toFile(fo));
+    private static final long serialVersionUID = -5246856421654L;
+
+    private final File file;
+
+    public Zend2GoToActionAction(File file) {
+        assert Zend2Utils.isViewWithAction(file);
+        this.file = file;
     }
 
     @Override
-    public boolean isActionWithView(FileObject fo) {
-        return Zend2Utils.isController(FileUtil.toFile(fo));
+    public boolean goToAction() {
+        File controller = Zend2Utils.getController(file);
+        if (controller != null) {
+            FileObject fo = FileUtil.toFileObject(controller);
+            if (fo != null) {
+                UiUtils.open(fo, getActionMethodOffset(fo));
+                return true;
+            }
+        }
+        return false;
     }
 
-    @Override
-    public GoToViewAction getGoToViewAction(FileObject fo, int offset) {
-        return super.getGoToViewAction(fo, offset);
-    }
-
-    @Override
-    public GoToActionAction getGoToActionAction(FileObject fo, int offset) {
-        return new Zend2GoToActionAction(FileUtil.toFile(fo));
+    private int getActionMethodOffset(FileObject controller) {
+        String actionMethodName = Zend2Utils.getActionName(file);
+        EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
+        for (PhpClass phpClass : editorSupport.getClasses(controller)) {
+            if (phpClass.getName().endsWith(Zend2Utils.CONTROLLER_CLASS_SUFFIX)) {
+                if (actionMethodName != null) {
+                    for (PhpClass.Method method : phpClass.getMethods()) {
+                        if (actionMethodName.equals(method.getName())) {
+                            return method.getOffset();
+                        }
+                    }
+                }
+                return phpClass.getOffset();
+            }
+        }
+        return DEFAULT_OFFSET;
     }
 
 }

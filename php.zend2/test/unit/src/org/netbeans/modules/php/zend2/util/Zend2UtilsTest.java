@@ -158,6 +158,19 @@ public class Zend2UtilsTest extends NbTestCase {
         assertEquals("AllJobsController", Zend2Utils.getControllerName("all-jobs"));
     }
 
+    public void testActionName() {
+        assertEquals("indexAction", Zend2Utils.getActionName("index"));
+        assertEquals("allJobsAction", Zend2Utils.getActionName("all-jobs"));
+
+        FileObject deleteView = zf2project.getFileObject("module/Album/view/album/album/delete.phtml");
+        assertNotNull(deleteView);
+        assertEquals("deleteAction", Zend2Utils.getActionName(FileUtil.toFile(deleteView)));
+
+        FileObject helloWorldView = zf2project.getFileObject("module/Album/view/album/my-test/hello-world.phtml");
+        assertNotNull(helloWorldView);
+        assertEquals("helloWorldAction", Zend2Utils.getActionName(FileUtil.toFile(helloWorldView)));
+    }
+
     public void testDashize() {
         assertEquals("test", Zend2Utils.dashize("Test"));
         assertEquals("test", Zend2Utils.dashize("test"));
