@@ -42,9 +42,16 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.languages.apacheconf;
+package org.netbeans.modules.languages.apacheconf.lexer;
 
+import java.util.Collection;
+import java.util.EnumSet;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.modules.languages.apacheconf.csl.ApacheConfLanguageConfig;
+import org.netbeans.spi.lexer.LanguageHierarchy;
+import org.netbeans.spi.lexer.Lexer;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
  *
@@ -66,6 +73,24 @@ public enum ApacheConfTokenId implements TokenId {
 
     private final String name;
 
+    private static final Language<ApacheConfTokenId> LANGUAGE = new LanguageHierarchy<ApacheConfTokenId>() {
+
+        @Override
+        protected Collection<ApacheConfTokenId> createTokenIds() {
+            return EnumSet.allOf(ApacheConfTokenId.class);
+        }
+
+        @Override
+        protected Lexer<ApacheConfTokenId> createLexer(LexerRestartInfo<ApacheConfTokenId> info) {
+            return ApacheConfLexer.create(info);
+        }
+
+        @Override
+        protected String mimeType() {
+            return ApacheConfLanguageConfig.MIME_TYPE;
+        }
+    }.language();
+
     ApacheConfTokenId(String name) {
         this.name = name;
     }
@@ -73,6 +98,10 @@ public enum ApacheConfTokenId implements TokenId {
     @Override
     public String primaryCategory() {
         return name;
+    }
+
+    public static Language<ApacheConfTokenId> language() {
+        return LANGUAGE;
     }
 
 }

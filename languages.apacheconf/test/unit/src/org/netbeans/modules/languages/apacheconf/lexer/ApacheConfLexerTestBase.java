@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,38 +37,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.languages.apacheconf;
+package org.netbeans.modules.languages.apacheconf.lexer;
 
-import org.netbeans.modules.csl.api.test.CslTestBase;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.languages.apacheconf.csl.ApacheConfLanguageConfig;
+import java.io.File;
+import org.netbeans.modules.languages.apacheconf.ApacheConfTestBase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class ApacheConfTestBase extends CslTestBase {
+public abstract class ApacheConfLexerTestBase extends ApacheConfTestBase {
 
-    public ApacheConfTestBase(String testName) {
+    public ApacheConfLexerTestBase(String testName) {
         super(testName);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        clearWorkDir();
-    }
+    protected abstract String getTestResult(String filename) throws Exception;
 
-    @Override
-    protected String getPreferredMimeType() {
-        return ApacheConfLanguageConfig.MIME_TYPE;
-    }
-
-    @Override
-    protected DefaultLanguageConfig getPreferredLanguage() {
-        return new ApacheConfLanguageConfig();
+    protected void performTest(String filename) throws Exception {
+        // parse the file
+        String result = getTestResult(filename);
+        String fullClassName = this.getClass().getName();
+        String goldenFileDir = fullClassName.replace('.', '/');
+        // try to find golden file
+        String goldenFolder = getDataSourceDir().getAbsolutePath() + "/goldenfiles/" + goldenFileDir + "/";
+        File goldenFile = new File(goldenFolder + filename + ".pass");
+        if (!goldenFile.exists()) {
+            // if doesn't exist, create it
+            FileObject goldenFO = touch(goldenFolder, filename + ".pass");
+            copyStringToFileObject(goldenFO, result);
+        } else {
+            // if exist, compare it.
+            goldenFile = getGoldenFile(filename + ".pass");
+            FileObject resultFO = touch(getWorkDir(), filename + ".result");
+            copyStringToFileObject(resultFO, result);
+            assertFile(FileUtil.toFile(resultFO), goldenFile, getWorkDir());
+        }
     }
 
 }

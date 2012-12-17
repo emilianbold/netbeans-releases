@@ -39,9 +39,14 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.languages.apacheconf;
+package org.netbeans.modules.languages.apacheconf.lexer;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 
@@ -49,81 +54,33 @@ import org.netbeans.api.lexer.TokenSequence;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class ApacheConfLexerTest extends ApacheConfTestBase {
+public class ApacheConfLexerUtils {
 
-    public ApacheConfLexerTest(String name) {
-        super(name);
+    public static <T extends TokenId> TokenSequence<T> seqForText(String text, Language<T> language) {
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, language);
+        return hi.tokenSequence(language);
     }
 
-    public void testTest1() throws Exception {
-        performTest("test1");
-    }
-
-    public void testTest2() throws Exception {
-        performTest("test2");
-    }
-
-    public void testTest3() throws Exception {
-        performTest("test3");
-    }
-
-    public void testTest4() throws Exception {
-        performTest("test4");
-    }
-
-    public void testTest5() throws Exception {
-        performTest("test5");
-    }
-
-    public void testTest6() throws Exception {
-        performTest("test6");
-    }
-
-    public void testTest7() throws Exception {
-        performTest("test7");
-    }
-
-    public void testTest8() throws Exception {
-        performTest("test8");
-    }
-
-    public void testTest9() throws Exception {
-        performTest("test9");
-    }
-
-    public void testTest10() throws Exception {
-        performTest("test10");
-    }
-
-    public void testNegativeFloat() throws Exception {
-        performTest("negativeFloat");
-    }
-
-    public void testIssue215891() throws Exception {
-        performTest("issue215891");
-    }
-
-    @Override
-    protected String getTestResult(String filename) throws Exception {
-        String content = ApacheConfLexerUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/" + filename + ".conf"));
-        TokenSequence<?> ts = ApacheConfLexerUtils.seqForText(content, new ApacheConfLanguageHierarchy().language());
-        return createResult(ts);
-    }
-
-    private String createResult(TokenSequence<?> ts) throws Exception {
-        StringBuilder result = new StringBuilder();
-        while (ts.moveNext()) {
-            TokenId tokenId = ts.token().id();
-            CharSequence text = ts.token().text();
-            result.append("token #");
-            result.append(ts.index());
-            result.append(" ");
-            result.append(tokenId.name());
-            result.append(" ");
-            result.append(ApacheConfLexerUtils.replaceLinesAndTabs(text.toString()));
-            result.append("\n");
+    public static String getFileContent(File file) throws Exception{
+        StringBuilder sb = new StringBuilder();
+        String lineSep = "\n";//NOI18N
+        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8")); //NOI18N
+        String line = br.readLine();
+        while (line != null) {
+            sb.append(line);
+            sb.append(lineSep);
+            line = br.readLine();
         }
-        return result.toString();
+        br.close();
+        return sb.toString();
+    }
+
+    public static String replaceLinesAndTabs(String input) {
+        String escapedString = input;
+        escapedString = escapedString.replaceAll("\n","\\\\n"); //NOI18N
+        escapedString = escapedString.replaceAll("\r","\\\\r"); //NOI18N
+        escapedString = escapedString.replaceAll("\t","\\\\t"); //NOI18N
+        return escapedString;
     }
 
 }
