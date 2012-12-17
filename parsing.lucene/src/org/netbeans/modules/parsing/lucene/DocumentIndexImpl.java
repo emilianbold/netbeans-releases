@@ -116,7 +116,7 @@ public class DocumentIndexImpl implements DocumentIndex, Runnable {
                 store(false, true);
                 System.gc();
             } catch (IOException ioe) {
-                LOGGER.log(Level.WARNING, null, ioe);
+                LOGGER.log(Level.WARNING, ioe.getMessage());    //Reindexed in RU.storeChanges
             }
         }
     }
@@ -136,7 +136,7 @@ public class DocumentIndexImpl implements DocumentIndex, Runnable {
                 LOGGER.fine("Extra flush forced"); //NOI18N
                 store(false, true);
             } catch (IOException ioe) {
-                LOGGER.log(Level.WARNING, null, ioe);
+                LOGGER.log(Level.WARNING, ioe.getMessage());    //Reindexed in RU.storeChanges
             }
         }
     }
