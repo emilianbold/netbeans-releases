@@ -93,12 +93,12 @@ public class PhpWhereUsedQueryPlugin extends ProgressProviderAdapter implements 
             }
         }
         Results results = usages.getResults();
-        refactorResults(results, elementsBag);
+        refactorResults(results, elementsBag, usages.getDeclarationFileObject());
         fireProgressListenerStop();
         return null;
     }
 
-    protected void refactorResults(Results results, final RefactoringElementsBag elementsBag) {
+    protected void refactorResults(Results results, final RefactoringElementsBag elementsBag, FileObject declarationFileObject) {
         Collection<WhereUsedElement> resultElements = results.getResultElements();
         for (WhereUsedElement whereUsedElement : resultElements) {
             elementsBag.add(refactoring, whereUsedElement);

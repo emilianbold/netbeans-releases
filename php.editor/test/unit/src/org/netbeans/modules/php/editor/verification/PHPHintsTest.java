@@ -143,4 +143,64 @@ public class PHPHintsTest extends PHPHintsTestBase {
         checkSuggestion(new IntroduceSuggestion(), "testIssue223842.php", "Foo::{\"\"}();^");
     }
 
+    public void testIfBracesHint_01() throws Exception {
+        checkHintsInStartEndFile(new BracesHint.IfBracesHint(), "testIfBracesHint_01.php");
+    }
+
+    public void testIfBracesHint_02() throws Exception {
+        checkHintsInStartEndFile(new BracesHint.IfBracesHint(), "testIfBracesHint_02.php");
+    }
+
+    public void testIfBracesHint_03() throws Exception {
+        checkHintsInStartEndFile(new BracesHint.IfBracesHint(), "testIfBracesHint_03.php");
+    }
+
+    public void testDoWhileBracesHint() throws Exception {
+        checkHintsInStartEndFile(new BracesHint.DoWhileBracesHint(), "testDoWhileBracesHint.php");
+    }
+
+    public void testWhileBracesHint() throws Exception {
+        checkHintsInStartEndFile(new BracesHint.WhileBracesHint(), "testWhileBracesHint.php");
+    }
+
+    public void testForBracesHint() throws Exception {
+        checkHintsInStartEndFile(new BracesHint.ForBracesHint(), "testForBracesHint.php");
+    }
+
+    public void testForEachBracesHint() throws Exception {
+        checkHintsInStartEndFile(new BracesHint.ForEachBracesHint(), "testForEachBracesHint.php");
+    }
+
+    public void testGetSuperglobalsHint() throws Exception {
+        checkHintsInStartEndFile(new SuperglobalsHint.GetSuperglobalHint(), "testGetSuperglobalsHint.php");
+    }
+
+    public void testPostSuperglobalsHint() throws Exception {
+        checkHintsInStartEndFile(new SuperglobalsHint.PostSuperglobalHint(), "testPostSuperglobalsHint.php");
+    }
+
+    public void testCookieSuperglobalsHint() throws Exception {
+        checkHintsInStartEndFile(new SuperglobalsHint.CookieSuperglobalHint(), "testCookieSuperglobalsHint.php");
+    }
+
+    public void testServerSuperglobalsHint() throws Exception {
+        checkHintsInStartEndFile(new SuperglobalsHint.ServerSuperglobalHint(), "testServerSuperglobalsHint.php");
+    }
+
+    public void testEnvSuperglobalsHint() throws Exception {
+        checkHintsInStartEndFile(new SuperglobalsHint.EnvSuperglobalHint(), "testEnvSuperglobalsHint.php");
+    }
+
+    public void testEmptyStatementHint() throws Exception {
+        checkHintsInStartEndFile(new EmptyStatementHint(), "testEmptyStatementHint.php");
+    }
+
+    public void testUnreachableStatementHint() throws Exception {
+        checkHintsInStartEndFile(new UnreachableStatementHint(), "testUnreachableStatementHint.php");
+    }
+
+    public void testUnreachableStatementHint_02() throws Exception {
+        checkHintsInStartEndFile(new UnreachableStatementHint(), "testUnreachableStatementHint_02.php");
+    }
+
 }
