@@ -135,10 +135,18 @@ public final class FileUtil extends Object {
     private static final Map<FileObject, Boolean> archiveFileCache = new WeakHashMap<FileObject,Boolean>();
     private static FileSystem diskFileSystem;
 
+    private static String toDebugString(File file) {
+        if (file == null) {
+            return "NULL-ref"; // NOI18N
+        } else {
+            return file + "(" + file.getClass() + ")"; // NOI18N
+        }
+    }
+    
     private static boolean assertNormalized(File path) {
         if (path != null) {
             File np;
-            assert path.equals(np = FileUtil.normalizeFileCached(path)) : "Need to normalize " + path + " was " + np;  //NOI18N
+            assert path.equals(np = FileUtil.normalizeFileCached(path)) : "Need to normalize " + toDebugString(path) + " was " + toDebugString(np);  //NOI18N
         }
         return true;
     }
@@ -308,7 +316,7 @@ public final class FileUtil extends Object {
     }
 
     private static FileChangeListener removeFileChangeListenerImpl(FileChangeListener listener, File path) {
-        assert path.equals(FileUtil.normalizeFile(path)) : "Need to normalize " + path + "!";  //NOI18N
+        assert path.equals(FileUtil.normalizeFile(path)) : "Need to normalize " + toDebugString(path) + "!";  //NOI18N
         LOG.log(Level.FINE, "removeFileChangeListener {0} @ {1}", new Object[]{listener, path});
         synchronized (holders) {
             Map<File, Holder> f2H = holders.get(listener);
@@ -1053,7 +1061,7 @@ public final class FileUtil extends Object {
             File normFile = normalizeFile(file);
             if (!file.equals(normFile)) {
                 final String msg = "Parameter file was not " + // NOI18N   
-                    "normalized. Was " + file + " instead of " + normFile;
+                    "normalized. Was " + toDebugString(file) + " instead of " + toDebugString(normFile); // NOI18N
                 LOG.log(Level.WARNING, msg);
                 LOG.log(Level.INFO, msg, new IllegalArgumentException(msg));
             }
@@ -1101,8 +1109,7 @@ public final class FileUtil extends Object {
         if (!file.equals(normalizeFile(file))) {
             throw new IllegalArgumentException(
                 "Parameter file was not " + // NOI18N
-                "normalized. Was " + file + " instead of " + normalizeFile(file)
-            ); // NOI18N
+                "normalized. Was " + toDebugString(file) + " instead of " + toDebugString(normalizeFile(file)));  // NOI18N
         }
 
         try {
