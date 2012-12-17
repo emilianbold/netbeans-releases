@@ -1258,6 +1258,30 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         }
     }
     
+    public void testDeepStructureDelete() throws Exception {
+        clearWorkDir();
+        
+        final File rf = new File(getWorkDir(), "wd");
+        rf.mkdirs();
+        
+        FileObject root = FileUtil.toFileObject(rf);
+        FileObject next = root;
+        for (int i = 0; i < 10; i++) {
+            next = next.createFolder("i" + i);
+        }
+        
+        assertTrue("Is valid", root.isValid());
+        assertTrue("Is valid leaft", next.isValid());
+        
+        clearWorkDir();
+        assertFalse("Root file is gone", rf.exists());
+        
+        root.refresh();
+        
+        assertFalse("Became invalid", root.isValid());
+        assertFalse("Leaf is invalid as well", next.isValid());
+    }
+    
     private class IgnoreDirFileSystem extends LocalFileSystem {
         org.openide.filesystems.FileSystem.Status status = new org.openide.filesystems.FileSystem.HtmlStatus() {
             @Override

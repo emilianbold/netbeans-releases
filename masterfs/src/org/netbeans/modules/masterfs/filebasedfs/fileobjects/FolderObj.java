@@ -511,7 +511,6 @@ public final class FolderObj extends BaseFileObj {
             } else if (operationId == ChildrenCache.REMOVED_CHILD) {
                 if (newChild != null) {
                     if (newChild.isValid()) {
-                        newChild.setValid(false);
                         if (newChild instanceof FolderObj) {
                             getProvidedExtensions().deletedExternally(newChild);
                             ((FolderObj)newChild).refreshImpl(expected, fire);
@@ -521,6 +520,7 @@ public final class FolderObj extends BaseFileObj {
                                 newChild.fireFileDeletedEvent(expected);
                             }
                         }
+                        newChild.setValid(false);
                     }
                 } else {
                     //TODO: should be rechecked
