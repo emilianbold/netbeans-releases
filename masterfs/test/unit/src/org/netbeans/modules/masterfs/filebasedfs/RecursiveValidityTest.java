@@ -43,6 +43,7 @@ package org.netbeans.modules.masterfs.filebasedfs;
 
 import java.awt.Image;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
@@ -74,13 +75,8 @@ public class RecursiveValidityTest extends NbTestCase {
         clearWorkDir();
         
         rf = new File(getWorkDir(), "wd");
-        rf.mkdirs();
-        
+        next = recreateFolders(rf);
         root = FileUtil.toFileObject(rf);
-        next = root;
-        for (int i = 0; i < 10; i++) {
-            next = next.createFolder("i" + i);
-        }
 
         MockServices.setServices(AP.class);
         AP.il = new IL();
@@ -99,7 +95,25 @@ public class RecursiveValidityTest extends NbTestCase {
         assertFalse("Leaf is invalid as well", next.isValid());
         
     }
-    
+
+    public void testConsistencyWhenDeletingRootAndRecreatingInMiddle() throws Exception {
+        assertTrue("Is valid", root.isValid());
+        assertTrue("Is valid leaft", next.isValid());
+        
+        FileObject ch1 = root.getChildren()[0];
+
+        clearWorkDir();
+        assertFalse("Root file is gone", rf.exists());
+
+        cnt = 5;
+        root.refresh();
+
+        assertTrue("May have stayed valid", root.isValid());
+        assertTrue("May have stayed valid", next.isValid());
+        assertFalse("But the first child of root is certainly gone", ch1.isValid());
+    }
+
+    int cnt;
     final void assertValidity() {
         if (next.isValid()) {
             FileObject test = next;
@@ -108,6 +122,23 @@ public class RecursiveValidityTest extends NbTestCase {
                 assertTrue("Leaf is valid, " + test + " has to be too", test.isValid());
             } while (test != root);
         }
+        if (--cnt == 0) {
+            try {
+                recreateFolders(rf);
+            } catch (IOException ex) {
+                throw new IllegalArgumentException(ex);
+            }
+        }
+    }
+
+    private FileObject recreateFolders(File from) throws IOException {
+        from.mkdirs();
+        FileObject r = FileUtil.toFileObject(from);
+        
+        for (int i = 0; i < 10; i++) {
+            r = r.createFolder("i" + i);
+        }
+        return r;
     }
     
     class IL extends ProvidedExtensions {
