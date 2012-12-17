@@ -54,9 +54,9 @@ import org.netbeans.modules.parsing.api.UserTask;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class JsEmbeddingTest extends CslTestBase {
+public class JsEmbeddingTestBase extends CslTestBase {
 
-    public JsEmbeddingTest(String testName) {
+    public JsEmbeddingTestBase(String testName) {
         super(testName);
     }
 
@@ -71,30 +71,14 @@ public class JsEmbeddingTest extends CslTestBase {
     public void checkTranslation(final String relFilePath, final JsEmbeddingProvider.Translator translator) throws Exception {
         assertNotNull(translator);
         Source testSource = getTestSource(getTestFile(relFilePath));
-
-        ParserManager.parse(Collections.singletonList(testSource), new UserTask() {
-
-            @Override
-            public void run(ResultIterator resultIterator) throws Exception {
-                List<Embedding> embeddings = translator.translate(resultIterator.getSnapshot());
-                assertDescriptionMatches(relFilePath, serializableEmbeddings(embeddings), true, ".tranlation");
-            }
-        });
+        List<Embedding> embeddings = translator.translate(testSource.createSnapshot());
+        assertDescriptionMatches(relFilePath, serializableEmbeddings(embeddings), true, ".tranlation");
     }
 
     protected String serializableEmbeddings(List<Embedding> embeddings) {
         StringBuilder sb = new StringBuilder();
         for (Embedding embedding : embeddings) {
-//                    .append(":")
-//                    .append("<")
-//                    .append(embedding.getSnapshot().getOriginalOffset(0))
-//                    .append(":")
-//                    .append(embedding.getSnapshot().getOriginalOffset(embedding.getSnapshot().getText().length() - 1))
-//                    .append(">")
-//                    .append("\n")
-//                    .append(embedding.toString()).append("\n")
             sb.append(embedding.getSnapshot().getText());
-//                    .append("\n\n\n");
         }
         return sb.toString();
     }

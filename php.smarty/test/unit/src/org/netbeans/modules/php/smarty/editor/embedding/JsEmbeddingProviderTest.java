@@ -44,7 +44,7 @@ package org.netbeans.modules.php.smarty.editor.embedding;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.junit.MockServices;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
-import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingTest;
+import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingTestBase;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedURLMapper;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
@@ -57,7 +57,7 @@ import org.openide.util.test.MockLookup;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class JsEmbeddingProviderTest extends JsEmbeddingTest {
+public class JsEmbeddingProviderTest extends JsEmbeddingTestBase {
 
     public JsEmbeddingProviderTest(String testName) {
         super(testName);
