@@ -4011,112 +4011,108 @@ public class Term extends JComponent implements Accessible {
         }
     }
 
-
+    /**
+     * Convert a terminal-specific character to the canonical curses ACS code.
+     */
     private char mapACS(char inChar) {
-        switch (inChar) {
-            default: return inChar;
-            case 0234: return '}'; // UK pound sign                   ACS_STERLING
-            case 0031: return '.'; // (^Y) arrow pointing down             ACS_DARROW
-            case 0021: return ','; // arrow pointing left             ACS_LARROW
-            case 0020: return '+'; // arrow pointing right            ACS_RARROW
-            case 0030: return '-'; // arrow pointing up               ACS_UARROW
-            case 0260: return 'h'; // board of squares                ACS_BOARD
-            case 0376: return '~'; // bullet                          ACS_BULLET
-            case 0261: return 'a'; // checker board (stipple)         ACS_CKBOARD
-            case 0370: return 'f'; // degree symbol                   ACS_DEGREE
-            case 0004: return '\''; // diamond                         ACS_DIAMOND
-            case 0362: return 'z'; // greater-than-or-equal-to        ACS_GEQUAL
-            case 0343: return '{'; // greek pi                        ACS_PI
-            // no-char return 'i'; // lantern symbol                  ACS_LANTERN
-            case 0305: return 'n'; // large plus or crossover         ACS_PLUS
-            case 0363: return 'y'; // less-than-or-equal-to           ACS_LEQUAL
-            case 0300: return 'm'; // lower left corner               ACS_LLCORNER
-            case 0331: return 'j'; // lower right corner              ACS_LRCORNER
-            case 0330: return '|'; // not-equal                       ACS_NEQUAL
-            case 0361: return 'g'; // plus/minus                      ACS_PLMINUS
-            case 0176: return 'o'; // (~) scan line 1                     ACS_S1
-            case 0304: return 'p'; // scan line 3                     ACS_S3
-            // case 0304: return 'q'; // horizontal line                 ACS_HLINE
-            // case 0304: return 'r'; // scan line 7                     ACS_S7
-            case 0137: return 's'; // (_) scan line 9                     ACS_S9
-            case 0333: return '0'; // solid square block              ACS_BLOCK
-            case 0302: return 'w'; // tee pointing down               ACS_TTEE
-            case 0264: return 'u'; // tee pointing left               ACS_RTEE
-            case 0303: return 't'; // tee pointing right              ACS_LTEE
-            case 0301: return 'v'; // tee pointing up                 ACS_BTEE
-            case 0332: return 'l'; // upper left corner               ACS_ULCORNER
-            case 0277: return 'k'; // upper right corner              ACS_URCORNER
-            case 0263: return 'x'; // vertical line                   ACS_VLINE
-        }
+        final char outChar = interp.mapACS(inChar);
+        if (outChar == '\0')
+            return inChar;
+        else
+            return outChar;
     }
 
+    /**
+     * Map a character according to the font attribute
+     * @param inChar
+     * @return the unicode character that renders the correct glyph.
+     */
     private char mapChar(char inChar) {
         switch (Attr.font(st.attr)) {
             case 0:
             default:
                 return inChar;
             case 1:
-                // Convert according to http://vt100.net/docs/vt220-rm/table2-4.html
+                // Convert the canonical ncurses ACS code to the appropriate unicode character.
+                // See:
+                // http://vt100.net/docs/vt220-rm/table2-4.html
+                // http://en.wikipedia.org/wiki/Box-drawing_character
+                // http://en.wikipedia.org/wiki/Arrow_%28symbol%29
                 switch (mapACS(inChar)) {
                     default:
                         return inChar;
-                    case '`':
+
+                    // xterm and gnome term don't really honor these:
+                    case '+':            // ACS_RARROW
+                        return '\u2192'; // RIGHTWARDS ARROW
+                    case ',':            // ACS_LARROW
+                        return '\u2190'; // LEFTWARDS ARROW
+                    case '-':            // ACS_UARROW
+                        return '\u2191'; // UPWARDS ARROW
+                    case '.':            // ACS_DARROW
+                        return '\u2193'; // DOWNWARDS ARROW
+                    case '0':            // ACS_BLOCK
+                        return '\u2588'; // FULL BLOCK
+
+
+                    case '`':            // ACS_DIAMOND
                         return '\u2666'; // BLACK DIAMOND SUIT
-                    case 'a':
-                        return '\u2591'; // LIGHT SHADE
-                    case 'b':
-                        return '\u2409'; // SYMBOL FOR HORIZONTAL TABULATION
-                    case 'c':
-                        return '\u240c'; // SYMBOL FOR FORM FEED
-                    case 'd':
-                        return '\u240d'; // SYMBOL FOR CARRIAGE RETURN
-                    case 'e':
-                        return '\u240a'; // SYMBOL FOR LINE FEED
-                    case 'f':
-                        return '\u00b0'; // DEGREE SIGN
-                    case 'g':
-                        return '\u00b1'; // PLUS-MINUS SIGN
-                    case 'h':
-                        return '\u2424'; // SYMBOL FOR NEW LINE
-                    case 'i':
+                    case 'a':            // ACS_CKBOARD
+                        return '\u2592'; // MEDIUM SHADE
+                        // return '\u2593'; // DARK SHADE
+                    case 'b':            // ?
                         return '\u240b'; // SYMBOL FOR VERTICAL TABULATION
-                    case 'j':
+                    case 'c':            // ?
+                        return '\u240c'; // SYMBOL FOR FORM FEED
+                    case 'd':            // ?
+                        return '\u240d'; // SYMBOL FOR CARRIAGE RETURN
+                    case 'e':            // ?
+                        return '\u240a'; // SYMBOL FOR LINE FEED
+                    case 'f':            // ACS_DEGREE
+                        return '\u00b0'; // DEGREE SIGN
+                    case 'g':            // ACS_PLMINUS
+                        return '\u00b1'; // PLUS-MINUS SIGN
+                    case 'h':            // ACS_PLMINUS
+                        return '\u2424'; // SYMBOL FOR NEW LINE
+                    case 'i':            // ACS_LANTERN
+                        return '\u240b'; // SYMBOL FOR VERTICAL TABULATION
+                    case 'j':            // ACS_LRCORNER
                         return '\u2518'; // BOX DRAWINGS LIGHT UP AND LEFT
-                    case 'k':
+                    case 'k':            // ACS_LRCORNER
                         return '\u2510'; // BOX DRAWINGS LIGHT DOWN AND LEFT
-                    case 'l':
+                    case 'l':            // ACS_LRCORNER
                         return '\u250c'; // BOX DRAWINGS LIGHT DOWN AND RIGHT
-                    case 'm':
+                    case 'm':            // ACS_LLCORNER
                         return '\u2514'; // BOX DRAWINGS LIGHT UP AND RIGHT
-                    case 'n':
+                    case 'n':            // ACS_PLUS
                         return '\u253c'; // BOX DRAWINGS LIGHT VERTICAL AND HORIZONTAL
-                    case 'v':
+                    case 'v':            // ACS_RTEE
                         return '\u2534'; // BOX DRAWINGS LIGHT UP AND HORIZONTAL
-                    case 'w':
+                    case 'w':            // ACS_TTEE
                         return '\u252c'; // BOX DRAWINGS LIGHT DOWN AND HORIZONTAL
-                    case 'o':
-                    case 'p':
-                    case 'q':
-                    case 'r':
-                    case 's':
+                    case 'o':            // ACS_S1
+                    case 'p':            // ACS_S3
+                    case 'q':            // ACS_HLINE
+                    case 'r':            // ACS_S7
+                    case 's':            // ACS_S9
                         return '\u2500'; // BOX DRAWINGS LIGHT HORIZONTAL
-                    case 't':
+                    case 't':            // ACS_LTEE
                         return '\u251c'; // BOX DRAWINGS LIGHT VERTICAL AND RIGHT
-                    case 'u':
+                    case 'u':            // ACS_RTEE
                         return '\u2524'; // BOX DRAWINGS LIGHT VERTICAL AND LEFT
-                    case 'x':
+                    case 'x':            // ACS_VLINE
                         return '\u2502'; // BOX DRAWINGS LIGHT VERTICAL
-                    case 'y':
+                    case 'y':            // ACS_LEQUAL
                         return '\u2264'; // LESS-THAN OR EQUAL TO
-                    case 'z':
+                    case 'z':            // ACS_GEQUAL
                         return '\u2265'; // GREATER-THAN OR EQUAL TO
-                    case '{':
+                    case '{':            // ACS_PI
                         return '\u03c0'; // GREEK SMALL LETTER PI
-                    case '|':
+                    case '|':            // ACS_NEQUAL
                         return '\u2260'; // NOT EQUAL TO
-                    case '}':
+                    case '}':            // ACS_STERLING
                         return '\u00a3'; // POUND SIGN
-                    case '~':
+                    case '~':            // ACS_BULLET
                         return '\u00b7'; // MIDDLE DOT
                 }
         }

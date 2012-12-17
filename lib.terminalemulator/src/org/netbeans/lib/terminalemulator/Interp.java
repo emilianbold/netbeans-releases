@@ -54,4 +54,10 @@ package org.netbeans.lib.terminalemulator;
 public interface Interp {
     public String name();
     public void processChar(char c);
+
+    /**
+     * Convert a terminal-specific character to the canonical curses ACS code.
+     * @return '\0' if no conversion took place.
+     */
+    public char mapACS(char inChar);
 } 

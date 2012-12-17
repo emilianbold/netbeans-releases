@@ -45,7 +45,7 @@ package org.netbeans.lib.terminalemulator;
  * Stuff common to InterpANSI, InterpDtTerm and InterpXTerm.
  * @author ivan
  */
-public class InterpProtoANSI extends InterpDumb {
+class InterpProtoANSI extends InterpDumb {
 
     protected static class Ascii {
         public static final char ESC = 27;
@@ -309,8 +309,11 @@ public class InterpProtoANSI extends InterpDumb {
 		if (ai.noNumber()) {
 		    ai.ops.op_attr(0);	// reset everything
 		} else {
-		    for (int n = 0; n <= ai.nNumbers(); n++)
-			ai.ops.op_attr(ai.numberAt(n));
+		    for (int n = 0; n <= ai.nNumbers(); n++) {
+                        final int attr = ai.numberAt(n);
+                        if (!((InterpProtoANSI) ai).dispatchAttr(ai, attr))
+                            return "ACT_ATTR: unrecognized attribute " + attr;  // NOI18N
+                    }
 		}
 		return null;
 	    }
@@ -366,6 +369,16 @@ public class InterpProtoANSI extends InterpDumb {
     @Override
     public void reset() {
 	super.reset();
+    }
+
+    /**
+     * Process an attrib code in an Interp-specific manner.
+     * @param ai
+     * @param n The attribute code.
+     * @return Whether the attribute code is valid for the Interp.
+     */
+    protected boolean dispatchAttr(AbstractInterp ai, int n) {
+        return false;
     }
 
     private void setup() {

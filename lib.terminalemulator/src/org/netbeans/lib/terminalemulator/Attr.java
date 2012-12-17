@@ -173,7 +173,8 @@ class Attr {
 		// Reset all attributes
 		attr = 0;
 		break;
-	    case 5:
+	    case 5:             // slow blink
+	    case 6:             // fast blink
 		// Attr.BLINK
 		// FALLTHRU
 	    case 1:
@@ -184,6 +185,9 @@ class Attr {
 		attr &= ~ Attr.BRIGHT;
 		attr |= Attr.DIM;
 		break;
+            case 3:
+                // Italic - not supported
+                break;
 	    case 4:
 		attr |= Attr.UNDERSCORE;
 		break;

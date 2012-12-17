@@ -47,7 +47,7 @@ import org.netbeans.lib.terminalemulator.AbstractInterp.Actor;
  * Stuff common to InterpDtTerm and InterpXTerm but 
  * @author ivan
  */
-public class InterpProtoANSIX extends InterpProtoANSI {
+class InterpProtoANSIX extends InterpProtoANSI {
 
     protected static class InterpTypeProtoANSIX extends InterpTypeProtoANSI {
 	protected final State st_wait = new State("wait");	// NOI18N
