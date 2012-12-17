@@ -54,8 +54,8 @@ import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.UnusedOffsetRanges;
 import org.netbeans.modules.php.editor.parser.UnusedUsesCollector;
+import org.netbeans.modules.php.editor.parser.UnusedUsesCollector.UnusedOffsetRanges;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
 

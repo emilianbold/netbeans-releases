@@ -164,4 +164,23 @@ public class UnusedUsesCollector extends DefaultVisitor {
         }
     }
 
+    public static final class UnusedOffsetRanges {
+        private final OffsetRange rangeToVisualise;
+        private final OffsetRange rangeToReplace;
+
+        private UnusedOffsetRanges(final OffsetRange rangeToVisualise, final OffsetRange rangeToReplace) {
+            this.rangeToVisualise = rangeToVisualise;
+            this.rangeToReplace = rangeToReplace;
+        }
+
+        public OffsetRange getRangeToVisualise() {
+            return rangeToVisualise;
+        }
+
+        public OffsetRange getRangeToReplace() {
+            return rangeToReplace;
+        }
+
+    }
+
 }
