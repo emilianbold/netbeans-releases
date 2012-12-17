@@ -192,11 +192,6 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
         } catch (InvocationTargetException ex) {
             Exceptions.printStackTrace(ex);
         }
-        
-        synchronized (connectorsLoaded) {
-            connectorsLoaded.set(true);
-            connectorsLoaded.notifyAll();
-        }
     }
     
     private void waitForConnectorsLoad() {
@@ -244,6 +239,11 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
         cbConnectors.setSelectedIndex (defaultIndex);
         selectedConnector = connectors.get(defaultIndex);
         setCursor(standardCursor);
+        
+        synchronized (connectorsLoaded) {
+            connectorsLoaded.set(true);
+            connectorsLoaded.notifyAll();
+        }
     }
 
     /**
