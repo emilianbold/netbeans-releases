@@ -161,38 +161,6 @@ public class SemanticAnalyzerTest extends PHPCodeCompletionTestBase {
         checkSemantic("testfiles/semantic/traits_06.php");
     }
 
-    public void testUnusedUses01() throws Exception {
-        checkSemantic("testfiles/semantic/unusedUses_01.php");
-    }
-
-    public void testUnusedUses02() throws Exception {
-        checkSemantic("testfiles/semantic/unusedUses_02.php");
-    }
-
-    public void testUnusedUses03() throws Exception {
-        checkSemantic("testfiles/semantic/unusedUses_03.php");
-    }
-
-    public void testUnusedUses04() throws Exception {
-        checkSemantic("testfiles/semantic/unusedUses_04.php");
-    }
-
-    public void testUnusedUses05() throws Exception {
-        checkSemantic("testfiles/semantic/unusedUses_05.php");
-    }
-
-    public void testUnusedUses06() throws Exception {
-        checkSemantic("testfiles/semantic/unusedUses_06.php");
-    }
-
-    public void testUnusedUses07() throws Exception {
-        checkSemantic("testfiles/semantic/unusedUses_07.php");
-    }
-
-    public void testUnusedUses08() throws Exception {
-        checkSemantic("testfiles/semantic/unusedUses_08.php");
-    }
-
     public void testConstantsColoring() throws Exception {
         checkSemantic("testfiles/semantic/constantsColoring.php");
     }

@@ -2,7 +2,7 @@
 namespace First;
 
 use |>DEPRECATED:Second\Delegate<|;
-|>DEPRECATED,UNUSED:use |>DEPRECATED:Second\UnusedDeprecated<|;<|
+use |>DEPRECATED:Second\UnusedDeprecated<|;
 use Second as S;
 
 class |>CLASS:ClassName<| implements |>DEPRECATED:S\Iface<| {

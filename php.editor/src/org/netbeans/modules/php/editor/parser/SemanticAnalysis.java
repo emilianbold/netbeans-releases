@@ -45,7 +45,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -130,23 +129,13 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             ColoringAttributes.STATIC,
             ColoringAttributes.METHOD,
             ColoringAttributes.UNUSED);
-    public static final EnumSet<ColoringAttributes> UNUSED_USES_SET = EnumSet.of(ColoringAttributes.UNUSED);
-    public static final EnumSet<ColoringAttributes> DEPRECATED_UNUSED_USES_SET = EnumSet.of(ColoringAttributes.DEPRECATED, ColoringAttributes.UNUSED);
     public static final EnumSet<ColoringAttributes> DEPRECATED_CLASS_SET = EnumSet.of(ColoringAttributes.DEPRECATED, ColoringAttributes.CLASS);
     public static final EnumSet<ColoringAttributes> DEPRECATED_SET = EnumSet.of(ColoringAttributes.DEPRECATED);
     public static final EnumSet<ColoringAttributes> DEPRECATED_STATIC_SET = EnumSet.of(ColoringAttributes.DEPRECATED, ColoringAttributes.STATIC);
-    private static final String NAMESPACE_SEPARATOR = "\\"; //NOI18N
 
     // @GuarderBy("this")
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
-    private Set<UnusedOffsetRanges> unusedUsesOffsetRanges;
-
-    public static Set<UnusedOffsetRanges> computeUnusedUsesOffsetRanges(PHPParseResult r) {
-        SemanticAnalysis semanticAnalysis = new SemanticAnalysis();
-        semanticAnalysis.process(r);
-        return semanticAnalysis.getUnusedUsesOffsetRanges();
-    }
 
     public SemanticAnalysis() {
         semanticHighlights = null;
@@ -155,10 +144,6 @@ public class SemanticAnalysis extends SemanticAnalyzer {
     @Override
     public Map<OffsetRange, Set<ColoringAttributes>> getHighlights() {
         return semanticHighlights;
-    }
-
-    private Set<UnusedOffsetRanges> getUnusedUsesOffsetRanges() {
-        return unusedUsesOffsetRanges;
     }
 
     @Override
@@ -187,7 +172,6 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             } else {
                 semanticHighlights = null;
             }
-            unusedUsesOffsetRanges = semanticHighlightVisitor.getUnusedUsesOffsetRanges();
         }
     }
 
@@ -230,11 +214,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         // this is holder of blocks, which has to be scanned for usages in the class.
         private List<Block> needToScan = new ArrayList<Block>();
 
-        private final Map<String, ASTNodeColoring> unusedUses;
-
         private final Snapshot snapshot;
-
-        private final Map<String, UnusedOffsetRanges> unusedUsesOffsetRanges;
 
         private final Model model;
 
@@ -252,23 +232,13 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         public SemanticHighlightVisitor(Map<OffsetRange, Set<ColoringAttributes>> highlights, Snapshot snapshot, Model model) {
             this.highlights = highlights;
             privateFieldsUnused = new HashMap<UnusedIdentifier, ASTNodeColoring>();
-            unusedUses = new HashMap<String, ASTNodeColoring>();
             privateUnusedMethods = new HashMap<UnusedIdentifier, ASTNodeColoring>();
-            unusedUsesOffsetRanges = new HashMap<String, UnusedOffsetRanges>();
             this.snapshot = snapshot;
             this.model = model;
             deprecatedTypes = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getTypes(NameKind.empty()));
             deprecatedMethods = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getMethods(NameKind.empty()));
             deprecatedFields = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getFields(NameKind.empty()));
             deprecatedConstants = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getTypeConstants(NameKind.empty()));
-        }
-
-        public Set<UnusedOffsetRanges> getUnusedUsesOffsetRanges() {
-            HashSet<UnusedOffsetRanges> result = new HashSet<UnusedOffsetRanges>();
-            for (UnusedOffsetRanges unusedOffsetRanges : unusedUsesOffsetRanges.values()) {
-                result.add(unusedOffsetRanges);
-            }
-            return result;
         }
 
         private void addOffsetRange(ASTNode node, Set<ColoringAttributes> coloring) {
@@ -284,9 +254,6 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         public void visit(Program program) {
             scan(program.getStatements());
             scan(program.getComments());
-            for (ASTNodeColoring item : unusedUses.values()) {
-                addOffsetRange(item.identifier, item.coloring);
-            }
         }
 
         @Override
@@ -688,11 +655,6 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             if (isCancelled()) {
                 return;
             }
-            QualifiedName typeName = QualifiedName.create(node.getValue());
-            if (unusedUses.size() > 0 && !typeName.getKind().isFullyQualified()) {
-                String firstSegmentName = typeName.getSegments().getFirst();
-                processFirstSegmentName(firstSegmentName);
-            }
             if (isDeprecatedTypeNode(node)) {
                 addOffsetRange(node, DEPRECATED_SET);
             }
@@ -706,11 +668,6 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         public void visit(NamespaceName node) {
             if (isCancelled()) {
                 return;
-            }
-            if (unusedUses.size() > 0 && !node.isGlobal()) {
-                Identifier firstSegment = node.getSegments().get(0);
-                String firstSegmentName = firstSegment.getName();
-                processFirstSegmentName(firstSegmentName);
             }
             if (isDeprecatedNamespaceName(node)) {
                 addOffsetRange(node, DEPRECATED_SET);
@@ -734,78 +691,19 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             return isDeprecated;
         }
 
-        private void processFirstSegmentName(final String firstSegmentName) {
-            Set<String> namesToRemove = new HashSet<String>();
-            for (String name : unusedUses.keySet()) {
-                QualifiedName qualifiedUseName = QualifiedName.create(name);
-                if (qualifiedUseName.getSegments().getLast().equals(firstSegmentName)) {
-                    namesToRemove.add(name);
-                }
-            }
-            for (String nameToRemove : namesToRemove) {
-                unusedUses.remove(nameToRemove);
-                unusedUsesOffsetRanges.remove(nameToRemove);
-            }
-        }
-
         @Override
         public void visit(UseStatement node) {
             if (isCancelled()) {
                 return;
             }
             List<UseStatementPart> parts = node.getParts();
-            if (parts.size() == 1) {
-                UseStatementPart useStatementPart = parts.get(0);
-                String correctName = getCorrectName(useStatementPart);
-                boolean isDeprecated = isDeprecatedNamespaceName(useStatementPart.getName());
-                unusedUses.put(correctName, new ASTNodeColoring(node, isDeprecated ? DEPRECATED_UNUSED_USES_SET : UNUSED_USES_SET));
-                OffsetRange offsetRange = new OffsetRange(node.getStartOffset(), node.getEndOffset());
-                unusedUsesOffsetRanges.put(correctName, new UnusedOffsetRanges(offsetRange, offsetRange));
-                if (isDeprecated) {
-                    addOffsetRange(useStatementPart.getName(), DEPRECATED_SET);
-                }
-            } else {
-                processUseStatementsParts(parts);
-            }
-        }
-
-        private void processUseStatementsParts(final List<UseStatementPart> parts) {
-            int lastStartOffset = 0;
             for (int i = 0; i < parts.size(); i++) {
                 UseStatementPart useStatementPart = parts.get(i);
-                int endOffset = useStatementPart.getEndOffset();
-                if (i == 0) {
-                    lastStartOffset = useStatementPart.getStartOffset();
-                    assert i + 1 < parts.size();
-                    UseStatementPart nextPart = parts.get(i + 1);
-                    endOffset = nextPart.getStartOffset();
-                }
-                String correctName = getCorrectName(useStatementPart);
                 boolean isDeprecated = isDeprecatedNamespaceName(useStatementPart.getName());
-                unusedUses.put(correctName, new ASTNodeColoring(useStatementPart, isDeprecated ? DEPRECATED_UNUSED_USES_SET : UNUSED_USES_SET));
-                OffsetRange rangeToVisualise = new OffsetRange(useStatementPart.getStartOffset(), useStatementPart.getEndOffset());
-                OffsetRange rangeToReplace = new OffsetRange(lastStartOffset, endOffset);
-                unusedUsesOffsetRanges.put(correctName, new UnusedOffsetRanges(rangeToVisualise, rangeToReplace));
-                lastStartOffset = useStatementPart.getEndOffset();
                 if (isDeprecated) {
                     addOffsetRange(useStatementPart.getName(), DEPRECATED_SET);
                 }
             }
-        }
-
-        private String getCorrectName(UseStatementPart useStatementPart) {
-            Identifier alias = useStatementPart.getAlias();
-            String identifierName;
-            if (alias != null) {
-                identifierName = alias.getName();
-            } else {
-                NamespaceName name = useStatementPart.getName();
-                identifierName = CodeUtils.extractQualifiedName(name);
-                if (name.isGlobal()) {
-                    identifierName = NAMESPACE_SEPARATOR + identifierName;
-                }
-            }
-            return identifierName;
         }
 
         private class FieldAccessVisitor extends DefaultVisitor {
