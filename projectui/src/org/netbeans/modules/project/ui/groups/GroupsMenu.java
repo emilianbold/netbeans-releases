@@ -199,9 +199,15 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
                             String select = GroupsMenu_select();
                             NotifyDescriptor nd = new NotifyDescriptor(pnl, GroupsMenu_moreTitle(), NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.PLAIN_MESSAGE, new Object[] {select, NotifyDescriptor.CANCEL_OPTION} , select);
                             if (select == DialogDisplayer.getDefault().notify(nd)) {
-                                Object o = lst.getSelectedValue();
+                                final Object o = lst.getSelectedValue();
                                 if (o != null) {
-                                    Group.setActiveGroup((Group)o);
+                                    // Could be slow (if needs to load projects); don't block EQ.
+                                    RP.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Group.setActiveGroup((Group)o);
+                                        }
+                                    });
                                 }
                             }
                         }

@@ -303,7 +303,7 @@ public class J2SEProjectJaxRpcClientSupport implements WebServicesClientSupportI
             
         }        
         { // Block that adjusts wscompile.client.classpath as necessary.
-            HashSet wscJars = new HashSet();
+            //HashSet wscJars = new HashSet();
             boolean newWscJars = false;
             String wscClientClasspath = projectProperties.getProperty(WebServicesClientConstants.WSCOMPILE_CLASSPATH);
             if (wscClientClasspath == null) {
@@ -778,6 +778,7 @@ public class J2SEProjectJaxRpcClientSupport implements WebServicesClientSupportI
     private static final String NON_PROXY_HOSTS_OPTION="-Dhttp.nonProxyHosts"; //NOI18N
     private static final String RUN_JVM_ARGS = "run.jvmargs"; // NOI18N
     
+    @org.netbeans.api.annotations.common.SuppressWarnings("DE_MIGHT_IGNORE")
     private boolean addJVMProxyOptions(EditableProperties prop, String proxyHost, String proxyPort) {
         String jvmOptions = prop.getProperty(RUN_JVM_ARGS);
         boolean modif=false;

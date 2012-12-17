@@ -66,7 +66,6 @@ import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.sites.SiteZip;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
-import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
@@ -302,7 +301,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
             FileObject siteRoot = p.getSiteRootFolder();
             comp = new CreateSiteTemplate(p.getProjectDirectory(),
                     siteRoot != null && !FileUtil.isParentOf(p.getProjectDirectory(), siteRoot) ? siteRoot : null, this);
-            comp.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(0)); //NOI18N
+            comp.putClientProperty("WizardPanel_contentSelectedIndex", 0); //NOI18N
             // Sets steps names for a panel
             comp.putClientProperty("WizardPanel_contentData", new String[]{Bundle.CreateSiteTemplate_Title()}); //NOI18N
             // Turn on subtitle creation on each step
@@ -669,6 +668,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
 
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE") // justification="checking return value of createNewFile() is pointless"
     private static void createZipFile(File templateFile, ClientSideProject project, Node rootNode) throws IOException {
         if (!templateFile.exists()) {
             templateFile.createNewFile();
@@ -709,7 +709,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
             }
             try {
                 Checkable ch = node.getLookup().lookup(Checkable.class);
-                if (Boolean.TRUE != ch.isSelected()) {
+                if (!Boolean.TRUE.equals(ch.isSelected())) {
                     continue;
                 }
                 String relPath = getRelativePath(projectDirectory, siteRoot, fo);

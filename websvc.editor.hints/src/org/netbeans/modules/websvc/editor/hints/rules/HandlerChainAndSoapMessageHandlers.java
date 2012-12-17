@@ -65,7 +65,6 @@ public class HandlerChainAndSoapMessageHandlers extends Rule<TypeElement> implem
     }
 
     protected ErrorDescription[] apply(TypeElement subject, ProblemContext ctx) {
-        ArrayList<ErrorDescription> errors = new ArrayList<ErrorDescription>();
         String label = NbBundle.getMessage(HandlerChainAndSoapMessageHandlers.class, "MSG_HandlerChain_SoapMessageHandlers_Exclusive");
 
         AnnotationMirror annEntityHC = Utilities.findAnnotation(subject,ANNOTATION_HANDLERCHAIN);

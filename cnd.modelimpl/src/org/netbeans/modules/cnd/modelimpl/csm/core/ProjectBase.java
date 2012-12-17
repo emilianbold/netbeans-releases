@@ -530,7 +530,19 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         CndUtils.assertTrue(this.platformProject == null);
         CndUtils.assertNotNull(platformProject, "Passing null project for ", this);
         this.platformProject = platformProject;
-        CndUtils.assertTrue(this.uniqueName.equals(getUniqueName(fileSystem, platformProject)));
+        checkUniqueNameConsistency();
+    }
+    
+    private void checkUniqueNameConsistency() {
+        if (CndUtils.isDebugMode()) {
+            CharSequence expectedUniqueName = getUniqueName(fileSystem, platformProject);
+            CharSequence defactoUniqueName = this.uniqueName;
+            if (!defactoUniqueName.equals(expectedUniqueName)) {
+                CndUtils.assertTrue(false,
+                        "Existing project unique name differ: " + defactoUniqueName + " - expected " + expectedUniqueName + //NOI18N
+                        " Cache location " + cacheLocation); //NOI18N
+            }
+        }
     }
 
     /** Finds namespace by its qualified name */
@@ -3628,6 +3640,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         APTSerializeUtils.writeFileNameIndex(this.uniqueName, aStream, unitId);
         aStream.writeBoolean(hasFileSystemProblems);
+        checkUniqueNameConsistency();
     }
 
     protected ProjectBase(RepositoryDataInput aStream) throws IOException {        

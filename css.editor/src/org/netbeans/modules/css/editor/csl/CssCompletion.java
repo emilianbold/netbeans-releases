@@ -250,16 +250,31 @@ public class CssCompletion implements CodeCompletionHandler {
             String elementValue = entry.getKey();
             Collection<ValueGrammarElement> elements = entry.getValue();
             ValueGrammarElement element = elements.iterator().next();
+            CssValueElement handle = new CssValueElement(propertyDescriptor, element);
+            String origin = element.origin();
+            String visibleOrigin = element.getVisibleOrigin();
 
             if(element instanceof UnitGrammarElement) {
-                proposals.add(CssCompletionItem.createUnitCompletionItem((UnitGrammarElement)element));
+                UnitGrammarElement unit = (UnitGrammarElement)element;
+                if(unit.getFixedValues() != null) {
+                    for(String fixedValue : unit.getFixedValues()) {
+                        proposals.add(
+                            CssCompletionItem.createValueCompletionItem(
+                            handle,
+                            fixedValue,
+                            visibleOrigin,
+                            anchor,
+                            addSemicolon,
+                            addSpaceBeforeItem));
+                    }
+                    
+                } else {
+                    proposals.add(CssCompletionItem.createUnitCompletionItem((UnitGrammarElement)element));
+                }
                 continue;
             }
 
-            CssValueElement handle = new CssValueElement(propertyDescriptor, element);
 
-            String origin = element.origin();
-            String visibleOrigin = element.getVisibleOrigin();
             
             //some hardcoded items filtering
             

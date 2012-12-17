@@ -1573,11 +1573,15 @@ public class HgCommand {
     public static List<String> doOutForSearch(File repository, String to, boolean bShowMerges, int limit, OutputLogger logger) throws HgException {
         if (repository == null ) return null;
         String defaultPush = new HgConfigFiles(repository).getDefaultPush(false);
-        try {
-            HgURL pushUrl = new HgURL(defaultPush);
-            return doOutForSearch(repository, pushUrl, to, bShowMerges, limit, logger);
-        } catch (URISyntaxException ex) {
-            Mercurial.LOG.log(Level.INFO, "Invalid push url: {0}, falling back to command without target", defaultPush);
+        if (HgUtils.isNullOrEmpty(defaultPush)) {
+            Mercurial.LOG.log(Level.INFO, "No push url, falling back to command without target");
+        } else {
+            try {
+                HgURL pushUrl = new HgURL(defaultPush);
+                return doOutForSearch(repository, pushUrl, to, bShowMerges, limit, logger);
+            } catch (URISyntaxException ex) {
+                Mercurial.LOG.log(Level.INFO, "Invalid push url: {0}, falling back to command without target", defaultPush);
+            }
         }
 
         List<String> command = new ArrayList<String>();
@@ -1678,11 +1682,15 @@ public class HgCommand {
     public static List<String> doIncomingForSearch(File repository, String to, boolean bShowMerges, boolean bGetFileInfo, boolean getParents, int limit, OutputLogger logger) throws HgException {
         if (repository == null ) return null;
         String defaultPull = new HgConfigFiles(repository).getDefaultPull(false);
-        try {
-            HgURL pullUrl = new HgURL(defaultPull);
-            return doIncomingForSearch(repository, pullUrl, to, bShowMerges, bGetFileInfo, getParents, limit, logger);
-        } catch (URISyntaxException ex) {
-            Mercurial.LOG.log(Level.INFO, "Invalid push url: {0}, falling back to command without target", defaultPull);
+        if (HgUtils.isNullOrEmpty(defaultPull)) {
+            Mercurial.LOG.log(Level.INFO, "No pull url, falling back to command without target");
+        } else {
+            try {
+                HgURL pullUrl = new HgURL(defaultPull);
+                return doIncomingForSearch(repository, pullUrl, to, bShowMerges, bGetFileInfo, getParents, limit, logger);
+            } catch (URISyntaxException ex) {
+                Mercurial.LOG.log(Level.INFO, "Invalid pull url: {0}, falling back to command without target", defaultPull);
+            }
         }
 
         List<String> command = new ArrayList<String>();

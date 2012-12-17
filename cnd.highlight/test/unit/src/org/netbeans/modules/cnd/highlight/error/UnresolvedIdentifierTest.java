@@ -367,7 +367,12 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         // Bug 223298 - Wrong recognition of function
         performStaticTest("bug223298.cpp");
     }            
-        
+
+    public void testBug222883() throws Exception {
+        // Bug 222883 - goto labes ("Unable to resolve identifier G_1")
+        performStaticTest("bug222883.cpp");
+    }            
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
 

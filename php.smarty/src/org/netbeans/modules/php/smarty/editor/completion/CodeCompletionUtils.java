@@ -44,6 +44,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.php.smarty.SmartyFramework;
 import org.netbeans.modules.php.smarty.editor.completion.entries.SmartyCodeCompletionOffer;
@@ -142,8 +143,8 @@ public class CodeCompletionUtils {
         
         tokenSequence.move(possition - 1);
         tokenSequence.movePrevious(); tokenSequence.moveNext();
-        
-        return tokenSequence.token().toString().equals(SmartyFramework.OPEN_DELIMITER);
+
+        return CharSequenceUtilities.textEquals(SmartyFramework.OPEN_DELIMITER, tokenSequence.token().text());
     }
 
     static ArrayList<String> afterSmartyCommand(Document doc, int offset) {

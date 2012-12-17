@@ -70,6 +70,12 @@ public class HtmlAutoCompletionTest extends TestBase {
         super(name);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        HtmlAutoCompletion.adjust_quote_type_after_eq = false;
+    }
+
     public void testHandleEmptyTagCloseSymbol() throws InterruptedException, InvocationTargetException, Exception {
         final JEditorPane pane = Mutex.EVENT.readAccess(new Mutex.Action<JEditorPane>() {
             @Override
@@ -82,7 +88,7 @@ public class HtmlAutoCompletionTest extends TestBase {
                 }
             }
         });
-        
+
         final BaseDocument doc = (BaseDocument) pane.getDocument();
         doc.runAtomic(new Runnable() {
             @Override
@@ -110,7 +116,7 @@ public class HtmlAutoCompletionTest extends TestBase {
             }
         });
     }
-    
+
     public void testQuoteAutocompletionInHtmlAttribute() throws InterruptedException, InvocationTargetException, Exception {
         Context ctx = new Context(new HtmlKit(), "<a href=\"javascript:bigpic(|)\">");
         ctx.typeChar('"');
@@ -118,13 +124,13 @@ public class HtmlAutoCompletionTest extends TestBase {
         ctx.typeChar('"');
         ctx.assertDocumentTextEquals("<a href=\"javascript:bigpic(\"\"|)\">");
     }
-    
+
     public void testSkipClosingQuote() throws InterruptedException, InvocationTargetException, Exception {
         Context ctx = new Context(new HtmlKit(), "<a href=\"|\">");
         ctx.typeChar('"');
         ctx.assertDocumentTextEquals("<a href=\"\"|>");
     }
-       
+
     public void testDoubleQuoteAutocompleteAfterEQ() throws InterruptedException, InvocationTargetException, Exception {
         Context ctx = new Context(new HtmlKit(), "<a href|");
         ctx.typeChar('=');
@@ -136,7 +142,7 @@ public class HtmlAutoCompletionTest extends TestBase {
         ctx.typeChar('"');
         ctx.assertDocumentTextEquals("<a href=\"val\"|");
     }
-    
+
     public void testDoubleQuoteAutocompleteAfterEQInCSSAttribute() throws InterruptedException, InvocationTargetException, Exception {
         Context ctx = new Context(new HtmlKit(), "<a class|");
         ctx.typeChar('=');
@@ -148,19 +154,19 @@ public class HtmlAutoCompletionTest extends TestBase {
         ctx.typeChar('"');
         ctx.assertDocumentTextEquals("<a class=\"val\"|");
     }
- 
+
     public void testDoubleQuoteAfterQuotedClassAttribute() throws InterruptedException, InvocationTargetException, Exception {
         Context ctx = new Context(new HtmlKit(), "<a class=\"val|");
         ctx.typeChar('"');
         ctx.assertDocumentTextEquals("<a class=\"val\"|");
     }
-    
+
     public void testDoubleQuoteAfterUnquotedClassAttribute() throws InterruptedException, InvocationTargetException, Exception {
         Context ctx = new Context(new HtmlKit(), "<a class=val|");
         ctx.typeChar('"');
         ctx.assertDocumentTextEquals("<a class=val\"|");
     }
-    
+
     public void testSingleQuoteAutocompleteAfterEQ() throws InterruptedException, InvocationTargetException, Exception {
         Context ctx = new Context(new HtmlKit(), "<a href=|");
         ctx.typeChar('\'');
@@ -186,7 +192,7 @@ public class HtmlAutoCompletionTest extends TestBase {
         ctx.typeChar('\'');
         ctx.assertDocumentTextEquals("<a href='val'|");
     }
-    
+
     public void testTypeSingleQuoteInUnquoteClassAttr() throws InterruptedException, InvocationTargetException, Exception {
         Context ctx = new Context(new HtmlKit(), "<a class=|");
         ctx.typeChar('v');
@@ -196,9 +202,152 @@ public class HtmlAutoCompletionTest extends TestBase {
         ctx.typeChar('\'');
         ctx.assertDocumentTextEquals("<a class=val'|");
     }
-    
+
+    public void testAutocompleteDoubleQuoteOnlyAfterEQ() throws InterruptedException, InvocationTargetException, Exception {
+        Context ctx = new Context(new HtmlKit(), "<a class|");
+        ctx.typeChar('=');
+        ctx.assertDocumentTextEquals("<a class=\"|\"");
+        ctx.typeChar('x');
+        ctx.assertDocumentTextEquals("<a class=\"x|\"");
+        ctx.typeChar('"');
+        ctx.assertDocumentTextEquals("<a class=\"x\"|");
+        ctx.typeChar('"');
+        ctx.assertDocumentTextEquals("<a class=\"x\"\"|");
+    }
+
+    public void testAutocompleteSingleQuoteOnlyAfterEQ() throws InterruptedException, InvocationTargetException, Exception {
+        Context ctx = new Context(new HtmlKit(), "<a class|");
+        ctx.typeChar('=');
+        ctx.assertDocumentTextEquals("<a class=\"|\"");
+        ctx.typeChar('\'');
+        ctx.assertDocumentTextEquals("<a class='|'");
+        ctx.typeChar('x');
+        ctx.assertDocumentTextEquals("<a class='x|'");
+        ctx.typeChar('\'');
+        ctx.assertDocumentTextEquals("<a class='x'|");
+        ctx.typeChar('\'');
+        ctx.assertDocumentTextEquals("<a class='x''|");
+    }
+
+    public void testDeleteAutocompletedQuote() throws InterruptedException, InvocationTargetException, Exception {
+        Context ctx = new Context(new HtmlKit(), "<a class|");
+        ctx.typeChar('=');
+        ctx.assertDocumentTextEquals("<a class=\"|\"");
+        ctx.typeChar('\b');
+        ctx.assertDocumentTextEquals("<a class=");
+    }
+
+    public void testDeleteQuote() throws InterruptedException, InvocationTargetException, Exception {
+        Context ctx = new Context(new HtmlKit(), "<a class=\"|\"");
+        ctx.typeChar('\b');
+        ctx.assertDocumentTextEquals("<a class=");
+    }
+
+    public void testDeleteQuoteWithWSAfter() throws InterruptedException, InvocationTargetException, Exception {
+        Context ctx = new Context(new HtmlKit(), "<a class=\"|\" ");
+        ctx.typeChar('\b');
+        ctx.assertDocumentTextEquals("<a class= ");
+    }
+
+    public void testDeleteSingleQuote() throws InterruptedException, InvocationTargetException, Exception {
+        Context ctx = new Context(new HtmlKit(), "<a class='|'");
+        ctx.typeChar('\b');
+        ctx.assertDocumentTextEquals("<a class=");
+
+        //but do not delete if there's a text after the caret
+        ctx = new Context(new HtmlKit(), "<a class='|x'");
+        ctx.typeChar('\b');
+        ctx.assertDocumentTextEquals("<a class=x'");
+
+    }
+
+    public void testDoNotAutocompleteQuoteInValue() throws InterruptedException, InvocationTargetException, Exception {
+        Context ctx = new Context(new HtmlKit(), "<a x=\"|test\"");
+        ctx.typeChar('\b');
+        ctx.assertDocumentTextEquals("<a x=|test\"");
+        ctx.typeChar('"');
+
+        //do not autocomplete in this case
+        ctx.assertDocumentTextEquals("<a x=\"|test\"");
+
+        //different quotes
+        ctx = new Context(new HtmlKit(), "<a x=\"|test\"");
+        ctx.typeChar('\b');
+        ctx.assertDocumentTextEquals("<a x=|test\"");
+        ctx.typeChar('\'');
+
+        //do not autocomplete in this case
+        ctx.assertDocumentTextEquals("<a x=\'|test\"");
+
+        //no closing quote
+        ctx = new Context(new HtmlKit(), "<a x=\"|test");
+        ctx.typeChar('\b');
+        ctx.assertDocumentTextEquals("<a x=|test");
+        ctx.typeChar('\'');
+
+        //do not autocomplete in this case
+        ctx.assertDocumentTextEquals("<a x=\'|test");
+
+    }
+
+    public void testInClassDoNotAutocompleteQuoteInValue() throws InterruptedException, InvocationTargetException, Exception {
+        Context ctx = new Context(new HtmlKit(), "<a class=\"|test\"");
+        ctx.typeChar('\b');
+        ctx.assertDocumentTextEquals("<a class=|test\"");
+        ctx.typeChar('"');
+
+        //do not autocomplete in this case
+        ctx.assertDocumentTextEquals("<a class=\"|test\"");
+
+        //different quotes
+        ctx = new Context(new HtmlKit(), "<a class=\"|test\"");
+        ctx.typeChar('\b');
+        ctx.assertDocumentTextEquals("<a class=|test\"");
+        ctx.typeChar('\'');
+
+        //do not autocomplete in this case
+        ctx.assertDocumentTextEquals("<a class=\'|test\"");
+
+        //no closing quote
+        ctx = new Context(new HtmlKit(), "<a class=\"|test");
+        ctx.typeChar('\b');
+        ctx.assertDocumentTextEquals("<a class=|test");
+        ctx.typeChar('\'');
+
+        //do not autocomplete in this case
+        ctx.assertDocumentTextEquals("<a class=\'|test");
+
+    }
+
+    public void testAdjustQuoteTypeAfterEQ() throws InterruptedException, InvocationTargetException, Exception {
+        HtmlAutoCompletion.adjust_quote_type_after_eq = true;
+        try {
+            //default type
+            assertEquals('"', HtmlAutoCompletion.default_quote_char_after_eq);
+
+            Context ctx = new Context(new HtmlKit(), "<a class|");
+            ctx.typeChar('=');
+            ctx.assertDocumentTextEquals("<a class=\"|\"");
+            ctx.typeChar('\'');
+
+            //now should be switched to single quote type
+            assertEquals('\'', HtmlAutoCompletion.default_quote_char_after_eq);
+
+            ctx = new Context(new HtmlKit(), "<a class|");
+            ctx.typeChar('=');
+            ctx.assertDocumentTextEquals("<a class='|'");
+            ctx.typeChar('"');
+            
+            //now should be switched back to the default double quote type
+            assertEquals('"', HtmlAutoCompletion.default_quote_char_after_eq);
+
+        } finally {
+            HtmlAutoCompletion.adjust_quote_type_after_eq = false;
+        }
+    }
+
     private static final class Context {
-        
+
         private JEditorPane pane;
 
         public Context(final EditorKit kit, final String textWithPipe) {
@@ -227,7 +376,7 @@ public class HtmlAutoCompletionTest extends TestBase {
                 throw new IllegalStateException(e);
             }
         }
-        
+
         public JEditorPane pane() {
             return pane;
         }
@@ -235,7 +384,7 @@ public class HtmlAutoCompletionTest extends TestBase {
         public Document document() {
             return pane.getDocument();
         }
-        
+
         public void typeChar(final char ch) {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
@@ -303,10 +452,9 @@ public class HtmlAutoCompletionTest extends TestBase {
                                     }
                                     diffIndex++;
                                 }
-                                TestCase.fail("Invalid document text - diff at index " + diffIndex +
-                                        "\nExpected: \"" + text +
-                                        "\"\n  Actual: \"" + docText + "\""
-                                );
+                                TestCase.fail("Invalid document text - diff at index " + diffIndex
+                                        + "\nExpected: \"" + text
+                                        + "\"\n  Actual: \"" + docText + "\"");
                             }
                         } catch (BadLocationException e) {
                             throw new IllegalStateException(e);
@@ -321,5 +469,4 @@ public class HtmlAutoCompletionTest extends TestBase {
             }
         }
     }
-    
 }

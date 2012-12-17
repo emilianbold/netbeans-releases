@@ -76,12 +76,14 @@ public class FunctionImpl implements Function {
     private final CsmFunction cachedFunctionDefinition;
     private final CsmFunction cachedFunctionDeclaration;
     private final boolean isVirtual;
+    private final Image icon;
 
     public FunctionImpl(CsmFunction function) {
         this.function = function;
         cachedFunctionDefinition = initDefinition();
-        isVirtual = initVirtual();
         cachedFunctionDeclaration = initDeclaration();
+        isVirtual = initVirtual();
+        icon = initIcon();
     }
 
     public CsmFunction getDeclaration() {
@@ -209,6 +211,10 @@ public class FunctionImpl implements Function {
 
     @Override
     public Image getIcon() {
+        return icon;
+    }
+
+    private Image initIcon() {
         try {
             return CsmImageLoader.getImage(getDefinition(), preferredIcons);
         } catch (AssertionError ex) {

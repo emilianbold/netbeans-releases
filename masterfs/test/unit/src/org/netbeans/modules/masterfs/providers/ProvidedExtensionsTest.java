@@ -338,6 +338,39 @@ public class ProvidedExtensionsTest extends NbTestCase {
         fo.refresh();
         assertEquals(1, iListener.implsCreatedExternallyCalls);
     }
+    
+    public void testCreatedDeleteBrokenLinkExternally () throws Exception {
+        FileObject fo = FileUtil.toFileObject(getWorkDir());
+        FileObject[] children = fo.getChildren(); // scan folder
+
+        FileObject folder = fo.createFolder("folder");
+        iListener.clear();
+        assertEquals(0, iListener.implsCreatedExternallyCalls);
+        File f = new File(FileUtil.toFile(fo), "wlock");
+        ProcessBuilder pb = new ProcessBuilder().directory(f.getParentFile()).command(new String[] { "ln", "-s", "doesnotexist", f.getName() });
+        pb.start().waitFor();
+        assertEquals(0, iListener.implsCreatedExternallyCalls);
+        fo.refresh();
+        assertEquals(1, iListener.implsCreatedExternallyCalls);
+        iListener.clear();
+        f.delete();
+        assertEquals(0, iListener.implsDeletedExternallyCalls);
+        fo.refresh();
+        assertEquals(1, iListener.implsDeletedExternallyCalls);
+        
+        // let's try once more, now it starts failing
+        pb = new ProcessBuilder().directory(f.getParentFile()).command(new String[] { "ln", "-s", "doesnotexist", f.getName() });
+        pb.start().waitFor();
+        iListener.clear();
+        assertEquals(0, iListener.implsCreatedExternallyCalls);
+        fo.refresh();
+        assertEquals(1, iListener.implsCreatedExternallyCalls);
+        iListener.clear();
+        f.delete();
+        assertEquals(0, iListener.implsDeletedExternallyCalls);
+        fo.refresh();
+        assertEquals(1, iListener.implsDeletedExternallyCalls);
+    }
 
     public void testDeletedExternally() throws IOException {
         FileObject fo = FileUtil.toFileObject(getWorkDir());

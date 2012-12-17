@@ -489,7 +489,10 @@ public final class FolderObj extends BaseFileObj {
             final FileNaming child = entry.getKey();
             final Integer operationId = entry.getValue();
 
-            BaseFileObj newChild = (operationId == ChildrenCache.ADDED_CHILD) ? factory.getFileObject(new FileInfo(child.getFile()), FileObjectFactory.Caller.Others) : factory.getCachedOnly(child.getFile());
+            BaseFileObj newChild = (operationId == ChildrenCache.ADDED_CHILD) ? 
+                factory.getFileObject(new FileInfo(child.getFile()), FileObjectFactory.Caller.Refresh) 
+                : 
+                factory.getCachedOnly(child.getFile());
             newChild = (BaseFileObj) ((newChild != null) ? newChild : getFileObject(child.getName()));
             if (operationId == ChildrenCache.ADDED_CHILD && newChild != null) {
 
@@ -648,6 +651,15 @@ public final class FolderObj extends BaseFileObj {
         }
     }
     
+    @Override
+    protected void afterRename() {
+        synchronized (FolderChildrenCache.class) {
+            if (folderChildren != null) {
+                folderChildren = folderChildren.cloneFor(getFileName());
+            }
+        }
+    }
+    
     public final boolean hasRecursiveListener() {
         FileObjectKeeper k = keeper;
         return k != null && k.isOn();
@@ -702,6 +714,12 @@ public final class FolderObj extends BaseFileObj {
         @Override
         public void removeChild(FileNaming childName) {
             removeChild(getFileName(), childName);
+        }
+
+        final FolderChildrenCache cloneFor(FileNaming fileName) {
+            FolderChildrenCache newCache = new FolderChildrenCache();
+            copyTo(newCache, getFileName());
+            return newCache;
         }
     }
 

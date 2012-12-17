@@ -49,6 +49,7 @@ import org.netbeans.modules.versioning.util.common.VCSFileNode;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.PropertySupport.ReadOnly;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
@@ -63,7 +64,11 @@ public abstract class VCSStatusNode<T extends VCSFileNode> extends AbstractNode 
     protected final StatusProperty statusProperty;
 
     protected VCSStatusNode (T node) {
-        super(Children.LEAF, Lookups.fixed(node.getLookupObjects()));
+        this(node, Lookups.fixed(node.getLookupObjects()));
+    }
+
+    protected VCSStatusNode (T node, Lookup lkp) {
+        super(Children.LEAF, lkp);
         this.node = node;
         nameProperty = new NameProperty(this);
         pathProperty = new PathProperty(this);

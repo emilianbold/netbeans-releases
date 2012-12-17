@@ -223,7 +223,7 @@ public class CSSStylesSelectionPanel extends JPanel {
         titlePanel.add(Box.createHorizontalGlue());
         JToggleButton pseudoClassToggle = new JToggleButton();
         pseudoClassToggle.setFocusPainted(false);
-        pseudoClassToggle.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/web/inspect/resources/selectionMode.png", true)); // NOI18N
+        pseudoClassToggle.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/web/inspect/resources/elementStates.png", true)); // NOI18N
         pseudoClassToggle.setToolTipText(NbBundle.getMessage(CSSStylesSelectionPanel.class, "CSSStylesSelectionPanel.pseudoClasses")); // NOI18N
         CustomToolbar toolBar = new CustomToolbar();
         toolBar.addButton(pseudoClassToggle);

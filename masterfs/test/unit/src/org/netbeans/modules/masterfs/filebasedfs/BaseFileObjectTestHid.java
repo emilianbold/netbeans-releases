@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.util.*;
@@ -303,6 +304,56 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         if (files.contains(kidFile) || files.contains(kidTxtFile)) {
             fail(msg);
         }
+    }
+    
+    public void testReadRecreatedFile() throws Exception {
+        FileObject fo = root.getFileObject("testdir/mountdir4/file.ext");
+        assertNotNull("File found properly", fo);
+        String txt = fo.asText("UTF-8");
+        
+        File f = FileUtil.toFile(fo);
+        
+        f.delete();
+        
+        
+        fo.getParent().refresh();
+        
+        assertFalse("No longer valid", fo.isValid());
+        try {
+            InputStream is = fo.getInputStream();
+            fail("Should throw an exception: " + is);
+        } catch (FileNotFoundException ex) {
+            // ok
+        }
+        
+        f.createNewFile();
+        
+        String newTxt = fo.asText("UTF-8");
+        assertEquals("Empty text read even the file object is not valid anymore", "", newTxt);
+        assertFalse("Still invalid", fo.isValid());
+    }
+    public void testWriteRecreatedFile() throws Exception {
+        FileObject fo = root.getFileObject("testdir/mountdir4/file.ext");
+        assertNotNull("File found properly", fo);
+        String txt = fo.asText("UTF-8");
+        
+        File f = FileUtil.toFile(fo);
+        
+        f.delete();
+        
+        fo.getParent().refresh();
+        
+        assertFalse("No longer valid", fo.isValid());
+        
+        f.createNewFile();
+        
+        OutputStream os = fo.getOutputStream();
+        os.write("Ahoj".getBytes());
+        os.close();
+        
+        String newTxt = fo.asText("UTF-8");
+        assertEquals("Text read even the file object is not valid anymore", "Ahoj", newTxt);
+        assertFalse("Still invalid", fo.isValid());
     }
     
     public void testRefresh109490() throws Exception {

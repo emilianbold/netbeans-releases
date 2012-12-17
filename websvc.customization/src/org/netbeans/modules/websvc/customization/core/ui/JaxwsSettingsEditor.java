@@ -118,17 +118,19 @@ public class JaxwsSettingsEditor implements WSEditor {
                 }
             }
 
-            wsimportOptions.clearWsimportOptions();
+            if (wsimportOptions != null) {
+                wsimportOptions.clearWsimportOptions();
 
-            List<WsimportOption> options = getWsimportOptions();
-            for(WsimportOption option : options){
-                wsimportOptions.addWsimportOption(option);
-            }
-            
-            options = getJaxbOptions();
-            for(WsimportOption option : options){
-                option.setJaxbOption(true);
-                wsimportOptions.addWsimportOption(option);
+                List<WsimportOption> options = getWsimportOptions();
+                for (WsimportOption option : options) {
+                    wsimportOptions.addWsimportOption(option);
+                }
+
+                options = getJaxbOptions();
+                for (WsimportOption option : options) {
+                    option.setJaxbOption(true);
+                    wsimportOptions.addWsimportOption(option);
+                }
             }
    
             jaxWsModel.write();

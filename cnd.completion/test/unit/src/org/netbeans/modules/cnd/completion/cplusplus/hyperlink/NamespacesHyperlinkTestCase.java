@@ -336,6 +336,11 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug220614.cpp", 22, 34, "bug220614.cpp", 13, 5);
     }
     
+    public void testBug219398() throws Exception {
+        // Bug 219398 - "Unable to resolve identifier name" mark happened and source code format is wrong in c++ project
+        performTest("typeid.cpp", 39, 61, "typeinfo.h", 21, 5);
+    }            
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

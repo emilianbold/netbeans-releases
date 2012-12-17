@@ -117,6 +117,8 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
     private CSSStylesNodeLookup nodeLookup = new CSSStylesNodeLookup();
     /** Lookup result with rules selected in the panel. */
     Lookup.Result<Rule> ruleLookupResult;
+    /** Determines whether the view is active (i.e. whether it manages the rule controller). */
+    boolean active = true;
 
     /**
      * Creates a new {@code CSSStylesPanel}.
@@ -241,6 +243,9 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                 }
             }
         });
+        if (!active) {
+            return;
+        }
         final RuleInfo ruleInfo = (rules.size() == 1) ? lookup.lookup(RuleInfo.class) : null;
         EventQueue.invokeLater(new Runnable() {
             @Override
@@ -290,11 +295,13 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
 
     @Override
     public void activated() {
+        active = true;
         updateRulesEditor(ruleLookupResult.allInstances());
     }
 
     @Override
     public void deactivated() {
+        active = false;
     }
 
     /**
@@ -361,7 +368,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
     /**
      * User task that updates the rules editor window (to show the specified rule).
      */
-    static class RuleEditorTask extends UserTask {
+    class RuleEditorTask extends UserTask {
         /** Rule to show in the rules editor. */
         private Rule rule;
         /** Additional rule information. */
@@ -413,6 +420,10 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                     public void run(StyleSheet styleSheet) {
                         org.netbeans.modules.css.model.api.Rule modelRule = Utilities.findRuleInStyleSheet(sourceModel, styleSheet, rule);
                         if (modelRule != null) {
+                            found[0] = true;
+                            if (!active) {
+                                return;
+                            }
                             controller.setModel(sourceModel);
                             controller.setRule(modelRule);
                             if (ruleInfo != null) {
@@ -446,7 +457,6 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                                     }
                                 }
                             }
-                            found[0] = true;
                         }
                     }
                 });
@@ -454,7 +464,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                     break;
                 }
             }
-            if (!found[0]) {
+            if (active && !found[0]) {
                 controller.setNoRuleState();
             }
         }

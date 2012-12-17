@@ -59,6 +59,7 @@ import org.netbeans.api.actions.Savable;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.multiview.MultiViewProcessorTest.LP;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
@@ -86,6 +87,7 @@ public class MultiViewEditorCloneTest extends NbTestCase {
         return 10000;
     }
 
+    @RandomlyFails () // NB-Core-Build #9365: Unstable
     public void testCloneModifyClose() throws Exception {
         InstanceContent ic = new InstanceContent();
         Lookup context = new AbstractLookup(ic);

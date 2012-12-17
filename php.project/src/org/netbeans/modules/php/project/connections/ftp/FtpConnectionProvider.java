@@ -45,12 +45,12 @@ package org.netbeans.modules.php.project.connections.ftp;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.spi.RemoteClient;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfigurationPanel;
 import org.netbeans.modules.php.project.connections.spi.RemoteConnectionProvider;
-import org.netbeans.modules.php.project.validation.ValidationResult;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 

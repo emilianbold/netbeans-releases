@@ -426,7 +426,8 @@ public abstract class ModelElement implements Element {
      */
     protected <T extends Element> T getElementAt(int index, Class<T> type) {
         if (index < 0 || index >= getElementsCount()) {
-            return null;
+            //XXX why not to throw IOOBE????
+            return null; 
         }
         Element e = getElementAt(index);
         if (type.isAssignableFrom(e.getClass())) {

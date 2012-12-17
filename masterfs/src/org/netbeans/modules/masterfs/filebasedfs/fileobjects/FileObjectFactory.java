@@ -86,7 +86,15 @@ public final class FileObjectFactory {
     private static final Logger LOG_REFRESH = Logger.getLogger("org.netbeans.modules.masterfs.REFRESH"); // NOI18N
 
     public static enum Caller {
-        ToFileObject, GetFileObject, GetChildern, GetParent, Others
+        ToFileObject, GetFileObject, GetChildern, GetParent, Refresh, Others;
+
+        boolean asynchFire() {
+            if (this == Refresh || this == Others) {
+                return false;
+            } else {
+                return true;
+            }
+        }
     }
         
     private FileObjectFactory(final File rootFile) {
@@ -198,7 +206,7 @@ public final class FileObjectFactory {
         if (initTouch == -1  && FileBasedFileSystem.isModificationInProgress()) {
             initTouch = file.exists() ? 1 : 0;
         }
-        return issueIfExist(file, caller, parent, child, initTouch, !caller.equals(Caller.Others));
+        return issueIfExist(file, caller, parent, child, initTouch, caller.asynchFire());
     }
 
 
@@ -263,6 +271,11 @@ public final class FileObjectFactory {
         //use cached info as much as possible + do refresh if something is wrong
         //exist = (parent != null) ? child != null : (((foForFile = get(file)) != null && foForFile.isValid()) || touchExists(file, realExists));
         foForFile = getCachedOnly(file);
+        if (caller == Caller.Refresh && foForFile != null && !foForFile.isValid()) {
+            // clear the impeach state, we know the file exists
+            fcb.impeachExistence(file, true);
+            foForFile = null;
+        }
         if (parent != null && parent.isValid()) {
             if (child != null) {
                 if (foForFile == null) {
@@ -602,17 +615,15 @@ public final class FileObjectFactory {
         return getCachedOnly(file, true);
     }
     public final BaseFileObj getCachedOnly(final File file, boolean checkExtension) {
-        final Object o;
+        BaseFileObj retval;
         synchronized (allIBaseFileObjects) {
             final Object value = allIBaseFileObjects.get(NamingFactory.createID(file));
-            @SuppressWarnings("unchecked")
-            Reference<BaseFileObj> ref = (Reference<BaseFileObj>) (value instanceof Reference<?> ? value : null);
-            ref = (ref == null && value instanceof List<?> ? FileObjectFactory.getReference((List<?>) value, file) : ref);
-
-            o = (ref != null) ? ref.get() : null;
-            assert (o == null || o instanceof BaseFileObj);
+            if (value instanceof Reference<?>) {
+                retval = getReference(Collections.nCopies(1, value), file);
+            } else {
+                retval = getReference((List<?>) value, file);
+            }
         }
-        BaseFileObj retval = (BaseFileObj) o;
         if (retval != null && checkExtension) {
             if (!file.getName().equals(retval.getNameExt())) {
                 if (!Utils.equals(file, retval.getFileName().getFile())) {
@@ -623,14 +634,22 @@ public final class FileObjectFactory {
         return retval;
     }
 
-    private static Reference<BaseFileObj> getReference(final List<?> list, final File file) {
-        Reference<BaseFileObj> retVal = null;
-        for (int i = 0; retVal == null && i < list.size(); i++) {
-            @SuppressWarnings("unchecked")
-            final Reference<BaseFileObj> ref = (Reference<BaseFileObj>) list.get(i);
-            final BaseFileObj cachedElement = (ref != null) ? ref.get() : null;
-            if (cachedElement != null && cachedElement.getFileName().getFile().compareTo(file) == 0) {
-                retVal = ref;
+    private static BaseFileObj getReference(final List<?> list, final File file) {
+        BaseFileObj retVal = null;
+        if (list != null) {
+            for (int i = 0; retVal == null && i < list.size(); i++) {
+                Object item = list.get(i);
+                if (!(item instanceof Reference<?>)) {
+                    continue;
+                }
+                final Object ce = ((Reference<?>)item).get();
+                if (!(ce instanceof BaseFileObj)) {
+                    continue;
+                }
+                final BaseFileObj cachedElement = (BaseFileObj)ce;
+                if (cachedElement != null && cachedElement.getFileName().getFile().compareTo(file) == 0) {
+                    retVal = cachedElement;
+                }
             }
         }
         return retVal;
