@@ -55,6 +55,8 @@ import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
 import org.netbeans.modules.php.spi.framework.PhpModuleExtender;
 import org.netbeans.modules.php.spi.framework.PhpModuleIgnoredFilesExtender;
 import org.netbeans.modules.php.spi.framework.commands.FrameworkCommandSupport;
+import org.netbeans.modules.php.zend2.ui.actions.Zend2PhpModuleActionsExtender;
+import org.netbeans.modules.php.zend2.ui.wizards.Zend2PhpModuleExtender;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
@@ -150,7 +152,7 @@ public final class Zend2PhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public PhpModuleActionsExtender getActionsExtender(PhpModule phpModule) {
-        return null;
+        return new Zend2PhpModuleActionsExtender();
     }
 
     @Override
