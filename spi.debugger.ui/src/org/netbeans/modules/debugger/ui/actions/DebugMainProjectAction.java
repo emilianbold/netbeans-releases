@@ -287,7 +287,7 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar, PopupM
                     Exceptions.printStackTrace(ex);
                     return ;
                 }
-                Controller controller = controllerPtr[0];
+                final Controller controller = controllerPtr[0];
                 Method loadMethod = null;
                 try {
                     loadMethod = controller.getClass().getMethod("load", Properties.class);
@@ -304,8 +304,22 @@ public class DebugMainProjectAction implements Action, Presenter.Toolbar, PopupM
                 } catch (IllegalArgumentException ex) {
                 } catch (InvocationTargetException ex) {
                 }
-                boolean passed = controller.ok();
-                if (passed) {
+                final boolean[] passedPtr = new boolean[] { false };
+                try {
+                    SwingUtilities.invokeAndWait(new Runnable() {
+                        @Override
+                        public void run() {
+                            passedPtr[0] = controller.ok();
+                        }
+                    });
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                    return ;
+                } catch (InvocationTargetException ex) {
+                    Exceptions.printStackTrace(ex);
+                    return ;
+                }
+                if (passedPtr[0]) {
                     makeFirst(index);
                     GestureSubmitter.logAttach(attachTypeName);
                 }

@@ -120,6 +120,7 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
     private final List<Connector>   connectors;
     /** Combo with list of all AttachingConnector names.*/
     private JComboBox               cbConnectors;
+    private Connector               selectedConnector;
     /** List of JTextFields containing all parameters of curentConnector. */
     private JTextField[]            tfParams;
     private ConnectController       controller;
@@ -241,6 +242,7 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
             cbConnectors.addActionListener (this);
         }
         cbConnectors.setSelectedIndex (defaultIndex);
+        selectedConnector = connectors.get(defaultIndex);
         setCursor(standardCursor);
     }
 
@@ -252,6 +254,7 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
         removeAll();
         
         Connector connector = connectors.get (index);
+        selectedConnector = connector;
 
         GridBagConstraints c;
         GridBagLayout layout = new GridBagLayout ();
@@ -377,7 +380,8 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
      */
     @Override
     public void actionPerformed (ActionEvent e) {
-        refresh (((JComboBox) e.getSource ()).getSelectedIndex (), Properties.getDefault ().getProperties ("debugger"));
+        int selectedIndex = ((JComboBox) e.getSource ()).getSelectedIndex ();
+        refresh (selectedIndex, Properties.getDefault ().getProperties ("debugger"));
         Window w = SwingUtilities.getWindowAncestor(this);
         if (w != null) {
             w.pack ();  // ugly hack...
@@ -494,6 +498,7 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
         JTextField[]        tfParams, 
         Connector           connector
     ) {
+        assert SwingUtilities.isEventDispatchThread();
         // 1) get default set of args
         Map<String, Argument> args = connector.defaultArguments ();
 
@@ -590,10 +595,9 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
 
     private void checkValid() {
         assert connectorsLoaded.get();
-        int index = cbConnectors.getSelectedIndex ();
-        final Connector connector = connectors.get (index);
+        assert SwingUtilities.isEventDispatchThread() : "Called outside of AWT.";
         int i, k = tfParams.length;
-        Map args = connector.defaultArguments ();
+        Map args = selectedConnector.defaultArguments ();
         for (i = 0; i < k; i++) {
             JTextField tf = tfParams [i];
             String paramName = tf.getName ();
@@ -655,8 +659,8 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
         @Override
         public boolean ok () {
             assert connectorsLoaded.get();
-            int index = cbConnectors.getSelectedIndex ();
-            final Connector connector = connectors.get (index);
+            assert SwingUtilities.isEventDispatchThread() : "Called outside of AWT.";
+            final Connector connector = selectedConnector;
             final Map<String, Argument> args = getEditedArgs (tfParams, connector);
             if (args == null) {
                 return true;
@@ -746,32 +750,65 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
             return true;
         }
 
-        public boolean load(Properties props) {
+        public boolean load(final Properties props) {
             assert !SwingUtilities.isEventDispatchThread();
             waitForConnectorsLoad();
             String connectorName = props.getString ("attaching_connector", "");
             int index, k = connectors.size ();
-            boolean found = false;
+            int indexToSelect = -1;
             for (index = 0; index < k; index++) {
                 Connector connector = connectors.get (index);
                 if (connector.name ().equals (connectorName)) {
-                    cbConnectors.setSelectedIndex(index);
-                    found = true;
+                    indexToSelect = index;
                     break;
                 }
             }
-            if (!found) {
+            if (indexToSelect < 0) {
                 return false;
             }
-            refresh(index, props);
+            final int si = indexToSelect;
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
+                    public void run() {
+                        cbConnectors.setSelectedIndex(si);
+                        refresh(si, props);
+                    }
+                });
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
             return true;
         }
 
         public void save(Properties props) {
             assert connectorsLoaded.get();
-            int index = cbConnectors.getSelectedIndex ();
-            final Connector connector = connectors.get (index);
-            final Map<String, Argument> args = getEditedArgs (tfParams, connector);
+            final Connector[] connectorPtr = new Connector[] { null };
+            final Map[] argsPtr = new Map[] { null };
+            if (SwingUtilities.isEventDispatchThread()) {
+                connectorPtr[0] = selectedConnector;
+                argsPtr[0] = getEditedArgs (tfParams, selectedConnector);
+            } else {
+                try {
+                    SwingUtilities.invokeAndWait(new Runnable() {
+                        @Override
+                        public void run() {
+                            connectorPtr[0] = selectedConnector;
+                            argsPtr[0] = getEditedArgs (tfParams, selectedConnector);
+                        }
+                    });
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                    return ;
+                } catch (InvocationTargetException ex) {
+                    Exceptions.printStackTrace(ex);
+                    return ;
+                }
+            }
+            final Connector connector = connectorPtr[0];
+            final Map<String, Argument> args = argsPtr[0];
             if (args == null) {
                 return;  // nothing stored
             }
@@ -796,8 +833,7 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
 
         public String getDisplayName() {
             assert connectorsLoaded.get();
-            int index = cbConnectors.getSelectedIndex ();
-            final Connector connector = connectors.get (index);
+            final Connector connector = selectedConnector;
             final Map<String, Argument> args = getEditedArgs (tfParams, connector);
             if (args == null) {
                 return "";  // NOI18N
