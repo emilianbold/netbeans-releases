@@ -179,7 +179,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         this.translator = translator;
     }
 
-    private interface Translator {
+    protected interface Translator {
 
         public List<Embedding> translate(Snapshot snapshot);
     } // End of Translator interface
@@ -333,7 +333,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         }
     } // End of PhpTranslator class
 
-    private static final class TplTranslator implements Translator {
+    protected static final class TplTranslator implements Translator {
 
         @Override
         public List<Embedding> translate(Snapshot snapshot) {
@@ -370,7 +370,13 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                         boolean hasNext;
                         while (hasNext = tokenSequence.moveNext()) {
                             Token<? extends TokenId> innerToken = tokenSequence.token();
-                            if (!innerToken.id().name().equals("T_HTML")) { //NOI18N
+                            if (CharSequenceUtilities.textEquals("ldelim", innerToken.text())) {        //NOI18N
+                                wasInLiteral = true;
+                                embeddings.add(snapshot.create("{", JsTokenId.JAVASCRIPT_MIME_TYPE));   //NOI18N
+                            } else if (CharSequenceUtilities.textEquals("rdelim", innerToken.text())) { //NOI18N
+                                wasInLiteral = true;
+                                embeddings.add(snapshot.create("}", JsTokenId.JAVASCRIPT_MIME_TYPE));   //NOI18N
+                            } else if (!innerToken.id().name().equals("T_HTML")) { //NOI18N
                                 wasInTpl = true;
                                 if (CharSequenceUtilities.indexOf(innerToken.text(), "literal") > -1) { //NOI18N
                                     wasInLiteral = true;
@@ -758,6 +764,25 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
 
     protected static List<EmbeddingPosition> extractJsEmbeddings(String text, int sourceStart) {
         List<EmbeddingPosition> embeddings = new LinkedList<EmbeddingPosition>();
+        // beggining comment around the script
+        int start = 0;
+        for (; start < text.length(); start++) {
+            char c = text.charAt(start);
+            if (!Character.isWhitespace(c)) {
+                break;
+            }
+        }
+        if (start < text.length() && text.startsWith("<!--", start)) { //NOI18N
+            int lineEnd = text.indexOf('\n', start); //NOI18N
+            if (lineEnd != -1 && lineEnd < text.indexOf("-->", start)) { //NOI18N
+                embeddings.add(new EmbeddingPosition(sourceStart, start));
+                lineEnd++; //skip the \n
+                sourceStart += lineEnd;
+                text = text.substring(lineEnd);
+            }
+        }
+
+        // inline comments inside script
         Scanner scanner = new Scanner(text).useDelimiter("(<!--).*(-->)"); //NOI18N
         while (scanner.hasNext()) {
             scanner.next();
