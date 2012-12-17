@@ -44,10 +44,10 @@ package org.netbeans.lib.terminalemulator;
 import org.netbeans.lib.terminalemulator.AbstractInterp.Actor;
 
 /**
- * Stuff common to InterpANSI, InterpDtTerm and InterpXTerm but 
+ * Stuff common to InterpDtTerm and InterpXTerm but not InterpANSI.
  * @author ivan
  */
-public class InterpProtoANSIX extends InterpProtoANSI {
+class InterpProtoANSIX extends InterpProtoANSI {
 
     protected static class InterpTypeProtoANSIX extends InterpTypeProtoANSI {
 	protected final State st_wait = new State("wait");	// NOI18N
@@ -251,5 +251,52 @@ public class InterpProtoANSIX extends InterpProtoANSI {
     }
 
     private void setup() {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public char mapACS(final char inChar) {
+        switch (inChar) {
+            default: return '\0';
+            case '+': return inChar; // arrow pointing right            ACS_RARROW
+            case ',': return inChar; // arrow pointing left             ACS_LARROW
+            case '-': return inChar; // arrow pointing up               ACS_UARROW
+            case '.': return inChar; // (^Y) arrow pointing down        ACS_DARROW
+            case '0': return inChar; // solid square block              ACS_BLOCK
+
+            case '\'': return inChar; // diamond                        ACS_DIAMOND
+            case 'a': return inChar; // checker board (stipple)         ACS_CKBOARD
+            // no-char return 'b'; // HT
+            // no-char return 'c'; // FF
+            // no-char return 'd'; // CR
+            // no-char return 'e'; // LF
+            case 'f': return inChar; // degree symbol                   ACS_DEGREE
+            case 'g': return inChar; // plus/minus                      ACS_PLMINUS
+            case 'h': return inChar; // board of squares                ACS_BOARD  or NL
+            // no-char return 'i'; // lantern symbol                  ACS_LANTERN or VT
+            case 'j': return inChar; // lower right corner              ACS_LRCORNER
+            case 'k': return inChar; // upper right corner              ACS_URCORNER
+            case 'l': return inChar; // upper left corner               ACS_ULCORNER
+            case 'm': return inChar; // lower left corner               ACS_LLCORNER
+            case 'n': return inChar; // large plus or crossover         ACS_PLUS
+            case 'o': return inChar; // (~) scan line 1                 ACS_S1
+            // case 0304: return 'p'; // scan line 3                  ACS_S3
+            case 'q': return inChar; // horizontal line                 ACS_HLINE
+            // case 0304: return 'r'; // scan line 7                  ACS_S7
+            case 's': return inChar; // (_) scan line 9                 ACS_S9
+            case 't': return inChar; // tee pointing right              ACS_LTEE
+            case 'u': return inChar; // tee pointing left               ACS_RTEE
+            case 'v': return inChar; // tee pointing up                 ACS_BTEE
+            case 'w': return inChar; // tee pointing down               ACS_TTEE
+            case 'x': return inChar; // vertical line                   ACS_VLINE
+            case 'y': return inChar; // less-than-or-equal-to           ACS_LEQUAL
+            case 'z': return inChar; // greater-than-or-equal-to        ACS_GEQUAL
+            case '{': return inChar; // greek pi                        ACS_PI
+            case '|': return inChar; // not-equal                       ACS_NEQUAL
+            case '}': return inChar; // UK pound sign                   ACS_STERLING
+            case '~': return inChar; // bullet                          ACS_BULLET
+        }
     }
 }

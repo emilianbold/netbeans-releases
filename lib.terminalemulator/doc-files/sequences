@@ -105,28 +105,53 @@ sequence	mnemonic		termcap op	numbers	margin	ansi	dtterm	xterm	Term
 ----------------------------------------------------------------------------------------------------------------------------------------
 sequence	mnemonic		termcap op	numbers	margin	ansi	dtterm	xterm	Term
 ----------------------------------------------------------------------------------------------------------------------------------------
-\ESC[m		SG (Set Graphics)	se (ue)		?	 	Y	Y-	Y	protoansi
-\ESC[0m		SG (Set Graphics)	me		all off  	Y	Y-	Y	protoansi
-\ESC[1m		SG (Set Graphics)	md		bold	 	Y	Y-	Y	protoansi
-\ESC[2m		SG (Set Graphics)	so		faint	 	Y1	?T	?	protoansi
-\ESC[3m		SG (Set Graphics)	-		italic	 	Y1	?-	?	N -> ?
-\ESC[4m		SG (Set Graphics)	us		underline 	Y	?T	Y	protoansi
-\ESC[5m		SG (Set Graphics)	mb		blink S	 	Y	Y-	Y	N
-\ESC[6m		SG (Set Graphics)	-		blink F	 	Y1	?-	?	N
-\ESC[7m		SG (Set Graphics)	mr (so)		reverse	 	Y	?T	ST	protoansi
-\ESC[8m		SG (Set Graphics)	-		hidden	 	Y1	Y-	Y	protoansi
-\ESC[9m		SG (Set Graphics)	-		strike	 	Y1	?-	?	N
-\ESC[10m	SG (Set Graphics)	-		primary ft	Y1	?-	?	ansi
-\ESC[11-19m	SG (Set Graphics)	-		alt ft	 	Y1	?-	?	ansi
-\ESC[20m	SG (Set Graphics)	-		fraktur	 	Y1	?-	?	N
-\ESC[21-29m	SG (Set Graphics)	ue		<inverse of 1-9>Y1	?T	ST	ansi
-\ESC[30-37m	SG (Set Graphics)	-		fg color	Y1	?-	?	ansi
-\ESC[38m	SG (Set Graphics)	-		256 fg color	Y1	?-	?	N
-\ESC[39m	SG (Set Graphics)	-		dflt fg color	Y1	?-	?	ansi
-\ESC[40-47m	SG (Set Graphics)	-		bg color	Y1	?-	?	ansi
-\ESC[48m	SG (Set Graphics)	-		256 bg color	Y1	?-	?	N
-\ESC[49m	SG (Set Graphics)	-		dflt fg color	Y1	?-	?	ansi
+\ESC[m		SG (Set Graphics)	se (ue)		normal	 	S?	S-	S	ansi, dtterm, xterm
 
+\ESC[0m		SG (Set Graphics)	me		normal  	S?	S-	S	ansi, dtterm, xterm
+\ESC[1m		SG (Set Graphics)	md		bold	 	S?	S-	S	ansi, dtterm, xterm
+
+\ESC[2m		SG (Set Graphics)	so		faint	 	S?	ST	--	ansi, dtterm
+\ESC[3m		SG (Set Graphics)	-		italic	 	S-	--	--	N -> ansi
+\ESC[4m		SG (Set Graphics)	us		underline 	S?	ST	S?	ansi, dtterm, xterm
+\ESC[5m		SG (Set Graphics)	mb		blink Slow 	S?	S-	S?	N	bold under xterm
+\ESC[6m		SG (Set Graphics)	-		blink Fast 	S?	--	--	N
+\ESC[7m		SG (Set Graphics)	mr (so)		inverse	 	S?	ST	ST	ansi, dtterm, xterm
+\ESC[8m		SG (Set Graphics)	-		hidden	 	S?	S-	S?	ansi, dtterm, xterm
+\ESC[9m		SG (Set Graphics)	-		strike	 	S?	--	--	N
+
+\ESC[10m	SG (Set Graphics)	-		primary ft	S?	--	--	ansi
+\ESC[11-19m	SG (Set Graphics)	-		alt ft	 	S?	--	--	ansi
+
+\ESC[20m	SG (Set Graphics)	-		fraktur	 	S?	--	--	N
+\ESC[21m	SG (Set Graphics)	-		underline *2	S?	--	--	N
+
+# inverse of 2-9
+\ESC[22m	SG (Set Graphics)	ue		no bold/faint	S?	ST	ST	ansi, dtterm, xterm
+\ESC[23m	SG (Set Graphics)	-		no italic/fktur	S?	-?	-?	ansi
+\ESC[24m	SG (Set Graphics)	-		no underline	S?	S?	S?	ansi, dtterm, xterm
+\ESC[25m	SG (Set Graphics)	-		no blink	S?	S?	S?	ansi, dtterm, xterm
+\ESC[26m	SG (Set Graphics)	-		prop space	S-	--	--	N
+\ESC[27m	SG (Set Graphics)	-		no inverse	S?	S?	S?	ansi, dtterm, xterm
+\ESC[28m	SG (Set Graphics)	-		no hidden	S?	S?	S?	ansi, dtterm, xterm
+\ESC[29m	SG (Set Graphics)	-		no strike	S?	--	--	N
+
+\ESC[30-37m	SG (Set Graphics)	-		fg color	S?	S-	S?	ansi, dtterm, xterm
+
+\ESC[38m	SG (Set Graphics)	-		256 fg color	S-	--	--	N
+
+\ESC[39m	SG (Set Graphics)	-		dflt fg color	S?	S-	S?	ansi, dtterm, xterm
+
+\ESC[40-47m	SG (Set Graphics)	-		bg color	S?	S-	S?	ansi, dtterm, xterm
+
+\ESC[48m	SG (Set Graphics)	-		256 bg color	S?	--	--	N
+
+\ESC[49m	SG (Set Graphics)	-		dflt fg color	S?	S-	S?	ansi, dtterm, xterm
+
+\ESC[50-65m	SG (Set Graphics)	-		misc.		S-	--	--	N	misc rare ANSI stuff
+
+----------------------------------------------------------------------------------------------------------------------------------------
+sequence	mnemonic		termcap op	numbers	margin	ansi	dtterm	xterm	Term
+----------------------------------------------------------------------------------------------------------------------------------------
 \ESC[5n		DSR (Device Status Report)		56	?	S-	S-	S-	protoansi
 \ESC[6n		DSR CPR (Curesor Position Report)	56	?	S-	S-	S-	protoansi
 
@@ -206,3 +231,53 @@ sequence	mnemonic		termcap op	numbers	margin	ansi	dtterm	xterm	Term
 ----------------------------------------------------------------------------------------------------------------------------------------
 sequence	mnemonic		termcap op	numbers	margin	ansi	dtterm	xterm	Term
 ----------------------------------------------------------------------------------------------------------------------------------------
+
+Alternative Character Sets
+==========================
+
+ACS's understood by curses (extracted from ncurses.h)
+
+UNICODE:
+http://en.wikipedia.org/wiki/Box-drawing_character
+
+ACS_RARROW      '+'							020	-	-	N
+ACS_LARROW      ','							021	-	-	N
+ACS_UARROW      '-'							030	-	-	N
+ACS_DARROW      '.'							031 ^Y	-	-	N
+ACS_BLOCK       '0'							333	-	-	N
+
+# The following sequences correspond to http://vt100.net/docs/vt220-rm/table2-4.html
+ACS_DIAMOND     '`'							004	'`'	'`'	ansi+protoansix
+ACS_CKBOARD     'a'							261	'a'	'a'	ansi+protoansix
+?		'b'	HT						-	-	-	N
+?		'c'	FF						-	-	-	N
+?		'd'	CR						-	-	-	N
+?		'e'	LF						-	-	-	N
+ACS_DEGREE      'f'							370	'f'	'f'	ansi+protoansix
+ACS_PLMINUS     'g'							361	'g'	'g'	ansi+protoansix
+ACS_BOARD       'h'	or NL						260	-	-	ansi+protoansix
+ACS_LANTERN     'i'	or VT						-	-	'i'	ansi+protoansix
+ACS_LRCORNER    'j'							331	'j'	'j'	ansi+protoansix
+ACS_URCORNER    'k'							277	'k'	'k'	ansi+protoansix
+ACS_ULCORNER    'l'							332	'l'	'l'	ansi+protoansix
+ACS_LLCORNER    'm'							300	'm'	'm'	ansi+protoansix
+ACS_PLUS        'n'							305	'n'	'n'	ansi+protoansix
+
+ACS_S1          'o'							176 ~	'o'	'o'	ansi+protoansix	-> '\u2500'
+ACS_S3          'p'							304	'p'	'p'	N		-> '\u2500'
+ACS_HLINE       'q'	or S5						304	'q'	'q'	ansi+protoansix	-> '\u2500'
+ACS_S7          'r'							304	'r'	'r'	N		-> '\u2500'
+ACS_S9          's'							137 _	's'	's'	ansi+protoansix	-> '\u2500'
+
+ACS_LTEE        't'							303	't'	't'	ansi+protoansix
+ACS_RTEE        'u'							264	'u'	'u'	ansi+protoansix
+ACS_BTEE        'v'							301	'v'	'v'	ansi+protoansix
+ACS_TTEE        'w'							302	'w'	'w'	ansi+protoansix
+ACS_VLINE       'x'							263	'x'	'x'	ansi+protoansix
+ACS_LEQUAL      'y'							363	'y'	'y'	ansi+protoansix
+ACS_GEQUAL      'z'							362	'z'	'z'	ansi+protoansix
+ACS_PI          '{'							343	'{'	'{'	ansi+protoansix
+ACS_NEQUAL      '|'							330	'|'	'|'	ansi+protoansix
+ACS_STERLING    '}'							234	'}'	'}'	ansi+protoansix
+ACS_BULLET      '~'							376	'~'	'~'	ansi+protoansix
+

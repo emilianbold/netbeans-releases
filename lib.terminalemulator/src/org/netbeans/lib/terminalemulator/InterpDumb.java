@@ -256,4 +256,12 @@ public class InterpDumb extends AbstractInterp {
             }
         }
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public char mapACS(char inChar) {
+        return '\0';
+    }
 }

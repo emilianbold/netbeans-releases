@@ -1,5 +1,60 @@
 207965 - Terminal incorrectly displays prompt string
 187345 - wrong characters in Terminals
+
+	- InterpProtoANSI and InterpProtoANSIX were supposed to be
+	  package private.
+
+	- Add ability to customize Alternative Character Set (ACS) encoding
+	  by Interp.
+
+	  The key is
+		char Interp.mapACS(char)
+	  which will take an interp-specific encoding and return a
+	  canonical encoding or '\0' which means the passed in char
+	  does not encode an ACS.
+	  The canonical encodings correspond to curses ACS_ variables
+	  and characters used by the 'acsc' terminfo attribute.
+
+	  For example "infocmp ansi" will yield:
+		acsc=+\020\,\021-\030.^Y0\333`\004a\261f\370g\361 ...
+	  and therefore mapACS for ANSI should return '-' when
+	  passed \030.
+
+	  This is the main fix needed for 187345. That is, if "xterm"
+	  emulation is chosen for a Term it will handle the rendition of
+	  graphic characters correctly.
+
+	  However handling of _switching_ to the ACS font will take a
+	  bit more doing because "ansi" terminals honor \ESC10m and
+	  \ESC11m but "xterm"s require \ESC(0 and \ESC(B and then 
+	  \SO and \SI.
+
+	- Add ability to customize responses to attribute codes by Interp.
+
+	  The sequence \ESC%dm is a general attribute setting mechanism.
+	  However, the values accepted by "xterm", "ansi" and "dtterm" 
+	  differ wildly. Yet, fortunately, there's no overlap in functionality
+	  so we can still leave the ultimate implementation of the code up to
+	  Term/Ops/Attr.
+
+	  Handling of the actual value of %d is now delegated to Interps via
+	  	boolean InterpProtoANSI.dispatchAttr(AbstractInterp ai, int n)
+	  which check for valid values of 'n' and call ops.op_attr().
+
+	  Incidentally added a couple of missing codes to Attr.setAttribute().
+	  3 and 6 are now accepted although they fall back on simulations.
+
+	  This is all private to the terminalemulator package and only
+	  applies to Interp's derived from InterpProtoANSI.
+
+	- Using an intermediate private Term.mapACS() as a trampoline
+	  between mapChar() and Interp.mapACS() didn't quite work out right.
+	  Need to test for '\0' directly in mapChar().
+
+	- Added additional ACS support for arrows and blocks.
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
 	Distribute "text parameter" sequence interpretation properly
 	between InterpXTerm and InterpProtoANSIX.
 
