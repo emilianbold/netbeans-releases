@@ -245,10 +245,12 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
                 jreAllowed ? DEFAULT_ERROR_NOTHING_FOUND_JAVA : DEFAULT_ERROR_NOTHING_FOUND);
     }
     
+    @Override
     public List<File> getLocations() {
         return jdkLocations;
     }
     
+    @Override
     public List<String> getLabels() {
         return jdkLabels;
     }
@@ -257,6 +259,7 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
         return "true".equals(getProperty(JRE_ALLOWED_PROPERTY));
     }
     
+    @Override
     public File getSelectedLocation() {
         // the first obvious choice is the jdk that has already been selected for
         // this product; if it has not yet been set, there are still lots of
@@ -321,7 +324,7 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
     }
     
     private File getJavaFirstItemInTheList() {
-        if(jdkLocations.size() == 0) {
+        if(jdkLocations.isEmpty()) {
             return null;
         }        
         if(isJreAllowed()) {
@@ -489,16 +492,9 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
                 return StringUtils.format(
                         getProperty(ERROR_NOT_JDK_PROPERTY), path);                
             }          
-        }
+        }                
         
-        Version version = JavaUtils.getVersion(file);
-        if (version == null) {
-            for (Product jdk : Registry.getInstance().getProducts(JDK_PRODUCT_UID)) {
-                if ((jdk.getStatus() == Status.TO_BE_INSTALLED) && jdk.getInstallationLocation().equals(file)) {
-                    version = jdk.getVersion();
-                }
-            }
-        }
+        Version version = getVersion(file);
         
         if (version == null) {
             return StringUtils.format(getProperty(ERROR_UNKNOWN_PROPERTY), path);
@@ -518,11 +514,7 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
                     path,
                     version,
                     maximumVersion);
-        }
-        
-        if (!JavaUtils.isRecommended(version)) {
-            return "This JDK version is older than the recommended JDK 7u10. For stability reasons we recommend that you download and install the latest JDK 7 update from <a href=\"http://www.oracle.com/technetwork/java/javase/downloads/\">http://www.oracle.com/technetwork/java/javase/downloads/</a> and restart NetBeans installer.";                             
-        }
+        }       
         
         String vendor = JavaUtils.getInfo(file).getVendor();
         if(!vendor.matches(vendorAllowed)) {
@@ -534,12 +526,39 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
         }
         
         return null;
-    }
+    }        
     
+    @Override
     public void setLocation(final File location) {
         lastSelectedJava = location;
         SearchForJavaAction.addJavaLocation(location);
         getWizard().setProperty(JDK_LOCATION_PROPERTY, location.getAbsolutePath());
+    }
+    
+    /**
+     * Returns if JDK version is recommended - #218822
+     * @param jdkPath
+     * @return false if not recommended. If JDK does not exist returns true.
+     */
+    public boolean isJdkVersionRecommended(String jdkPath) {
+        File jdkFile = new File(jdkPath);        
+        Version version = getVersion(jdkFile);
+        
+        return version != null ? JavaUtils.isRecommended(version) : true;
+    }
+    
+    private Version getVersion(File file) {
+        Version version = JavaUtils.getVersion(file);
+        
+        if (version == null) {
+            for (Product jdk : Registry.getInstance().getProducts(JDK_PRODUCT_UID)) {
+                if ((jdk.getStatus() == Status.TO_BE_INSTALLED) && jdk.getInstallationLocation().equals(file)) {
+                    version = jdk.getVersion();
+                }
+            }
+        }
+        
+        return version;
     }
     
     private void addJavaLocationsFromProductDependencies() {

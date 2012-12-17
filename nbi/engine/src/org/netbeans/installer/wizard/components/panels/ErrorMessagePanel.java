@@ -40,22 +40,17 @@
 package org.netbeans.installer.wizard.components.panels;
 
 import java.awt.Color;
-import java.awt.Desktop;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
 import org.netbeans.installer.utils.ErrorManager;
-import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.helper.NbiThread;
-import org.netbeans.installer.utils.helper.Text;
-import org.netbeans.installer.utils.helper.swing.NbiTextPane;
+import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.wizard.components.WizardPanel;
 import org.netbeans.installer.wizard.components.WizardPanel.WizardPanelSwingUi;
 import org.netbeans.installer.wizard.components.WizardPanel.WizardPanelUi;
@@ -140,7 +135,7 @@ public class ErrorMessagePanel extends WizardPanel {
         private Color infoColor;
         private Color emptyColor;
         
-        private NbiTextPane errorPane;
+        private NbiLabel errorLabel;
         
         private ValidatingThread validatingThread;
         
@@ -253,9 +248,9 @@ public class ErrorMessagePanel extends WizardPanel {
             try {
                 message = validateInput();
                 if (message != null) {
-                    //errorLabel.setIcon(errorIcon);
-                    errorPane.setText(message);
-                    errorPane.setForeground(errorColor);
+                    errorLabel.setIcon(errorIcon);
+                    errorLabel.setText(message);
+                    errorLabel.setForeground(errorColor);
                     container.getNextButton().setEnabled(false);
                     
                     return;
@@ -263,9 +258,9 @@ public class ErrorMessagePanel extends WizardPanel {
                 
                 message = getWarningMessage();
                 if (message != null) {
-                    //errorLabel.setIcon(warningIcon);
-                    errorPane.setText(message);
-                    errorPane.setForeground(warningColor);
+                    errorLabel.setIcon(warningIcon);
+                    errorLabel.setText(message);
+                    errorLabel.setForeground(warningColor);
                     container.getNextButton().setEnabled(true);
                     
                     return;
@@ -273,17 +268,17 @@ public class ErrorMessagePanel extends WizardPanel {
                 
                 message = getInformationalMessage();
                 if (message != null) {
-                    //errorLabel.setIcon(infoIcon);
-                    errorPane.setText(message);
-                    errorPane.setForeground(infoColor);
+                    errorLabel.setIcon(infoIcon);
+                    errorLabel.setText(message);
+                    errorLabel.setForeground(infoColor);
                     container.getNextButton().setEnabled(true);
                     
                     return;
                 }
                 
-                //errorLabel.setIcon(emptyIcon);
-                errorPane.clearText();
-                errorPane.setForeground(emptyColor);
+                errorLabel.setIcon(emptyIcon);
+                errorLabel.clearText();
+                errorLabel.setForeground(emptyColor);
                 container.getNextButton().setEnabled(true);
             } catch (Exception e) {
                 // we have a good reason to catch Exception here, as most of the
@@ -300,26 +295,10 @@ public class ErrorMessagePanel extends WizardPanel {
         // private //////////////////////////////////////////////////////////////////
         private void initComponents() {
             // errorLabel ///////////////////////////////////////////////////////////
-            errorPane = new NbiTextPane();
-            errorPane.setContentType(Text.ContentType.HTML);            
-            errorPane.addHyperlinkListener(new HyperlinkListener() {
-                @Override
-                public void hyperlinkUpdate(HyperlinkEvent e) {
-                    try {
-                        if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                            if (Desktop.isDesktopSupported()) {
-                                Desktop desktop = Desktop.getDesktop();
-                                desktop.browse(e.getURL().toURI());
-                            }
-                        }
-                    } catch (Exception ex) {
-                        LogManager.log("Cannot open hyperlink due to: " , ex);
-                    }
-                }
-            });
+            errorLabel = new NbiLabel();
 
             // this /////////////////////////////////////////////////////////////////
-            add(errorPane, new GridBagConstraints(
+            add(errorLabel, new GridBagConstraints(
                     0, 99,                             // x, y
                     99, 1,                             // width, height
                     1.0, 0.0,                          // weight-x, weight-y
