@@ -313,7 +313,6 @@ public class UninitializedVariableHint extends AbstractHint implements PHPRuleWi
             return identifier != null && !UNCHECKED_VARIABLES.contains(identifier.getName()) && !isInitialized(node) && !isUninitialized(node);
         }
 
-
         private void initializeVariable(Variable variable) {
             if (!isInitialized(variable) && !isUninitialized(variable)) {
                 addInitializedVariable(variable);
