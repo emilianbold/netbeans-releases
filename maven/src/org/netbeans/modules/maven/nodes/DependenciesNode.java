@@ -49,10 +49,11 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
@@ -186,7 +187,7 @@ public class DependenciesNode extends AbstractNode {
         }
 
         Collection<DependencyWrapper> list() {
-            TreeSet<DependencyWrapper> lst = new TreeSet<DependencyWrapper>(new DependenciesComparator());
+            HashSet<DependencyWrapper> lst = new HashSet<DependencyWrapper>();
             MavenProject mp = project.getOriginalMavenProject();
             Set<Artifact> arts = mp.getArtifacts();
             switch (type) {
@@ -206,7 +207,10 @@ public class DependenciesNode extends AbstractNode {
                     }
                 }
             }
-            return lst;
+            //#200927 do not use comparator in treeset, comparator not equivalent to equals/hashcode
+            ArrayList<DependencyWrapper> l = new ArrayList<DependencyWrapper>(lst);
+            Collections.sort(l, new DependenciesComparator());
+            return l;
         }
 
         public void addChangeListener(ChangeListener listener) {
@@ -224,8 +228,9 @@ public class DependenciesNode extends AbstractNode {
         }
 
         private void create(Set<DependencyWrapper> lst, Collection<Artifact> arts, String... scopes) {
+            final List<String> scopesList = Arrays.asList(scopes);
             for (Artifact a : arts) {
-                if (!Arrays.asList(scopes).contains(a.getScope())) {
+                if (!scopesList.contains(a.getScope())) {
                     continue;
                 }
                 if (a.getArtifactHandler().isAddedToClasspath()) {
@@ -275,7 +280,8 @@ public class DependenciesNode extends AbstractNode {
         @Override
         public int hashCode() {
             int hash = 7;
-            hash = 31 * hash + artifact.hashCode() + artifact.getDependencyTrail().hashCode();
+            hash = 31 * hash + artifact.hashCode();
+            hash = 31 * hash + artifact.getDependencyTrail().hashCode();
             hash = 31 * hash + artifact.getFile().hashCode();
             return hash;
         }
