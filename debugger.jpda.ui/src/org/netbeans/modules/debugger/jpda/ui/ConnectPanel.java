@@ -142,6 +142,7 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
         });
         
         controller = new ConnectController();
+        controller.setValid(false);
     }
 
     public Controller getController() {
