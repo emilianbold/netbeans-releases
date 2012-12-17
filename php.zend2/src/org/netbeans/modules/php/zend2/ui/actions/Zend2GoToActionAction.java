@@ -39,48 +39,58 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.php.zend2.ui.actions;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.io.File;
+import org.netbeans.modules.csl.api.UiUtils;
+import org.netbeans.modules.php.api.editor.EditorSupport;
+import org.netbeans.modules.php.api.editor.PhpClass;
+import org.netbeans.modules.php.spi.framework.actions.GoToActionAction;
+import org.netbeans.modules.php.zend2.util.Zend2Utils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 
-/**
- *
- * @author Petr Pisl
- */
-public interface JsObject extends JsElement {
-    public Identifier getDeclarationName();
-    public Map <String, ? extends JsObject> getProperties();
-    public void addProperty(String name, JsObject property);
-    public JsObject getProperty(String name);
-    
-    /**
-     * 
-     * @return the object within this is declared
-     */
-    public JsObject getParent();  
-    List<Occurrence> getOccurrences();
+public class Zend2GoToActionAction extends GoToActionAction {
 
-    /**
-     * 
-     * @param offset
-     * @return 
-     */
-    Collection<? extends TypeUsage> getAssignmentForOffset(int offset);
-    
-    Collection<? extends TypeUsage> getAssignments();
-    
-    public boolean isAnonymous();
-    
-    public boolean isDeprecated();
-    
-    /**
-     * 
-     * @return true if the object/function is identified by a name. 
-     * False if the function is declared as an item in array or the name is an expression
-     */ 
-    public boolean hasExactName();
-    
-    public String getDocumentation();
+    private static final long serialVersionUID = -5246856421654L;
+
+    private final File file;
+
+    public Zend2GoToActionAction(File file) {
+        assert Zend2Utils.isViewWithAction(file);
+        this.file = file;
+    }
+
+    @Override
+    public boolean goToAction() {
+        File controller = Zend2Utils.getController(file);
+        if (controller != null) {
+            FileObject fo = FileUtil.toFileObject(controller);
+            if (fo != null) {
+                UiUtils.open(fo, getActionMethodOffset(fo));
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private int getActionMethodOffset(FileObject controller) {
+        String actionMethodName = Zend2Utils.getActionName(file);
+        EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
+        for (PhpClass phpClass : editorSupport.getClasses(controller)) {
+            if (phpClass.getName().endsWith(Zend2Utils.CONTROLLER_CLASS_SUFFIX)) {
+                if (actionMethodName != null) {
+                    for (PhpClass.Method method : phpClass.getMethods()) {
+                        if (actionMethodName.equals(method.getName())) {
+                            return method.getOffset();
+                        }
+                    }
+                }
+                return phpClass.getOffset();
+            }
+        }
+        return DEFAULT_OFFSET;
+    }
+
 }

@@ -39,48 +39,35 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.php.zend2.ui.actions;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
+import org.netbeans.modules.php.spi.framework.actions.GoToActionAction;
+import org.netbeans.modules.php.spi.framework.actions.GoToViewAction;
+import org.netbeans.modules.php.zend2.util.Zend2Utils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-/**
- *
- * @author Petr Pisl
- */
-public interface JsObject extends JsElement {
-    public Identifier getDeclarationName();
-    public Map <String, ? extends JsObject> getProperties();
-    public void addProperty(String name, JsObject property);
-    public JsObject getProperty(String name);
-    
-    /**
-     * 
-     * @return the object within this is declared
-     */
-    public JsObject getParent();  
-    List<Occurrence> getOccurrences();
+public class Zend2PhpModuleActionsExtender extends PhpModuleActionsExtender {
 
-    /**
-     * 
-     * @param offset
-     * @return 
-     */
-    Collection<? extends TypeUsage> getAssignmentForOffset(int offset);
-    
-    Collection<? extends TypeUsage> getAssignments();
-    
-    public boolean isAnonymous();
-    
-    public boolean isDeprecated();
-    
-    /**
-     * 
-     * @return true if the object/function is identified by a name. 
-     * False if the function is declared as an item in array or the name is an expression
-     */ 
-    public boolean hasExactName();
-    
-    public String getDocumentation();
+    @Override
+    public boolean isViewWithAction(FileObject fo) {
+        return Zend2Utils.isViewWithAction(FileUtil.toFile(fo));
+    }
+
+    @Override
+    public boolean isActionWithView(FileObject fo) {
+        return Zend2Utils.isController(FileUtil.toFile(fo));
+    }
+
+    @Override
+    public GoToViewAction getGoToViewAction(FileObject fo, int offset) {
+        return new Zend2GoToViewAction(FileUtil.toFile(fo), offset);
+    }
+
+    @Override
+    public GoToActionAction getGoToActionAction(FileObject fo, int offset) {
+        return new Zend2GoToActionAction(FileUtil.toFile(fo));
+    }
+
 }

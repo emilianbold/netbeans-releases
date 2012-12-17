@@ -277,10 +277,28 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
     @Override
     public WizardDescriptor.Panel<WizardDescriptor> current() {
+        setTitle();
         if (index>=panels.length) {
             return extenderPanels[index-panels.length];
         }
         return panels[index];
+    }
+
+    private void setTitle() {
+        if (wizardDescriptor != null) {
+            // wizard title
+            String title = null;
+            if (wizard instanceof NewProjectWizard) {
+                title = Bundle.ClientSideProjectWizardIterator_newProject_displayName();
+            } else if (wizard instanceof ExistingProjectWizard) {
+                title = Bundle.ClientSideProjectWizardIterator_existingProject_displayName();
+            } else {
+                assert false : "Unknown project wizard type: " + wizard.getClass().getName();
+            }
+            if (title != null) {
+                wizardDescriptor.putProperty("NewProjectWizard_Title", title); // NOI18N
+            }
+        }
     }
 
     // If nothing unusual changes in the middle of the wizard, simply:

@@ -39,48 +39,27 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.javascript2.editor.hint;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import org.netbeans.modules.csl.api.Rule;
+import org.netbeans.modules.javascript2.editor.hints.GlobalIsNotDefined;
 
 /**
  *
  * @author Petr Pisl
  */
-public interface JsObject extends JsElement {
-    public Identifier getDeclarationName();
-    public Map <String, ? extends JsObject> getProperties();
-    public void addProperty(String name, JsObject property);
-    public JsObject getProperty(String name);
-    
-    /**
-     * 
-     * @return the object within this is declared
-     */
-    public JsObject getParent();  
-    List<Occurrence> getOccurrences();
+public class JsGlobalIsNotDeclaredTest extends HintTestBase {
 
-    /**
-     * 
-     * @param offset
-     * @return 
-     */
-    Collection<? extends TypeUsage> getAssignmentForOffset(int offset);
+    public JsGlobalIsNotDeclaredTest(String testName) {
+        super(testName);
+    }
     
-    Collection<? extends TypeUsage> getAssignments();
     
-    public boolean isAnonymous();
+    private Rule createRule() {
+        return new GlobalIsNotDefined();
+    }
     
-    public boolean isDeprecated();
-    
-    /**
-     * 
-     * @return true if the object/function is identified by a name. 
-     * False if the function is declared as an item in array or the name is an expression
-     */ 
-    public boolean hasExactName();
-    
-    public String getDocumentation();
+    public void testSimple01() throws Exception {
+        checkHints(this, createRule(), "testfiles/hints/globalIsNotDeclared.js", null);
+    }
 }

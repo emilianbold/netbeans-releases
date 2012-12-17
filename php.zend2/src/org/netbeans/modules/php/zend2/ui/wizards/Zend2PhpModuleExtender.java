@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.zend2;
+package org.netbeans.modules.php.zend2.ui.wizards;
 
 import java.io.File;
 import java.io.IOException;
@@ -59,7 +59,6 @@ import org.netbeans.modules.php.composer.api.Composer;
 import org.netbeans.modules.php.spi.framework.PhpModuleExtender;
 import org.netbeans.modules.php.zend2.options.Zend2Options;
 import org.netbeans.modules.php.zend2.ui.options.Zend2OptionsPanelController;
-import org.netbeans.modules.php.zend2.ui.wizards.NewProjectConfigurationPanel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;

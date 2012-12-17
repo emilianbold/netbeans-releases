@@ -39,48 +39,47 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.php.zend2.ui.actions;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.io.File;
+import org.netbeans.modules.csl.api.UiUtils;
+import org.netbeans.modules.php.api.editor.EditorSupport;
+import org.netbeans.modules.php.api.editor.PhpBaseElement;
+import org.netbeans.modules.php.spi.framework.actions.GoToViewAction;
+import org.netbeans.modules.php.zend2.util.Zend2Utils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 
-/**
- *
- * @author Petr Pisl
- */
-public interface JsObject extends JsElement {
-    public Identifier getDeclarationName();
-    public Map <String, ? extends JsObject> getProperties();
-    public void addProperty(String name, JsObject property);
-    public JsObject getProperty(String name);
-    
-    /**
-     * 
-     * @return the object within this is declared
-     */
-    public JsObject getParent();  
-    List<Occurrence> getOccurrences();
+public class Zend2GoToViewAction extends GoToViewAction {
 
-    /**
-     * 
-     * @param offset
-     * @return 
-     */
-    Collection<? extends TypeUsage> getAssignmentForOffset(int offset);
-    
-    Collection<? extends TypeUsage> getAssignments();
-    
-    public boolean isAnonymous();
-    
-    public boolean isDeprecated();
-    
-    /**
-     * 
-     * @return true if the object/function is identified by a name. 
-     * False if the function is declared as an item in array or the name is an expression
-     */ 
-    public boolean hasExactName();
-    
-    public String getDocumentation();
+    private static final long serialVersionUID = -657646571321L;
+
+    private final File file;
+    private final int offset;
+
+
+    public Zend2GoToViewAction(File file, int offset) {
+        assert Zend2Utils.isController(file);
+        this.file = file;
+        this.offset = offset;
+    }
+
+    @Override
+    public boolean goToView() {
+        EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
+        PhpBaseElement phpElement = editorSupport.getElement(FileUtil.toFileObject(file), offset);
+        if (phpElement == null) {
+            return false;
+        }
+        File view = Zend2Utils.getView(file, phpElement);
+        if (view != null) {
+            FileObject fo = FileUtil.toFileObject(view);
+            if (fo != null) {
+                UiUtils.open(fo, DEFAULT_OFFSET);
+                return true;
+            }
+        }
+        return false;
+    }
 }
