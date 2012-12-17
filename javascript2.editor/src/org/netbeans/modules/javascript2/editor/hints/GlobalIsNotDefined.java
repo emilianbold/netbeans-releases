@@ -49,6 +49,7 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.javascript2.editor.hints.JsHintsProvider.JsRuleContext;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
@@ -65,8 +66,8 @@ public class GlobalIsNotDefined extends JsAstRule {
         JsObject globalObject = context.getJsParserResult().getModel().getGlobalObject();
         Collection<? extends JsObject> variables = ModelUtils.getVariables((DeclarationScope)globalObject);
         for (JsObject variable : variables) {
-            if(!variable.isDeclared()) {
-                if (variable.getOccurrences().size() == 0) {
+            if(!variable.isDeclared() && variable.getJSKind() == JsElement.Kind.VARIABLE) {
+                if (variable.getOccurrences().isEmpty()) {
                     hints.add(new Hint(this, Bundle.JsGlobalIsNotDefinedDN(),
                             context.getJsParserResult().getSnapshot().getSource().getFileObject(),
                             ModelUtils.documentOffsetRange(context.getJsParserResult(), 
