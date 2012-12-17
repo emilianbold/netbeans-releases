@@ -285,7 +285,9 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                                             } catch (UnsupportedOperationException ex) {
                                                 Exceptions.printStackTrace(ex);
                                             } finally {
-                                                touchCoSTimeStamp(config, false);
+                                                if (RunUtils.hasApplicationCompileOnSaveEnabled(config)) {
+                                                    touchCoSTimeStamp(config, false);
+                                                }
                                             }
                                         }
                                     }, config.getTaskDisplayName());
@@ -557,7 +559,12 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                                         Exceptions.printStackTrace(ex);
                                     } finally {
                                         touchCoSTimeStamp(config, true);
-                                        touchCoSTimeStamp(config, false);
+                                        if (RunUtils.hasApplicationCompileOnSaveEnabled(config)) {
+                                            touchCoSTimeStamp(config, false);
+                                        } else {
+                                            deleteCoSTimeStamp(config, false);
+                                        }
+                                        
                                     }
                                 }
                             }, config.getTaskDisplayName());

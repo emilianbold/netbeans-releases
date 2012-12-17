@@ -422,10 +422,14 @@ public class PropertiesFileEntry extends PresentableFileEntry
             Set<String> keys = new TreeSet<String>(new KeyComparator());
             PropertiesStructure propStructure = getHandler().getStructure();
             if (propStructure != null) {
-                for (Iterator<Element.ItemElem> iterator = propStructure.allItems(); iterator.hasNext(); ) {
-                    Element.ItemElem item = iterator.next();
-                    if (item != null && item.getKey() != null) {
-                        keys.add(item.getKey());
+                synchronized(propStructure.getParent()) {
+                    synchronized(propStructure.getParentBundleStructure()) {
+                        for (Iterator<Element.ItemElem> iterator = propStructure.allItems(); iterator.hasNext(); ) {
+                            Element.ItemElem item = iterator.next();
+                            if (item != null && item.getKey() != null) {
+                                keys.add(item.getKey());
+                            }
+                        }
                     }
                 }
             }

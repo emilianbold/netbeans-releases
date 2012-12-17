@@ -82,7 +82,6 @@ import org.netbeans.modules.mercurial.HgFileNode;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.util.HgCommand;
-import org.netbeans.modules.versioning.diff.DiffLookup;
 import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.netbeans.modules.versioning.diff.EditorSaveCookie;
 import org.netbeans.modules.versioning.diff.SaveBeforeClosingDiffConfirmation;
@@ -92,7 +91,6 @@ import org.netbeans.modules.versioning.util.PlaceholderPanel;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 import static org.netbeans.modules.versioning.util.CollectionUtils.copyArray;
 
@@ -117,7 +115,6 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     private EditorCookie[] editorCookies;
     
     private final DelegatingUndoRedo delegatingUndoRedo = new DelegatingUndoRedo(); 
-    private final DiffLookup lookup = new DiffLookup();
 
     /**
      * Context in which to DIFF.
@@ -273,10 +270,6 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         if(executeStatusSupport!=null) {
             executeStatusSupport.cancel();
         }
-    }
-
-    public Lookup getLookup() {
-        return lookup;
     }
 
     boolean canClose() {
@@ -516,21 +509,10 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             currentModelIndex = showingFileTable() ? fileTable.getModelIndex(currentIndex) : 0;
             view = setups[currentModelIndex].getView();
 
-            // enable Select in .. action
-            FileObject fileObj = null;
-            EditorCookie.Observable observableEditorCookie = null;
-            File baseFile = setups[currentModelIndex].getBaseFile();
-            if (baseFile != null) {
-                fileObj = FileUtil.toFileObject(baseFile);
-            }
             TopComponent tc = (TopComponent) getClientProperty(TopComponent.class);
             if (tc != null) {
                 Node node = setups[currentModelIndex].getNode();
                 tc.setActivatedNodes(new Node[] {node == null ? Node.EMPTY : node});
-            }
-            EditorCookie editorCookie = editorCookies[currentModelIndex];
-            if (editorCookie instanceof EditorCookie.Observable) {
-                observableEditorCookie = (EditorCookie.Observable) editorCookie;
             }
             
             diffView = null;
@@ -553,22 +535,16 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             } else {
                 diffView = new NoContentPanel(NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoContent"));
                 displayDiffView();
-            }            
-            lookup.setData(fileObj, observableEditorCookie, diffView.getActionMap());
+            }
         } else {
             currentModelIndex = -1;
-            lookup.setData();
             diffView = new NoContentPanel(NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoFileSelected"));
-            lookup.setData(diffView.getActionMap());
             displayDiffView();
         }
 
         delegatingUndoRedo.setDiffView(diffView);
 
         refreshComponents();
-//        if (focus) {
-//            diffView.requestFocusInWindow();
-//        }
     }
 
     private boolean showingFileTable() {
