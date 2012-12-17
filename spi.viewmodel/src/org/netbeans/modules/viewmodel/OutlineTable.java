@@ -117,6 +117,7 @@ ExplorerManager.Provider, PropertyChangeListener {
     Node.Property[]             columns; // Accessed from tests
     private TableColumn[]       tableColumns;
     private int[]               columnVisibleMap; // Column index -> visible index
+    private boolean             ignoreCreateDefaultColumnsFromModel;
     //private IndexedColumn[]     icolumns;
     private boolean             isDefaultColumnAdded;
     private int                 defaultColumnIndex; // The index of the tree column
@@ -141,6 +142,7 @@ ExplorerManager.Provider, PropertyChangeListener {
 //        add(ttv, "East");
 //        tv = new BeanTreeView(); // To test only
 //        add(tv, "West");
+        treeTable.getTable().addPropertyChangeListener("createdDefaultColumnsFromModel", new CreatedDefaultColumnsFromModel());
         treeTable.getTable().getColumnModel().addColumnModelListener(new TableColumnModelListener() {
 
             // Track column visibility changes.
@@ -365,6 +367,7 @@ ExplorerManager.Provider, PropertyChangeListener {
             }
         }
         Node.Property[] columnsToSet = createColumns (cs, nodesColumnName);
+        ignoreCreateDefaultColumnsFromModel = true;
         treeTable.setNodesColumnName(nodesColumnName[0], nodesColumnName[1]);
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("setModel(): setNodesColumnName("+Arrays.toString(nodesColumnName)+") done");
@@ -379,10 +382,11 @@ ExplorerManager.Provider, PropertyChangeListener {
         }
         if (treeNodeDisplayFormat == null) {
             treeTable.setProperties (columnsToSet);
-            updateTableColumns(columnsToSet);
+            updateTableColumns(columnsToSet, null);
         } else {
             treeTable.setProperties (new Property[]{});
         }
+        ignoreCreateDefaultColumnsFromModel = false;
         treeTable.setAllowedDragActions(model.getAllowedDragActions());
         treeTable.setAllowedDropActions(model.getAllowedDropActions(null));
         treeTable.setDynamicDropActions(model);
@@ -461,6 +465,7 @@ ExplorerManager.Provider, PropertyChangeListener {
         String[] nodesColumnName = new String[] { null, null };
         ColumnModel[] cs = model.getColumns ();
         Node.Property[] columnsToSet = createColumns (cs, nodesColumnName);
+        ignoreCreateDefaultColumnsFromModel = true;
         treeTable.setNodesColumnName(nodesColumnName[0], nodesColumnName[1]);
         currentTreeModelRoot = new TreeModelRoot (model, treeTable);
         currentTreeModelRoot.setTreeNodeDisplayFormat(treeNodeDisplayFormat);
@@ -469,10 +474,11 @@ ExplorerManager.Provider, PropertyChangeListener {
         // The root node must be ready when setting the columns
         if (treeNodeDisplayFormat == null) {
             treeTable.setProperties (columnsToSet);
-            updateTableColumns(columnsToSet);
+            updateTableColumns(columnsToSet, null);
         } else {
             treeTable.setProperties (new Property[]{});
         }
+        ignoreCreateDefaultColumnsFromModel = false;
         treeTable.setAllowedDragActions(model.getAllowedDragActions());
         treeTable.setAllowedDropActions(model.getAllowedDropActions(null));
 
@@ -719,7 +725,7 @@ ExplorerManager.Provider, PropertyChangeListener {
         }
     }
 
-    private void updateTableColumns(Property[] columnsToSet) {
+    private void updateTableColumns(Property[] columnsToSet, TableColumn[] newTColumns) {
         TableColumnModel tcm = treeTable.getTable().getColumnModel();
         int tableModelColumnCount = tcm.getColumnCount();
         int modelColumnCount = treeTable.getTable().getModel().getColumnCount();
@@ -778,7 +784,11 @@ ExplorerManager.Provider, PropertyChangeListener {
             }
         }
         setColumnsOrder();
-        this.tableColumns = tableColumns;
+        if (newTColumns != null) {
+            this.tableColumns = newTColumns;
+        } else {
+            this.tableColumns = tableColumns;
+        }
     }
 
     // Re-order the UI columns according to the defined order
@@ -995,9 +1005,28 @@ ExplorerManager.Provider, PropertyChangeListener {
         }
     }
     
+    private class CreatedDefaultColumnsFromModel implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            TableColumn[] columns = (TableColumn[]) evt.getNewValue();
+            if (columns == null) {
+                tableColumns = null;
+            } else if (!ignoreCreateDefaultColumnsFromModel) {
+                // Update the columns after they are reset:
+                Property[] properties = treeTable.getProperties();
+                if (properties != null) {
+                    updateTableColumns(properties, columns);
+                }
+            }
+        }
+        
+    }
+    
     static class MyTreeTable extends OutlineView {  // Accessed from tests
 
         private Reference dndModelRef = new WeakReference(null);
+        private Property[] properties;
 
         MyTreeTable () {
             super ();
@@ -1024,6 +1053,16 @@ ExplorerManager.Provider, PropertyChangeListener {
             return getOutline();
         }
 
+        @Override
+        public void setProperties(Property[] newProperties) {
+            this.properties = newProperties;
+            super.setProperties(newProperties);
+        }
+        
+        Property[] getProperties() {
+            return properties;
+        }
+        
         void setNodesColumnName(String name, String description) {
             OutlineModel m = getOutline().getOutlineModel();
             if (m instanceof DefaultOutlineModel) {

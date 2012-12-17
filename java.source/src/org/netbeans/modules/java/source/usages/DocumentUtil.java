@@ -179,7 +179,7 @@ public class DocumentUtil {
         return  pkg + PKG_SEPARATOR + snName;   //NO I18N
     }
     
-    static String getSimpleBinaryName (final Document doc) {
+    public static String getSimpleBinaryName (final Document doc) {
         assert doc != null;
         Field field = doc.getField(FIELD_BINARY_NAME);
         if (field == null) {

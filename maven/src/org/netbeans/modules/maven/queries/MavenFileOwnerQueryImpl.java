@@ -67,6 +67,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.project.ui.ProjectGroup;
 import org.netbeans.api.project.ui.ProjectGroupChangeEvent;
 import org.netbeans.api.project.ui.ProjectGroupChangeListener;
+import org.netbeans.modules.maven.NbMavenProjectFactory;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
@@ -273,6 +274,13 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
     }
 
     private Project getOwner(File file) {
+        //#223841 at least one project opened is a stronger condition, embedder gets sometimes reset.
+        //once we have the project loaded, not loaded embedder doesn't matter anymore, we have to process.
+        // sometimes the embedder is loaded even though a maven project is not yet loaded, it doesn't hurt to proceed then.
+        if (!NbMavenProjectFactory.isAtLeastOneMavenProjectAround() && !EmbedderFactory.isProjectEmbedderLoaded()) { 
+            return null;
+        }
+
         LOG.log(Level.FINER, "Looking for owner of {0}", file);
         String[] coordinates = findCoordinates(file);
         if (coordinates == null) {
