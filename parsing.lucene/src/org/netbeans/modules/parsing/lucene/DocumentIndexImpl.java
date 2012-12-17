@@ -75,7 +75,7 @@ public class DocumentIndexImpl implements DocumentIndex, Runnable {
     /**
      * Transactional extension to the index
      */
-    private final Index.Transactional txLuceneIndex;
+    final Index.Transactional txLuceneIndex;
             
     private static final Convertor<IndexDocument,Document> ADD_CONVERTOR = Convertors.newIndexDocumentToDocumentConvertor();
     private static final Convertor<String,Query> REMOVE_CONVERTOR = Convertors.newSourceNameToQueryConvertor();
@@ -315,7 +315,12 @@ public class DocumentIndexImpl implements DocumentIndex, Runnable {
 
         @Override
         public void rollback() throws IOException {
-            super.txLuceneIndex.rollback();
+            this.txLuceneIndex.rollback();
+        }
+
+        @Override
+        public void clear() throws IOException {
+            this.txLuceneIndex.clear();
         }
 
         @Override
