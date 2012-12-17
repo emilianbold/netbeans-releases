@@ -96,6 +96,8 @@ public final class PersistentIndexTransaction extends TransactionContext.Service
                         brokenIndex = true;
                     }
                 }
+            } else {
+                rollBackImpl();
             }
             if (brokenIndex) {
                 handleBrokenRoot();
@@ -106,25 +108,8 @@ public final class PersistentIndexTransaction extends TransactionContext.Service
     @Override
     protected void rollBack() throws IOException {
         closeTx();
-        if (indexWriter != null) {
-            if (!brokenIndex) {
-                try {
-                    indexWriter.rollback();
-                } catch (Throwable t) {
-                    if (t instanceof ThreadDeath) {
-                        throw (ThreadDeath) t;
-                    } else {
-                        LOG.log(
-                            Level.WARNING,
-                            "Broken index for root: {0} reason: {1}, recovering.",  //NOI18N
-                            new Object[] {
-                                root,
-                                t.getMessage()
-                            });
-                        brokenIndex = true;
-                    }
-                }
-            }
+        if (indexWriter != null) {            
+            rollBackImpl();
             if (brokenIndex) {
                 handleBrokenRoot();
             }
@@ -156,5 +141,24 @@ public final class PersistentIndexTransaction extends TransactionContext.Service
     private void handleBrokenRoot() throws IOException {
         indexWriter.clear();
         IndexingManager.getDefault().refreshIndex(root, null, true, false);
+    }
+
+    private void rollBackImpl() {
+        try {
+            indexWriter.rollback();
+        } catch (Throwable t) {
+            if (t instanceof ThreadDeath) {
+                throw (ThreadDeath) t;
+            } else {
+                LOG.log(
+                    Level.WARNING,
+                    "Broken index for root: {0} reason: {1}, recovering.",  //NOI18N
+                    new Object[] {
+                        root,
+                        t.getMessage()
+                    });
+                brokenIndex = true;
+            }
+        }
     }
 }
