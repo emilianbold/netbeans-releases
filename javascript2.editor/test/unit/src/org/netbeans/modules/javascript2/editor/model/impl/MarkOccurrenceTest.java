@@ -675,6 +675,10 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/structure/issue217938.js","    this.pa^r1 = par1; // this one is not in navigator", true);
     }
     
+    public void testIssue210136() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue210136.js","va^lue = 1;", true);
+    }
+    
     private String getTestPath() {
         return getTestFolderPath() + "/" + getTestName() + ".js";//NOI18N
     }
