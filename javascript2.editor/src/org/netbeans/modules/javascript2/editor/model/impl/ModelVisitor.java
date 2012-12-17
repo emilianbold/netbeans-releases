@@ -249,6 +249,11 @@ public class ModelVisitor extends PathNodeVisitor {
                         if (identifier != null) {
                             property = new JsObjectImpl(parent, identifier, identifier.getOffsetRange(), true);
                             parent.addProperty(fieldName, property);
+                            JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
+                            if (docHolder != null) {
+                                property.setDocumentation(docHolder.getDocumentation(aNode));
+                                property.setDeprecated(docHolder.isDeprecated(aNode));
+                            }
                         }
                     }
                 } else {
@@ -529,6 +534,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 modelBuilder.setCurrentObject((JsObjectImpl)fncScope);
             }
         }
+        JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
         // create variables that are declared in the function
         // They has to be created here for tracking occurrences
         for (VarNode varNode : functionNode.getDeclarations()) {
@@ -546,6 +552,11 @@ public class ModelVisitor extends PathNodeVisitor {
             }
             variable.addOccurrence(varName.getOffsetRange());
             modelBuilder.getCurrentObject().addProperty(varName.getName(), variable);
+            if (docHolder != null) {
+                variable.setDocumentation(docHolder.getDocumentation(varNode));
+                variable.setDeprecated(docHolder.isDeprecated(varNode));
+            }
+            
         }
                 
         for (FunctionNode fn : functions) {
@@ -567,7 +578,7 @@ public class ModelVisitor extends PathNodeVisitor {
 
         if (fncScope != null) {
             // check parameters and return types of the function.
-             JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
+            fncScope.setDeprecated(docHolder.isDeprecated(functionNode));
             List<Type> types = docHolder.getReturnType(functionNode);
             if (types != null && !types.isEmpty()) {
                 for(Type type : types) {
@@ -912,6 +923,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     variable = newVariable;
                 }
                 JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
+                variable.setDeprecated(docHolder.isDeprecated(varNode));
                 variable.setDocumentation(docHolder.getDocumentation(varNode));
                 modelBuilder.setCurrentObject(variable);
                 if (varNode.getInit() instanceof IdentNode) {

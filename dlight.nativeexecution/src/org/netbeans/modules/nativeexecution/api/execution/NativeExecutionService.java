@@ -42,7 +42,6 @@
 package org.netbeans.modules.nativeexecution.api.execution;
 
 import java.awt.event.ActionEvent;
-import java.io.Reader;
 import java.nio.charset.Charset;
 import java.util.EnumSet;
 import java.util.concurrent.Callable;
@@ -351,7 +350,6 @@ public final class NativeExecutionService {
             public Void run() {
                 final OutputWriter out = descriptor.inputOutput.getOut();
                 final OutputWriter err = descriptor.inputOutput.getErr();
-                final Reader in = descriptor.inputOutput.getIn();
                 if (err != null) {
                     try {
                         err.close();
@@ -361,12 +359,6 @@ public final class NativeExecutionService {
                 if (out != null) {
                     try {
                         out.close();
-                    } catch (Throwable th) {
-                    }
-                }
-                if (in != null) {
-                    try {
-                        in.close();
                     } catch (Throwable th) {
                     }
                 }
