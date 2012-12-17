@@ -758,6 +758,25 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
 
     protected static List<EmbeddingPosition> extractJsEmbeddings(String text, int sourceStart) {
         List<EmbeddingPosition> embeddings = new LinkedList<EmbeddingPosition>();
+        // beggining comment around the script
+        int start = 0;
+        for (; start < text.length(); start++) {
+            char c = text.charAt(start);
+            if (!Character.isWhitespace(c)) {
+                break;
+            }
+        }
+        if (start < text.length() && text.startsWith("<!--", start)) { //NOI18N
+            int lineEnd = text.indexOf('\n', start); //NOI18N
+            if (lineEnd != -1 && lineEnd < text.indexOf("-->", start)) { //NOI18N
+                embeddings.add(new EmbeddingPosition(sourceStart, start));
+                lineEnd++; //skip the \n
+                sourceStart += lineEnd;
+                text = text.substring(lineEnd);
+            }
+        }
+
+        // inline comments inside script
         Scanner scanner = new Scanner(text).useDelimiter("(<!--).*(-->)"); //NOI18N
         while (scanner.hasNext()) {
             scanner.next();
