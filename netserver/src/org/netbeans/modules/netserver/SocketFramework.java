@@ -139,6 +139,11 @@ public abstract class SocketFramework implements Runnable {
                     chanelClosed( key );
                     close(key);
                 }
+                catch( IOException e ){
+                    LOG.log(Level.INFO, null, e);
+                    chanelClosed( key );
+                    close(key);
+                }
             }
         }
         getSelector().close();
