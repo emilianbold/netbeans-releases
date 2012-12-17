@@ -64,6 +64,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
@@ -145,6 +146,7 @@ public class BrokenIndexRecoveryTest extends NbTestCase {
     /**
      * Tests that root with broken index is reindexed.
      */
+    @RandomlyFails
     public void testRootReindexIfIndexBroken() throws InterruptedException, IOException {
 
         assertTrue(GlobalPathRegistry.getDefault().getPaths(FOO_SOURCES).isEmpty());
