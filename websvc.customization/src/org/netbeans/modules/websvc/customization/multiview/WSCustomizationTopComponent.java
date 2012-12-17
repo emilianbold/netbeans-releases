@@ -67,6 +67,9 @@ public class WSCustomizationTopComponent extends TopComponent {
     private boolean isLight;
     private Definitions primaryDefinitions;
     
+    public WSCustomizationTopComponent(){
+    }
+    
     public WSCustomizationTopComponent(Node node, Set<WSDLModel> models, 
             Definitions primaryDefinitions, boolean isLight) {
         setLayout(new BorderLayout());        

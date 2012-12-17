@@ -743,6 +743,8 @@ public class JavaTypeProvider implements TypeProvider {
 
         private static class JavaTypeDescriptionConvertor implements Convertor<Document, JavaTypeDescription> {
 
+            private static final Pattern ANONYMOUS = Pattern.compile(".*\\$\\d+(C|I|E|A|\\$.+)");   //NOI18N
+
             private final CacheItem ci;
             private final Convertor<Document,ElementHandle<TypeElement>> delegate;
 
@@ -753,6 +755,10 @@ public class JavaTypeProvider implements TypeProvider {
 
             @Override
             public JavaTypeDescription convert(Document p) {
+                final String binName = DocumentUtil.getSimpleBinaryName(p);
+                if (binName == null || ANONYMOUS.matcher(binName).matches()) {
+                    return null;
+                }
                 final ElementHandle<TypeElement> eh = delegate.convert(p);
                 return eh == null ? null : new JavaTypeDescription(ci, eh);
             }

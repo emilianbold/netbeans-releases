@@ -42,10 +42,29 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 
-import com.oracle.nashorn.ir.*;
+import com.oracle.nashorn.ir.AccessNode;
+import com.oracle.nashorn.ir.BinaryNode;
+import com.oracle.nashorn.ir.CallNode;
+import com.oracle.nashorn.ir.FunctionNode;
+import com.oracle.nashorn.ir.IdentNode;
+import com.oracle.nashorn.ir.IndexNode;
+import com.oracle.nashorn.ir.LiteralNode;
+import com.oracle.nashorn.ir.Node;
+import com.oracle.nashorn.ir.ObjectNode;
+import com.oracle.nashorn.ir.PropertyNode;
+import com.oracle.nashorn.ir.ReferenceNode;
+import com.oracle.nashorn.ir.ReturnNode;
+import com.oracle.nashorn.ir.TernaryNode;
+import com.oracle.nashorn.ir.UnaryNode;
+import com.oracle.nashorn.ir.VarNode;
 import com.oracle.nashorn.parser.Token;
 import com.oracle.nashorn.parser.TokenType;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.doc.DocumentationUtils;
@@ -53,9 +72,16 @@ import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsModifier;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
-import org.netbeans.modules.javascript2.editor.model.*;
+import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
+import org.netbeans.modules.javascript2.editor.model.JsFunction;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.Model;
+import org.netbeans.modules.javascript2.editor.model.Occurrence;
+import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.openide.filesystems.FileObject;
 
@@ -314,7 +340,8 @@ public class ModelVisitor extends PathNodeVisitor {
             if (binaryNode.rhs() instanceof IdentNode) {
                 addOccurence((IdentNode)binaryNode.rhs(), false);
             }
-        } else if(binaryNode.tokenType() != TokenType.ASSIGN) {
+        } else if(binaryNode.tokenType() != TokenType.ASSIGN
+                || (binaryNode.tokenType() == TokenType.ASSIGN && binaryNode.lhs() instanceof IndexNode)) {
             if (binaryNode.lhs() instanceof IdentNode) {
                 addOccurence((IdentNode)binaryNode.lhs(), true);
             }
@@ -359,12 +386,31 @@ public class ModelVisitor extends PathNodeVisitor {
             if (base instanceof AccessNode) {
                 parent = fromAN;
             } else if (base instanceof IdentNode) {
-                Identifier parentName = ModelElementFactory.create(parserResult, (IdentNode)base);
-                if (parentName != null) {
-                    List<Identifier> fqName = new ArrayList<Identifier>();
-                    fqName.add(parentName);
-                    parent = ModelUtils.getJsObject(modelBuilder, fqName, false);
-                    parent.addOccurrence(parentName.getOffsetRange());
+                IdentNode iNode = (IdentNode)base;
+                if (!"this".equals(iNode.getName())) {
+                    Identifier parentName = ModelElementFactory.create(parserResult, iNode);
+                    if (parentName != null) {
+                        List<Identifier> fqName = new ArrayList<Identifier>();
+                        fqName.add(parentName);
+                        parent = ModelUtils.getJsObject(modelBuilder, fqName, false);
+                        parent.addOccurrence(parentName.getOffsetRange());
+                    }
+                } else {
+                    JsObject current = modelBuilder.getCurrentDeclarationScope();
+                    JsObject property = current.getProperty(iNode.getName());
+                    if (property == null && current.getParent() != null && (current.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
+                            || current.getParent().getJSKind() == JsElement.Kind.OBJECT
+                            || current.getParent().getJSKind() == JsElement.Kind.OBJECT_LITERAL)) {
+                        Node previous = getPreviousFromPath(2);
+                        // check whether is not a part of method in constructor
+                        if (!(previous instanceof BinaryNode && ((BinaryNode)previous).rhs() instanceof ReferenceNode)) {
+                            current = current.getParent();
+                            if (current.getName().equals("prototype")) {
+                                current = current.getParent();
+                            }
+                        }
+                    }
+                    fromAN = (JsObjectImpl)current;
                 }
             }
             if (parent != null && indexNode.getIndex() instanceof LiteralNode) {

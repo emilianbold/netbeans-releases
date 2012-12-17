@@ -122,11 +122,11 @@ public class VariableFinderVisitor extends ClassCodeVisitorSupport {
     }
 
     public void collect() {
-        TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, cursorOffset);
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, cursorOffset);
         if (ts == null) {
             return;
         }
-        Token<? extends GroovyTokenId> token = ts.token();
+        Token<GroovyTokenId> token = ts.token();
         if (token == null) {
             return;
         }

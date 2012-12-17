@@ -446,6 +446,7 @@ public class NavigatorTCTest extends NbTestCase {
 
     /** 
      */
+    @RandomlyFails // NB-Core-Build #9367: Still Unstable
     public void test_118082_ExplorerView () throws Exception {
         System.out.println("Testing #118082, Explorer view integration...");
 

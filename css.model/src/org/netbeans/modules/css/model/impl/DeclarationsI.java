@@ -48,11 +48,19 @@ import java.util.List;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Declarations;
+import org.netbeans.modules.css.model.api.Element;
+import org.netbeans.modules.css.model.api.Expression;
+import org.netbeans.modules.css.model.api.Media;
 import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.ModelVisitor;
 import org.netbeans.modules.css.model.api.PlainElement;
+import org.netbeans.modules.css.model.api.PropertyValue;
+import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.semantic.PModel;
 import org.netbeans.modules.css.model.api.semantic.box.BoxType;
 import org.netbeans.modules.css.model.impl.semantic.box.DeclarationsBoxModelProvider;
+import org.netbeans.modules.web.common.api.LexerUtils;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -62,7 +70,6 @@ public class DeclarationsI extends ModelElement implements Declarations {
 
     private List<Declaration> declarations = new ArrayList<Declaration>();
     private final ModelElementListener elementListener = new ModelElementListener.Adapter() {
-
         @Override
         public void elementAdded(Declaration declaration) {
             declarations.add(declaration);
@@ -72,8 +79,6 @@ public class DeclarationsI extends ModelElement implements Declarations {
         public void elementRemoved(Declaration declaration) {
             declarations.remove(declaration);
         }
-        
-        
     };
 
     public DeclarationsI(Model model) {
@@ -87,16 +92,16 @@ public class DeclarationsI extends ModelElement implements Declarations {
 
     @Override
     public Collection<? extends PModel> getSemanticModels() {
-        if(isValid()) {
+        if (isValid()) {
             Collection<PModel> models = new ArrayList<PModel>();
-            
+
             DeclarationsBoxModelProvider dbm = new DeclarationsBoxModelProvider(model, this);
-            models.add((PModel)dbm.getBox(BoxType.MARGIN));
-            models.add((PModel)dbm.getBox(BoxType.PADDING));
-            models.add((PModel)dbm.getBox(BoxType.BORDER_COLOR));
-            models.add((PModel)dbm.getBox(BoxType.BORDER_STYLE));
-            models.add((PModel)dbm.getBox(BoxType.BORDER_WIDTH));
-            
+            models.add((PModel) dbm.getBox(BoxType.MARGIN));
+            models.add((PModel) dbm.getBox(BoxType.PADDING));
+            models.add((PModel) dbm.getBox(BoxType.BORDER_COLOR));
+            models.add((PModel) dbm.getBox(BoxType.BORDER_STYLE));
+            models.add((PModel) dbm.getBox(BoxType.BORDER_WIDTH));
+
             return models;
         } else {
             return Collections.emptyList();
@@ -115,9 +120,42 @@ public class DeclarationsI extends ModelElement implements Declarations {
 
     @Override
     public void addDeclaration(Declaration declaration) {
-//        addTextElement("\n");
+        if (!getDeclarations().isEmpty()) {
+            //there's already a declaration...
+            Declaration last = getDeclarations().get(getDeclarations().size() - 1);
+            int lastIndex = getElementIndex(last);
+            //check if there's a semicolon after the declaration
+            PlainElement pe = getElementAt(lastIndex + 1, PlainElement.class);
+            if (pe == null || CharSequences.indexOf(pe.getContent(), ";") == -1) {
+                //find out if there's a semicolon in the element's source
+                PropertyValue propertyValue = last.getPropertyValue();
+                if (propertyValue != null) {
+                    Expression expression = propertyValue.getExpression();
+                    CharSequence content = expression.getContent();
+
+                    //find last non-white char
+                    for (int i = content.length() - 1; i >= 0; i--) {
+                        char c = content.charAt(i);
+                        if (!Character.isWhitespace(c)) {
+                            StringBuilder sb = new StringBuilder();
+                            sb.append(content.subSequence(0, i + 1));
+                            sb.append(';');
+                            sb.append(content.subSequence(i + 1, content.length()));
+
+                            expression.setContent(sb);
+                            break;
+                        }
+                    }
+
+                }
+
+            }
+        }
+
         addElement(declaration);
-        addTextElement(";\n");
+
+        addTextElement(
+                ";\n");
     }
 
     @Override
@@ -126,25 +164,26 @@ public class DeclarationsI extends ModelElement implements Declarations {
         if (index == -1) {
             return false;
         }
-        
+
         removeElement(index); //remove the declaration
 
         //update the whitespaces in the preceding plain element
         PlainElement before = getElementAt(index - 1, PlainElement.class);
-        if (before != null) {
+        if (before
+                != null) {
             //remove all whitespace after last endline
             wipeWhitespaces(before, false);
         }
-
         //update the whitespaces after the declaration element
         PlainElement after = getElementAt(index, PlainElement.class);//the indexes shifted by the removal!
-        if(after != null) {
+        if (after
+                != null) {
             String afterTrimmed = after.getContent().toString().trim();
-            if(";".equals(afterTrimmed)) {
+            if (";".equals(afterTrimmed)) {
                 //semicolon - remove
                 removeElement(index);
                 PlainElement afterafter = getElementAt(index, PlainElement.class);//the indexes shifted by the removal!
-                if(afterafter != null) {
+                if (afterafter != null) {
                     //whitespace
                     //remove all whitespace after last endline
                     wipeWhitespaces(afterafter, true);
@@ -154,9 +193,9 @@ public class DeclarationsI extends ModelElement implements Declarations {
                 wipeWhitespaces(after, true);
             }
         }
-        
+
         return true;
-        
+
     }
 
     @Override

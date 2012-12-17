@@ -56,6 +56,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
 import org.netbeans.modules.php.project.connections.api.RemotePreferences;
 import org.netbeans.modules.php.project.connections.spi.RemoteConnectionProvider;
@@ -64,7 +65,6 @@ import org.netbeans.modules.php.project.connections.sftp.SftpConnectionProvider;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfigurationPanel;
 import org.netbeans.modules.php.project.connections.ui.RemoteConnectionsPanel;
-import org.netbeans.modules.php.project.validation.ValidationResult;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 

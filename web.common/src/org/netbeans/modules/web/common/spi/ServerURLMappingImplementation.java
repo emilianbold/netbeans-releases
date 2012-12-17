@@ -43,6 +43,7 @@
 package org.netbeans.modules.web.common.spi;
 
 import java.net.URL;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -57,11 +58,11 @@ public interface ServerURLMappingImplementation {
      * @return could return null if file is not deployed to server and therefore
      *   not accessible
      */
-    URL toServer(int projectContext, FileObject projectFile);
+    @CheckForNull URL toServer(int projectContext, FileObject projectFile);
     
     /**
      * Convert given server URL into project's file.
      * @return returns null if nothing is known about this server URL
      */
-    FileObject fromServer(int projectContext, URL serverURL);
+    @CheckForNull FileObject fromServer(int projectContext, URL serverURL);
 }

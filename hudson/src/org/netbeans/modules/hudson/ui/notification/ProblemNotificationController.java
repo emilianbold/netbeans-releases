@@ -115,4 +115,10 @@ public class ProblemNotificationController {
         }
     }
 
+    public synchronized void clearNotifications() {
+        for (ProblemNotification problemNotification : notifications) {
+            problemNotification.remove();
+        }
+        notifications.clear();
+    }
 }

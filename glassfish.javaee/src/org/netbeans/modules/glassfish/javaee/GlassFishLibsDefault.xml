@@ -71,7 +71,7 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                 <include name="jackson.+\.jar"/>
                 <!-- include name="javax.ws.+\.jar"/ -->
                 <include name="jersey.+\.jar"/>
-                <include name="jettison.+\.jar"/>
+                <include name="jettison.*\.jar"/>
                 <include name="jsr.+-api\.jar"/>
                 <include name="mimepull\.jar"/>
             </fileset>

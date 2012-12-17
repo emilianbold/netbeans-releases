@@ -120,6 +120,10 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
      * Wrapper for the lookup of the current view.
      */
     private MatchedRulesLookup lookup;
+    /**
+     * Determines whether the view is active or not.
+     */
+    private boolean active = true;
     
     private static final RequestProcessor RP = new RequestProcessor(CssStylesPanelProviderImpl.class);
 
@@ -244,12 +248,14 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
     }
 
     void activateView() {
+        active = true;
         if (currentPageModel != null) {
             currentPageModel.getCSSStylesView().activated();
         }
     }
 
     void deactivateView() {
+        active = false;
         if (currentPageModel != null) {
             currentPageModel.getCSSStylesView().deactivated();
         }
@@ -304,6 +310,12 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
             });
             if (fob != null) {
                 inspectedFileObject = fob;
+            }
+            PageModel.CSSStylesView view = webKitPageModel.getCSSStylesView();
+            if (active) {
+                view.activated();
+            } else {
+                view.deactivated();
             }
         }
         update();

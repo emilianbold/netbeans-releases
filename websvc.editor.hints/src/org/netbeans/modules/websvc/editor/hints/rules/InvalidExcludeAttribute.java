@@ -62,7 +62,7 @@ public class InvalidExcludeAttribute extends Rule<ExecutableElement> implements 
         AnnotationValue val = Utilities.getAnnotationAttrValue
                 (methodAnn, ANNOTATION_ATTRIBUTE_EXCLUDE);
         Element classEl = subject.getEnclosingElement();
-        if (val != null && val.getValue() == Boolean.TRUE) {
+        if (val != null && Boolean.TRUE.equals( val.getValue())) {
             if (classEl != null && classEl.getKind() == ElementKind.INTERFACE) {
                 String label = NbBundle.getMessage(InvalidExcludeAttribute.class,
                         "MSG_WebMethod_ExcludeNotAllowed");

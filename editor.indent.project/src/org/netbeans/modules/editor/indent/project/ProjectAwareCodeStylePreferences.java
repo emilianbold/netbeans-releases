@@ -92,6 +92,7 @@ public final class ProjectAwareCodeStylePreferences implements CodeStylePreferen
     // ----------------------------------------------------------------------
 
     private static final Logger LOG = Logger.getLogger(ProjectAwareCodeStylePreferences.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor("Project Aware Code Style Preferences", 1, false, false); //NOI18N
     private static final CodeStylePreferences.Provider singleton = new CodeStylePreferences.Provider() {
 
         @Override
@@ -144,7 +145,7 @@ public final class ProjectAwareCodeStylePreferences implements CodeStylePreferen
                 if (SwingUtilities.isEventDispatchThread()) {
                     final FileObject ffo = file;
                     final Csp fcsp = csp;
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    RP.post(new Runnable() {
                         @Override
                         public void run() {
                             fcsp.initProjectPreferences(ffo);

@@ -69,6 +69,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.NbMavenProjectFactory;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
@@ -130,6 +131,13 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
             if (result != null) {
                 return result;
             }
+        }
+        
+        //#223841 at least one project opened is a stronger condition, embedder gets sometimes reset.
+        //once we have the project loaded, not loaded embedder doesn't matter anymore, we have to process.
+        // sometimes the embedder is loaded even though a maven project is not yet loaded, it doesn't hurt to proceed then.
+        if (!NbMavenProjectFactory.isAtLeastOneMavenProjectAround() && !EmbedderFactory.isProjectEmbedderLoaded()) { 
+            return null;
         }
         
         File jarFile = FileUtil.archiveOrDirForURL(url);

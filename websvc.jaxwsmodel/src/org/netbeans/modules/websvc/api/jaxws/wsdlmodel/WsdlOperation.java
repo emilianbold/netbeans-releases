@@ -90,6 +90,7 @@ public class WsdlOperation implements WSOperation {
                 postfix = NbBundle.getMessage(WsdlOperation.class,"TXT_asyncCallback");
                 break;
             }
+            default:
         }
         if (postfix!=null)
             operationName = NbBundle.getMessage(WsdlOperation.class,"TXT_operationName",operationName,postfix);

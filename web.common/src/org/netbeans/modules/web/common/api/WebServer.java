@@ -296,6 +296,11 @@ public final class WebServer {
                         // silently ignore
                         LOGGER.log(Level.FINE, "cannot decode '"+file+"'", ex); // NOI18N
                     }
+                    // #223770
+                    int queryIndex = file.indexOf('?');
+                    if (queryIndex != -1) {
+                        file = file.substring(0, queryIndex);
+                    }
                     FileObject fo = getWebserver().fromServer(file);
                     if (fo != null && fo.isFolder()) {
                         fo = fo.getFileObject("index", "html"); //NOI18N

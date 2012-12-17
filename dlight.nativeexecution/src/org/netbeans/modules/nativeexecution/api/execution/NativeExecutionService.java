@@ -46,8 +46,10 @@ import java.io.Reader;
 import java.nio.charset.Charset;
 import java.util.EnumSet;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -223,39 +225,39 @@ public final class NativeExecutionService {
                         progressHandle.finish();
                     }
 
-                    // After we are sure that our output was read, and queued in
-                    // terminal, our runnable will be started only after
-                    // all streams will be drained (by the terminal)...
-                    // There is one thing.. If, for some reason, terminal is not
-                    // connected at this point, continuation passed to the
-                    // disconnect() method will not be executed.
-                    // So do it directly...
-
-                    final Runnable EDTContinuation = new Runnable() {
+                    final CountDownLatch latch = new CountDownLatch(1);
+                    IOTerm.disconnect(descriptor.inputOutput, new Runnable() {
 
                         @Override
                         public void run() {
-                            NativeTaskExecutorService.submit(new Runnable() {
-
-                                @Override
-                                public void run() {
-                                    try {
-                                        if (descriptor.postExecution != null) {
-                                            descriptor.postExecution.run();
-                                        }
-                                    } finally {
-                                        IOTerm.term(descriptor.inputOutput).setReadOnly(true);
-                                    }
-                                }
-                            }, "term process post execution"); // NOI18N
+                            latch.countDown();
                         }
-                    };
-
-                    // disconnect() calls continuation in EDT.
-                    // But we need to call postExecution in _this_ thread - 
-                    // so do it this way.
-
-                    IOTerm.disconnect(descriptor.inputOutput, EDTContinuation);
+                    });
+                    try {
+                        // The problem here is that continuation passed to the
+                        // disconnect() method could be ignored (if, for some
+                        // reasons terminal is already disconnected.
+                        // In this case we may deadlock on wait.
+                        // It is not possible to detect if continuation was not
+                        // called because of some error or because terminal is
+                        // still waiting for IO drain..
+                        // To avoid deadlocks assume that 5 seconds is enough
+                        // for drain... and assume that if runnable was not
+                        // called in 5 seconds then it makes no sense to wait
+                        // any more.
+                        // The worst situation that this approach could lead to
+                        // is that postExecution is called before all IO was
+                        // drained....
+                        latch.await(5, TimeUnit.SECONDS);
+                    } finally {
+                        try {
+                            if (descriptor.postExecution != null) {
+                                descriptor.postExecution.run();
+                            }
+                        } finally {
+                            IOTerm.term(descriptor.inputOutput).setReadOnly(true);
+                        }
+                    }
                 }
             }
         };

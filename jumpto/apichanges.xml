@@ -108,6 +108,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="FileDescriptor-fileDisplayPath">
+            <api name="general"/>
+            <summary>Added <code>FileDescriptor.getFileDisplayPath</code> method to return display path of the file.</summary>
+            <version major="1" minor="33"/>
+            <date day="12" month="12" year="2012"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes">
+            </compatibility>
+            <description>
+                Added <code>FileDescriptor.getFileDisplayPath</code> method to return a display path of the file.
+                The default implementation just delegates to <code>FileUtil.getFileDisplayName</code> but it can
+                be overriden by more effective implementation when possible.
+            </description>
+            <class package="org.netbeans.spi.jumpto.file" name="FileDescriptor"/>
+            <issue number="223668"/>
+        </change>
         <change id="FileProvider-Context-lineNumber">
             <api name="general"/>
             <summary>Added <code>FileProvider.Context.getLineNumber</code> method to return the preferred line</summary>

@@ -60,6 +60,7 @@ import org.openide.util.NbBundle;
 /**
  * UI for failed files.
  */
+@org.netbeans.api.annotations.common.SuppressWarnings("SE_BAD_FIELD_STORE")
 public final class FailedFilesPanel extends JPanel {
 
     private static final long serialVersionUID = 146876432354L;

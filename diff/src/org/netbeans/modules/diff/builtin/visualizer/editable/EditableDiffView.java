@@ -857,7 +857,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             } else {
                 int lastLine = org.openide.text.NbDocument.findLineNumber(doc2, doc2.getLength()) + 1;
                 if(diff.getSecondStart() < lastLine) {
-                    offSecondEnd = org.openide.text.NbDocument.findLineOffset(doc2, diff.getSecondStart() + 1);
+                    offSecondEnd = org.openide.text.NbDocument.findLineOffset(doc2, diff.getSecondStart());
                 } else {
                     offSecondEnd = doc2.getLength();
                 }

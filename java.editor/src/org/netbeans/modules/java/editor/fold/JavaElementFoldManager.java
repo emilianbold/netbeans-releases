@@ -86,7 +86,6 @@ import org.netbeans.modules.java.editor.semantic.ScanningCancellableTask;
 import org.netbeans.modules.java.editor.semantic.Utilities;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
 import org.netbeans.spi.editor.fold.FoldOperation;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -148,11 +147,6 @@ public class JavaElementFoldManager extends JavaFoldManager {
         Object od = doc.getProperty(Document.StreamDescriptionProperty);
         
         if (od instanceof DataObject) {
-            EditorCookie ec = ((DataObject)od).getLookup().lookup(EditorCookie.class);
-            if (ec != null && doc != ec.getDocument()) {
-                throw new IllegalStateException("Different documents used by fold hierarchy and fold task.\nFold hierarchy document: " + doc + "\nFold task document: " + ec.getDocument()); //NOI18N
-            }
-                
             FileObject file = ((DataObject)od).getPrimaryFile();
 
             currentFolds = new ArrayList<Fold>();
@@ -364,21 +358,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
                 insideRender = true;
                 Document d = operation.getHierarchy().getComponent().getDocument();
                 if (d != doc) {
-                    StringBuilder dSB = new StringBuilder();
-                    Exception de = (Exception) d.getProperty("Issue-222763-debug"); //NOI18N
-                    if (de != null) {
-                        for (StackTraceElement trace : de.getStackTrace()) {
-                            dSB.append("\tat ").append(trace).append('\n'); //NOI18N
-                        }
-                    }
-                    StringBuilder docSB = new StringBuilder();
-                    de = (Exception) doc.getProperty("Issue-222763-debug"); //NOI18N
-                    if (de != null) {
-                        for (StackTraceElement trace : de.getStackTrace()) {
-                            docSB.append("\tat ").append(trace).append('\n'); //NOI18N
-                        }
-                    }
-                    throw new IllegalStateException("Different documents used for folds computation and commit.\nDocument used for computation:" + doc + "\ncreated:\n" + docSB.toString() + "\nDocument used for commit:" + d + "\ncreated:\n" + dSB.toString()); //NOI18N
+                    return;
                 }
                 d.render(this);
                 

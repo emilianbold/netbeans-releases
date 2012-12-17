@@ -50,13 +50,10 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
-import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
-import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -401,8 +398,9 @@ public class JsStructureScanner implements StructureScanner {
                 formatter.appendText(jsObject.getName());
             }
             formatter.appendText(")");   //NOI18N
-            
-            appendTypeInfo(formatter, function.getReturnTypes());
+            Collection<? extends TypeUsage> returnTypes = function.getReturnTypes();
+            Collection<TypeUsage> types = ModelUtils.resolveTypes(returnTypes, parserResult);
+            appendTypeInfo(formatter, types);
         }
 
         @Override
@@ -460,43 +458,8 @@ public class JsStructureScanner implements StructureScanner {
         public String getHtml(HtmlFormatter formatter) {
             formatter.reset();
             formatter.appendText(getElementHandle().getName());
-            Collection<? extends Type> types = object.getAssignmentForOffset(object.getDeclarationName().getOffsetRange().getEnd());
-            Model model = parserResult.getModel();
-            FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
-            JsIndex jsIndex = JsIndex.get(fo);
-            int cycle = 0;
-            boolean resolvedAll = false;
-            while(!resolvedAll && cycle < 10) {
-                cycle++;
-                resolvedAll = true;
-                Collection<Type> resolved = new ArrayList<Type>();
-                for (Type typeUsage : types) {
-                    if(!((TypeUsageImpl)typeUsage).isResolved()) {
-                        resolvedAll = false;
-                        String sexp = typeUsage.getType();
-                        if (sexp.startsWith("@exp;")) {
-                            sexp = sexp.substring(5);
-                            List<String> nExp = new ArrayList<String>();
-                            String[] split = sexp.split("@");
-                            for (int i = split.length - 1; i > -1; i--) {
-                                nExp.add(split[i].substring(split[i].indexOf(';') + 1));
-                                if (split[i].startsWith("call;")) {
-                                    nExp.add("@mtd");
-                                } else {
-                                    nExp.add("@pro");
-                                }
-                            }
-                            resolved.addAll(ModelUtils.resolveTypeFromExpression(model, jsIndex, nExp, cycle));
-                        } else {
-                            resolved.add(new TypeUsageImpl(typeUsage.getType(), typeUsage.getOffset(), true));
-                        }
-                    } else {
-                        resolved.add((TypeUsage)typeUsage);
-                    }
-                }
-                types.clear();
-                types = new ArrayList<Type>(resolved);
-            }
+            Collection<? extends TypeUsage> assignmentForOffset = object.getAssignmentForOffset(object.getDeclarationName().getOffsetRange().getEnd());
+            Collection<TypeUsage> types = ModelUtils.resolveTypes(assignmentForOffset, parserResult);
             appendTypeInfo(formatter, types);
             return formatter.getText();
         }

@@ -44,6 +44,7 @@ package org.netbeans.modules.web.clientproject.browser;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.ui.ProjectProblems;
 import org.netbeans.modules.javascript.jstestdriver.api.RunTests;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
@@ -91,7 +92,12 @@ public class BrowserActionProvider implements ActionProvider {
         String justStartFile = splt[0];
         String fragment = splt[1];
         if (COMMAND_RUN.equals(command)) {
-            FileObject fo = project.getSiteRootFolder().getFileObject(justStartFile);
+            FileObject siteRoot = project.getSiteRootFolder();
+            if (siteRoot == null) {
+                ProjectProblems.showAlert(project);
+                return;
+            }
+            FileObject fo = siteRoot.getFileObject(justStartFile);
             if (fo == null) {
                 DialogDisplayer.getDefault().notify(
                     new DialogDescriptor.Message(
@@ -102,14 +108,12 @@ public class BrowserActionProvider implements ActionProvider {
                 splt = ClientSideProjectUtilities.splitPathAndFragment(project.getStartFile());
                 justStartFile = splt[0];
                 fragment = splt[1];
-                fo = project.getSiteRootFolder().getFileObject(justStartFile);
+                fo = siteRoot.getFileObject(justStartFile);
                 if (fo == null) {
                     return;
                 }
             }
-            if (fo != null) {
-                browseFile(support, fo, fragment);
-            }
+            browseFile(support, fo, fragment);
         } else if (COMMAND_RUN_SINGLE.equals(command)) {
             FileObject fo = getFile(context);
             if (fo != null) {

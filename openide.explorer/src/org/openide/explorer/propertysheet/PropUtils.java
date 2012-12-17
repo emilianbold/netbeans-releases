@@ -1589,6 +1589,15 @@ final class PropUtils {
         return externallyEdited.contains(p);
     }
 
+    static void notifyEditingCancelled( PropertyEnv env ) {
+        if( null == env || null == env.getFeatureDescriptor() )
+            return;
+        Object o = env.getFeatureDescriptor().getValue( "nb.property.editor.callback" ); //NOI18N
+        if( o instanceof PropertyChangeListener ) {
+            ((PropertyChangeListener)o).propertyChange( new PropertyChangeEvent( env.getFeatureDescriptor(), "editingCancelled", null, Boolean.TRUE) ); //NOI18N
+        }
+    }
+
     static boolean supportsValueIncrement( PropertyEnv env ) {
         if( null == env || null == env.getFeatureDescriptor() )
             return false;
@@ -1608,10 +1617,6 @@ final class PropUtils {
         return res;
     }
     
-        private static final String DOWN = "selectNext";
-        private static final String DOWN_2 = "selectNext2";
-        private static final String UP = "selectPrevious";
-        private static final String UP_2 = "selectPrevious2";
     static void wrapUpDownArrowActions(JComponent inplaceEditor, final IncrementPropertyValueSupport incrementSupport) {
         InputMap im = inplaceEditor.getInputMap( JComponent.WHEN_FOCUSED );
         wrapAction( im.get(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0)), inplaceEditor.getActionMap(), incrementSupport, true );
