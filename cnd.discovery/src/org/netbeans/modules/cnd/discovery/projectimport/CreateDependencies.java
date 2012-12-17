@@ -58,6 +58,8 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
+import org.netbeans.modules.cnd.api.model.CsmModel;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -96,6 +98,8 @@ public class CreateDependencies implements PropertyChangeListener {
     private final String binary;
     private final Map<Project, String> createdProjects = new HashMap<Project,String>();
     private MakeConfigurationDescriptor mainConfigurationDescriptor;
+    private final CsmModel model = CsmModelAccessor.getModel();
+    private final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
 
     public CreateDependencies(Project mainProject, List<String> dependencies, List<String> paths, List<String> searchPaths, String binary) {
         this.mainProject = mainProject;
@@ -132,7 +136,6 @@ public class CreateDependencies implements PropertyChangeListener {
                         if (entry.getValue() != null) {
                             if (!checkedDll.contains(entry.getValue())) {
                                 checkedDll.add(entry.getValue());
-                                final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
                                 final Map<String, Object> extMap = new HashMap<String, Object>();
                                 extMap.put("DW:buildResult", entry.getValue()); // NOI18N
                                 if (extension != null) {
@@ -240,7 +243,6 @@ public class CreateDependencies implements PropertyChangeListener {
                     } else {
                         continue;
                     }
-                    IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
                     if (extension != null) {
                         Map<String, Object> map = new HashMap<String, Object>();
                         map.put("DW:buildResult", executable); // NOI18N
@@ -264,7 +266,7 @@ public class CreateDependencies implements PropertyChangeListener {
     }
 
     public void process(final DiscoveryExtension extension, final Project lastSelectedProject, final Map<String, Object> map){
-        ImportExecutable.switchModel(false, lastSelectedProject);
+        ImportExecutable.switchModel(model, false, lastSelectedProject);
         RP.post(new Runnable() {
 
             @Override
@@ -286,7 +288,7 @@ public class CreateDependencies implements PropertyChangeListener {
                             }
                         }
                     }
-                    ImportExecutable.switchModel(true, lastSelectedProject);
+                    ImportExecutable.switchModel(model, true, lastSelectedProject);
                     onProjectParsingFinished(lastSelectedProject);
                 } catch (Throwable ex) {
                     Exceptions.printStackTrace(ex);
