@@ -369,7 +369,14 @@ public class JsStructureScanner implements StructureScanner {
             if (function == null) {
                 return;
             }
+            boolean isDeprecated = getFunctionScope().isDeprecated();
+            if (isDeprecated) {
+                formatter.deprecated(true);
+            }
             formatter.appendText(getFunctionScope().getDeclarationName().getName());
+            if (isDeprecated) {
+                formatter.deprecated(false);
+            }
             formatter.appendText("(");   //NOI18N
             boolean addComma = false;
             for(JsObject jsObject : function.getParameters()) {
@@ -440,7 +447,14 @@ public class JsStructureScanner implements StructureScanner {
             if (object == null) {
                 return;
             }
+            boolean isDeprecated = object.isDeprecated();
+            if (isDeprecated) {
+                formatter.deprecated(true);
+            }
             formatter.appendText(object.getName());
+            if (isDeprecated) {
+                formatter.deprecated(false);
+            }
         }
 
     }
@@ -457,7 +471,15 @@ public class JsStructureScanner implements StructureScanner {
         @Override
         public String getHtml(HtmlFormatter formatter) {
             formatter.reset();
+            boolean isDeprecated = object.isDeprecated();
+            if (isDeprecated) {
+                formatter.deprecated(true);
+            }
             formatter.appendText(getElementHandle().getName());
+            if (isDeprecated) {
+                formatter.deprecated(false);
+            }
+            
             Collection<? extends TypeUsage> assignmentForOffset = object.getAssignmentForOffset(object.getDeclarationName().getOffsetRange().getEnd());
             Collection<TypeUsage> types = ModelUtils.resolveTypes(assignmentForOffset, parserResult);
             appendTypeInfo(formatter, types);
