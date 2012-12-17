@@ -43,6 +43,8 @@ package org.netbeans.modules.php.zend2.util;
 
 import java.io.File;
 import java.util.regex.Pattern;
+import org.netbeans.modules.php.api.editor.PhpBaseElement;
+import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 
 public final class Zend2Utils {
@@ -57,7 +59,7 @@ public final class Zend2Utils {
     private static final String FILE_VIEW_EXTENSION = ".phtml"; // NOI18N
     // paths
     private static final String CONTROLLER_RELATIVE_FILE = "../../../src/%s/" + CONTROLLER_DIRECTORY + "/%s.php"; // NOI18N
-    private static final String VIEW_RELATIVE_FILE = "../../" + VIEW_DIRECTORY + "/%s/%s/%s." + FILE_VIEW_EXTENSION; // NOI18N
+    private static final String VIEW_RELATIVE_FILE = "../../../" + VIEW_DIRECTORY + "/%s/%s/%s" + FILE_VIEW_EXTENSION; // NOI18N
     // other
     private static final String DASH = "-"; // NOI18N
 
@@ -88,6 +90,30 @@ public final class Zend2Utils {
         return VIEW_DIRECTORY.equals(parent.getName());
     }
 
+    public static File getView(File controller, PhpBaseElement phpElement) {
+        if (phpElement instanceof PhpClass.Method) {
+            String namespace = getNamespaceFromController(controller);
+            String viewFolderName = getViewFolderName(controller.getName());
+            String viewName = getViewName(phpElement.getName());
+            File view = PropertyUtils.resolveFile(controller.getParentFile(), String.format(VIEW_RELATIVE_FILE, dashize(namespace), viewFolderName, viewName));
+            if (view.isFile()) {
+                return view;
+            }
+        }
+        return null;
+    }
+
+    static String getViewName(String actionName) {
+        if (!actionName.endsWith(CONTROLLER_METHOD_SUFFIX)) {
+            return null;
+        }
+        return dashize(actionName.replace(CONTROLLER_METHOD_SUFFIX, "")); // NOI18N
+    }
+
+    static String getViewFolderName(String controllerName) {
+        return dashize(controllerName.replace(CONTROLLER_FILE_SUFFIX, "")); // NOI18N
+    }
+
     public static boolean isController(File file) {
         return file.isFile()
                 && file.getName().endsWith(CONTROLLER_FILE_SUFFIX)
@@ -95,7 +121,7 @@ public final class Zend2Utils {
     }
 
     public static File getController(File view) {
-        String namespace = getNamespace(view);
+        String namespace = getNamespaceFromView(view);
         String controllerName = getControllerName(view);
         File controller = PropertyUtils.resolveFile(view.getParentFile(), String.format(CONTROLLER_RELATIVE_FILE, namespace, controllerName));
         if (controller.isFile()) {
@@ -104,8 +130,12 @@ public final class Zend2Utils {
         return null;
     }
 
-    static String getNamespace(File view) {
+    static String getNamespaceFromView(File view) {
         return undashize(view.getParentFile().getParentFile().getName(), false);
+    }
+
+    static String getNamespaceFromController(File controller) {
+        return controller.getParentFile().getParentFile().getName();
     }
 
     static String getControllerName(File view) {

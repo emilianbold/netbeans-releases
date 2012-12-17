@@ -46,6 +46,7 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.php.api.editor.PhpClass;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -109,6 +110,40 @@ public class Zend2UtilsTest extends NbTestCase {
         assertFalse(Zend2Utils.isView(notView));
     }
 
+    public void testView() {
+        PhpClass albumControllerClass = new PhpClass("AlbumController", "Album\\Controller\\AlbumController");
+        albumControllerClass.addMethod("deleteAction", null);
+        FileObject albumController = zf2project.getFileObject("module/Album/src/Album/Controller/AlbumController.php");
+        FileObject deleteView = zf2project.getFileObject("module/Album/view/album/album/delete.phtml");
+        assertEquals(FileUtil.toFile(deleteView), Zend2Utils.getView(FileUtil.toFile(albumController), albumControllerClass.getMethods().iterator().next()));
+
+        PhpClass myTestControllerClass = new PhpClass("MyTestController", "Album\\Controller\\MyTestController");
+        myTestControllerClass.addMethod("helloWorldAction", null);
+        FileObject myTestController = zf2project.getFileObject("module/Album/src/Album/Controller/MyTestController.php");
+        FileObject helloWorldView = zf2project.getFileObject("module/Album/view/album/my-test/hello-world.phtml");
+        assertEquals(FileUtil.toFile(helloWorldView), Zend2Utils.getView(FileUtil.toFile(myTestController), myTestControllerClass.getMethods().iterator().next()));
+    }
+
+    public void testNamespaceFromView() {
+        FileObject deleteView = zf2project.getFileObject("module/Album/view/album/album/delete.phtml");
+        assertNotNull(deleteView);
+        assertEquals("Album", Zend2Utils.getNamespaceFromView(FileUtil.toFile(deleteView)));
+
+        FileObject helloWorldView = zf2project.getFileObject("module/Album/view/album/my-test/hello-world.phtml");
+        assertNotNull(helloWorldView);
+        assertEquals("Album", Zend2Utils.getNamespaceFromView(FileUtil.toFile(helloWorldView)));
+    }
+
+    public void testViewName() {
+        assertEquals("index", Zend2Utils.getViewName("indexAction"));
+        assertEquals("all-jobs", Zend2Utils.getViewName("allJobsAction"));
+    }
+
+    public void testViewFolderName() {
+        assertEquals("album", Zend2Utils.getViewFolderName("AlbumController.php"));
+        assertEquals("my-test", Zend2Utils.getViewFolderName("MyTestController.php"));
+    }
+
     public void testIsController() {
         FileObject albumController = zf2project.getFileObject("module/Album/src/Album/Controller/AlbumController.php");
         assertTrue(Zend2Utils.isController(FileUtil.toFile(albumController)));
@@ -143,14 +178,14 @@ public class Zend2UtilsTest extends NbTestCase {
         assertNull(Zend2Utils.getController(FileUtil.toFile(noControllerView)));
     }
 
-    public void testNamespace() {
-        FileObject deleteView = zf2project.getFileObject("module/Album/view/album/album/delete.phtml");
-        assertNotNull(deleteView);
-        assertEquals("Album", Zend2Utils.getNamespace(FileUtil.toFile(deleteView)));
+    public void testNamespaceFromController() {
+        FileObject albumController = zf2project.getFileObject("module/Album/src/Album/Controller/AlbumController.php");
+        assertNotNull(albumController);
+        assertEquals("Album", Zend2Utils.getNamespaceFromController(FileUtil.toFile(albumController)));
 
-        FileObject helloWorldView = zf2project.getFileObject("module/Album/view/album/my-test/hello-world.phtml");
-        assertNotNull(helloWorldView);
-        assertEquals("Album", Zend2Utils.getNamespace(FileUtil.toFile(helloWorldView)));
+        FileObject myTestController = zf2project.getFileObject("module/Album/src/Album/Controller/MyTestController.php");
+        assertNotNull(myTestController);
+        assertEquals("Album", Zend2Utils.getNamespaceFromController(FileUtil.toFile(myTestController)));
     }
 
     public void testControllerName() {
