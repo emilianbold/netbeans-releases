@@ -912,8 +912,8 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
             }
         }
         
-        void releaseWriter(IndexWriter w) {
-            assert w == txWriter.get();
+        void releaseWriter(@NonNull final IndexWriter w) {
+            assert txWriter.get() == w || txWriter.get() == null;
             rwLock.readLock().unlock();
         }
         
