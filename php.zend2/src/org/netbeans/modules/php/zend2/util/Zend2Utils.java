@@ -43,16 +43,31 @@ package org.netbeans.modules.php.zend2.util;
 
 import java.io.File;
 import java.util.regex.Pattern;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileObject;
 
 public final class Zend2Utils {
 
-    private static final String FILE_VIEW_EXTENSION = ".phtml"; // NOI18N
+    // controllers
+    private static final String CONTROLLER_DIRECTORY = "Controller"; // NOI18N
+    private static final String CONTROLLER_FILE_SUFFIX = "Controller.php"; // NOI18N
+    private static final String CONTROLLER_CLASS_SUFFIX = "Controller"; // NOI18N
+    private static final String CONTROLLER_METHOD_SUFFIX = "Action"; // NOI18N
+    // views
     private static final String VIEW_DIRECTORY = "view"; // NOI18N
-
+    private static final String FILE_VIEW_EXTENSION = ".phtml"; // NOI18N
+    // paths
+    private static final String CONTROLLER_RELATIVE_FILE = "../../../src/%s/" + CONTROLLER_DIRECTORY + "/%s.php"; // NOI18N
+    private static final String VIEW_RELATIVE_FILE = "../../" + VIEW_DIRECTORY + "/%s/%s/%s." + FILE_VIEW_EXTENSION; // NOI18N
+    // other
     private static final String DASH = "-"; // NOI18N
 
 
     private Zend2Utils() {
+    }
+
+    public static boolean isViewWithAction(File file) {
+        return isView(file) && getController(file) != null;
     }
 
     public static boolean isView(File file) {
@@ -72,6 +87,34 @@ public final class Zend2Utils {
         }
         parent = parent.getParentFile(); // view
         return VIEW_DIRECTORY.equals(parent.getName());
+    }
+
+    public static boolean isController(File file) {
+        return file.isFile()
+                && file.getName().endsWith(CONTROLLER_FILE_SUFFIX)
+                && file.getParentFile().getName().equals(CONTROLLER_DIRECTORY);
+    }
+
+    static File getController(File view) {
+        String namespace = getNamespace(view);
+        String controllerName = getControllerName(view);
+        File controller = PropertyUtils.resolveFile(view.getParentFile(), String.format(CONTROLLER_RELATIVE_FILE, namespace, controllerName));
+        if (controller.isFile()) {
+            return controller;
+        }
+        return null;
+    }
+
+    static String getNamespace(File view) {
+        return undashize(view.getParentFile().getParentFile().getName(), false);
+    }
+
+    static String getControllerName(File view) {
+        return getControllerName(view.getParentFile().getName());
+    }
+
+    static String getControllerName(String viewFolderName) {
+        return undashize(viewFolderName, false) + CONTROLLER_CLASS_SUFFIX;
     }
 
     // AllJobs -> all-jobs

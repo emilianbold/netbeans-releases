@@ -42,6 +42,9 @@
 package org.netbeans.modules.php.zend2.util;
 
 import java.io.File;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -65,9 +68,14 @@ public class Zend2UtilsTest extends NbTestCase {
         FileObject deleteView = zf2project.getFileObject("module/Album/view/album/album/delete.phtml");
         assertNotNull(deleteView);
         assertTrue(Zend2Utils.isView(FileUtil.toFile(deleteView)));
+
         FileObject helloWorldView = zf2project.getFileObject("module/Album/view/album/my-test/hello-world.phtml");
         assertNotNull(helloWorldView);
         assertTrue(Zend2Utils.isView(FileUtil.toFile(helloWorldView)));
+
+        FileObject noControllerView = zf2project.getFileObject("module/Album/view/album/no-controller/index.phtml");
+        assertNotNull(noControllerView);
+        assertTrue(Zend2Utils.isView(FileUtil.toFile(noControllerView)));
     }
 
     public void testIsNotView() {
@@ -101,7 +109,56 @@ public class Zend2UtilsTest extends NbTestCase {
         assertFalse(Zend2Utils.isView(notView));
     }
 
-    public void testdashize() {
+    public void testIsController() {
+        FileObject albumController = zf2project.getFileObject("module/Album/src/Album/Controller/AlbumController.php");
+        assertTrue(Zend2Utils.isController(FileUtil.toFile(albumController)));
+
+        FileObject myTestController = zf2project.getFileObject("module/Album/src/Album/Controller/MyTestController.php");
+        assertTrue(Zend2Utils.isController(FileUtil.toFile(myTestController)));
+    }
+
+    public void testIsNotController() {
+        File project = FileUtil.toFile(zf2project);
+        assertFalse(Zend2Utils.isController(project));
+
+        File notController = new File(project, "module/Album/view/album/not-view.phtml");
+        assertTrue(notController.isFile());
+        assertFalse(Zend2Utils.isController(notController));
+
+        notController = new File(project, "module/Album/view/album/my-test/non-existing-file.phtml");
+        assertFalse(notController.exists());
+        assertFalse(Zend2Utils.isController(notController));
+    }
+
+    public void testController() {
+        FileObject deleteView = zf2project.getFileObject("module/Album/view/album/album/delete.phtml");
+        FileObject albumController = zf2project.getFileObject("module/Album/src/Album/Controller/AlbumController.php");
+        assertEquals(FileUtil.toFile(albumController), Zend2Utils.getController(FileUtil.toFile(deleteView)));
+
+        FileObject helloWorldView = zf2project.getFileObject("module/Album/view/album/my-test/hello-world.phtml");
+        FileObject myTestController = zf2project.getFileObject("module/Album/src/Album/Controller/MyTestController.php");
+        assertEquals(FileUtil.toFile(myTestController), Zend2Utils.getController(FileUtil.toFile(helloWorldView)));
+
+        FileObject noControllerView = zf2project.getFileObject("module/Album/view/album/no-controller/index.phtml");
+        assertNull(Zend2Utils.getController(FileUtil.toFile(noControllerView)));
+    }
+
+    public void testNamespace() {
+        FileObject deleteView = zf2project.getFileObject("module/Album/view/album/album/delete.phtml");
+        assertNotNull(deleteView);
+        assertEquals("Album", Zend2Utils.getNamespace(FileUtil.toFile(deleteView)));
+
+        FileObject helloWorldView = zf2project.getFileObject("module/Album/view/album/my-test/hello-world.phtml");
+        assertNotNull(helloWorldView);
+        assertEquals("Album", Zend2Utils.getNamespace(FileUtil.toFile(helloWorldView)));
+    }
+
+    public void testControllerName() {
+        assertEquals("IndexController", Zend2Utils.getControllerName("index"));
+        assertEquals("AllJobsController", Zend2Utils.getControllerName("all-jobs"));
+    }
+
+    public void testDashize() {
         assertEquals("test", Zend2Utils.dashize("Test"));
         assertEquals("test", Zend2Utils.dashize("test"));
 
