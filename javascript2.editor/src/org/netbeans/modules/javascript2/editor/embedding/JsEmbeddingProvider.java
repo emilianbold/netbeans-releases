@@ -179,7 +179,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         this.translator = translator;
     }
 
-    private interface Translator {
+    protected interface Translator {
 
         public List<Embedding> translate(Snapshot snapshot);
     } // End of Translator interface
@@ -333,7 +333,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         }
     } // End of PhpTranslator class
 
-    private static final class TplTranslator implements Translator {
+    protected static final class TplTranslator implements Translator {
 
         @Override
         public List<Embedding> translate(Snapshot snapshot) {
@@ -370,7 +370,13 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                         boolean hasNext;
                         while (hasNext = tokenSequence.moveNext()) {
                             Token<? extends TokenId> innerToken = tokenSequence.token();
-                            if (!innerToken.id().name().equals("T_HTML")) { //NOI18N
+                            if (CharSequenceUtilities.textEquals("ldelim", innerToken.text())) {        //NOI18N
+                                wasInLiteral = true;
+                                embeddings.add(snapshot.create("{", JsTokenId.JAVASCRIPT_MIME_TYPE));   //NOI18N
+                            } else if (CharSequenceUtilities.textEquals("rdelim", innerToken.text())) { //NOI18N
+                                wasInLiteral = true;
+                                embeddings.add(snapshot.create("}", JsTokenId.JAVASCRIPT_MIME_TYPE));   //NOI18N
+                            } else if (!innerToken.id().name().equals("T_HTML")) { //NOI18N
                                 wasInTpl = true;
                                 if (CharSequenceUtilities.indexOf(innerToken.text(), "literal") > -1) { //NOI18N
                                     wasInLiteral = true;
