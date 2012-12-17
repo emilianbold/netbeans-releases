@@ -43,20 +43,33 @@
 package org.netbeans.modules.websvc.rest.wizard;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
+import javax.lang.model.element.Modifier;
+import javax.lang.model.type.TypeKind;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
+import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
+import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -65,8 +78,13 @@ import org.openide.WizardDescriptor.ProgressInstantiatingIterator;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
-import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.VariableTree;
 
 /**
  * @author ads
@@ -198,10 +216,119 @@ public class JaxRsFilterIterator implements
         String name = Templates.getTargetName(myWizard);
         FileObject filterClass = GenerationUtils.createClass(targetFolder,name, null );
         
+        implementFilters(filterClass);
+        
         handle.finish();
         return Collections.singleton(filterClass);
     }
     
+    private void implementFilters( FileObject filterClass ) throws IOException{
+        JavaSource javaSource = JavaSource.forFileObject(filterClass);
+        if ( javaSource == null ){
+            return;
+        }
+        
+        final boolean client = Boolean.TRUE.equals(
+                myWizard.getProperty(JaxRsFilterPanel.CLIENT_FILTER));
+        final boolean server = Boolean.TRUE.equals(
+                myWizard.getProperty(JaxRsFilterPanel.SERVER_FILTER));
+        final boolean request = Boolean.TRUE.equals(
+                myWizard.getProperty(JaxRsFilterPanel.REQUEST));
+        final boolean response = Boolean.TRUE.equals(
+                myWizard.getProperty(JaxRsFilterPanel.RESPONSE));
+        final boolean addPreMatch = Boolean.TRUE.equals(
+                myWizard.getProperty(JaxRsFilterPanel.PRE_MATCHING));
+        final boolean addProvider = Boolean.TRUE.equals(
+                myWizard.getProperty(JaxRsFilterPanel.PROVIDER));
+        javaSource.runModificationTask( new Task<WorkingCopy>() {
+            
+            @Override
+            public void run( WorkingCopy copy ) throws Exception {
+                copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                ClassTree tree = JavaSourceHelper.getTopLevelClassTree(copy);
+                ClassTree newTree = tree;
+                TreeMaker treeMaker = copy.getTreeMaker();
+                
+                GenerationUtils genUtils = GenerationUtils.newInstance(copy);
+                
+                if ( addPreMatch ){
+                    AnnotationTree preMatching = genUtils.
+                            createAnnotation("javax.ws.rs.container.PreMatching");
+                    newTree = genUtils.addAnnotation(newTree, preMatching);
+                }
+                if ( addProvider ){
+                    AnnotationTree provider = genUtils.
+                            createAnnotation("javax.ws.rs.ext.Provider");
+                    newTree = genUtils.addAnnotation(newTree, provider);
+                }
+                
+                Map<String,String> params = new HashMap<String, String>();
+                if ( client ){
+                    if ( request ){
+                        params.put("requestContext", 
+                                "javax.ws.rs.client.ClientRequestContext");     // NOI18N
+                        newTree = genUtils.addImplementsClause(newTree, 
+                                "javax.ws.rs.client.ClientRequestFilter");      // NOI18N
+                        MethodTree method = createMethod(genUtils, treeMaker, params);
+                        newTree = treeMaker.addClassMember( newTree, method);   
+                    }
+                    if ( response ){
+                        params.put("responseContext", 
+                                "javax.ws.rs.client.ClientResponseContext");    // NOI18N
+                        newTree = genUtils.addImplementsClause(newTree, 
+                                "javax.ws.rs.client.ClientResponseFilter");     // NOI18N
+                        MethodTree method = createMethod(genUtils, treeMaker, params);
+                        newTree = treeMaker.addClassMember( newTree, method);
+                    }
+                }
+                if ( server ){
+                    if ( request ){
+                        params.clear();
+                        params.put("requestContext", 
+                                "javax.ws.rs.container.ContainerRequestContext");// NOI18N
+                        newTree = genUtils.addImplementsClause(newTree, 
+                                "javax.ws.rs.container.ContainerRequestFilter");// NOI18N
+                        MethodTree method = createMethod(genUtils, treeMaker, params);
+                        newTree = treeMaker.addClassMember( newTree, method);
+                    }
+                    if ( response ){
+                        params.put("responseContext",
+                                "javax.ws.rs.container.ContainerResponseContext");// NOI18N
+                        newTree = genUtils.addImplementsClause(newTree, 
+                                "javax.ws.rs.container.ContainerRequestFilter");// NOI18N
+                        MethodTree method = createMethod(genUtils, treeMaker, params);
+                        newTree = treeMaker.addClassMember( newTree, method);
+                    }
+                }
+                copy.rewrite(tree, newTree);
+            }
+        }).commit();
+    }
+    
+    private MethodTree createMethod(GenerationUtils genUtils,TreeMaker maker, 
+            Map<String,String> methodParams)
+    {
+        ModifiersTree modifiers = maker.Modifiers(EnumSet.of(Modifier.PUBLIC));
+        List<VariableTree> params=new ArrayList<VariableTree>();
+        ModifiersTree noModifier = maker.Modifiers(Collections.<Modifier>emptySet());
+        for(Entry<String,String> entry: methodParams.entrySet()){
+            String paramName = entry.getKey();
+            String paramType = entry.getValue();
+            params.add(maker.Variable(noModifier, paramName, 
+                    maker.Type(paramType), null));
+        }
+        return maker.Method(
+                maker.addModifiersAnnotation(modifiers, genUtils.createAnnotation(
+                        Override.class.getCanonicalName())),
+                "filter",                           // NOI18N
+                maker.PrimitiveType(TypeKind.VOID),
+                Collections.<TypeParameterTree>emptyList(),
+                params,
+                Collections.<ExpressionTree>emptyList(),
+                "{}",                               // NOI18N
+                null);
+    }
+
     private void setSteps() {
         Object contentData = myWizard.getProperty(WizardDescriptor.PROP_CONTENT_DATA);  
         if ( contentData instanceof String[] ){

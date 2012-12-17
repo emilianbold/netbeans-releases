@@ -63,6 +63,15 @@ import org.openide.util.NbBundle;
  *
  */
 class JaxRsFilterPanel implements Panel<WizardDescriptor> {
+    
+    static final String CLIENT_FILTER = "client.filter";        // NOI18N
+    static final String SERVER_FILTER = "server.filter";        // NOI18N
+    
+    static final String REQUEST = "request.filter";             // NOI18N
+    static final String RESPONSE = "response.filter";            // NOI18N
+    
+    static final String PRE_MATCHING = "prematching.filter";    // NOI18N
+    static final String PROVIDER = "provider.filter";           // NOI18N
 
     JaxRsFilterPanel( WizardDescriptor wizard ) {
         myDescriptor = wizard;

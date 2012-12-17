@@ -112,6 +112,12 @@ class JaxRsFilterVisual extends javax.swing.JPanel {
     }
 
     void storeSettings( WizardDescriptor descriptor ) {
+        descriptor.putProperty(JaxRsFilterPanel.CLIENT_FILTER,clientFilter.isSelected());
+        descriptor.putProperty(JaxRsFilterPanel.SERVER_FILTER,containerFilter.isSelected());
+        descriptor.putProperty(JaxRsFilterPanel.REQUEST, requestFilter.isSelected());
+        descriptor.putProperty(JaxRsFilterPanel.RESPONSE, responseFilter.isSelected());
+        descriptor.putProperty(JaxRsFilterPanel.PRE_MATCHING, preMatching.isSelected());
+        descriptor.putProperty(JaxRsFilterPanel.PROVIDER, provider.isSelected());
     }
     
     void addChangeListener( ChangeListener listener ) {

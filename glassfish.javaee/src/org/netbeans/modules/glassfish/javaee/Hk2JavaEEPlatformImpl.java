@@ -77,6 +77,7 @@ import org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementa
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.glassfish.spi.Utils;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.*;
 import org.openide.util.ImageUtilities;
@@ -345,6 +346,13 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
         if (!descriminator.exists()) {
             retVal.remove(Profile.JAVA_EE_6_FULL);
         }
+	// XXX: hack instead of issue EE.4 from http://wiki.netbeans.org/JavaEE7
+	descriminator = Utils.getFileFromPattern("lib/install/applications/__admingui/WEB-INF/lib/console-core-4.0"+ServerUtilities.GFV3_VERSION_MATCHER, new File(gfRootStr));
+        if (descriminator != null) {
+            retVal.add(Profile.JAVA_EE_7_FULL);
+            retVal.add(Profile.JAVA_EE_7_WEB);
+	}
+	
         return retVal;
     }
 
