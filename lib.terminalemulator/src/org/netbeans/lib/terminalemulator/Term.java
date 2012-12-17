@@ -4012,17 +4012,6 @@ public class Term extends JComponent implements Accessible {
     }
 
     /**
-     * Convert a terminal-specific character to the canonical curses ACS code.
-     */
-    private char mapACS(char inChar) {
-        final char outChar = interp.mapACS(inChar);
-        if (outChar == '\0')
-            return inChar;
-        else
-            return outChar;
-    }
-
-    /**
      * Map a character according to the font attribute
      * @param inChar
      * @return the unicode character that renders the correct glyph.
@@ -4032,13 +4021,16 @@ public class Term extends JComponent implements Accessible {
             case 0:
             default:
                 return inChar;
-            case 1:
+            case 1: {
                 // Convert the canonical ncurses ACS code to the appropriate unicode character.
                 // See:
                 // http://vt100.net/docs/vt220-rm/table2-4.html
                 // http://en.wikipedia.org/wiki/Box-drawing_character
                 // http://en.wikipedia.org/wiki/Arrow_%28symbol%29
-                switch (mapACS(inChar)) {
+                final char outChar = interp.mapACS(inChar);
+                if (outChar == '\0')
+                    return inChar;
+                switch (outChar) {
                     default:
                         return inChar;
 
@@ -4115,6 +4107,7 @@ public class Term extends JComponent implements Accessible {
                     case '~':            // ACS_BULLET
                         return '\u00b7'; // MIDDLE DOT
                 }
+            }
         }
     }
 

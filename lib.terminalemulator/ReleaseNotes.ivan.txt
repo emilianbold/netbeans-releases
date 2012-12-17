@@ -47,6 +47,12 @@
 	  This is all private to the terminalemulator package and only
 	  applies to Interp's derived from InterpProtoANSI.
 
+	- Using an intermediate private Term.mapACS() as a trampoline
+	  between mapChar() and Interp.mapACS() didn't quite work out right.
+	  Need to test for '\0' directly in mapChar().
+
+	- Added additional ACS support for arrows and blocks.
+
 207965 - Terminal incorrectly displays prompt string
 187345 - wrong characters in Terminals
 	Distribute "text parameter" sequence interpretation properly
