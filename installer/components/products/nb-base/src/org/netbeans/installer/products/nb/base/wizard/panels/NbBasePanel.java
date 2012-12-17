@@ -105,6 +105,8 @@ public class NbBasePanel extends DestinationPanel {
                 DEFAULT_BROWSE_BUTTON_TEXT);
         setProperty(WARNING_INSTALL_INTO_USERDIR_PROPERTY,
                 DEFAULT_WARNING_INSTALL_INTO_USERDIR);
+        setProperty(WARNING_JDK_NOT_RECOMMENDED_VERSION,
+                DEFAULT_WARNING_JDK_NOT_RECOMMENDED_VERSION);
     }
     
     @Override
@@ -468,8 +470,9 @@ public class NbBasePanel extends DestinationPanel {
         
         private Text getJdkWarningMessage() {
             if (jdkWarningMessage == null) {
-                String messageContent = "<font color='red'>This JDK version is older than the recommended JDK 7u10. For stability reasons we recommend that you download and install the latest JDK 7 update from </font><a href=\"http://www.oracle.com/technetwork/java/javase/downloads/\">http://www.oracle.com/technetwork/java/javase/downloads/</a><font color='red'> and restart NetBeans installer.</font>";
-                
+                String messageContent = StringUtils.format(
+                        panel.getProperty(WARNING_JDK_NOT_RECOMMENDED_VERSION), 
+                        panel.jdkLocationPanel.getProperty(JdkLocationPanel.JAVA_DOWNLOAD_PAGE_PROPERTY));                
                 jdkWarningMessage = new Text(messageContent, Text.ContentType.HTML);
             } 
             
@@ -502,6 +505,8 @@ public class NbBasePanel extends DestinationPanel {
             "browse.button.text"; // NOI18N
     public static final String WARNING_INSTALL_INTO_USERDIR_PROPERTY =
             "install.into.userdir.storage";
+    public static final String WARNING_JDK_NOT_RECOMMENDED_VERSION =
+            "jdk.not.recommended.version";
     
     public static final String DEFAULT_TITLE =
             ResourceUtils.getString(NbBasePanel.class,
@@ -533,4 +538,7 @@ public class NbBasePanel extends DestinationPanel {
     public static final String DEFAULT_WARNING_INSTALL_INTO_USERDIR =
             ResourceUtils.getString(NbBasePanel.class,
             "NBP.warning.install.into.userdir"); // NOI18N
+    public static final String DEFAULT_WARNING_JDK_NOT_RECOMMENDED_VERSION =
+            ResourceUtils.getString(NbBasePanel.class,
+            "NBP.warning.jdk.not.recommended.version"); // NOI18N
 }
