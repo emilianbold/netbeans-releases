@@ -7,13 +7,19 @@
     <options allow-external-scripts="yes" customize="never" rootVolumeOnly="false" hostArchitectures="i386"></options>
     <installation-check script="checkMemsize()"></installation-check>
     <volume-check script="checkSystemversion()"></volume-check>
-    <script>
 /* js:pkmk:start */
-function installationCheckRAM() {
-	return  checkMemsize() ;
+function checkSystem() {
+	var java_result = checkJavaVersion();
+        
+        if (!java_result) {
+            return java_result;
+        }
+        
+        var mem_result = checkMemsize();
+        
+        return mem_result;
 }
 /* js:pkmk:end */
-
 
 /* js:pkmk:start */
 function checkMemsize() {
@@ -30,102 +36,184 @@ function checkMemsize() {
 	return result;
 }
 /* js:pkmk:end */
+
+/* js:pkmk:start */
+function checkJavaVersion() {
+    var result = false;
+    var java7u10_or_newer = false;
+    var java7_older = false;
+    var java6 = false;
+    try {
+        if(system.files.fileExistsAtPath('/usr/libexec/java_home')) {
+           var res = system.run("/usr/libexec/java_home", "--version", "1.7.0_10+", "--failfast");                       
+           java7u10_or_newer = (0 == res);
+           if(!java7u10_or_newer) {
+               var res = system.run("/usr/libexec/java_home", "--version", "1.6", "--failfast");                       
+               java6 = (0 == res);
+           }
+           if(!java7u10_or_newer) {
+               var res = system.run("/usr/libexec/java_home", "--version", "1.7+", "--failfast");                       
+               java7_older = (0 == res);
+           }
+        }
+    } catch (e) {}
+
+    if(java7u10_or_newer) {
+        result = true;
+    } else {
+        if(java7_older) {
+            if (java6) {
+                my.result.type = 'Warn';
+                my.result.title = system.localizedStringWithFormat('WARN_JAVA6_OLDER_JAVA7_TITLE');
+                my.result.message = system.localizedStringWithFormat('WARN_JAVA6_OLDER_JAVA7_MSG');
+            } else {
+                my.result.type = 'Fatal';
+                my.result.title = system.localizedStringWithFormat('ERR_OLDER_JAVA7_TITLE');
+                my.result.message = system.localizedStringWithFormat('ERR_OLDER_JAVA7_MSG');
+            }
+        } else {
+            if (java6) {
+                result = true;
+            } else {
+                my.result.type = 'Fatal';
+                my.result.title = system.localizedStringWithFormat('ERR_NO_JAVA_TITLE');
+                my.result.message = system.localizedStringWithFormat('ERR_NO_JAVA_MSG');
+            }
+        }
+    }
+
+    return result;
+}
+/* js:pkmk:end */
 </script>
 
 <script>
 /* js:pkmk:start */
-function volumeCheckTiger() {
-	return  checkSystemversion() ;
+function checkSystemversion() {
+    var result = false;
+    var version;	
+    try {
+            version = my.target.systemVersion.ProductVersion;
+            if(version == 'undefined') {
+                    result = ( -1 != system.compareVersions(system.version.ProductVersion, '10.5'));
+            } else {
+                    result = ( -1 != system.compareVersions(version, '10.5'));
+            }
+
+    } catch (e) {}
+
+    if(!result) {
+            my.result.type = 'Fatal';
+            my.result.title = system.localizedStringWithFormat('ERR_INVALID_VERSION_TITLE');
+            my.result.message = system.localizedStringWithFormat('ERR_INVALID_VERSION_MSG');
+    }
+
+    return result;
+}
+/* js:pkmk:end */
+</script>
+/* js:pkmk:start */
+function checkSystem() {
+	var java_result = checkJavaVersion();
+        
+        if (!java_result) {
+            return java_result;
+        }
+        
+        var mem_result = checkMemsize();
+        
+        return mem_result;
 }
 /* js:pkmk:end */
 
-
 /* js:pkmk:start */
-function checkSystemversion() {
+function checkMemsize() {
 	var result = false;
-	var version;	
 	try {
-		version = my.target.systemVersion.ProductVersion;
-		if(version == 'undefined') {
-			result = ( -1 != system.compareVersions(system.version.ProductVersion, '10.5'));
-		} else {
-			result = ( -1 != system.compareVersions(version, '10.5'));
-		}
-	
+		result = system.sysctl('hw.memsize') >= '536870912';
 	} catch (e) {}
 	
 	if(!result) {
-		my.result.type = 'Fatal';
-		my.result.title = system.localizedStringWithFormat('ERR_INVALID_VERSION_TITLE');
-		my.result.message = system.localizedStringWithFormat('ERR_INVALID_VERSION_MSG');
-	} else {
-            var java7u10_or_newer = false;
-            var java7_older = false;
-            var java6 = false;
-            try {
-                if(system.files.fileExistsAtPath('/usr/libexec/java_home')) {
-                   var res = system.run("/usr/libexec/java_home", "--version", "1.7.0_10+", "--failfast");                       
-                   java7u10_or_newer = (0 == res);
-                   if(!java7u10_or_newer) {
-                       var res = system.run("/usr/libexec/java_home", "--version", "1.6", "--failfast");                       
-                       java6 = (0 == res);
-                   }
-                   if(!java7u10_or_newer) {
-                       var res = system.run("/usr/libexec/java_home", "--version", "1.7+", "--failfast");                       
-                       java7_older = (0 == res);
-                   }
-                }
-            } catch (e) {}
+		my.result.type = 'Warn';
+		my.result.title = system.localizedStringWithFormat('MEMORY_WARNING_TITLE');
+		my.result.message = system.localizedStringWithFormat('MEMORY_WARNING_MSG');
+	}
+	return result;
+}
+/* js:pkmk:end */
 
-            if(java7u10_or_newer) {
+/* js:pkmk:start */
+function checkJavaVersion() {
+    var result = false;
+    var java7u10_or_newer = false;
+    var java7_older = false;
+    var java6 = false;
+    try {
+        if(system.files.fileExistsAtPath('/usr/libexec/java_home')) {
+           var res = system.run("/usr/libexec/java_home", "--version", "1.7.0_10+", "--failfast");                       
+           java7u10_or_newer = (0 == res);
+           if(!java7u10_or_newer) {
+               var res = system.run("/usr/libexec/java_home", "--version", "1.6", "--failfast");                       
+               java6 = (0 == res);
+           }
+           if(!java7u10_or_newer) {
+               var res = system.run("/usr/libexec/java_home", "--version", "1.7+", "--failfast");                       
+               java7_older = (0 == res);
+           }
+        }
+    } catch (e) {}
+
+    if(java7u10_or_newer) {
+        result = true;
+    } else {
+        if(java7_older) {
+            if (java6) {
+                my.result.type = 'Warn';
+                my.result.title = system.localizedStringWithFormat('WARN_JAVA6_OLDER_JAVA7_TITLE');
+                my.result.message = system.localizedStringWithFormat('WARN_JAVA6_OLDER_JAVA7_MSG');
+            } else {
+                my.result.type = 'Fatal';
+                my.result.title = system.localizedStringWithFormat('ERR_OLDER_JAVA7_TITLE');
+                my.result.message = system.localizedStringWithFormat('ERR_OLDER_JAVA7_MSG');
+            }
+        } else {
+            if (java6) {
                 result = true;
             } else {
-                if(java7_older) {
-                    if (java6) {
-                        my.result.type = 'Warning';
-                        my.result.title = system.localizedStringWithFormat('WARN_JAVA6_OLDER_JAVA7_TITLE');
-                        my.result.message = system.localizedStringWithFormat('WARN_JAVA6_OLDER_JAVA7_MSG');
-                        result = false;
-                    } else {
-                        my.result.type = 'Fatal';
-                        my.result.title = system.localizedStringWithFormat('ERR_OLDER_JAVA7_TITLE');
-                        my.result.message = system.localizedStringWithFormat('ERR_OLDER_JAVA7_MSG');
-                        result = false;
-                    }
-                } else {
-                    if (java6) {
-                        result = true;
-                    } else {
-                        my.result.type = 'Fatal';
-                        my.result.title = system.localizedStringWithFormat('ERR_NO_JAVA_TITLE');
-                        my.result.message = system.localizedStringWithFormat('ERR_NO_JAVA_MSG');
-                        result = false;
-                    }
-                }
+                my.result.type = 'Fatal';
+                my.result.title = system.localizedStringWithFormat('ERR_NO_JAVA_TITLE');
+                my.result.message = system.localizedStringWithFormat('ERR_NO_JAVA_MSG');
             }
         }
+    }
 
-	return result;
+    return result;
 }
 /* js:pkmk:end */
 </script>
 
 <script>
 /* js:pkmk:start */
-function choiceIsADowngrade() {
-	return  checkChoiceUpgradeAction() ;
-}
-/* js:pkmk:end */
+function checkSystemversion() {
+    var result = false;
+    var version;	
+    try {
+            version = my.target.systemVersion.ProductVersion;
+            if(version == 'undefined') {
+                    result = ( -1 != system.compareVersions(system.version.ProductVersion, '10.5'));
+            } else {
+                    result = ( -1 != system.compareVersions(version, '10.5'));
+            }
 
+    } catch (e) {}
 
-/* js:pkmk:start */
-function checkChoiceUpgradeAction() {
-	var result = false;
-	try {
-		result = my.choice.packageUpgradeAction == 'downgrade' || my.choice.packageUpgradeAction == 'mixed';
-	} catch (e) {}
-	
-	return result;
+    if(!result) {
+            my.result.type = 'Fatal';
+            my.result.title = system.localizedStringWithFormat('ERR_INVALID_VERSION_TITLE');
+            my.result.message = system.localizedStringWithFormat('ERR_INVALID_VERSION_MSG');
+    }
+
+    return result;
 }
 /* js:pkmk:end */
 </script>
