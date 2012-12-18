@@ -70,11 +70,13 @@ class JaxRsFilterVisual extends javax.swing.JPanel {
         Project project = Templates.getProject(descriptor);
         WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
         if ( webModule == null ){
-            containerFilter.setEnabled(false);
+            containerFilter.setSelected(false);
+            provider.setVisible(false);
+            preMatching.setVisible(false);
         }
         else {
             containerFilter.setSelected(true);
-            provider.setEnabled(true);
+            provider.setSelected(true);
         }
         requestFilter.setSelected(true);
         responseFilter.setSelected(true);
