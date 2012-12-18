@@ -86,7 +86,7 @@ public class Page {
         return enabled;
     }
     
-    private class Callback implements ResponseCallback {
+    private static class Callback implements ResponseCallback {
 
         @Override
         public void handleResponse(Response response) {
