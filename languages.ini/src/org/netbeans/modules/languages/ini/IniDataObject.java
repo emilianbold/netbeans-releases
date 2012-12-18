@@ -67,7 +67,11 @@ import org.openide.windows.TopComponent;
 
 @Messages("INIResolver=INI Files")
 @MIMEResolver.ExtensionRegistration(displayName = "#INIResolver", mimeType = IniLanguageConfig.MIME_TYPE, position = 133, extension = {"ini", "INI"})
-@Registration(displayName = "org.netbeans.modules.languages.ini.resources.Bundle#Loaders/text/x-ini/Factories/IniDataLoader.instance", iconBase = "org/netbeans/modules/languages/ini/resources/ini_file_16.png", mimeType = IniLanguageConfig.MIME_TYPE)
+@Registration(
+        displayName = "org.netbeans.modules.languages.ini.resources.Bundle#Loaders/text/x-ini/Factories/IniDataLoader.instance",
+        iconBase = "org/netbeans/modules/languages/ini/resources/ini_file_16.png",
+        mimeType = IniLanguageConfig.MIME_TYPE,
+        position = 1500)
 @ActionReferences(value = {
     @ActionReference(id = @ActionID(category = "System", id = "org.openide.actions.OpenAction"), path = ACTIONS, position = 100, separatorAfter = 200),
     @ActionReference(id = @ActionID(category = "Edit", id = "org.openide.actions.CutAction"), path = ACTIONS, position = 300),
