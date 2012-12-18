@@ -42,6 +42,8 @@
 package org.netbeans.modules.ide.ergonomics;
 
 import java.util.Enumeration;
+import java.util.logging.Level;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -149,7 +151,11 @@ public class OptionsCheck extends NbTestCase {
     }
 
     private String getAttr(FileObject f, final String k) {
+        CharSequence log = Log.enable("org.netbeans.core.startup.layers.BinaryFS", Level.INFO);
         String s = (String) f.getAttribute(k);
+        if (log.length() > 0) {
+            fail("Some errors gettting attribute " + f + "[" + k + "]\n" + log);
+        }
         return s == null ? "" : s;
     }
 }
