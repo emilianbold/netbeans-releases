@@ -820,7 +820,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         
         if (!changedPackage && (projectNameTextField.getDocument() == doc || txtGroupId.getDocument() == doc)) {
             txtPackage.getDocument().removeDocumentListener(this);
-            txtPackage.setText(getPackageName(txtGroupId.getText() + "." + projectNameTextField.getText())); //NOI18N
+            txtPackage.setText(getPackageName(txtGroupId.getText() + "." + txtArtifactId.getText().replace("-", "."))); //NOI18N
             txtPackage.getDocument().addDocumentListener(this);
         }
         

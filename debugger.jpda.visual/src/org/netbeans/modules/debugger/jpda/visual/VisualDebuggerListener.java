@@ -157,6 +157,9 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
     public void engineAdded(DebuggerEngine engine) {
         // Create a BP in AWT and when hit, inject the remote service.
         final JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
+        if (debugger == null) {
+            return ;
+        }
         boolean uploadAgent = properties.getBoolean(PROPERTIES_UPLOAD_AGENT, true);
         logger.log(Level.FINE, "engineAdded({0}), debugger = {1}, uploadAgent = {2}", new Object[]{engine, debugger, uploadAgent});
         Collection<Breakpoint> helperComponentBreakpoints = new ArrayList<Breakpoint>();
@@ -348,15 +351,16 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
     public void engineRemoved(DebuggerEngine engine) {
         ScreenshotComponent.closeScreenshots(engine);
         JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
-        logger.fine("engineRemoved("+engine+"), debugger = "+debugger);
-        if (debugger != null) {
-            stopDebuggerRemoteService(debugger);
+        if (debugger == null) {
+            return ;
         }
+        logger.log(Level.FINE, "engineRemoved({0}), debugger = {1}", new Object[]{engine, debugger});
+        stopDebuggerRemoteService(debugger);
         Collection<Breakpoint> helperComponentBreakpoints;
         synchronized (helperComponentBreakpointsMap) {
             helperComponentBreakpoints = helperComponentBreakpointsMap.remove(engine);
         }
-        if (!helperComponentBreakpoints.isEmpty()) {
+        if (helperComponentBreakpoints != null && !helperComponentBreakpoints.isEmpty()) {
             Iterator<Breakpoint> it = helperComponentBreakpoints.iterator();
             while (it.hasNext()) {
                 DebuggerManager.getDebuggerManager().removeBreakpoint(it.next());

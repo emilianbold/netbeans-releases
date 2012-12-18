@@ -760,7 +760,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     public final void go() {
-        sendResumptive("-exec-continue"); // NOI18N
+        if (state().isProcess) {
+            sendResumptive("-exec-continue"); // NOI18N
+        } else {
+            sendResumptive("-exec-run"); // NOI18N
+        }
     }
     
     private boolean targetAttach = false;
@@ -850,7 +854,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     @Override
     public void runToCursor(String src, int line) {
 	src = localToRemote("runToCursor", src); // NOI18N
-        sendResumptive("-exec-until \"" + src + ':' + line + '"'); // NOI18N
+        
+        if (!state().isProcess) {
+            send("-break-insert -t " + src + ":" + line); //NOI18N
+            go();
+        } else {
+            sendResumptive("-exec-until \"" + src + ':' + line + '"'); // NOI18N
+        }
     }
     
     // interface NativeDebugger

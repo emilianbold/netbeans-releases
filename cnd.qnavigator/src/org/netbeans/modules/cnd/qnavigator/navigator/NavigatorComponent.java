@@ -47,7 +47,6 @@ package org.netbeans.modules.cnd.qnavigator.navigator;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
-import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.filesystems.FileObject;
@@ -57,6 +56,7 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -78,6 +78,8 @@ public final class NavigatorComponent implements NavigatorPanel, LookupListener 
     private final static class Lock{};
     private final Lock lock = new Lock();
     private final Lock uiLock = new Lock();
+    private static final RequestProcessor RP = new RequestProcessor("Updating C/C++ Navigator Content", 1); // NOI18N
+
     
     @Override
     public String getDisplayName() {
@@ -208,12 +210,12 @@ public final class NavigatorComponent implements NavigatorPanel, LookupListener 
     
     private void setNewContent(final DataObject cdo) {
         final NavigatorPanelUI ui = getPanelUI();
-	CsmModelAccessor.getModel().enqueue(new Runnable() {
+	RP.post(new Runnable() {
             @Override
 	    public void run() {
 		setNewContentImpl(cdo, ui);
 	    }
-	}, "Updating QuickNavigator Content"); //NOI18N
+	});
     }
     
     private void setNewContentImpl(DataObject cdo, NavigatorPanelUI ui) {
