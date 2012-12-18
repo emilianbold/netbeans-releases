@@ -1488,7 +1488,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 for (FileEntry fileEntry : includedFileEntries) {
                     for (PreprocessorStatePair pair : fileEntry.getStatePairs()) {
                         if (pair.pcState != FilePreprocessorConditionState.PARSING) {
-                            updateFileEntryBasedOnIncludedStatePair(mergeEntry, pair, fileKey, fileImpl, null, null);
+                            updateFileEntryBasedOnIncludedStatePair(mergeEntry, pair, fileKey, fileImpl, null, null, new AtomicBoolean());
                         }
                     }
                 }
@@ -1763,19 +1763,27 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 //                    Map<CsmUID<CsmProject>, Collection<PreprocessorStatePair>> includedStatesToDebug = startProject.getIncludedPreprocStatePairs(csmFile);
 //                    Collection<PreprocessorStatePair> statePairsToDebug = entry.getStatePairs();
                     // register included file and it's states in start project under current included file lock
-                    startProjectUpdateResult = startProject.updateFileEntryForIncludedFile(entry, this, file, csmFile, newStatePair);
+                    AtomicBoolean newStateFoundInStartProject = new AtomicBoolean();
+                    startProjectUpdateResult = startProject.updateFileEntryForIncludedFile(entry, this, file, csmFile, newStatePair, newStateFoundInStartProject);
                     
                     // decide if parse is needed
                     List<APTPreprocHandler.State> statesToParse = new ArrayList<APTPreprocHandler.State>(4);
                     statesToParse.add(newState);
                     AtomicBoolean clean = new AtomicBoolean(false);
-                    thisProjectUpdateResult = updateFileEntryBasedOnIncludedStatePair(entry, newStatePair, file, csmFile, clean, statesToParse);
+                    AtomicBoolean newStateFoundInFileContainer = new AtomicBoolean();
+                    thisProjectUpdateResult = updateFileEntryBasedOnIncludedStatePair(entry, newStatePair, file, csmFile, clean, statesToParse, newStateFoundInFileContainer);
                     if (thisProjectUpdateResult) {
                         // start project can be this project or another project, but
                         // we found the "best from the bests" for the current lib;
                         // it have to be considered as the best in start project lib storage as well
                         if (!startProjectUpdateResult) {
-                            CndUtils.assertTrueInConsole(false, " this project " + this + " thinks that new state for " + file + " is the best but start project does not take it " + startProject);
+                            // except the situation when "best from the bests" collection
+                            // contains PARSING-marked entry which is not comparable with newStatePair,
+                            // so newStatePair was accepted as candidate as well, but in this case we 
+                            // expect that startProject have seen newStatePair
+                            if (!newStateFoundInStartProject.get()) {
+                                CndUtils.assertTrueInConsole(false, " this project " + this + " thinks that new state for " + file + " is the best but start project does not take it " + startProject);
+                            }
                         }
                     }
                     if (thisProjectUpdateResult) {
@@ -1863,12 +1871,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return res;
     }
 
-    private boolean updateFileEntryForIncludedFile(FileEntry entryToLockOn, ProjectBase includedProject, CharSequence includedFileKey, FileImpl includedFile, PreprocessorStatePair newStatePair) {
+    private boolean updateFileEntryForIncludedFile(FileEntry entryToLockOn, ProjectBase includedProject, CharSequence includedFileKey, FileImpl includedFile, PreprocessorStatePair newStatePair, AtomicBoolean newStateFound) {
         boolean startProjectUpdateResult;
         FileContainer.FileEntry includedFileEntryFromStartProject = includedFileContainer.getOrCreateEntryForIncludedFile(entryToLockOn, includedProject, includedFile);
         if (includedFileEntryFromStartProject != null) {
-            startProjectUpdateResult = updateFileEntryBasedOnIncludedStatePair(includedFileEntryFromStartProject, newStatePair, includedFileKey, includedFile, null, null);
+            startProjectUpdateResult = updateFileEntryBasedOnIncludedStatePair(includedFileEntryFromStartProject, newStatePair, includedFileKey, includedFile, null, null, newStateFound);
         } else {
+            newStateFound.set(false);
             startProjectUpdateResult = false;
         }
         return startProjectUpdateResult;
@@ -1932,14 +1941,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     private boolean updateFileEntryBasedOnIncludedStatePair(
-            FileContainer.FileEntry entry, PreprocessorStatePair newStatePair,
-            CharSequence file, FileImpl csmFile,
-            AtomicBoolean cleanOut, List<APTPreprocHandler.State> statesToParse) {
+            FileContainer.FileEntry entry, PreprocessorStatePair newStatePair, 
+            CharSequence file, FileImpl csmFile, 
+            AtomicBoolean cleanOut, List<APTPreprocHandler.State> statesToParse, 
+            AtomicBoolean newStateFound) {
+        newStateFound.set(false);
         String prefix = statesToParse == null ? "lib update:" : "parsing:"; // NOI18N
         APTPreprocHandler.State newState = newStatePair.state;
         FilePreprocessorConditionState pcState = newStatePair.pcState;
         List<PreprocessorStatePair> statesToKeep = new ArrayList<PreprocessorStatePair>(4);
-        AtomicBoolean newStateFound = new AtomicBoolean();
         Collection<PreprocessorStatePair> entryStatePairs = entry.getStatePairs();
         // Phase 1: check preproc states of entry comparing to current state
         ComparisonResult comparisonResult = fillStatesToKeepBasedOnPPState(newState, entryStatePairs, statesToKeep, newStateFound);

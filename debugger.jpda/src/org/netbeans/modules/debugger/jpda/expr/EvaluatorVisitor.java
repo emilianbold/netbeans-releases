@@ -466,6 +466,15 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         String typeName = getTypeName(((javax.lang.model.type.ArrayType) tm).getComponentType());
         int length = argVals.size() - varIndex;
         ArrayType at = (ArrayType) getOrLoadClass(vm, typeName+"[]", evaluationContext);
+        if (length == 1) {
+            Value varArg = argVals.get(varIndex);
+            if (varArg instanceof ArrayReference) {
+                if (dimension(at) == dimension((ArrayType) ((ArrayReference) varArg).type())) {
+                    // The argument is already an array corresponding to vararg
+                    return null;
+                }
+            }
+        }
         ArrayReference array = createArrayMirrorWithDisabledCollection(at, length, evaluationContext);
         List<Value> elements = new ArrayList<Value>(length);
         for (int i = 0; i < length; i++) {
@@ -484,6 +493,19 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         argVals.add(array);
         return array;
+    }
+    
+    // Find out the array dimension
+    private static int dimension(ArrayType at) {
+        int d = 1;
+        Type ct;
+        try {
+            while ((ct = at.componentType()) instanceof ArrayType) {
+                d++;
+                at = (ArrayType) ct;
+            }
+        } catch (ClassNotLoadedException ex) {}
+        return d;
     }
     
     /*private Method getConcreteMethod(ReferenceType type, String methodName, List<? extends ExpressionTree> typeArguments) {
