@@ -786,9 +786,8 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
     }
 
     private MyTokenSequence getFileTokenSequence(CsmFile file, int startOffset, int endOffset) {
-        FileImpl fileImpl = null;
         if (file instanceof FileImpl) {
-            fileImpl = (FileImpl) file;
+            FileImpl fileImpl = (FileImpl) file;
             // why only one token stream is analyzed and not all preprocessor branches?
             TokenStream ts = fileImpl.getTokenStream(startOffset, endOffset, 0, false);
             if (ts != null) {
@@ -895,7 +894,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         return sb.toString();
     }
     
-    private static class MyTokenSequence {
+    private static final class MyTokenSequence {
 
         private final TokenStream ts;
         private final FileImpl file;
@@ -1273,7 +1272,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         public String toString() {
             StringBuilder sb = new StringBuilder(""); // NOI18N
             for (IntervalCorrespondence ic : intervals) {
-                sb.append("[" + ic.getInInterval().start + "," +  ic.getInInterval().end + "] => [" + ic.getOutInterval().start + "," + ic.getOutInterval().end + "]\n"); // NOI18N
+                sb.append("[").append(ic.getInInterval().start).append(",").append(ic.getInInterval().end).append("] => [").append(ic.getOutInterval().start).append(",").append(ic.getOutInterval().end).append("]\n"); // NOI18N
             }
             return sb.toString();
         }
@@ -1283,7 +1282,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         if (file == null || doc == null) {
             return null;
         }
-        TransformationTable tt = null;
+        TransformationTable tt;
         synchronized (doc) {
             tt = getCachedMacroTable(doc);
             if (tt == null) {
