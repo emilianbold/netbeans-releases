@@ -79,7 +79,6 @@ import org.netbeans.modules.cnd.api.model.CsmEnumForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFile.FileType;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
@@ -321,15 +320,27 @@ abstract public class CsmCompletionQuery {
                     tp = property.tp;
                 }
             }
+            CsmFile csmFile = getCsmFile();
+            if (csmFile == null) {
+                csmFile = CsmUtilities.getCsmFile(doc, true, false);
+            }
             if (tp == null) {
                 // find last separator position
                 final int lastSepOffset = sup.getLastCommandSeparator(offset);
                 tp = new CsmCompletionTokenProcessor(offset, lastSepOffset);
-                final CndTokenProcessor<Token<TokenId>> etp = CsmExpandedTokenProcessor.create(getCsmFile(), doc, tp, offset);
+                final CndTokenProcessor<Token<TokenId>> etp = CsmExpandedTokenProcessor.create(csmFile, doc, tp, offset);
                 if(etp instanceof CsmExpandedTokenProcessor) {
                     tp.setMacroCallback((CsmExpandedTokenProcessor)etp);
                 }
-                tp.enableTemplateSupport(getCsmFile().getFileType() != FileType.SOURCE_C_FILE);
+                boolean enableTemplates = true;
+                if (csmFile != null) {
+                    switch (csmFile.getFileType()) {
+                        case SOURCE_C_FILE:
+                        case SOURCE_FORTRAN_FILE:
+                            enableTemplates = false;
+                    }
+                }
+                tp.enableTemplateSupport(enableTemplates);
                 doc.readLock();
                 try {
                     CndTokenUtilities.processTokens(etp, doc, lastSepOffset, offset);
@@ -416,7 +427,7 @@ abstract public class CsmCompletionQuery {
                                                 }
                                             }
                                             if(!items.isEmpty()) {
-                                                CsmOffsetableDeclaration context = sup.getDefinition(getCsmFile(), offset, getFileReferencesContext());
+                                                CsmOffsetableDeclaration context = sup.getDefinition(csmFile, offset, getFileReferencesContext());
                                                 ret = new CsmCompletionResult(component, doc, items, cls.getName().toString(), exp, offset, 0, 0, isProjectBeeingParsed(openingSource), context, instantiateTypes);
                                             }
                                         }
