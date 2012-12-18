@@ -140,11 +140,6 @@ NetBeans.createContextMenu = function(tabId, url) {
     });
 };
 
-// Initializes keyboard shortcuts
-NetBeans.initShortcuts = function(tabId) {
-    chrome.tabs.executeScript(tabId, {file: 'js/shortcuts.js'});
-};
-
 // Updates the Select Mode context menu
 NetBeans.updateContextMenu = function() {
     chrome.contextMenus.update('selectionMode', {
@@ -369,14 +364,6 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 });
 chrome.tabs.onRemoved.addListener(function(tabId) {
     NetBeans.tabRemoved(tabId);
-});
-
-// register content script listener
-chrome.extension.onMessage.addListener(function(message, sender, sendResponse) {
-    var type = message.type;
-    if (type === 'switchSelectionMode') {
-        NetBeans.setSelectionMode(!NetBeans.getSelectionMode());
-    }
 });
 
 // onCreated event is not delivered for the first tab;

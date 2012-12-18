@@ -59,7 +59,7 @@ public final class RunTests {
     public static void runAllTests(Project p, FileObject baseDirectory, FileObject configurationFile) {
         File base = FileUtil.toFile(baseDirectory);
         File config = FileUtil.toFile(configurationFile);
-        JSTestDriverSupport.getDefault().runAllTests(p, base, config, "all");
+        JSTestDriverSupport.getDefault().runAllTests(p, base, config, "all"); //NOI18N
     }
     
 }

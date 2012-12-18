@@ -47,6 +47,9 @@ package org.netbeans.swing.tabcontrol.plaf;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
@@ -76,6 +79,7 @@ public final class Windows8ViewTabDisplayerUI extends AbstractWinViewTabDisplaye
             attentionFillUpperC,
             attentionFillLowerC;
 
+    private static Map<Integer, String[]> buttonIconPaths;
     /**
      * Should be constructed only from createUI method.
      */
@@ -105,6 +109,10 @@ public final class Windows8ViewTabDisplayerUI extends AbstractWinViewTabDisplaye
         boolean attention = isAttention(index);
         boolean mouseOver = isMouseOver(index);
         paintTabBackground( (Graphics2D)g, x, y, width, height, selected, focused, attention, mouseOver );
+    }
+
+    int getButtonYPadding() {
+        return 1;
     }
 
     static void paintTabBackground( Graphics2D g2d, int x, int y, int width, int height, boolean selected, boolean focused, boolean attention, boolean mouseOver ) {
@@ -140,6 +148,54 @@ public final class Windows8ViewTabDisplayerUI extends AbstractWinViewTabDisplaye
             
             colorsReady = true;
         }
+    }
+
+    private static void initIcons() {
+        if( null == buttonIconPaths ) {
+            buttonIconPaths = new HashMap<Integer, String[]>(7);
+
+            //close button
+            String[] iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/openide/awt/resources/win8_bigclose_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/openide/awt/resources/win8_bigclose_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/openide/awt/resources/win8_bigclose_rollover.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_CLOSE_BUTTON, iconPaths );
+
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/win8_pin_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/win8_pin_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/win8_pin_rollover.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_PIN_BUTTON, iconPaths );
+
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/win8_restore_group_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/win8_restore_group_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/win8_restore_group_rollover.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_RESTORE_GROUP_BUTTON, iconPaths );
+
+            iconPaths = new String[4];
+            iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/win8_minimize_enabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_PRESSED] = "org/netbeans/swing/tabcontrol/resources/win8_minimize_pressed.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
+            iconPaths[TabControlButton.STATE_ROLLOVER] = "org/netbeans/swing/tabcontrol/resources/win8_minimize_rollover.png"; // NOI18N
+            buttonIconPaths.put( TabControlButton.ID_SLIDE_GROUP_BUTTON, iconPaths );
+        }
+    }
+
+    @Override
+    public Icon getButtonIcon( int buttonId, int buttonState ) {
+        Icon res = null;
+        initIcons();
+        String[] paths = buttonIconPaths.get( buttonId );
+        if( null != paths && buttonState >=0 && buttonState < paths.length ) {
+            res = TabControlButtonFactory.getIcon( paths[buttonState] );
+        }
+        if( null == res )
+            return super.getButtonIcon( buttonId, buttonState );
+        return res;
     }
 
 }

@@ -168,7 +168,7 @@ public class CustomizerProviderImpl implements CustomizerProvider2, ProjectShara
         return;
     }
         
-    private class StoreListener implements ActionListener {
+    private static class StoreListener implements ActionListener {
     
         private WebProjectProperties uiProperties;
         
@@ -183,7 +183,7 @@ public class CustomizerProviderImpl implements CustomizerProvider2, ProjectShara
     }
     
     /** Listens to the actions on the Customizer's option buttons */
-    private class OptionListener extends WindowAdapter implements ActionListener {
+    private static class OptionListener extends WindowAdapter implements ActionListener {
     
         private Project project;
         private WebProjectProperties uiProperties;

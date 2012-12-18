@@ -159,6 +159,7 @@ class StackEntry {
                             lambdaIndent = lambdaIndent(ts);
                             return;
                         }
+                        break;
                     }
                     case RBRACKET: //]
                     {

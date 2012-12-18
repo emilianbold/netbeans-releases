@@ -131,7 +131,6 @@ public class ChooseArchetypePanel extends JPanel {
                             if (listArtifact.getSelectedIndex() == -1 && listArtifact.getModel().getSize() > 0) {
                                 listArtifact.setSelectedIndex(0);
                             }
-                            listArtifact.requestFocusInWindow();
                         }
                     });
                 }

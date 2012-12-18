@@ -221,6 +221,7 @@ class CompilerTask implements CancellableTask<CompilationController> {
                         JaxWsCodeGenerator.JAVA_STATIC_STUB_ASYNC_CALLBACK, args);
                 break;
             }
+            default:
         }
         return invocationBody;
     }

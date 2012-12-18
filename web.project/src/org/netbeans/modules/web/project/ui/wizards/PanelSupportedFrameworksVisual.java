@@ -523,6 +523,7 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
             switch (column) {
                 case 0: item.setSelected((Boolean) value);break;
                 case 1: item.setFramework((WebFrameworkProvider) value);break;
+                default: assert false;
             }
             fireTableCellUpdated(row, column);
         }
@@ -536,7 +537,7 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
         }
     }
 
-    private final class FrameworkModelItem {
+    private static final class FrameworkModelItem {
         private WebFrameworkProvider framework;
         private Boolean selected;
         

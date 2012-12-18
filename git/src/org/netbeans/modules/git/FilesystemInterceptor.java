@@ -408,9 +408,8 @@ class FilesystemInterceptor extends VCSInterceptor {
      * @param repository
      * @param commandName name of the git command if available
      */
-    <T> T runWithoutExternalEvents(File repository, String commandName, Callable<T> callable) throws Exception {
+    <T> T runWithoutExternalEvents(final File repository, String commandName, Callable<T> callable) throws Exception {
         assert repository != null;
-        assert !EventQueue.isDispatchThread();
         try {
             if (repository != null) {
                 gitFolderEventsHandler.enableEvents(repository, false);
@@ -420,7 +419,16 @@ class FilesystemInterceptor extends VCSInterceptor {
         } finally {
             if (repository != null) {
                 LOG.log(Level.FINER, "Refreshing index timestamp after: {0} on {1}", new Object[] { commandName, repository.getAbsolutePath() }); //NOI18N
-                gitFolderEventsHandler.refreshIndexFileTimestamp(repository);
+                if (EventQueue.isDispatchThread()) {
+                    Git.getInstance().getRequestProcessor().post(new Runnable() {
+                        @Override
+                        public void run () {
+                            gitFolderEventsHandler.refreshIndexFileTimestamp(repository);
+                        }
+                    });
+                } else {
+                    gitFolderEventsHandler.refreshIndexFileTimestamp(repository);
+                }
                 commandLogger.unlockedInternally(repository);
                 gitFolderEventsHandler.enableEvents(repository, true);
             }

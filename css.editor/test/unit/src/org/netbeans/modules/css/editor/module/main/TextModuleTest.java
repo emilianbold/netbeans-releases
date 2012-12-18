@@ -72,4 +72,15 @@ public class TextModuleTest extends CssModuleTestBase {
      
     }
     
+    public void testWord_OverflowWrap() {
+        assertPropertyValues("word-wrap", "normal");
+        assertPropertyValues("word-wrap", "break-word");
+        assertPropertyValues("word-wrap", "inherit");
+        
+        assertPropertyValues("overflow-wrap", "normal");
+        assertPropertyValues("overflow-wrap", "break-word");
+        assertPropertyValues("overflow-wrap", "inherit");
+        
+   }
+    
 }

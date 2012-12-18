@@ -123,7 +123,6 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDescriptor;
-import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Parameters;
@@ -264,7 +263,7 @@ public class WebActionProvider extends BaseActionProvider {
 
     @Override
     public String[] getSupportedActions() {
-        return supportedActions;
+        return supportedActions.clone();
     }
 
     @Override
@@ -637,10 +636,6 @@ public class WebActionProvider extends BaseActionProvider {
         }
 
         String name = Utils.getServletName(wm.getDocumentBase(), jsp);
-        if (name == null) {
-            return;
-        }
-
         String filePath = name.substring(0, name.lastIndexOf('.')).replace('.', '/');
 
         String fileClass = dir + '/' + filePath + ".class"; //NOI18N

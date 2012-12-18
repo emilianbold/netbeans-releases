@@ -116,7 +116,9 @@ public final class SiteHelper {
             copyToFile(is, target);
         } catch (IOException ex) {
             // error => ensure file is deleted
-            target.delete();
+            if (!target.delete()) {
+                // nothing we can do about it
+            }
             throw ex;
         } finally {
             is.close();

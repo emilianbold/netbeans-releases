@@ -87,7 +87,6 @@ import org.netbeans.modules.subversion.SvnFileNode;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
-import org.netbeans.modules.versioning.diff.DiffLookup;
 import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.netbeans.modules.versioning.diff.EditorSaveCookie;
 import org.netbeans.modules.versioning.diff.SaveBeforeClosingDiffConfirmation;
@@ -124,7 +123,6 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     private EditorCookie[] editorCookies;
     
     private final DelegatingUndoRedo delegatingUndoRedo = new DelegatingUndoRedo(); 
-    private final DiffLookup lookup = new DiffLookup();
 
     /**
      * Context in which to DIFF.
@@ -291,10 +289,6 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         if(executeStatusSupport!=null) {
             executeStatusSupport.cancel();
         }
-    }
-
-    public Lookup getLookup() {
-        return lookup;
     }
 
     boolean canClose() {
@@ -550,21 +544,10 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             currentModelIndex = showingFileTable() ? fileTable.getModelIndex(currentIndex) : 0;
             view = setups[currentModelIndex].getView();
 
-            // enable Select in .. action
-            FileObject fileObj = null;
-            EditorCookie.Observable observableEditorCookie = null;
-            File baseFile = setups[currentModelIndex].getBaseFile();
-            if (baseFile != null) {
-                fileObj = FileUtil.toFileObject(FileUtil.normalizeFile(baseFile));
-            }
             TopComponent tc = (TopComponent) getClientProperty(TopComponent.class);
             if (tc != null) {
                 Node node = setups[currentModelIndex].getNode();
                 tc.setActivatedNodes(new Node[] {node == null ? Node.EMPTY : node});
-            }
-            EditorCookie editorCookie = editorCookies[currentModelIndex];
-            if (editorCookie instanceof EditorCookie.Observable) {
-                observableEditorCookie = (EditorCookie.Observable) editorCookie;
             }
             
             diffView = null;
@@ -588,12 +571,9 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                 diffView = new NoContentPanel(NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoContent"));
                 displayDiffView();
             }            
-            lookup.setData(fileObj, observableEditorCookie, diffView.getActionMap());
         } else {
             currentModelIndex = -1;
-            lookup.setData();
             diffView = new NoContentPanel(NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoFileSelected"));
-            lookup.setData(diffView.getActionMap());
             displayDiffView();
         }
 

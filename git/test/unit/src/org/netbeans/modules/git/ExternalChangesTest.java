@@ -52,7 +52,6 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.junit.MockServices;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.client.GitClient;
@@ -252,7 +251,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.UPTODATE));
     }
     
-    public void testExternalCommandLoggedNoChanges () throws Exception {
+    public void testLogExtCmd () throws Exception {
         waitForInitialScan();
         FileChangeAdapter fca = new FileChangeAdapter();
         workdirFO.addRecursiveListener(fca);
@@ -281,8 +280,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         workdirFO.removeRecursiveListener(fca);
     }
     
-    @RandomlyFails
-    public void testExternalCommandLoggedChanges () throws Exception {
+    public void testLogExtCmdChanges () throws Exception {
         waitForInitialScan();
         FileChangeAdapter fca = new FileChangeAdapter();
         workdirFO.addRecursiveListener(fca);
@@ -311,7 +309,8 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         // create
         toAdd.createNewFile();
         FileUtil.refreshFor(repositoryLocation);
-        pause();        
+        pause();
+        Thread.sleep(1100);
         assertTrue(lockFile.delete());
         FileUtil.refreshFor(repositoryLocation);
         
@@ -328,7 +327,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         Logger.getLogger(FilesystemInterceptor.class.getName()).removeHandler(ch);
     }
     
-    public void testInternalCommandLoggedChanges () throws Exception {
+    public void testLogIntCmd () throws Exception {
         waitForInitialScan();
         FileChangeAdapter fca = new FileChangeAdapter();
         workdirFO.addRecursiveListener(fca);
@@ -372,7 +371,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         workdirFO.removeRecursiveListener(fca);
     }
     
-    public void testInternalCommandLoggedChangesAfterUnlock () throws Exception {
+    public void testLogIntCmdAfterUnlock () throws Exception {
         waitForInitialScan();
         FileChangeAdapter fca = new FileChangeAdapter();
         workdirFO.addRecursiveListener(fca);

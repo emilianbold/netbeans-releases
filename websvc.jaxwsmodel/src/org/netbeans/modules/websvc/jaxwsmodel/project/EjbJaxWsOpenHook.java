@@ -76,6 +76,12 @@ public class EjbJaxWsOpenHook extends ProjectOpenedHook {
     /** Creates a new instance of EjbJaxWsOpenHook */
     public EjbJaxWsOpenHook(Project prj) {
         this.prj = prj;
+        try {
+            Class.forName(WSUtils.class.getName());
+        }
+        catch (ClassNotFoundException e) {
+            assert false;
+        }
     }
 
     @Override

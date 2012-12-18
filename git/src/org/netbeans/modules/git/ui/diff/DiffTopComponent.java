@@ -57,7 +57,6 @@ import org.openide.windows.TopComponent;
  */
 public class DiffTopComponent extends TopComponent {
 
-    private final Lookup lookup;
     private final MultiDiffPanelController controller;
 
     DiffTopComponent (MultiDiffPanelController controller) {
@@ -66,14 +65,8 @@ public class DiffTopComponent extends TopComponent {
         JPanel panel = controller.getPanel();
         panel.putClientProperty(TopComponent.class, this);
         add(panel, BorderLayout.CENTER);
-        lookup = controller.getLookup();
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(DiffTopComponent.class, "ACSN_Diff_Top_Component")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DiffTopComponent.class, "ACSD_Diff_Top_Component")); // NOI18N
-    }
-
-    @Override
-    public Lookup getLookup () {
-        return new ProxyLookup(super.getLookup(), lookup);
     }
 
     @Override

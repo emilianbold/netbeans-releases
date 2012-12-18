@@ -259,13 +259,13 @@ public class CompletionHandler implements CodeCompletionHandler {
     }
 
     boolean checkForPackageStatement(final CompletionRequest request) {
-        TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(request.doc, 1);
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(request.doc, 1);
 
         if (ts != null) {
             ts.move(1);
 
             while (ts.isValid() && ts.moveNext() && ts.offset() < request.doc.getLength()) {
-                Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+                Token<GroovyTokenId> t = ts.token();
 
                 if (t.id() == GroovyTokenId.LITERAL_package) {
                     return true;

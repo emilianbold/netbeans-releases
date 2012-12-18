@@ -704,11 +704,11 @@ public class ImportProject implements PropertyChangeListener {
         }
         FileObject makeFileObject = null;
         if (makefilePath != null && makefilePath.length() > 0) {
-            makeFileObject = CndFileUtils.toFileObject(FileUtil.normalizePath(CndPathUtilitities.toAbsolutePath(projectFolder.getPath(), makefilePath)));
+            makeFileObject = CndFileUtils.toFileObject(FileUtil.normalizePath(CndPathUtilitities.toAbsolutePath(projectFolder.getFileObject(), makefilePath)));
         }
         if (makeFileObject != null) {
             downloadRemoteFile(CndFileUtils.createLocalFile(makeFileObject.getPath())); // FileUtil.toFile SIC! - always local
-            makeFileObject = CndFileUtils.toFileObject(FileUtil.normalizePath(CndPathUtilitities.toAbsolutePath(projectFolder.getPath(), makefilePath)));
+            makeFileObject = CndFileUtils.toFileObject(FileUtil.normalizePath(CndPathUtilitities.toAbsolutePath(projectFolder.getFileObject(), makefilePath)));
         }
         scanConfigureLog(logFile);
         if (CLEAN_COMMAND.equals(cleanCommand) && BUILD_COMMAND.equals(buildCommand)) {

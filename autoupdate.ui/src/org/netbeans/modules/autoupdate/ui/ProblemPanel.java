@@ -96,6 +96,9 @@ public class ProblemPanel extends javax.swing.JPanel {
                 case WRITE_PERMISSION:
                     initWriteProblem(culprit, problemDescription);
                     break;
+                case INSTALL:
+                    initInstallProblem(ex);
+                    break;
                 default:
                     assert false : "Unknown type " + ex;
             }
@@ -146,6 +149,19 @@ public class ProblemPanel extends javax.swing.JPanel {
         taTitle.setText(problem);
         taTitle.setToolTipText (problem);
         tpMessage.setText(write_taMessage_WarningText()); // NOI18N
+    }
+    
+    @Messages({
+        "install_taTitle_Text=Cannot complete the validation of download plugins",
+        "# {0} - message of exception",
+        "install_taMessage_ErrorText=The validation of download plugins cannot be completed, cause: {0}"})
+    private void initInstallProblem(OperationException ex) {
+        problem = install_taTitle_Text();
+        initComponents ();
+        cbShowAgain.setVisible(false);
+        taTitle.setText(problem);
+        taTitle.setToolTipText (problem);
+        tpMessage.setText(install_taMessage_ErrorText(ex.getLocalizedMessage())); // NOI18N
     }
     
     /** This method is called from within the constructor to

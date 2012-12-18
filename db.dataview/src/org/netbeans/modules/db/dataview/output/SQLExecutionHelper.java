@@ -594,23 +594,19 @@ class SQLExecutionHelper {
         int colCnt = tblMeta.getColumnCount();
         try {
             // Skip till current position
-            boolean lastRowPicked = rs.next();
+            boolean hasNext = rs.next();
             int curRowPos = 1;
-            while (lastRowPicked && curRowPos < (startFrom + 1)) {
+            while (hasNext && curRowPos < (startFrom + 1)) {
                 if (Thread.currentThread().isInterrupted()) {
                     return;
                 }
-                lastRowPicked = rs.next();
+                hasNext = rs.next();
                 curRowPos++;
             }
 
             // Get next page
             int rowCnt = 0;
-            boolean hasNext = false;
-            if (! lastRowPicked) {
-                hasNext = rs.next();
-            }
-            while (((pageSize == -1) || (pageSize > rowCnt)) && (lastRowPicked || hasNext)) {
+            while (((pageSize == -1) || (pageSize > rowCnt)) && (hasNext)) {
                 if (Thread.currentThread().isInterrupted()) {
                     return;
                 }
@@ -621,9 +617,6 @@ class SQLExecutionHelper {
                 }
                 rows.add(row);
                 rowCnt++;
-                if (lastRowPicked) {
-                    lastRowPicked = false;
-                }
                 try {
                     hasNext = rs.next();
                 } catch (SQLException x) {

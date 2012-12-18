@@ -67,6 +67,7 @@ public class FinishableProxyWizardPanel implements WizardDescriptor.Panel<Wizard
         this.original = original;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("EI_EXPOSE_REP2")
     public FinishableProxyWizardPanel(WizardDescriptor.Panel<WizardDescriptor> original, SourceGroup[] sourceGroups, boolean checkSourceGroups) {
         this.original=original;
         this.sourceGroups = sourceGroups;

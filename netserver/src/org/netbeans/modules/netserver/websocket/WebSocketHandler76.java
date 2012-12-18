@@ -114,6 +114,7 @@ class WebSocketHandler76 extends WebSocketHandler75 implements WebSocketChanelHa
         byte[] responseContent = createResponseContent(getKey(), lastEightBytes);
         if ( responseContent == null ){
             close( );
+            return;
         }
         byte[] response = new byte[ headers.length + responseContent.length ];
         System.arraycopy(headers, 0, response, 0, headers.length);

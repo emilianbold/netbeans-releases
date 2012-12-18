@@ -54,6 +54,7 @@ public class CreateProjectFromBinary implements PropertyChangeListener {
     private final boolean sourcesUsed;
     private final String libraries;
     private final IteratorExtension.ProjectKind kind;
+    private final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
     
     private Project lastSelectedProject;
     
@@ -244,7 +245,6 @@ public class CreateProjectFromBinary implements PropertyChangeListener {
     }
     
     private void fillConfiguration() {
-        IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
         if (extension != null) {
             extension.discoverHeadersByModel(lastSelectedProject);
         }

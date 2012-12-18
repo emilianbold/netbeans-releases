@@ -71,10 +71,10 @@ import org.openide.util.NbPreferences;
  */
 public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements DocumentListener, HelpCtx.Provider  {
 
-    private static final String LOCATION = "location";
-    private static final String USE_BROWSER = "use.browser.";
-    private static final String SERVER_URL = "server.url";
-    private static final String STRICT_MODE = "strict.mode";
+    private static final String LOCATION = "location"; //NOI18N
+    private static final String USE_BROWSER = "use.browser."; //NOI18N
+    private static final String SERVER_URL = "server.url"; //NOI18N
+    private static final String STRICT_MODE = "strict.mode"; //NOI18N
 
     private DialogDescriptor descriptor;
     
@@ -84,7 +84,7 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
     public JSTestDriverCustomizerPanel() {
         initComponents();
         String l = getPersistedLocation();
-        jLocationTextField.setText(l != null ? l : "");
+        jLocationTextField.setText(l != null ? l : ""); //NOI18N
         jLocationTextField.getDocument().addDocumentListener(this);
         jStrictCheckBox.setSelected(isStricModel());
         jServerURLTextField.setText(getServerURL());
@@ -138,14 +138,14 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
     }
     
     private static boolean isValidFileName(File f) {
-        return (f.getName().toLowerCase().startsWith("jstestdriver") &&
-                f.getName().toLowerCase().endsWith(".jar"));
+        return (f.getName().toLowerCase().startsWith("jstestdriver") && //NOI18N
+                f.getName().toLowerCase().endsWith(".jar")); //NOI18N
     }
 
     public static boolean showCustomizer() {
         JSTestDriverCustomizerPanel panel = new JSTestDriverCustomizerPanel();
         DialogDescriptor descriptor = new DialogDescriptor(panel, 
-                "Configure JSTestDriver installation and its startup");
+                org.openide.util.NbBundle.getMessage(JSTestDriverCustomizerPanel.class, "MSG_CONFIGURE"));
         panel.setDescriptor(descriptor);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.setModal(true);
@@ -191,7 +191,7 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
     }
 
     public static String getServerURL() {
-        return NbPreferences.forModule(JSTestDriverCustomizerPanel.class).get(SERVER_URL, "http://localhost:42442");
+        return NbPreferences.forModule(JSTestDriverCustomizerPanel.class).get(SERVER_URL, "http://localhost:42442"); //NOI18N
     }
 
     public static boolean isStricModel() {
@@ -199,10 +199,10 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
     }
 
     static int getPort(String s) {
-        if (s.endsWith("/")) {
+        if (s.endsWith("/")) { //NOI18N
             s = s.substring(0, s.length()-1);
         }
-        if (s.startsWith("http://localhost:")) {
+        if (s.startsWith("http://localhost:")) { //NOI18N
             try {
                 return Integer.parseInt(s.substring(17));
             } catch (NumberFormatException e) {
@@ -364,7 +364,7 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
             }
             @Override
             public String getDescription() {
-                return "JsTestDriver*.jar";
+                return "JsTestDriver*.jar"; //NOI18N
             }
         });
         File file = new File(jLocationTextField.getText());
@@ -408,7 +408,7 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("org.netbeans.modules.javascript.jstestdriver.JSTestDriverCustomizerPanel");
+        return new HelpCtx("org.netbeans.modules.javascript.jstestdriver.JSTestDriverCustomizerPanel"); //NOI18N
     }
 
     private static class TableRowCellRenderer extends DefaultTableCellRenderer {
@@ -471,7 +471,7 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
                 case 0: return item.isSelected();
                 case 1: return item;
             }
-            return "";
+            return ""; //NOI18N
         }
         
         @Override

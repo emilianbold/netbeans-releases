@@ -3562,7 +3562,38 @@ public class FileObjectTestHid extends TestBaseHid {
         }
     }
     
+    public void testFoldersWithHashes() throws Exception {
+        final String MATH_FILE_NAME = "definition.math";
+        
+        FileObject myFo = root.getFileObject("superbugName/ADZ#CT#SLT.label");
+        assertNotNull("Finds the first folder", myFo);
+        
+        FileObject myFoMath = myFo.getFileObject(MATH_FILE_NAME);
+        
+        FileObject sndFo = root.getFileObject("superbugName/ADXACT#SLT.label");
+        FileObject sndMath = sndFo.getFileObject(MATH_FILE_NAME);
+        
+        assertEquals("The right parent", sndFo, sndMath.getParent());
+    }
+    
+    private String[] initFoldersWithHashes() {
+        return new String[] {
+            "superbugName/ADZ#CT#SLT.label/definition.math",
+            "superbugName/ADZ#CT#SLT.label/symbol.png",
+            "superbugName/ADXACT#SLT.label/definition.math",
+            "superbugName/ADXACT#SLT.label/symbol.png",
+            "superbugName/ADXACT#SLT.label/myFolder/",
+            "superbugName/ADXACT_SLT.label/definition.math",
+            "superbugName/ADXACT_SLT.label/symbol.png",
+            "superbugName/ADXACT_SLT.label/myFolder/"
+        };
+    }
+    
     protected String[] getResources(String testName) {
+        if ("testFoldersWithHashes".equals(testName)) {
+            return initFoldersWithHashes();
+        }
+        
         if (res == null ) {
             res = new HashSet(Arrays.asList(resources));
             createResource("",0,3, true);

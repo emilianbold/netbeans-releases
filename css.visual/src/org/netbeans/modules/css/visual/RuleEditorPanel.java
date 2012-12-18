@@ -68,6 +68,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.model.api.Declaration;
+import org.netbeans.modules.css.model.api.Declarations;
+import org.netbeans.modules.css.model.api.Element;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelUtils;
 import org.netbeans.modules.css.model.api.Rule;
@@ -154,6 +156,7 @@ public class RuleEditorPanel extends JPanel {
     private boolean addPropertyMode;
    
     private Declaration createdDeclaration;
+    private Declaration editedDeclaration;
     private List<String> createdDeclarationsIdsList = new ArrayList<String>();
     
     private PropertyChangeListener MODEL_LISTENER = new PropertyChangeListener() {
@@ -356,9 +359,34 @@ public class RuleEditorPanel extends JPanel {
     
     void setCreatedDeclaration(Rule rule, Declaration declaration) {
         createdDeclaration = declaration;
-        
         String declarationId = PropertyUtils.getDeclarationId(rule, declaration);
         createdDeclarationsIdsList.add(declarationId);
+    }
+    
+    /**
+     * User used "Add Property" item to add a new property, but then in the value, 
+     * pressed esc.
+     * 
+     * So we need to remove the latest declaration from the model as it has no value.
+     * 
+     */
+    public void disposeEditedDeclaration() {
+       final Declaration remove = editedDeclaration;
+       if(remove != null) {
+           //1.remove from model
+           model.runWriteTask(new Model.ModelTask() {
+               @Override
+               public void run(StyleSheet styleSheet) {
+                   Declarations parent = (Declarations)remove.getParent();
+                   parent.removeDeclaration(remove);
+               }
+           });
+           node.fireContextChanged(true);
+       }
+    }
+    
+    public void editingFinished() {
+        editedDeclaration = null;
     }
     
     Declaration getCreatedDeclaration() {
@@ -381,6 +409,7 @@ public class RuleEditorPanel extends JPanel {
             Exceptions.printStackTrace(ex);
         }
         
+        editedDeclaration = createdDeclaration;
         createdDeclaration = null;
     }
     

@@ -317,7 +317,9 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
             } catch (IOException ioe) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ioe.getMessage()));
             } finally {
-                if (lock != null) lock.releaseLock();
+                if (lock != null) {
+                    lock.releaseLock();
+                }
             }
             return;
         }
@@ -387,7 +389,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
         if (!getFolder().isDiskFolder()) {
             return;
         }
-        String absPath = CndPathUtilitities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDir(), getFolder().getRootPath());
+        String absPath = CndPathUtilitities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDirFileObject(), getFolder().getRootPath());
         FileObject folderFileObject = CndFileUtils.toFileObject(getFolder().getConfigurationDescriptor().getBaseDirFileSystem(), absPath);
         if (folderFileObject == null /*paranoia*/ || !folderFileObject.isValid() || !folderFileObject.isFolder()) {
             return;

@@ -226,6 +226,9 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
         // Fire changes
         fireStateChanges();
         fireContentChanges();
+        if (problemNotificationController != null) {
+            problemNotificationController.clearNotifications();
+        }
     }
     
     public BuilderConnector getBuilderConnector() {

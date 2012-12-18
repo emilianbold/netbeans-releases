@@ -114,7 +114,7 @@ public final class ClassPathTableModel extends AbstractTableModel implements Lis
         if (column != 1 || !(value instanceof Boolean)) {
             return;
         }
-        if (value == Boolean.TRUE) {
+        if (Boolean.TRUE.equals(value)) {
             ClassPathSupport.Item item = getItem(row);
             String pathInWar = (item.getType() == ClassPathSupport.Item.TYPE_JAR && item.getResolvedFile().isDirectory()) || 
                     (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && Utils.isLibraryDirectoryBased(item)) ? ClassPathSupportCallbackImpl.PATH_IN_WAR_DIR : ClassPathSupportCallbackImpl.PATH_IN_WAR_LIB;
