@@ -66,7 +66,8 @@ public class GlobalIsNotDefined extends JsAstRule {
         JsObject globalObject = context.getJsParserResult().getModel().getGlobalObject();
         Collection<? extends JsObject> variables = ModelUtils.getVariables((DeclarationScope)globalObject);
         for (JsObject variable : variables) {
-            if(!variable.isDeclared() && variable.getJSKind() == JsElement.Kind.VARIABLE) {
+            if(!variable.isDeclared() && (variable.getJSKind() == JsElement.Kind.VARIABLE
+                    || variable.getJSKind() == JsElement.Kind.OBJECT)) {
                 if (variable.getOccurrences().isEmpty()) {
                     hints.add(new Hint(this, Bundle.JsGlobalIsNotDefinedDN(),
                             context.getJsParserResult().getSnapshot().getSource().getFileObject(),

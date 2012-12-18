@@ -97,7 +97,7 @@ public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<
     }
 
     private static CndTokenProcessor<Token<TokenId>> create(Document doc, CsmFile file, CndTokenProcessor<Token<TokenId>> tp, int offset, List<CsmReference> macros) {
-        CsmMacroExpansion.expand(doc, file, 0, 0);
+        CsmMacroExpansion.expand(doc, file, 0, 0, true);
         return new CsmExpandedTokenProcessor(doc, file, tp, offset, macros);
     }
 
@@ -133,7 +133,7 @@ public final class CsmExpandedTokenProcessor implements CndTokenProcessor<Token<
         }
         if (skipTill < 0 && (isMacro(token, tokenOffset) || inMacro)) {
             TokenSequence<TokenId> expTS = null;
-            String expansion = CsmMacroExpansion.expand(doc, file, tokenOffset, tokenOffset + token.length());
+            String expansion = CsmMacroExpansion.expand(doc, file, tokenOffset, tokenOffset + token.length(), false);
             if (expansion != null) {
                 if (expansion.equals("")) { // NOI18N
                     if (lastOffset == -1 || tokenOffset + token.length() < lastOffset) {

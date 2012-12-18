@@ -104,7 +104,7 @@ public final class CndTextIndexImpl {
                 // use unitID+fileID for primary key, otherwise indexed files from different projects overwrite each others
                 IndexDocument doc = IndexManager.createDocument(toPrimaryKey(key));
                 for (String id : entry.getValue()) {
-                    doc.addPair(CndTextIndexManager.FIELD_IDS, id, true, true);
+                    doc.addPair(CndTextIndexManager.FIELD_IDS, id, true, false);
                 }
                 index.addDocument(doc);
             }

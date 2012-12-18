@@ -106,7 +106,7 @@ public class JsStructureScanner implements StructureScanner {
                 if (function.isAnonymous()) {
                     collectedItems.addAll(children);
                 } else {
-                    if (function.isDeclared()) {
+                    if (function.isDeclared() && !(jsObject.isAnonymous() && function.getModifiers().contains(Modifier.PRIVATE))) {
                         collectedItems.add(new JsFunctionStructureItem(function, children, result));
                     }
                 }
@@ -118,6 +118,7 @@ public class JsStructureScanner implements StructureScanner {
                         || !(jsObject.getParent() instanceof JsFunction)))
                 collectedItems.add(new JsSimpleStructureItem(child, "prop-", result)); //NOI18N
             } else if (child.getJSKind() == JsElement.Kind.VARIABLE && child.isDeclared()
+                    && !jsObject.isAnonymous()
                     /*&& (jsObject.getJSKind() == JsElement.Kind.FILE || jsObject.getJSKind() == JsElement.Kind.CONSTRUCTOR)*/) {
                 collectedItems.add(new JsSimpleStructureItem(child, "var-", result)); //NOI18N
             }

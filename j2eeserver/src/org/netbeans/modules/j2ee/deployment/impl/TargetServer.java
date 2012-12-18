@@ -903,7 +903,7 @@ public class TargetServer {
             }
             return DeployOnSaveManager.DeploymentState.MODULE_UPDATED;
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            LOGGER.log(Level.WARNING, null, ex);
             return DeployOnSaveManager.DeploymentState.DEPLOYMENT_FAILED;
         } finally {
             ui.finish();
