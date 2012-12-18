@@ -281,7 +281,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         return fileTS.token();
     }
 
-    private TransformationTable getMacroTable(Document doc) {
+    private TransformationTable getCachedMacroTable(Document doc) {
         Object o = doc.getProperty(MACRO_EXPANSION_MACRO_TABLE);
         if (o != null && o instanceof TransformationTable) {
             TransformationTable tt = (TransformationTable) o;
@@ -309,12 +309,12 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         if(doc == null) {
             return null;
         }
-        return expand(doc, CsmUtilities.getCsmFile(doc, false, false), startOffset, endOffset);
+        return expand(doc, CsmUtilities.getCsmFile(doc, false, false), startOffset, endOffset, true);
     }
 
     @Override
-    public String expand(Document doc, CsmFile file, int startOffset, int endOffset) {
-        TransformationTable tt = updateMacroTableIfNeeded(doc, file);
+    public String expand(Document doc, CsmFile file, int startOffset, int endOffset, boolean updateIfNeeded) {
+        TransformationTable tt = getMacroTable(doc, file, updateIfNeeded);
         return tt == null ? null : expandInterval(doc, tt, startOffset, endOffset);
     }
 
@@ -324,10 +324,10 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         TransformationTable tt;
         if (wait) {
             CsmFile file = CsmUtilities.getCsmFile(doc, false, false);
-            tt = updateMacroTableIfNeeded(doc, file);
+            tt = getMacroTable(doc, file, true);
         } else {
             synchronized (doc) {
-                tt = getMacroTable(doc);
+                tt = getCachedMacroTable(doc);
             }
         }
         if (tt != null) {
@@ -882,7 +882,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
 
     /* package local */ String dumpTables(Document doc) {
         StringBuilder sb = new StringBuilder();
-        TransformationTable tt = getMacroTable(doc);
+        TransformationTable tt = getCachedMacroTable(doc);
         if(tt != null) {
             sb.append("MacroTable: "); // NOI18N
             sb.append(tt.toString());
@@ -1279,26 +1279,35 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         }
     }
 
-    private TransformationTable updateMacroTableIfNeeded(Document doc, CsmFile file) {
+    private TransformationTable getMacroTable(Document doc, CsmFile file, boolean updateIfNeeded) {
         if (file == null || doc == null) {
             return null;
         }
         TransformationTable tt = null;
         synchronized (doc) {
-            tt = getMacroTable(doc);
+            tt = getCachedMacroTable(doc);
             if (tt == null) {
-                tt = new TransformationTable(DocumentUtilities.getDocumentVersion(doc), CsmFileInfoQuery.getDefault().getFileVersion(file));
+                if (updateIfNeeded) {
+                    tt = new TransformationTable(DocumentUtilities.getDocumentVersion(doc), CsmFileInfoQuery.getDefault().getFileVersion(file));
+                } else {
+                    tt = new TransformationTable(-1, -1);
+                }
                 doc.putProperty(MACRO_EXPANSION_MACRO_TABLE, tt);
             }
         }
+        if (!updateIfNeeded && tt.isInited()) {
+            return tt;
+        }
         synchronized (tt) {
             synchronized (doc) {
-                tt = getMacroTable(doc);
-                if (tt.documentVersion != DocumentUtilities.getDocumentVersion(doc) || tt.fileVersion != CsmFileInfoQuery.getDefault().getFileVersion(file)) {
-                    tt = new TransformationTable(DocumentUtilities.getDocumentVersion(doc), CsmFileInfoQuery.getDefault().getFileVersion(file));
+                tt = getCachedMacroTable(doc);
+                if (updateIfNeeded) {
+                    if (tt.documentVersion != DocumentUtilities.getDocumentVersion(doc) || tt.fileVersion != CsmFileInfoQuery.getDefault().getFileVersion(file)) {
+                        tt = new TransformationTable(DocumentUtilities.getDocumentVersion(doc), CsmFileInfoQuery.getDefault().getFileVersion(file));
+                    }
                 }
             }
-            if (!tt.isInited()) {
+            if (updateIfNeeded && !tt.isInited()) {
                 expand(doc, file, tt);
                 tt.cleanUp();
                 synchronized (doc) {
