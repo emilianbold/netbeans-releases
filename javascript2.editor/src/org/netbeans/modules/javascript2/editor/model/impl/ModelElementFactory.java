@@ -171,6 +171,7 @@ class ModelElementFactory {
         }
         JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
         if (docHolder != null) {
+            newObject.setDeprecated(docHolder.isDeprecated(objectNode));
             newObject.setDocumentation(docHolder.getDocumentation(objectNode));
         }
         parent.addProperty(name.getName(), newObject);
@@ -189,6 +190,7 @@ class ModelElementFactory {
         JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
         if (docHolder != null) {
             result.setDocumentation(docHolder.getDocumentation(objectNode));
+            result.setDeprecated(docHolder.isDeprecated(objectNode));
         }
         return result;
     }
@@ -202,6 +204,7 @@ class ModelElementFactory {
         JsObjectImpl property = new JsObjectImpl(scope, name, name.getOffsetRange());
         JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
         property.setDocumentation(docHolder.getDocumentation(propertyNode));
+        property.setDeprecated(docHolder.isDeprecated(propertyNode));
         if (property.hasExactName()) {
             property.addOccurrence(property.getDeclarationName().getOffsetRange());
         }
