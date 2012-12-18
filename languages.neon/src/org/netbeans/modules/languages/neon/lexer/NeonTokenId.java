@@ -41,128 +41,68 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.languages.neon;
+
+package org.netbeans.modules.languages.neon.lexer;
+
+import java.util.Collection;
+import java.util.EnumSet;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.modules.languages.neon.csl.NeonLanguageConfig;
+import org.netbeans.spi.lexer.LanguageHierarchy;
+import org.netbeans.spi.lexer.Lexer;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class StateStack {
+public enum NeonTokenId implements TokenId {
 
-	public byte[] stack;
-	private int lastIn = -1;
+    NEON_KEYWORD("keyword"), //NOI18N
+    NEON_INTERPUNCTION("interpunction"), //NOI18N
+    NEON_BLOCK("block"), //NOI18N
+    NEON_VALUED_BLOCK("valuedblock"), //NOI18N
+    NEON_STRING("string"), //NOI18N
+    NEON_COMMENT("comment"), //NOI18N
+    NEON_UNKNOWN("error"), //NOI18N
+    NEON_LITERAL("literal"), //NOI18N
+    NEON_VARIABLE("variable"), //NOI18N
+    NEON_NUMBER("number"), //NOI18N
+    NEON_REFERENCE("reference"), //NOI18N
+    NEON_WHITESPACE("whitespace"); //NOI18N
 
-	/**
-	 * Creates new StateStack
-	 */
-	public StateStack() {
-		this(5);
-	}
+    private final String name;
 
-	public StateStack(int stackSize) {
-		stack = new byte[stackSize];
-		lastIn = -1;
-	}
+    private static final Language<NeonTokenId> LANGUAGE = new LanguageHierarchy<NeonTokenId>() {
 
-	public boolean isEmpty() {
-		return lastIn == -1;
-	}
-
-	public int popStack() {
-		int result = stack[lastIn];
-		lastIn--;
-		return result;
-	}
-
-	public void pushStack(int state) {
-		lastIn++;
-		if (lastIn == stack.length) {
-			multiplySize();
+        @Override
+        protected Collection<NeonTokenId> createTokenIds() {
+            return EnumSet.allOf(NeonTokenId.class);
         }
-		stack[lastIn] = (byte) state;
-	}
 
-	private void multiplySize() {
-		int length = stack.length;
-		byte[] temp = new byte[length * 2];
-		System.arraycopy(stack, 0, temp, 0, length);
-		stack = temp;
-	}
-
-	public int clear() {
-		return lastIn = -1;
-	}
-
-	public int size() {
-		return lastIn + 1;
-	}
-
-	public StateStack createClone() {
-		StateStack rv = new StateStack(this.size());
-		rv.copyFrom(this);
-		return rv;
-	}
-
-    @Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null || !(obj instanceof StateStack)) {
-			return false;
-		}
-		StateStack s2 = (StateStack) obj;
-		if (this.lastIn != s2.lastIn) {
-			return false;
-		}
-		for (int i = lastIn; i >= 0; i--) {
-			if (this.stack[i] != s2.stack[i]) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 31 * hash + lastIn;
-        for (int i = lastIn; i >= 0; i--) {
-            hash = 31 * hash + this.stack[i];
+        @Override
+        protected Lexer<NeonTokenId> createLexer(LexerRestartInfo<NeonTokenId> info) {
+            return NeonLexer.create(info);
         }
-        return hash;
+
+        @Override
+        protected String mimeType() {
+            return NeonLanguageConfig.MIME_TYPE;
+        }
+    }.language();
+
+    NeonTokenId(String name) {
+        this.name = name;
     }
 
-	public void copyFrom(StateStack s) {
-		while (s.lastIn >= this.stack.length) {
-			this.multiplySize();
-		}
-		this.lastIn = s.lastIn;
-		for (int i = 0; i <= s.lastIn; i++) {
-			this.stack[i] = s.stack[i];
-		}
-	}
-
-	public boolean contains(int state) {
-		for (int i = 0; i <= lastIn; i++) {
-			if (stack[i] == state) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public int get(int index) {
-		return stack[index];
-	}
-
     @Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder(50);
-		for (int i = 0; i <= lastIn; i++) {
-			sb.append(" stack[").append(i).append("]= ").append(stack[i]); //$NON-NLS-1$ //$NON-NLS-2$
-		}
-		return sb.toString();
-	}
+    public String primaryCategory() {
+        return name;
+    }
+
+    public static Language<NeonTokenId> language() {
+        return LANGUAGE;
+    }
 
 }

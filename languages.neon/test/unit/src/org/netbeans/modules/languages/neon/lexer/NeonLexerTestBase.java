@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.languages.neon;
+package org.netbeans.modules.languages.neon.lexer;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.languages.neon.NeonTestBase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class NeonLexerUtils {
+public abstract class NeonLexerTestBase extends NeonTestBase {
 
-    public static <T extends TokenId> TokenSequence<T> seqForText(String text, Language<T> language) {
-        TokenHierarchy<?> hi = TokenHierarchy.create(text, language);
-        return hi.tokenSequence(language);
+    public NeonLexerTestBase(String testName) {
+        super(testName);
     }
 
-    public static String getFileContent(File file) throws Exception{
-        StringBuilder sb = new StringBuilder();
-        String lineSep = "\n";//NOI18N
-        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8")); //NOI18N
-        String line = br.readLine();
-        while (line != null) {
-            sb.append(line);
-            sb.append(lineSep);
-            line = br.readLine();
+    protected abstract String getTestResult(String filename) throws Exception;
+
+    protected void performTest(String filename) throws Exception {
+        // parse the file
+        String result = getTestResult(filename);
+        String fullClassName = this.getClass().getName();
+        String goldenFileDir = fullClassName.replace('.', '/');
+        // try to find golden file
+        String goldenFolder = getDataSourceDir().getAbsolutePath() + "/goldenfiles/" + goldenFileDir + "/";
+        File goldenFile = new File(goldenFolder + filename + ".pass");
+        if (!goldenFile.exists()) {
+            // if doesn't exist, create it
+            FileObject goldenFO = touch(goldenFolder, filename + ".pass");
+            copyStringToFileObject(goldenFO, result);
+        } else {
+            // if exist, compare it.
+            goldenFile = getGoldenFile(filename + ".pass");
+            FileObject resultFO = touch(getWorkDir(), filename + ".result");
+            copyStringToFileObject(resultFO, result);
+            assertFile(FileUtil.toFile(resultFO), goldenFile, getWorkDir());
         }
-        br.close();
-        return sb.toString();
-    }
-
-    public static String replaceLinesAndTabs(String input) {
-        String escapedString = input;
-        escapedString = escapedString.replaceAll("\n","\\\\n"); //NOI18N
-        escapedString = escapedString.replaceAll("\r","\\\\r"); //NOI18N
-        escapedString = escapedString.replaceAll("\t","\\\\t"); //NOI18N
-        return escapedString;
     }
 
 }

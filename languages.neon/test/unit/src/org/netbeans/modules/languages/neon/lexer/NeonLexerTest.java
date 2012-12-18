@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.languages.neon;
+package org.netbeans.modules.languages.neon.lexer;
 
 import java.io.File;
 import org.netbeans.api.lexer.TokenId;
@@ -49,7 +49,7 @@ import org.netbeans.api.lexer.TokenSequence;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class NeonLexerTest extends NeonTestBase {
+public class NeonLexerTest extends NeonLexerTestBase {
 
     public NeonLexerTest(String name) {
         super(name);
@@ -158,7 +158,7 @@ public class NeonLexerTest extends NeonTestBase {
     @Override
     protected String getTestResult(String filename) throws Exception {
         String content = NeonLexerUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/" + filename + ".neon"));
-        TokenSequence<?> ts = NeonLexerUtils.seqForText(content, new NeonLanguageHierarchy().language());
+        TokenSequence<?> ts = NeonLexerUtils.seqForText(content, NeonTokenId.language());
         return createResult(ts);
     }
 

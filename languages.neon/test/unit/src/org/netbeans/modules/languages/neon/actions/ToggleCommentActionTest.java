@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,39 +37,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.languages.neon;
+package org.netbeans.modules.languages.neon.actions;
 
-import org.netbeans.modules.csl.api.test.CslTestBase;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.languages.neon.csl.NeonLanguageConfig;
+import org.netbeans.modules.csl.core.CslEditorKit;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class NeonTestBase extends CslTestBase {
+public class ToggleCommentActionTest extends NeonActionsTestBase {
 
-    public NeonTestBase(String testName) {
+    public ToggleCommentActionTest(String testName) {
         super(testName);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        clearWorkDir();
+    public void testToggleComment_01() throws Exception {
+        testInFile("testfiles/actions/toggleComment/toggle_01.neon");
+    }
+
+    public void testToggleComment_02() throws Exception {
+        testInFile("testfiles/actions/toggleComment/toggle_02.neon");
+    }
+
+    public void testToggleComment_03() throws Exception {
+        testInFile("testfiles/actions/toggleComment/toggle_03.neon");
+    }
+
+    public void testToggleComment_04() throws Exception {
+        testInFile("testfiles/actions/toggleComment/toggle_04.neon");
+    }
+
+    protected void testInFile(String file) throws Exception {
+        testInFile(file, CslEditorKit.toggleCommentAction);
     }
 
     @Override
-    protected DefaultLanguageConfig getPreferredLanguage() {
-        return new NeonLanguageConfig();
+    protected String goldenFileExtension() {
+        return ".toggleComment";
     }
-
-    @Override
-    protected String getPreferredMimeType() {
-        return NeonLanguageConfig.MIME_TYPE;
-    }
-
 
 }

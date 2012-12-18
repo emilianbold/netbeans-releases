@@ -41,63 +41,56 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-package org.netbeans.modules.languages.neon;
+package org.netbeans.modules.languages.neon.lexer;
 
 import java.io.IOException;
-import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
-import org.netbeans.modules.languages.neon.csl.NeonLanguageConfig;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.MIMEResolver;
-import org.openide.loaders.DataNode;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.MultiFileLoader;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle.Messages;
-import org.openide.windows.TopComponent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.spi.lexer.Lexer;
+import org.netbeans.spi.lexer.LexerRestartInfo;
+import org.netbeans.spi.lexer.TokenFactory;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-@Messages("NeonResolver=Neon Files")
-@MIMEResolver.ExtensionRegistration(
-    displayName="#NeonResolver",
-    position=135,
-    extension="neon",
-    mimeType="text/x-neon"
-)
-public class NeonDataObject extends MultiDataObject {
+public final class NeonLexer implements Lexer<NeonTokenId> {
 
-    public NeonDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
-        super(pf, loader);
-        registerEditor(NeonLanguageConfig.MIME_TYPE, true);
+    private final NeonColoringLexer scanner;
+    private final TokenFactory<NeonTokenId> tokenFactory;
+
+    public static NeonLexer create(LexerRestartInfo<NeonTokenId> info) {
+        return new NeonLexer(info);
+    }
+
+    private NeonLexer(LexerRestartInfo<NeonTokenId> info) {
+        scanner = new NeonColoringLexer(info);
+        tokenFactory = info.tokenFactory();
     }
 
     @Override
-    protected Node createNodeDelegate() {
-        return new DataNode(this, Children.LEAF, getLookup());
+    public Token<NeonTokenId> nextToken() {
+        try {
+            NeonTokenId tokenId = scanner.nextToken();
+            Token<NeonTokenId> token = null;
+            if (tokenId != null) {
+                token = tokenFactory.createToken(tokenId);
+            }
+            return token;
+        } catch (IOException ex) {
+            Logger.getLogger(NeonLexer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     @Override
-    protected int associateLookup() {
-        return 1;
+    public Object state() {
+        return scanner.getState();
     }
 
-    @Messages("Source=&Source")
-    @MultiViewElement.Registration(
-            displayName="#Source",
-            iconBase="org/netbeans/modules/languages/neon/resources/neon_file_16.png",
-            persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
-            mimeType=NeonLanguageConfig.MIME_TYPE,
-            preferredID="neon.source",
-            position=1
-    )
-    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
-        return new MultiViewEditorElement(context);
+    @Override
+    public void release() {
     }
+
 }

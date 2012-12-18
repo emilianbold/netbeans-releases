@@ -41,36 +41,128 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.languages.neon;
-
-import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.LanguagePath;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.spi.lexer.LanguageEmbedding;
-import org.netbeans.spi.lexer.LanguageProvider;
-import org.openide.util.lookup.ServiceProvider;
+package org.netbeans.modules.languages.neon.lexer;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-@ServiceProvider(service = LanguageProvider.class)
-public class NeonLanguageProvider extends LanguageProvider {
+public class StateStack {
 
-    public static final String MIME_TYPE = "text/x-neon"; // NOI18N
+	public byte[] stack;
+	private int lastIn = -1;
 
-    @Override
-    public Language<?> findLanguage(String mimeType) {
-        if (MIME_TYPE.equals(mimeType)) {
-            return new NeonLanguageHierarchy().language();
+	/**
+	 * Creates new StateStack
+	 */
+	public StateStack() {
+		this(5);
+	}
+
+	public StateStack(int stackSize) {
+		stack = new byte[stackSize];
+		lastIn = -1;
+	}
+
+	public boolean isEmpty() {
+		return lastIn == -1;
+	}
+
+	public int popStack() {
+		int result = stack[lastIn];
+		lastIn--;
+		return result;
+	}
+
+	public void pushStack(int state) {
+		lastIn++;
+		if (lastIn == stack.length) {
+			multiplySize();
         }
-        return null;
-    }
+		stack[lastIn] = (byte) state;
+	}
+
+	private void multiplySize() {
+		int length = stack.length;
+		byte[] temp = new byte[length * 2];
+		System.arraycopy(stack, 0, temp, 0, length);
+		stack = temp;
+	}
+
+	public int clear() {
+		return lastIn = -1;
+	}
+
+	public int size() {
+		return lastIn + 1;
+	}
+
+	public StateStack createClone() {
+		StateStack rv = new StateStack(this.size());
+		rv.copyFrom(this);
+		return rv;
+	}
 
     @Override
-    public LanguageEmbedding<?> findLanguageEmbedding(Token<?> token, LanguagePath lp, InputAttributes ia) {
-        return null;
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null || !(obj instanceof StateStack)) {
+			return false;
+		}
+		StateStack s2 = (StateStack) obj;
+		if (this.lastIn != s2.lastIn) {
+			return false;
+		}
+		for (int i = lastIn; i >= 0; i--) {
+			if (this.stack[i] != s2.stack[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 31 * hash + lastIn;
+        for (int i = lastIn; i >= 0; i--) {
+            hash = 31 * hash + this.stack[i];
+        }
+        return hash;
     }
+
+	public void copyFrom(StateStack s) {
+		while (s.lastIn >= this.stack.length) {
+			this.multiplySize();
+		}
+		this.lastIn = s.lastIn;
+		for (int i = 0; i <= s.lastIn; i++) {
+			this.stack[i] = s.stack[i];
+		}
+	}
+
+	public boolean contains(int state) {
+		for (int i = 0; i <= lastIn; i++) {
+			if (stack[i] == state) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public int get(int index) {
+		return stack[index];
+	}
+
+    @Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder(50);
+		for (int i = 0; i <= lastIn; i++) {
+			sb.append(" stack[").append(i).append("]= ").append(stack[i]); //$NON-NLS-1$ //$NON-NLS-2$
+		}
+		return sb.toString();
+	}
 
 }

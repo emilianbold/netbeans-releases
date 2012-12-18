@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,40 +34,53 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.languages.neon.lexer;
 
-package org.netbeans.modules.languages.neon;
-
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public enum NeonTokenId implements TokenId {
+public class NeonLexerUtils {
 
-    NEON_KEYWORD("keyword"), //NOI18N
-    NEON_INTERPUNCTION("interpunction"), //NOI18N
-    NEON_BLOCK("block"), //NOI18N
-    NEON_VALUED_BLOCK("valuedblock"), //NOI18N
-    NEON_STRING("string"), //NOI18N
-    NEON_COMMENT("comment"), //NOI18N
-    NEON_UNKNOWN("error"), //NOI18N
-    NEON_LITERAL("literal"), //NOI18N
-    NEON_VARIABLE("variable"), //NOI18N
-    NEON_NUMBER("number"), //NOI18N
-    NEON_REFERENCE("reference"), //NOI18N
-    NEON_WHITESPACE("whitespace"); //NOI18N
-
-    private final String name;
-
-    NeonTokenId(String name) {
-        this.name = name;
+    public static <T extends TokenId> TokenSequence<T> seqForText(String text, Language<T> language) {
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, language);
+        return hi.tokenSequence(language);
     }
 
-    @Override
-    public String primaryCategory() {
-        return name;
+    public static String getFileContent(File file) throws Exception{
+        StringBuilder sb = new StringBuilder();
+        String lineSep = "\n";//NOI18N
+        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8")); //NOI18N
+        String line = br.readLine();
+        while (line != null) {
+            sb.append(line);
+            sb.append(lineSep);
+            line = br.readLine();
+        }
+        br.close();
+        return sb.toString();
+    }
+
+    public static String replaceLinesAndTabs(String input) {
+        String escapedString = input;
+        escapedString = escapedString.replaceAll("\n","\\\\n"); //NOI18N
+        escapedString = escapedString.replaceAll("\r","\\\\r"); //NOI18N
+        escapedString = escapedString.replaceAll("\t","\\\\t"); //NOI18N
+        return escapedString;
     }
 
 }
