@@ -190,6 +190,10 @@ public class NBPluginParameterExpressionEvaluator
         {
             //parent file refers to the pom, we need the parent dir.
             value = project.getParentFile() != null ? project.getParentFile().getParentFile().getAbsolutePath() : null;
+        } 
+        else if ( expression.startsWith("project.parent." ) ) 
+        {
+            value = null;
         }
         else if ( expression.startsWith( "project" ) )
         {
