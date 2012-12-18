@@ -55,6 +55,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -104,7 +106,7 @@ import org.openide.util.Task;
  */
 
 public final class FoldHierarchyExecution implements DocumentListener, Runnable {
-    
+    private static final Logger LOG = Logger.getLogger(FoldHierarchyExecution.class.getName());
     /**
      * Runs rebuild(). Although it theoretically could work in parallel for several views, the original code
      * was written to run in EQ and many managers depend on parsing API, which also runs in 1 thread.
@@ -619,6 +621,13 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
     }
     
     public void rebuild(boolean doRelease) {
+        Document doc = getComponent().getDocument();
+        if (lastDocument != null && doc != lastDocument) {
+            Throwable offending = (Throwable)doc.getProperty("Issue-222763-debug");
+            LOG.log(Level.INFO, "Document changed, possible inconsistencies in root fold possible." +
+                    " lastDocument = " + lastDocument + ", newDocument = " + doc, offending);
+        }
+
         // Stop listening on the original document
         if (lastDocument != null) {
             // Remove document listener with specific priority
@@ -626,7 +635,6 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
             lastDocument = null;
         }
 
-        Document doc = getComponent().getDocument();
         AbstractDocument adoc;
         boolean releaseOnly; // only release the current hierarchy root folds
         if (doc instanceof AbstractDocument) {
