@@ -49,6 +49,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -154,7 +155,7 @@ public final class ConfFilesNodeFactory implements NodeFactory {
         }
 
         public Node node(String key) {
-            if (key == CONF_FILES) {
+            if (CONF_FILES.equals(key)) {
                 return new ConfFilesNode(project);
             }
             assert false : "No node for key: " + key;
@@ -1012,8 +1013,9 @@ public final class ConfFilesNodeFactory implements NodeFactory {
         }
     }*/
     
-    private static final class NodeComparator implements java.util.Comparator<FileObject> {
+    private static final class NodeComparator implements java.util.Comparator<FileObject>, Serializable {
 
+        @Override
         public int compare(FileObject fo1, FileObject fo2) {
 
             int result = compareType(fo1, fo2);
@@ -1035,11 +1037,6 @@ public final class ConfFilesNodeFactory implements NodeFactory {
 
         private int compareNames(FileObject do1, FileObject do2) {
             return do1.getNameExt().compareTo(do2.getNameExt());
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            return o instanceof NodeComparator;
         }
 
     }
