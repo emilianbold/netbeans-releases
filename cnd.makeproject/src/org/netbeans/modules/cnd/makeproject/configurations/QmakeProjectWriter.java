@@ -190,7 +190,7 @@ public class QmakeProjectWriter {
         write(bw, Variable.PKGCONFIG, Operation.ADD, getPkgConfig());
         write(bw, Variable.QT, Operation.SET, configuration.getQmakeConfiguration().getEnabledModules());
 
-        Item[] items = projectDescriptor.getProjectItems();
+        Item[] items = ConfigurationMakefileWriter.getSortedProjectItems(projectDescriptor);
         write(bw, Variable.SOURCES, Operation.ADD, getItems(items, MIMENames.C_MIME_TYPE, MIMENames.CPLUSPLUS_MIME_TYPE));
         write(bw, Variable.HEADERS, Operation.ADD, getItems(items, MIMENames.HEADER_MIME_TYPE));
         write(bw, Variable.FORMS, Operation.ADD, getItems(items, MIMENames.QT_UI_MIME_TYPE));
