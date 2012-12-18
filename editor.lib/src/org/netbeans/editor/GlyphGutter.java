@@ -918,7 +918,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
                         if (active != null) {
                             base.add(active);
                         }
-                        AnnotationDesc[] passive = annos.getPasiveAnnotations(line);
+                        AnnotationDesc[] passive = annos.getPassiveAnnotationsForLine(line);
                         if (passive != null) {
                             base.addAll(Arrays.asList(passive));
                         }
