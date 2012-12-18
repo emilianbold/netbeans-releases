@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 
 /**
  * @author  nn136682
@@ -131,9 +132,11 @@ public class TargetModule implements TargetModuleID, java.io.Serializable {
         }
     }
 
+    @CheckForNull
     public Target findTarget() {
         ServerInstance instance = ServerRegistry.getInstance().getServerInstance(instanceUrl);
-        return instance.getServerTarget(targetName).getTarget();
+        ServerTarget target = instance.getServerTarget(targetName);
+        return target != null ? target.getTarget() : null;
     }
     
     //Delegate to TargetModuleID
