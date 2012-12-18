@@ -609,7 +609,7 @@ public class ModelVisitor extends PathNodeVisitor {
             }
 
             // mark constructors
-            if (docHolder.isClass(functionNode)) {
+            if (functionNode.getKind() != FunctionNode.Kind.SCRIPT && docHolder.isClass(functionNode)) {
                 fncScope.setJsKind(JsElement.Kind.CONSTRUCTOR);
             }
 //            Set<JsModifier> modifiers = docHolder.getModifiers(functionNode);

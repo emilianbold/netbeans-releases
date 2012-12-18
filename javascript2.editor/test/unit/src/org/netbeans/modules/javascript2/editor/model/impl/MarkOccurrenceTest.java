@@ -678,6 +678,10 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testIssue210136() throws Exception {
         checkOccurrences("testfiles/markoccurences/issue210136.js","va^lue = 1;", true);
     }
+
+    public void testIssue223952() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue223952.js","function UserToConnectio^ns(ahoj) {", true);
+    }
     
     private String getTestPath() {
         return getTestFolderPath() + "/" + getTestName() + ".js";//NOI18N
