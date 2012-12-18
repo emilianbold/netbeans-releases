@@ -94,6 +94,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         ((FolderList)this.testsPanel).setRelatedFolderList((FolderList)this.sourcePanel);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (FolderList.PROP_FILES.equals(evt.getPropertyName())) {
             this.dataChanged();
@@ -115,6 +116,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
     }
 
 
+    @Override
     void read (WizardDescriptor settings) {
         this.wizardDescriptor = settings;
         File projectLocation = (File) settings.getProperty ("projdir");         //NOI18N
@@ -139,6 +141,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         }
     }
 
+    @Override
     void store (WizardDescriptor settings) {
         File[] sourceRoots = ((FolderList)this.sourcePanel).getFiles();
         File[] testRoots = ((FolderList)this.testsPanel).getFiles();
@@ -146,6 +149,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         settings.putProperty("testRoot",testRoots);      //NOI18N
     }
     
+    @Override
     boolean valid (WizardDescriptor settings) {
         File projectLocation = (File) settings.getProperty ("projdir");  //NOI18N
         File[] sourceRoots = ((FolderList)this.sourcePanel).getFiles();
@@ -186,6 +190,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         return null;
     }
     
+    @Override
     void validate (WizardDescriptor d) throws WizardValidationException {
         // sources root
         searchClassFiles (((FolderList)this.sourcePanel).getFiles());
@@ -411,7 +416,7 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
 
         @Override
         public HelpCtx getHelp() {
-            return new HelpCtx (PanelSourceFolders.class);
+            return new HelpCtx ("org.netbeans.modules.java.j2seproject.ui.wizards.PanelSourceFolders");
         }
 
         private void fireChangeEvent () {
