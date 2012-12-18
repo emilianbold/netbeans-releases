@@ -145,7 +145,7 @@ public final class ActionsManager {
      */
     ActionsManager (Lookup lookup) {
         this.lookup = lookup;
-        logger.log(Level.INFO, "new ActionsManager({0}) = {1}", new Object[] { lookup, this });
+        logger.log(Level.FINE, "new ActionsManager({0}) = {1}", new Object[] { lookup, this });
     }
     
     
@@ -494,18 +494,29 @@ public final class ActionsManager {
         synchronized (aps) {
             if (logger.isLoggable(Level.INFO)) {
                 StringBuilder sb = new StringBuilder(this.toString());
+                boolean isNull = false;
                 sb.append(".registerActionsProviders:");
                 for (ActionsProvider ap : aps) {
                     sb.append("\n  ");
-                    sb.append(ap != null ? ap.toString() : "NULL element in list " + System.identityHashCode(aps)); // NOI18N
+                    if (ap != null) {
+                        sb.append(ap.toString());
+                    } else {
+                        sb.append("NULL element in list " + Integer.toHexString(aps.hashCode())); // NOI18N
+                        isNull = true;
+                    }
                 }
                 sb.append("\n");
-                logger.info(sb.toString());
+                if (isNull) {
+                    logger.info(sb.toString());
+                } else {
+                    logger.fine(sb.toString());
+                }
             }
             for (ActionsProvider ap : aps) {
-                Iterator ii = ap.getActions ().iterator ();
-                while (ii.hasNext ()) {
-                    registerActionsProvider (ii.next (), ap);
+                if (ap != null) {
+                    for (Object action : ap.getActions ()) {
+                        registerActionsProvider (action, ap);
+                    }
                 }
             }
         }
@@ -516,14 +527,14 @@ public final class ActionsManager {
         providersChangeListener = new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
-                    logger.log(Level.INFO, "{0} Providers lookup changed, aps = {1}", new Object[] { this, aps });
+                    logger.log(Level.FINE, "{0} Providers lookup changed, aps = {1}", new Object[] { this, aps });
                     synchronized (actionProvidersLock) {
                         actionProviders.clear();
                     }
                     registerActionsProviders(aps);
                 }
         };
-        logger.log(Level.INFO, "{0}.initActionImpls(): Add ProvidersChangeListener to {1}", new Object[] { this, aps });
+        logger.log(Level.FINE, "{0}.initActionImpls(): Add ProvidersChangeListener to {1}", new Object[] { this, aps });
         ((Customizer) aps).addPropertyChangeListener(providersChangeListener);
         registerActionsProviders(aps);
         synchronized (actionProvidersInitialized) {
@@ -563,7 +574,7 @@ public final class ActionsManager {
     
     private void destroyIn () {
         ((Customizer) aps).removePropertyChangeListener(providersChangeListener);
-        logger.log(Level.INFO, "{0}.destroyIn(): ProvidersChangeListener removed from {1}", new Object[] { this, aps });
+        logger.log(Level.FINE, "{0}.destroyIn(): ProvidersChangeListener removed from {1}", new Object[] { this, aps });
         synchronized (this) {
             if (lazyListeners != null) {
                 int i, k = lazyListeners.size ();
