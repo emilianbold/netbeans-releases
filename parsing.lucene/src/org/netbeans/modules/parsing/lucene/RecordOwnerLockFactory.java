@@ -85,7 +85,7 @@ class RecordOwnerLockFactory extends NativeFSLockFactory {
      * happens in it. This method tries to do the best to do free it.
      * @throws IOException if lock(s) cannot be freed.
      */
-    synchronized void forceRemoveLock() throws IOException {
+    synchronized void forceRemoveLocks() throws IOException {
         final Collection<? extends RecordOwnerLock> safeIt = new ArrayList<RecordOwnerLock>(locked);
         Throwable cause = null;
         for (RecordOwnerLock l : safeIt) {

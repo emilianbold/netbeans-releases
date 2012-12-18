@@ -69,8 +69,6 @@ import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
@@ -88,7 +86,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.editor.AtomicLockEvent;
 import org.netbeans.editor.AtomicLockListener;
 import org.netbeans.editor.BaseDocument;
@@ -2304,15 +2301,33 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     }
                 }
             } finally {
-                for(Pair<SourceIndexerFactory,Context> entry : ctxToFinish) {
-                    storeChanges(
-                            entry.first.getIndexerName(),
-                            entry.second,
-                            isSteady(),
-                            usedIterables.get(),
-                            finished);
+                try {
+                    boolean indexOk = true;
+                    for(Pair<SourceIndexerFactory,Context> entry : ctxToFinish) {
+                        indexOk &= storeChanges(
+                                entry.first.getIndexerName(),
+                                entry.second,
+                                isSteady(),
+                                usedIterables.get(),
+                                finished);
+                    }
+                    if (!indexOk) {
+                        final Context ctx = ctxToFinish.iterator().next().second;
+                        RepositoryUpdater.getDefault().addIndexingJob(
+                            ctx.getRootURI(),
+                            null,
+                            false,
+                            false,
+                            false,
+                            true,
+                            true,
+                            LogContext.create(
+                                LogContext.EventType.UI,
+                                "Broken Index Found."));    //NOI18N
+                    }
+                } finally {
+                    InjectedTasksSupport.clear();
                 }
-                InjectedTasksSupport.clear();
             }
         }
 
@@ -2658,8 +2673,16 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     index++;
                 }
             } finally {
+                boolean indexOk = true;
                 for(Context ctx : contexts.values()) {
-                    storeChanges(null, ctx, isSteady(), null, finished);
+                    indexOk &= storeChanges(null, ctx, isSteady(), null, finished);
+                }
+                if (!indexOk) {
+                    RepositoryUpdater.getDefault().addBinaryJob(
+                        contexts.values().iterator().next().getRootURI(),
+                        LogContext.create(
+                            LogContext.EventType.UI,
+                            "Broken Index Found."));    //NOI18N);
                 }
             }
         }
@@ -3188,8 +3211,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             return result;
         }
 
-        protected final void storeChanges(
-                @NonNull final String indexerName,
+        protected final boolean storeChanges(
+                @NullAllowed final String indexerName,
                 @NonNull final Context ctx,
                 final boolean optimize,
                 @NullAllowed final Iterable<? extends Indexable> indexables,
@@ -3210,6 +3233,17 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     } else {
                         rollBackChanges(index);
                     }
+                } catch (IOException ioe ) {
+                    //Broken index, reschedule idexing.
+                    LOGGER.log(
+                        Level.WARNING,
+                        "Broken index for root: {0} reason: {1}, recovering.",  //NOI18N
+                        new Object[] {
+                            ctx.getRootURI(),
+                            ioe.getMessage()
+                        });
+                    index.clear();
+                    return false;
                 } finally {
                     final DocumentIndexCache cache = SPIAccessor.getInstance().getIndexFactory(ctx).getCache(ctx);
                     if (cache instanceof ClusteredIndexables.AttachableDocumentIndexCache) {
@@ -3217,6 +3251,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     }
                 }
             }
+            return true;
         }
 
        private void storeChanges(
