@@ -7,6 +7,7 @@
     <options allow-external-scripts="yes" customize="never" rootVolumeOnly="false" hostArchitectures="i386"></options>
     <installation-check script="checkMemsize()"></installation-check>
     <volume-check script="checkSystemversion()"></volume-check>
+    <script>
 /* js:pkmk:start */
 function checkSystem() {
 	var java_result = checkJavaVersion();
