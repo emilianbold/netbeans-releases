@@ -57,10 +57,8 @@ import org.openide.util.Exceptions;
  * @author sp153251
  */
 public class WebJPATargetInfo implements JPATargetInfo {
-    private WebProject project;
 
     public WebJPATargetInfo(WebProject project) {
-        this.project = project;
     }
 
     @Override

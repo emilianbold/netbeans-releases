@@ -105,19 +105,22 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
         this.antHelper = antHelper;
     }
     
+    @Override
     public String addEjbLocalReference(EjbReference localRef, EjbReference.EjbRefIType refType, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
         return addReference(localRef, refType, ejbRefName, true, referencingFile, referencingClass);
     }
     
+    @Override
     public String addEjbReference(EjbReference ref, EjbReference.EjbRefIType refType, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
         return addReference(ref, refType, ejbRefName, false, referencingFile, referencingClass);
     }
     
     private String addReference(final EjbReference ejbReference, EjbReference.EjbRefIType refType, String ejbRefName, boolean local, FileObject referencingFile, String referencingClass) throws IOException {
-        String refName = null;
+        String refName;
         
         MetadataModel<EjbJarMetadata> ejbReferenceMetadataModel = ejbReference.getEjbModule().getMetadataModel();
         String ejbName = ejbReferenceMetadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
+            @Override
             public String run(EjbJarMetadata metadata) throws Exception {
                 return metadata.findByEjbClass(ejbReference.getEjbClass()).getEjbName();
             }
@@ -141,8 +144,8 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
             }
         }
 
-        WebApp webApp = getWebApp();
-        if (webApp == null){
+        WebApp webAppl = getWebApp();
+        if (webAppl == null){
             return null;
         }
 
@@ -153,7 +156,7 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
             refName = getUniqueName(getWebApp(), "EjbLocalRef", "EjbRefName", ejbRefName); //NOI18N
             // EjbLocalRef can come from Ejb project
             try {
-                EjbLocalRef newRef = (EjbLocalRef)webApp.createBean("EjbLocalRef"); //NOI18N
+                EjbLocalRef newRef = (EjbLocalRef)webAppl.createBean("EjbLocalRef"); //NOI18N
                 newRef.setEjbLink(ejbLink);
                 newRef.setEjbRefName(refName);
                 newRef.setEjbRefType(ejbReference.getEjbRefType());
@@ -165,7 +168,7 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
             refName = getUniqueName(getWebApp(), "EjbRef", "EjbRefName", ejbRefName); //NOI18N
             // EjbRef can come from Ejb project
             try {
-                EjbRef newRef = (EjbRef)webApp.createBean("EjbRef"); //NOI18N
+                EjbRef newRef = (EjbRef)webAppl.createBean("EjbRef"); //NOI18N
                 newRef.setEjbRefName(refName);
                 newRef.setEjbRefType(ejbReference.getEjbRefType());
                 newRef.setHome(ejbReference.getRemoteHome());
@@ -178,12 +181,14 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
         return refName;
     }
     
+    @Override
     public String getServiceLocatorName() {
         EditableProperties ep =
                 antHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         return ep.getProperty(SERVICE_LOCATOR_PROPERTY);
     }
     
+    @Override
     public void setServiceLocatorName(String serviceLocator) throws IOException {
         EditableProperties ep =
                 antHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -204,24 +209,20 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
     }
     
     private void writeDD(FileObject referencingFile, final String referencingClass) throws IOException {
-        ClassPathProviderImpl cppImpl = webProject.getClassPathProvider();
-        ClasspathInfo classpathInfo = ClasspathInfo.create(
-            cppImpl.getProjectSourcesClassPath(ClassPath.BOOT), 
-            cppImpl.getProjectSourcesClassPath(ClassPath.COMPILE), 
-            cppImpl.getProjectSourcesClassPath(ClassPath.SOURCE) 
-        );
-        JavaSource javaSource = JavaSource.create(classpathInfo, Collections.<FileObject>emptyList());
         ProjectWebModule jp = webProject.getLookup().lookup(ProjectWebModule.class);
         
         // test if referencing class is injection target
         final boolean[] isInjectionTarget = {false};
         CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
+                @Override
                 public void run(CompilationController controller) throws IOException {
                     Elements elements = controller.getElements();
                     TypeElement thisElement = elements.getTypeElement(referencingClass);
-                    if (thisElement!=null)
+                    if (thisElement!=null) {
                         isInjectionTarget[0] = InjectionTargetQuery.isInjectionTarget(controller, thisElement);
+                    }
                 }
+                @Override
                 public void cancel() {}
         };
         JavaSource refFile = JavaSource.forFileObject(referencingFile);
@@ -236,6 +237,7 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
         }
     }
     
+    @Override
     public String addResourceRef(ResourceReference ref, FileObject referencingFile, String referencingClass) throws IOException {
         WebApp wa = getWebApp();
         if (wa == null) {
@@ -277,6 +279,7 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
         return resourceRefName;
     }
     
+    @Override
     public String addDestinationRef(MessageDestinationReference ref, FileObject referencingFile, String referencingClass) throws IOException {
         try {
             // do not add if there is already an existing destination ref (see #85673)
