@@ -317,14 +317,25 @@ public class JavaCustomIndexer extends CustomIndexer {
                         context.addSupplementaryFiles(entry.getKey(), entry.getValue());
                     }
                 }
-                javaContext.store();
+                try {
+                    javaContext.store();
+                } catch (JavaParsingContext.BrokenIndexException bi) {
+                    JavaIndex.LOG.log(
+                        Level.WARNING,
+                        "Broken index for root: {0} reason {1}, recovering.",  //NOI18N
+                        new Object[] {
+                            context.getRootURI()
+                        });
+                    final PersistentIndexTransaction piTx = txCtx.get(PersistentIndexTransaction.class);
+                    piTx.setBroken();
+                }
                 ciTx.addedTypes(context.getRootURI(), _at);
                 ciTx.removedTypes(context.getRootURI(), _rt);
                 ciTx.changedTypes(context.getRootURI(), compileResult.addedTypes);
                 if (!context.checkForEditorModifications()) { // #152222
                     ciTx.addedCacheFiles(context.getRootURI(), compileResult.createdFiles);
                     ciTx.removedCacheFiles(context.getRootURI(), removedFiles);
-                }
+                }                
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
@@ -407,7 +418,20 @@ public class JavaCustomIndexer extends CustomIndexer {
                 for (Map.Entry<URL, Set<URL>> entry : findDependent(context.getRootURI(), removedTypes, false).entrySet()) {
                     context.addSupplementaryFiles(entry.getKey(), entry.getValue());
                 }
-                javaContext.store();
+                try {
+                    javaContext.store();
+                } catch (JavaParsingContext.BrokenIndexException bi) {
+                    JavaIndex.LOG.log(
+                        Level.WARNING,
+                        "Broken index for root: {0} reason: {1}, recovering.",  //NOI18N
+                        new Object[] {
+                            context.getRootURI(),
+                            bi.getMessage()
+                        });
+                    final PersistentIndexTransaction piTx = txCtx.get(PersistentIndexTransaction.class);
+                    assert piTx != null;
+                    piTx.setBroken();
+                }
                 ciTx.removedCacheFiles(context.getRootURI(), removedFiles);
                 ciTx.removedTypes(context.getRootURI(), removedTypes);
             } finally {
