@@ -5,7 +5,7 @@
     <license file="License.txt"></license>
     <background file="background.tif" scaling="none" alignment="topleft"></background>
     <options allow-external-scripts="yes" customize="never" rootVolumeOnly="false" hostArchitectures="i386"></options>
-    <installation-check script="checkMemsize()"></installation-check>
+    <installation-check script="checkSystem()"></installation-check>
     <volume-check script="checkSystemversion()"></volume-check>
     <script>
 /* js:pkmk:start */
