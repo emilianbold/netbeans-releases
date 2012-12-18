@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,37 +37,36 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.languages.ini;
+package org.netbeans.modules.languages.ini.csl;
 
-import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.languages.ini.csl.IniLanguageConfig;
+import org.netbeans.modules.csl.spi.LanguageRegistration;
+import org.netbeans.modules.languages.ini.lexer.IniTokenId;
 
 /**
- * Base class for tests.
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class IniTestBase extends CslTestBase {
+@LanguageRegistration(mimeType = IniLanguageConfig.MIME_TYPE)
+public class IniLanguageConfig extends DefaultLanguageConfig {
+    public static final String MIME_TYPE = "text/x-ini"; //NOI18N
 
-    public IniTestBase(String testName) {
-        super(testName);
+    @Override
+    public Language getLexerLanguage() {
+        return IniTokenId.language();
     }
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        clearWorkDir();
+    public String getDisplayName() {
+        return "INI"; //NOI18N
     }
 
     @Override
-    protected DefaultLanguageConfig getPreferredLanguage() {
-        return new IniLanguageConfig();
-    }
-
-    @Override
-    protected String getPreferredMimeType() {
-        return IniLanguageConfig.MIME_TYPE;
+    public String getLineCommentPrefix() {
+        return ";"; //NOI18N
     }
 
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,30 +34,49 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.languages.ini;
+package org.netbeans.modules.languages.ini.lexer;
 
-import org.netbeans.api.lexer.TokenId;
+import java.io.File;
+import org.netbeans.modules.languages.ini.IniTestBase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-public enum IniTokenId implements TokenId {
+/**
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
+ */
+public abstract class IniLexerTestBase extends IniTestBase {
 
-    INI_COMMENT("comment"), // NOI18N
-    INI_SECTION_DELIM("section_delim"), // NOI18N
-    INI_SECTION("section"), // NOI18N
-    INI_KEY("key"), // NOI18N
-    INI_EQUALS("equals"), // NOI18N
-    INI_VALUE("value"), // NOI18N
-    INI_WHITESPACE("whitespace"), // NOI18N
-    INI_ERROR("error"); // NOI18N
-
-    private final String name;
-
-    IniTokenId(String name) {
-        this.name = name;
+    public IniLexerTestBase(String testName) {
+        super(testName);
     }
 
-    @Override
-    public String primaryCategory() {
-        return name;
+    protected abstract String getTestResult(String filename) throws Exception;
+
+    protected void performTest(String filename) throws Exception {
+        // parse the file
+        String result = getTestResult(filename);
+        String fullClassName = this.getClass().getName();
+        String goldenFileDir = fullClassName.replace('.', '/');
+        // try to find golden file
+        String goldenFolder = getDataSourceDir().getAbsolutePath() + "/goldenfiles/" + goldenFileDir + "/";
+        File goldenFile = new File(goldenFolder + filename + ".pass");
+        if (!goldenFile.exists()) {
+            // if doesn't exist, create it
+            FileObject goldenFO = touch(goldenFolder, filename + ".pass");
+            copyStringToFileObject(goldenFO, result);
+        } else {
+            // if exist, compare it.
+            goldenFile = getGoldenFile(filename + ".pass");
+            FileObject resultFO = touch(getWorkDir(), filename + ".result");
+            copyStringToFileObject(resultFO, result);
+            assertFile(FileUtil.toFile(resultFO), goldenFile, getWorkDir());
+        }
     }
+
 }

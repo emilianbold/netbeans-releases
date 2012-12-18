@@ -39,35 +39,55 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.languages.ini;
+package org.netbeans.modules.languages.ini.lexer;
 
-import org.netbeans.modules.csl.api.test.CslTestBase;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.languages.ini.csl.IniLanguageConfig;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.spi.lexer.Lexer;
+import org.netbeans.spi.lexer.LexerRestartInfo;
+import org.netbeans.spi.lexer.TokenFactory;
 
 /**
- * Base class for tests.
+ * Lexer for INI files.
  */
-public abstract class IniTestBase extends CslTestBase {
+public final class IniLexer implements Lexer<IniTokenId> {
 
-    public IniTestBase(String testName) {
-        super(testName);
+    private final IniColoringLexer scanner;
+    private final TokenFactory<IniTokenId> tokenFactory;
+
+    public static IniLexer create(LexerRestartInfo<IniTokenId> info) {
+        return new IniLexer(info);
+    }
+
+    private IniLexer(LexerRestartInfo<IniTokenId> info) {
+        scanner = new IniColoringLexer(info);
+        tokenFactory = info.tokenFactory();
     }
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        clearWorkDir();
+    public Token<IniTokenId> nextToken() {
+        try {
+            IniTokenId tokenId = scanner.nextToken();
+            Token<IniTokenId> token = null;
+            if (tokenId != null) {
+                token = tokenFactory.createToken(tokenId);
+            }
+            return token;
+        } catch (IOException ex) {
+            Logger.getLogger(IniLexer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     @Override
-    protected DefaultLanguageConfig getPreferredLanguage() {
-        return new IniLanguageConfig();
+    public Object state() {
+        return scanner.getState();
     }
 
     @Override
-    protected String getPreferredMimeType() {
-        return IniLanguageConfig.MIME_TYPE;
+    public void release() {
     }
 
 }

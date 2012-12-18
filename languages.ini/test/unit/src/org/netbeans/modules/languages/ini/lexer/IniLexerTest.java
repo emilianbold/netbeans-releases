@@ -39,51 +39,67 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.languages.ini;
+package org.netbeans.modules.languages.ini.lexer;
 
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerRestartInfo;
-import org.netbeans.spi.lexer.TokenFactory;
+import java.io.File;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.languages.ini.util.TestUtils;
 
 /**
- * Lexer for INI files.
+ * Test for INI lexer.
  */
-public class IniLexer implements Lexer<IniTokenId> {
+public class IniLexerTest extends IniLexerTestBase {
 
-    private final IniColoringLexer scanner;
-    private final TokenFactory<IniTokenId> tokenFactory;
+    public IniLexerTest(String testName) {
+        super(testName);
+    }
 
-    public IniLexer(LexerRestartInfo<IniTokenId> info) {
-        scanner = new IniColoringLexer(info);
-        tokenFactory = info.tokenFactory();
+    public void testBasic() throws Exception {
+        performTest("basic");
+    }
+
+    public void testSections() throws Exception {
+        performTest("sections");
+    }
+
+    public void testKeys() throws Exception {
+        performTest("keys");
+    }
+
+    public void testValues() throws Exception {
+        performTest("values");
     }
 
     @Override
-    public Token<IniTokenId> nextToken() {
-        try {
-            IniTokenId tokenId = scanner.nextToken();
-            Token<IniTokenId> token = null;
-            if (tokenId != null) {
-                token = tokenFactory.createToken(tokenId);
+    protected String getTestResult(String filename) throws Exception {
+        String content = TestUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/" + filename + ".ini"));
+        Language<IniTokenId> language = IniTokenId.language();
+        TokenHierarchy<?> hierarchy = TokenHierarchy.create(content, language);
+        return createResult(hierarchy.tokenSequence(language));
+    }
+
+    private String createResult(TokenSequence<?> ts) throws Exception {
+        StringBuilder result = new StringBuilder();
+        while (ts.moveNext()) {
+            TokenId tokenId = ts.token().id();
+            CharSequence text = ts.token().text();
+            result.append("token #");
+            result.append(ts.index());
+            result.append(" ");
+            result.append(tokenId.name());
+            String token = TestUtils.replaceLinesAndTabs(text.toString());
+            if (!token.isEmpty()) {
+                result.append(" ");
+                result.append("[");
+                result.append(token);
+                result.append("]");
             }
-            return token;
-        } catch (IOException ex) {
-            Logger.getLogger(IniLexer.class.getName()).log(Level.SEVERE, null, ex);
+            result.append("\n");
         }
-        return null;
-    }
-
-    @Override
-    public Object state() {
-        return scanner.getState();
-    }
-
-    @Override
-    public void release() {
+        return result.toString();
     }
 
 }

@@ -41,29 +41,58 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.languages.ini;
+package org.netbeans.modules.languages.ini.lexer;
 
 import java.util.Collection;
-
 import java.util.EnumSet;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.modules.languages.ini.csl.IniLanguageConfig;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 
-public class IniLanguageHierarchy extends LanguageHierarchy<IniTokenId> {
+public enum IniTokenId implements TokenId {
 
-    @Override
-    protected synchronized Collection<IniTokenId> createTokenIds() {
-        return EnumSet.allOf(IniTokenId.class);
+    INI_COMMENT("comment"), // NOI18N
+    INI_SECTION_DELIM("section_delim"), // NOI18N
+    INI_SECTION("section"), // NOI18N
+    INI_KEY("key"), // NOI18N
+    INI_EQUALS("equals"), // NOI18N
+    INI_VALUE("value"), // NOI18N
+    INI_WHITESPACE("whitespace"), // NOI18N
+    INI_ERROR("error"); // NOI18N
+
+    private final String name;
+
+    private static final Language<IniTokenId> LANGUAGE = new LanguageHierarchy<IniTokenId>() {
+
+        @Override
+        protected Collection<IniTokenId> createTokenIds() {
+            return EnumSet.allOf(IniTokenId.class);
+        }
+
+        @Override
+        protected Lexer<IniTokenId> createLexer(LexerRestartInfo<IniTokenId> info) {
+            return IniLexer.create(info);
+        }
+
+        @Override
+        protected String mimeType() {
+            return IniLanguageConfig.MIME_TYPE;
+        }
+    }.language();
+
+    IniTokenId(String name) {
+        this.name = name;
     }
 
     @Override
-    protected Lexer<IniTokenId> createLexer(LexerRestartInfo<IniTokenId> info) {
-        return new IniLexer(info);
+    public String primaryCategory() {
+        return name;
     }
 
-    @Override
-    protected String mimeType() {
-        return IniLanguageProvider.MIME_TYPE;
+    public static Language<IniTokenId> language() {
+        return LANGUAGE;
     }
 }

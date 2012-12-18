@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,69 +37,54 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.languages.ini;
+package org.netbeans.modules.languages.ini.actions;
 
-import java.io.File;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.languages.ini.util.TestUtils;
+import javax.swing.JEditorPane;
+import javax.swing.text.Caret;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.languages.ini.IniTestBase;
+import org.openide.filesystems.FileObject;
 
 /**
- * Test for INI lexer.
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class IniLexerTest extends IniTestBase {
+public abstract class IniActionsTestBase extends IniTestBase {
 
-    public IniLexerTest(String testName) {
+    public IniActionsTestBase(String testName) {
         super(testName);
     }
 
-    public void testBasic() throws Exception {
-        performTest("basic");
-    }
-
-    public void testSections() throws Exception {
-        performTest("sections");
-    }
-
-    public void testKeys() throws Exception {
-        performTest("keys");
-    }
-
-    public void testValues() throws Exception {
-        performTest("values");
-    }
-
     @Override
-    protected String getTestResult(String filename) throws Exception {
-        String content = TestUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/" + filename + ".ini"));
-        Language<IniTokenId> language = new IniLanguageHierarchy().language();
-        TokenHierarchy<?> hierarchy = TokenHierarchy.create(content, language);
-        return createResult(hierarchy.tokenSequence(language));
+    protected boolean runInEQ() {
+        return true;
     }
 
-    private String createResult(TokenSequence<?> ts) throws Exception {
-        StringBuilder result = new StringBuilder();
-        while (ts.moveNext()) {
-            TokenId tokenId = ts.token().id();
-            CharSequence text = ts.token().text();
-            result.append("token #");
-            result.append(ts.index());
-            result.append(" ");
-            result.append(tokenId.name());
-            String token = TestUtils.replaceLinesAndTabs(text.toString());
-            if (!token.isEmpty()) {
-                result.append(" ");
-                result.append("[");
-                result.append(token);
-                result.append("]");
-            }
-            result.append("\n");
-        }
-        return result.toString();
+    protected void testInFile(String file, String actionName) throws Exception {
+        FileObject fo = getTestFile(file);
+        assertNotNull(fo);
+        String source = readFile(fo);
+
+        int sourcePos = source.indexOf('^');
+        assertNotNull(sourcePos);
+        String sourceWithoutMarker = source.substring(0, sourcePos) + source.substring(sourcePos + 1);
+
+        JEditorPane ta = getPane(sourceWithoutMarker);
+        Caret caret = ta.getCaret();
+        caret.setDot(sourcePos);
+        BaseDocument doc = (BaseDocument) ta.getDocument();
+
+        runKitAction(ta, actionName, null);
+
+        doc.getText(0, doc.getLength());
+        doc.insertString(caret.getDot(), "^", null);
+
+        String target = doc.getText(0, doc.getLength());
+        assertDescriptionMatches(file, target, false, goldenFileExtension());
     }
+
+    protected abstract String goldenFileExtension();
 
 }
