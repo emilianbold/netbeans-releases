@@ -341,12 +341,12 @@ abstract public class CsmCompletionQuery {
                     }
                 }
                 tp.enableTemplateSupport(enableTemplates);
-                doc.readLock();
-                try {
-                    CndTokenUtilities.processTokens(etp, doc, lastSepOffset, offset);
-                } finally {
-                    doc.readUnlock();
-                }
+                doc.render(new Runnable() {
+                    @Override
+                    public void run() {
+                        CndTokenUtilities.processTokens(etp, doc, lastSepOffset, offset);
+                    }
+                });
                 baseDocument.putProperty(TOKEN_PROCESSOR_CACHE_KEY, new TokenProcessorCache(offset, docVersion, tp));
             } else {
                 // hit
@@ -988,7 +988,7 @@ abstract public class CsmCompletionQuery {
                     CsmKindUtilities.isVariable(resolveObj)) {
                 CsmType oldType = resolveType;
                 CsmVariable var = (CsmVariable)resolveObj;
-                CsmExpression initialValue = var.getInitialValue();
+                final CsmExpression initialValue = var.getInitialValue();
                 if (initialValue != null) {
                     CharSequence initText = initialValue.getText();
                     if (initText != null) {
@@ -1008,15 +1008,15 @@ abstract public class CsmCompletionQuery {
                         if(cppts != null && !antiLoop.contains(initialValue)) {
                             antiLoop.add(initialValue);
 
-                            CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(initialValue.getEndOffset(), initialValue.getStartOffset());
+                            final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(initialValue.getEndOffset(), initialValue.getStartOffset());
                             tp.enableTemplateSupport(true);
-                            BaseDocument bDoc = getBaseDocument();
-                            bDoc.readLock();
-                            try {
-                                CndTokenUtilities.processTokens(tp, bDoc, initialValue.getStartOffset(), initialValue.getEndOffset());
-                            } finally {
-                                bDoc.readUnlock();
-                            }
+                            final BaseDocument bDoc = getBaseDocument();
+                            bDoc.render(new Runnable() {
+                                @Override
+                                public void run() {
+                                    CndTokenUtilities.processTokens(tp, bDoc, initialValue.getStartOffset(), initialValue.getEndOffset());
+                                }
+                            });
                             CsmCompletionExpression exp = tp.getResultExp();
 
                             resolveType = resolveType(exp);
