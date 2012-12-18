@@ -642,6 +642,9 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
             // already write locked
             doClose(false);
             try {
+                if (lockFactory instanceof RecordOwnerLockFactory) {
+                    ((RecordOwnerLockFactory)lockFactory).forceRemoveLocks();
+                }
                 final String[] content = fsDir.listAll();
                 boolean dirty = false;
                 if (content != null) {
@@ -702,7 +705,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                         if (!success) {
                             if ((lockFactory instanceof RecordOwnerLockFactory) &&
                                 ((RecordOwnerLockFactory)lockFactory).getOwner() == Thread.currentThread()) {
-                                ((RecordOwnerLockFactory)lockFactory).forceRemoveLock();
+                                ((RecordOwnerLockFactory)lockFactory).forceRemoveLocks();
                             } else if (IndexWriter.isLocked(fsDir)) {
                                 IndexWriter.unlock(fsDir);
                             }
@@ -909,8 +912,8 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
             }
         }
         
-        void releaseWriter(IndexWriter w) {
-            assert w == txWriter.get();
+        void releaseWriter(@NonNull final IndexWriter w) {
+            assert txWriter.get() == w || txWriter.get() == null;
             rwLock.readLock().unlock();
         }
         

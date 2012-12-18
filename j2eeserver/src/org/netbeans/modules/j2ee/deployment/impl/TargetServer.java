@@ -459,8 +459,9 @@ public class TargetServer {
             // no longer a deployed module on server
             if (tmID == null) {
                 Target target = targetModules[i].findTarget();
-                if (target != null)
+                if (target != null) {
                     distributeTargets.add(target);
+                }
             } else {
                 targetModules[i].initDelegate(tmID);
                 toRedeploy.add(targetModules[i]);
