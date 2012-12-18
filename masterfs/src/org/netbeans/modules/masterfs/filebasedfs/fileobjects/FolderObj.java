@@ -514,13 +514,14 @@ public final class FolderObj extends BaseFileObj {
                         if (newChild instanceof FolderObj) {
                             getProvidedExtensions().deletedExternally(newChild);
                             ((FolderObj)newChild).refreshImpl(expected, fire);
+                            newChild.setValid(false);
                         } else {
+                            newChild.setValid(false);
                             if (fire) {
                                 getProvidedExtensions().deletedExternally(newChild);
                                 newChild.fireFileDeletedEvent(expected);
                             }
                         }
-                        newChild.setValid(false);
                     }
                 } else {
                     //TODO: should be rechecked
