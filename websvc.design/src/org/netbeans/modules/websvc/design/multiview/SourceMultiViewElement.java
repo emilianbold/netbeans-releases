@@ -52,6 +52,7 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.swing.AbstractAction;
@@ -137,11 +138,13 @@ public class SourceMultiViewElement extends CloneableEditor
                                 getPublicTopLevelElement(workingCopy);
                             
                             Element element = handle.resolve(workingCopy);
+                            if ( element == null ){
+                                return;
+                            }
                             SourcePositions srcPos = workingCopy.getTrees().getSourcePositions();
                             int position = -1;
                             // use visitor approach later
-                            switch(element.getKind()) {
-                            case METHOD:
+                            if(ElementKind.METHOD.equals(element.getKind())) {
                                 Element webServiceMethod = workingCopy.
                                 getElementUtilities().getImplementationOf(
                                         (ExecutableElement)element, webSvc);
@@ -154,7 +157,6 @@ public class SourceMultiViewElement extends CloneableEditor
                                 if(!methodBody.getStatements().isEmpty())
                                     tree = methodBody.getStatements().get(0);
                                 position = (int) srcPos.getStartPosition(workingCopy.getCompilationUnit(), tree);
-                                break;
                             }
                             if(position>0) {
                                 getEditorPane().setCaretPosition(position);

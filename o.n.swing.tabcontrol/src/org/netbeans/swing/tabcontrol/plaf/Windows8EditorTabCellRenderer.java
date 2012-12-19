@@ -70,4 +70,19 @@ final class Windows8EditorTabCellRenderer extends WinVistaEditorTabCellRenderer 
         boolean mouseOver = isArmed();
         Windows8ViewTabDisplayerUI.paintTabBackground( (Graphics2D)g, rect.x, rect.y, rect.width, rect.height, selected, focused, attention, mouseOver);
     }
+
+    /**
+     * Returns path of icon which is correct for currect state of tab at given
+     * index
+     */
+    @Override
+    String findIconPath() {
+        if( inCloseButton() && isPressed() ) {
+            return "org/openide/awt/resources/win8_bigclose_pressed.png"; // NOI18N
+        }
+        if( inCloseButton() ) {
+            return "org/openide/awt/resources/win8_bigclose_rollover.png"; // NOI18N
+        }
+        return "org/openide/awt/resources/win8_bigclose_enabled.png"; // NOI18N
+    }
 }

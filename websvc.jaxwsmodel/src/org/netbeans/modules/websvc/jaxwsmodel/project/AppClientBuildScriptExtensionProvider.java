@@ -109,7 +109,7 @@ public class AppClientBuildScriptExtensionProvider implements JaxWsBuildScriptEx
     public void handleJaxWsModelChanges(JaxWsModel model) throws IOException {
         AntBuildExtender ext = project.getLookup().lookup(AntBuildExtender.class);
         if (ext != null) {
-            FileObject jaxws_build = project.getProjectDirectory().getFileObject(TransformerUtils.JAXWS_BUILD_XML_PATH);
+            //FileObject jaxws_build = project.getProjectDirectory().getFileObject(TransformerUtils.JAXWS_BUILD_XML_PATH);
             if (model.getClients().length == 0) {
                 // remove nbproject/jaxws-build.xml
                 // remove the jaxws extension

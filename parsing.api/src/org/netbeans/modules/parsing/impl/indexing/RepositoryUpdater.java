@@ -69,8 +69,6 @@ import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
@@ -88,7 +86,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.editor.AtomicLockEvent;
 import org.netbeans.editor.AtomicLockListener;
 import org.netbeans.editor.BaseDocument;
@@ -1309,7 +1306,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         final Reference<Document> ref = activeDocumentRef;
         Document activeDocument = ref == null ? null : ref.get();
 
-        Pair<URL, FileObject> root = getOwningSourceRoot(document);
+        final Pair<URL, FileObject> root = getOwningSourceRoot(document);
         if (root != null) {
             if (root.second == null) {
                 LOGGER.log(
@@ -1344,12 +1341,23 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
                     TransientUpdateSupport.setTransientUpdate(true);
                     try {
+                        final Callable<FileObject> indexFolderFactory =
+                            new Callable<FileObject>() {
+                                private FileObject cache;
+                                @Override
+                                public FileObject call() throws Exception {
+                                    if (cache == null) {
+                                        cache = CacheFolder.getDataFolder(root.first);
+                                    }
+                                    return cache;
+                                }
+                            };
                         Collection<? extends IndexerCache.IndexerInfo<CustomIndexerFactory>> cifInfos = IndexerCache.getCifCache().getIndexersFor(mimeType, true);
                         for(IndexerCache.IndexerInfo<CustomIndexerFactory> info : cifInfos) {
                             try {
-                                CustomIndexerFactory factory = info.getIndexerFactory();
-                                Context ctx = SPIAccessor.getInstance().createContext(
-                                        CacheFolder.getDataFolder(root.first),
+                                final CustomIndexerFactory factory = info.getIndexerFactory();
+                                final Context ctx = SPIAccessor.getInstance().createContext(
+                                        indexFolderFactory,
                                         root.first,
                                         factory.getIndexerName(),
                                         factory.getIndexVersion(),
@@ -1369,9 +1377,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         Collection<? extends IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos = collectEmbeddingIndexers(mimeType);
                         for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> info : eifInfos) {
                             try {
-                                EmbeddingIndexerFactory factory = info.getIndexerFactory();
-                                Context ctx = SPIAccessor.getInstance().createContext(
-                                        CacheFolder.getDataFolder(root.first),
+                                final EmbeddingIndexerFactory factory = info.getIndexerFactory();
+                                final Context ctx = SPIAccessor.getInstance().createContext(
+                                        indexFolderFactory,
                                         root.first,
                                         factory.getIndexerName(),
                                         factory.getIndexVersion(),
@@ -2293,15 +2301,33 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     }
                 }
             } finally {
-                for(Pair<SourceIndexerFactory,Context> entry : ctxToFinish) {
-                    storeChanges(
-                            entry.first.getIndexerName(),
-                            entry.second,
-                            isSteady(),
-                            usedIterables.get(),
-                            finished);
+                try {
+                    boolean indexOk = true;
+                    for(Pair<SourceIndexerFactory,Context> entry : ctxToFinish) {
+                        indexOk &= storeChanges(
+                                entry.first.getIndexerName(),
+                                entry.second,
+                                isSteady(),
+                                usedIterables.get(),
+                                finished);
+                    }
+                    if (!indexOk) {
+                        final Context ctx = ctxToFinish.iterator().next().second;
+                        RepositoryUpdater.getDefault().addIndexingJob(
+                            ctx.getRootURI(),
+                            null,
+                            false,
+                            false,
+                            false,
+                            true,
+                            true,
+                            LogContext.create(
+                                LogContext.EventType.UI,
+                                "Broken Index Found."));    //NOI18N
+                    }
+                } finally {
+                    InjectedTasksSupport.clear();
                 }
-                InjectedTasksSupport.clear();
             }
         }
 
@@ -2647,8 +2673,16 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     index++;
                 }
             } finally {
+                boolean indexOk = true;
                 for(Context ctx : contexts.values()) {
-                    storeChanges(null, ctx, isSteady(), null, finished);
+                    indexOk &= storeChanges(null, ctx, isSteady(), null, finished);
+                }
+                if (!indexOk) {
+                    RepositoryUpdater.getDefault().addBinaryJob(
+                        contexts.values().iterator().next().getRootURI(),
+                        LogContext.create(
+                            LogContext.EventType.UI,
+                            "Broken Index Found."));    //NOI18N);
                 }
             }
         }
@@ -3177,8 +3211,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             return result;
         }
 
-        protected final void storeChanges(
-                @NonNull final String indexerName,
+        protected final boolean storeChanges(
+                @NullAllowed final String indexerName,
                 @NonNull final Context ctx,
                 final boolean optimize,
                 @NullAllowed final Iterable<? extends Indexable> indexables,
@@ -3199,6 +3233,17 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     } else {
                         rollBackChanges(index);
                     }
+                } catch (IOException ioe ) {
+                    //Broken index, reschedule idexing.
+                    LOGGER.log(
+                        Level.WARNING,
+                        "Broken index for root: {0} reason: {1}, recovering.",  //NOI18N
+                        new Object[] {
+                            ctx.getRootURI(),
+                            ioe.getMessage()
+                        });
+                    index.clear();
+                    return false;
                 } finally {
                     final DocumentIndexCache cache = SPIAccessor.getInstance().getIndexFactory(ctx).getCache(ctx);
                     if (cache instanceof ClusteredIndexables.AttachableDocumentIndexCache) {
@@ -3206,6 +3251,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     }
                 }
             }
+            return true;
         }
 
        private void storeChanges(
@@ -5111,24 +5157,27 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     // coalesce ordinary jobs
                     Work absorbedBy = null;
                     if (!wait) {
-                        boolean allowAbsorb = true;
+                        Work lastDel = null;
 
                         //XXX (#198565): don't let FileListWork forerun delete works:
                         if (work instanceof FileListWork) {
+                            final FileListWork flw = (FileListWork) work;
                             for (Work w : todo) {
-                                if (w instanceof DeleteWork) {
-                                    allowAbsorb = false;
-                                    break;
+                                if (w instanceof DeleteWork &&
+                                    ((DeleteWork)w).root.equals(flw.root)) {
+                                    lastDel = w;
                                 }
                             }
                         }
 
-                        if (allowAbsorb) {
-                            for(Work w : todo) {
+                        for(Work w : todo) {
+                            if (lastDel == null) {
                                 if (w.absorb(work)) {
                                     absorbedBy = w;
                                     break;
                                 }
+                            } else if (w == lastDel) {
+                                lastDel = null;
                             }
                         }
                     }

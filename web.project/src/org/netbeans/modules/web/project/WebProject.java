@@ -61,6 +61,7 @@ import java.util.zip.ZipFile;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.SourceGroup;
@@ -263,15 +264,11 @@ public final class WebProject implements Project {
             if (propertyValue != null) {
                 String resolvedPath = helper.resolvePath(propertyValue);
                 resolvedFile = new File(resolvedPath).getAbsoluteFile();
-                if (resolvedFile != null) {
-                    File f = resolvedFile;
-                    while (f != null && (fo = FileUtil.toFileObject(f)) == null) {
-                        f = f.getParentFile();
-                    }
-                    watchRename = f == resolvedFile;
-                } else {
-                    watchRename = false;
+                File f = resolvedFile;
+                while (f != null && (fo = FileUtil.toFileObject(f)) == null) {
+                    f = f.getParentFile();
                 }
+                watchRename = f == resolvedFile;
             } else {
                 resolvedFile = null;
                 watchRename = false;
@@ -303,35 +300,46 @@ public final class WebProject implements Project {
 
         // AntProjectListener
 
+        @Override
         public void configurationXmlChanged(AntProjectEvent ev) {
             updateFileChangeListener();
         }
 
+        @Override
         public void propertiesChanged(AntProjectEvent ev) {
             updateFileChangeListener();
         }
 
         // FileChangeListener
 
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             updateFileChangeListener();
         }
 
+        @Override
         public void fileDataCreated(FileEvent fe) {
             updateFileChangeListener();
         }
 
+        @Override
         public void fileChanged(FileEvent fe) {
             updateFileChangeListener();
         }
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             updateFileChangeListener();
         }
 
+        @Override
         public void fileRenamed(final FileRenameEvent fe) {
             if(watchRename && fileObject.isValid()) {
-                final File f = new File(helper.getStandardPropertyEvaluator().getProperty(propertyName));
+                String prop = helper.getStandardPropertyEvaluator().getProperty(propertyName);
+                if (prop == null) {
+                    return;
+                }
+                final File f = new File(prop);
                 if(f.getName().equals(fe.getName())) {
                     ProjectManager.mutex().postWriteRequest(new Runnable() {
                         public void run() {
@@ -353,6 +361,7 @@ public final class WebProject implements Project {
             updateFileChangeListener();
         }
 
+        @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
         }
     };
@@ -599,7 +608,7 @@ public final class WebProject implements Project {
             LookupMergerSupport.createSFBLookupMerger(),
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
             LookupMergerSupport.createJFBLookupMerger(),
-            QuerySupport.createBinaryForSourceQueryImplementation(sourceRoots, testRoots, helper, eval),
+            QuerySupport.createBinaryForSourceQueryImplementation(getSourceRoots(), getTestSourceRoots(), helper, eval),
             new ProjectWebRootProviderImpl()
         });
 
@@ -1845,7 +1854,6 @@ public final class WebProject implements Project {
                         return;
                     }
                     FileObject destFile = ensureDestinationFileExists(webBuildBase, path, fo.isFolder());
-                    assert destFile != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + fo.isFolder();
                     if (!fo.isFolder()) {
                         InputStream is = null;
                         OutputStream os = null;
@@ -1879,6 +1887,7 @@ public final class WebProject implements Project {
          * Returns the destination (parent) directory needed to create file
          * with relative path path under webBuilBase
          */
+        @NonNull
         private FileObject ensureDestinationFileExists(FileObject webBuildBase, String path, boolean isFolder) throws IOException {
             FileObject current = webBuildBase;
             StringTokenizer st = new StringTokenizer(path, "/");
@@ -1896,7 +1905,6 @@ public final class WebProject implements Project {
                         assert newCurrent != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + isFolder;
                     }
                 }
-                assert newCurrent != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + isFolder;
                 current = newCurrent;
             }
             assert current != null : "webBuildBase: " + webBuildBase + ", path: " + path + ", isFolder: " + isFolder;
@@ -2138,7 +2146,7 @@ public final class WebProject implements Project {
     // FIXME this is just fallback for code searching for the old SPI in lookup
     // remove in next release
     @SuppressWarnings("deprecation")
-    private class WebModuleImpl implements WebModuleImplementation {
+    private static class WebModuleImpl implements WebModuleImplementation {
 
         private final WebModule apiModule;
 
@@ -2175,7 +2183,7 @@ public final class WebProject implements Project {
         }
     }
 
-    private class WebModuleImpl2 implements WebModuleImplementation2 {
+    private static class WebModuleImpl2 implements WebModuleImplementation2 {
 
         private final ProjectWebModule webModule;
 
@@ -2221,7 +2229,7 @@ public final class WebProject implements Project {
 
     }
 
-    private class WebProjectLookup extends ProxyLookup implements PropertyChangeListener{
+    private static class WebProjectLookup extends ProxyLookup implements PropertyChangeListener{
         Lookup base, ee6;
         WebProject project;
 
@@ -2272,7 +2280,7 @@ public final class WebProject implements Project {
         }
     }
 
-    private final class ProjectWebRootProviderImpl implements ProjectWebRootProvider {
+    private static final class ProjectWebRootProviderImpl implements ProjectWebRootProvider {
 
         @Override
         public FileObject getWebRoot(FileObject file) {

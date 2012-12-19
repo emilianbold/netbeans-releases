@@ -1036,7 +1036,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
      */
     private static DebugTargetList debugtargetlist = null;
 
-    public void debugTarget(DebugTarget debugtarget, boolean runFirst, boolean use32bitEngine) {
+    public void debugTarget(DebugTarget debugtarget, boolean runFirst, boolean use32bitEngine, InputOutput io) {
         Configuration conf = debugtarget.getConfig();
         String execPath = debugtarget.getExecutable();
         NativeDebuggerInfo ndi = makeNativeDebuggerInfo(debugtarget.getEngine());
@@ -1049,17 +1049,18 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
         if (execPath != null) {
             ((MakeConfiguration) conf).getMakefileConfiguration().getOutput().setValue(execPath);
         }
-
+        
 
         ndi.setTarget(execPath);
         ndi.setHostName(debugtarget.getHostName());
         ndi.setConfiguration(conf);
         ndi.set32bitEngine(use32bitEngine);
+        ndi.setInputOutput(io);
 
         if (runFirst) {
             ndi.setAction(RUN);
         } else {
-            if (isStandalone() || !DebuggerOption.RUN_AUTOSTART.isEnabled(globalOptions())) {
+            if (isStandalone() || isPL() || !DebuggerOption.RUN_AUTOSTART.isEnabled(globalOptions())) {
                 ndi.setAction(LOAD);
             } else {
                 ndi.setAction(this.getAction());
@@ -1071,6 +1072,10 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
         } else {
             startDebugger(Start.NEW, ndi);
         }
+    }
+    
+    public void debugTarget(DebugTarget debugtarget, boolean runFirst, boolean use32bitEngine) {
+        debugTarget(debugtarget, runFirst, use32bitEngine, null);
     }
 
     private static final Preferences prefs =

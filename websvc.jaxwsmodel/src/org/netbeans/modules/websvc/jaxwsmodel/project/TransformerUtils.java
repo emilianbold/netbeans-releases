@@ -226,8 +226,13 @@ public class TransformerUtils {
             for(SourceGroup group : srcGroups){
                 ClassPath classpath = ClassPath.getClassPath(
                         group.getRootFolder(), ClassPath.COMPILE);
-                if ( classpath.findResource("com/sun/tools/xjc/XJCTask.class")!= null){
+                if ( classpath!= null && classpath.findResource(
+                        "com/sun/tools/xjc/XJCTask.class")!= null)
+                {
                     hasXjc = true;
+                }
+                if ( classpath== null){
+                    return false;
                 }
                 FileObject fo = classpath.findResource(
                         "com/sun/tools/xjc/generator/bean/field/MessageBundle_it.properties"); //NOI18N    

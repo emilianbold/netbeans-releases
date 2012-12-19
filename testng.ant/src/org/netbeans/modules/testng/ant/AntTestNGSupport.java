@@ -170,7 +170,12 @@ public class AntTestNGSupport extends TestNGSupportImplementation {
             Properties props = new Properties();
             String cmd = null;
             FileObject test = config.getTest();
-            FileObject[] testRoots = ClassPath.getClassPath(test, ClassPath.SOURCE).getRoots();
+            ClassPath classPath = ClassPath.getClassPath(test, ClassPath.SOURCE);
+	    if(classPath == null) {
+		LOGGER.log(Level.WARNING, "Could not find any classpath for file {0}", FileUtil.toFile(test)); //NOI18N
+		return;
+	    }
+            FileObject[] testRoots = classPath.getRoots();
             FileObject testRoot = null;
             for (FileObject root : testRoots) {
                 if (FileUtil.isParentOf(root, test)) {

@@ -517,9 +517,9 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
     private static final class FolderFilterNode extends FilterNode {
 
-        private ClientSideProject project;
         private BasicNodes nodeType;
         private Node iconDelegate;
+        private Node delegate;
         private static final Image SOURCES_FILES_BADGE = ImageUtilities.loadImage("org/netbeans/modules/web/clientproject/ui/resources/sources-badge.gif", true); // NOI18N
         private static final Image TESTS_FILES_BADGE = ImageUtilities.loadImage("org/netbeans/modules/web/clientproject/ui/resources/tests-badge.gif", true); // NOI18N
         private static final Image CONFIGS_FILES_BADGE = ImageUtilities.loadImage("org/netbeans/modules/web/clientproject/ui/resources/config-badge.gif", true); // NOI18N
@@ -529,6 +529,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                     new FolderFilterChildren(folderNode, ignoreList));
             this.nodeType = nodeType;
             iconDelegate = DataFolder.findFolder (FileUtil.getConfigRoot()).getNodeDelegate();
+            delegate = folderNode;
         }
 
         @Override
@@ -576,6 +577,8 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                 case Configuration:
                     badge = CONFIGS_FILES_BADGE;
                     break;
+                default:
+                    assert false;
             }
 
             image = opened ? iconDelegate.getOpenedIcon(type) : iconDelegate.getIcon(type);
@@ -598,6 +601,27 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                 default:
                     throw new AssertionError(nodeType.name());
             }
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            return hash * delegate.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final FolderFilterNode other = (FolderFilterNode) obj;
+            if (this.delegate != other.delegate && (this.delegate == null || !this.delegate.equals(other.delegate))) {
+                return false;
+            }
+            return true;
         }
 
     }
@@ -719,15 +743,38 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
     private static class RemoteFileFilterNode extends FilterNode {
 
         private String desc;
+        private Node delegate;
 
         public RemoteFileFilterNode(Node original, String desc) {
             super(original);
             this.desc = desc;
+            delegate = original;
         }
 
         @Override
         public String getShortDescription() {
             return desc;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            return hash * delegate.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final RemoteFileFilterNode other = (RemoteFileFilterNode) obj;
+            if (this.delegate != other.delegate && (this.delegate == null || !this.delegate.equals(other.delegate))) {
+                return false;
+            }
+            return true;
         }
 
     }

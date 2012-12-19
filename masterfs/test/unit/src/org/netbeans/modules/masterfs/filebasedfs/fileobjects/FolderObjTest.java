@@ -616,7 +616,8 @@ public class FolderObjTest extends NbTestCase {
             @Override
              public void fileRenamed(FileRenameEvent fe) {
                  FileObject fold = fe.getFile();
-                 assertTrue(fold.getChildren().length > 0);
+                 final FileObject[] ch = fold.getChildren();
+                 assertTrue("There should be some children in " + fold, ch.length > 0);
                  l.add(fe);
              }
         };

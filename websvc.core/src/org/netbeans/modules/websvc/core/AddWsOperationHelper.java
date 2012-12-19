@@ -142,10 +142,10 @@ public class AddWsOperationHelper {
         return name;
     }
     
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     protected MethodCustomizer createDialog(FileObject fileObject, 
             MethodModel methodModel) throws IOException 
     {
-        
         return MethodCustomizerFactory.operationMethod(
                 getTitle(),
                 methodModel,
@@ -233,6 +233,7 @@ public class AddWsOperationHelper {
         });
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     private void executeModificationTask( final FileObject implClassFo,
             final JavaSource targetSource, final ProgressHandle handle,
             final AddOperationTask modificationTask )
@@ -760,7 +761,7 @@ public class AddWsOperationHelper {
     
     /** Holder class for result
      */
-    private class ResultHolder<E> {
+    private static class ResultHolder<E> {
         private Collection<E> result;
         
         public Collection<E> getResult() {

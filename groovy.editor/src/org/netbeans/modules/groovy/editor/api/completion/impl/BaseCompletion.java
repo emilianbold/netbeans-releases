@@ -66,7 +66,7 @@ public abstract class BaseCompletion {
 
     protected static final Logger LOG = Logger.getLogger(BaseCompletion.class.getName());
 
-    
+
     public abstract boolean complete(List<CompletionProposal> proposals, CompletionRequest request, int anchor);
 
 
@@ -98,7 +98,7 @@ public abstract class BaseCompletion {
             LOG.log(Level.FINEST, "               found : {0}", pkgSet);
 
             for (String singlePkg : pkgSet) {
-                if(singlePkg.equals(pkg)){
+                if (singlePkg.equals(pkg)){
                     LOG.log(Level.FINEST, "Exact match found.");
                     return true;
                 }
@@ -117,21 +117,21 @@ public abstract class BaseCompletion {
     protected boolean isPrefixedAndNotEqual(CompletionRequest request, String name) {
         return isPrefixed(request, name) && !(name.equals(request.prefix));
     }
-    
+
     protected final PackageCompletionRequest getPackageRequest(final CompletionRequest request) {
         int position = request.lexOffset;
         PackageCompletionRequest result = new PackageCompletionRequest();
 
-        TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(request.doc, position);
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(request.doc, position);
         ts.move(position);
 
         // travel back on the token string till the token is neither a
         // DOT nor an IDENTIFIER
 
-        Token<? extends GroovyTokenId> token = null;
+        Token<GroovyTokenId> token = null;
         boolean remainingTokens = true;
         while (ts.isValid() && (remainingTokens = ts.movePrevious()) && ts.offset() >= 0) {
-            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+            Token<GroovyTokenId> t = ts.token();
 
             // Keyword check needs to be here because of issue #209453
             if (!(t.id() == GroovyTokenId.DOT || t.id() == GroovyTokenId.IDENTIFIER || "keyword".equals(t.id().primaryCategory()))) {
@@ -145,7 +145,7 @@ public abstract class BaseCompletion {
         // the result
 
         StringBuilder sb = new StringBuilder();
-        Token<? extends GroovyTokenId> lastToken = null;
+        Token<GroovyTokenId> lastToken = null;
 
         // if we reached the beginning in the previous iteration we have to get
         // the first token too (without call to moveNext())
@@ -156,7 +156,7 @@ public abstract class BaseCompletion {
 
         // iterate the rest of the sequence
         while (ts.isValid() && ts.moveNext() && ts.offset() < position) {
-            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+            Token<GroovyTokenId> t = ts.token();
             if (t.id() == GroovyTokenId.DOT || t.id() == GroovyTokenId.IDENTIFIER) {
                 sb.append(t.text().toString());
                 lastToken = t;

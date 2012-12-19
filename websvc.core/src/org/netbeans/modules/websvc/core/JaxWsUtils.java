@@ -222,6 +222,7 @@ public class JaxWsUtils {
 
     /** This method is called from Create Web Service from WSDL wizard
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     public static void generateJaxWsArtifacts(Project project, 
             FileObject targetFolder, String targetName, URL wsdlURL, 
             String service, String port) throws Exception 
@@ -262,6 +263,7 @@ public class JaxWsUtils {
         return false;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     private static void generateProviderImplClass(Project project, 
             FileObject targetFolder, FileObject implClass,
             String targetName, final WsdlService service, final WsdlPort port, 
@@ -455,6 +457,7 @@ public class JaxWsUtils {
         }*/
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     private static void generateJaxWsProvider(Project project, 
             FileObject targetFolder, String targetName, URL wsdlURL, 
             WsdlService service, WsdlPort port, boolean isStatelessSB) 
@@ -488,6 +491,7 @@ public class JaxWsUtils {
 
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     private static void generateJaxWsImplClass(final Project project, 
             final FileObject targetFolder, final String targetName, final URL wsdlURL, 
             final WsdlService service, final WsdlPort port, final boolean addService, 
@@ -560,7 +564,7 @@ public class JaxWsUtils {
                         TypeElement bindingElement = workingCopy.getElements().
                             getTypeElement(BINDING_TYPE_ANNOTATION);
 
-                        if (bindingElement == null) {
+                        if (bindingElement != null) {
                             List<ExpressionTree> bindingAttrs = 
                                 new ArrayList<ExpressionTree>();
                             bindingAttrs.add(make.Assignment(make.Identifier("value"), //NOI18N
@@ -686,6 +690,7 @@ public class JaxWsUtils {
         return packageName;
     }
     
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     private static String addService(Project project, 
             FileObject targetFolder, String targetName, URL wsdlURL, 
             WsdlService service, WsdlPort port,  FileObject implClassFo , 
@@ -1011,6 +1016,7 @@ public class JaxWsUtils {
     /** Setter for WebService annotation attribute, e.g. serviceName = "HelloService"
      *
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     public static void setWebServiceAttrValue(final FileObject implClassFo, 
             final String attrName, final String attrValue) 
     {
@@ -1039,6 +1045,7 @@ public class JaxWsUtils {
                         getTypeElement("javax.jws.WebService"); //NOI18N
                     if ( webServiceEl == null ){
                         isIncomplete[0] = true;
+                        return;
                     }
                     for (AnnotationTree an : annotations) {
                         IdentifierTree ident = (IdentifierTree) an.getAnnotationType();
@@ -1166,6 +1173,7 @@ public class JaxWsUtils {
         return foundWsAnnotation;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     public static boolean isSoap12(FileObject implClassFo) {
         final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
         final String[] version = new String[1];
@@ -1188,7 +1196,7 @@ public class JaxWsUtils {
                         fqn = ((TypeElement) annotationElement).
                             getQualifiedName().toString();
                     }
-                    if ( BINDING_TYPE_ANNOTATION.contentEquals( fqn )){
+                    if ( fqn!= null && BINDING_TYPE_ANNOTATION.contentEquals( fqn )){
                         Map<? extends ExecutableElement, 
                                 ? extends AnnotationValue> expressions = 
                                     anMirror.getElementValues();
@@ -1389,6 +1397,7 @@ public class JaxWsUtils {
     /** Setter for WebMethod annotation attribute, e.g. operationName = "HelloOperation"
      *
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     public static void setWebMethodAttrValue(FileObject implClassFo, 
             final ElementHandle<?> method, final String attrName, 
             final String attrValue) 
@@ -1533,6 +1542,7 @@ public class JaxWsUtils {
     /** Setter for WebParam annotation attribute, e.g. name = "x"
      *
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     public static void setWebParamAttrValue(FileObject implClassFo, 
             final ElementHandle<?> methodHandle, final String paramName,
             final String attrName, final String attrValue) 
@@ -1930,6 +1940,7 @@ public class JaxWsUtils {
         return null;
     }
     
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP_NULL_PARAM_DEREF")
     private static String getServiceName(Project prj, Service service) {
         SourceGroup[] srcGroups = ProjectUtils.getSources(prj).
             getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);

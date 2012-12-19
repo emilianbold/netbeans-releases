@@ -82,6 +82,7 @@ public class LazyLookupProviders {
      */
     public static LookupProvider forProjectServiceProvider(final Map<String,Object> attrs) throws ClassNotFoundException {
         return new LookupProvider() {
+            @Override
             public Lookup createAdditionalLookup(final Lookup lkp) {
                 return new ProxyLookup() {
                     Collection<String> serviceNames = Arrays.asList(((String) attrs.get("service")).split(",")); // NOI18N
@@ -210,6 +211,7 @@ public class LazyLookupProviders {
             private final String serviceName = (String) attrs.get("service"); // NOI18N
             private LookupMerger<?> delegate;
             private final ChangeSupport cs = new ChangeSupport(this);
+            @Override
             public void probing(Class<?> service) {
                 if (delegate == null && service.getName().equals(serviceName)) {
                     try {
@@ -224,13 +226,16 @@ public class LazyLookupProviders {
                     }
                 }
             }
+            @Override
             public LookupMerger merger() {
                 return delegate;
             }
+            @Override
             public void addChangeListener(ChangeListener listener) {
                 cs.addChangeListener(listener);
                 assert cs.hasListeners();
             }
+            @Override
             public void removeChangeListener(ChangeListener listener) {
                 cs.removeChangeListener(listener);
             }

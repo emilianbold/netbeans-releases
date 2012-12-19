@@ -347,7 +347,7 @@ importItem
 media
     : MEDIA_SYM ws? mediaQueryList
         LBRACE ws?
-            ( ( rule | page | fontFace ) ws?)*
+            ( ( rule | page | fontFace | vendorAtRule ) ws?)*
          RBRACE
     ;
 

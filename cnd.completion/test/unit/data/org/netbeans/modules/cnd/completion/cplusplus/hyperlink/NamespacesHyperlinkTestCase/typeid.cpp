@@ -30,4 +30,16 @@ namespace iz162160 {
         typeid (*cp).name();
         typeid (cr).name();
     }
+
+    int bug219398_main(int argc, char** argv) {
+        struct Node
+        {
+        } node1, node2;
+        // "Unable to resolve identifier name" mark appear and source code format
+        if (typeid (node1).name() == typeid (struct Node) .name()) {
+        }
+
+        return 0;
+    }
+
 }

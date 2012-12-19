@@ -50,6 +50,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -372,7 +373,7 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
         }
     }
 
-    private static class FileObjectComparator implements Comparator<FileObject> {
+    private static class FileObjectComparator implements Comparator<FileObject>, Serializable {
         @Override
         public int compare(FileObject fo1, FileObject fo2) {
             return fo1.getName().compareTo(fo2.getName());

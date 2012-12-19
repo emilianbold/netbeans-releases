@@ -41,9 +41,8 @@
  */
 package org.netbeans.modules.parsing.lucene;
 
-import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -63,6 +62,8 @@ class RecordOwnerLockFactory extends NativeFSLockFactory {
     private final Set</*@GuardedBy("this")*/RecordOwnerLock> locked = Collections.newSetFromMap(new IdentityHashMap<RecordOwnerLock, Boolean>());
     //@GuardedBy("this")
     private Thread owner;
+    //@GuardedBy("this")
+    private Exception caller;
 
     RecordOwnerLockFactory() throws IOException {
         super();
@@ -71,7 +72,12 @@ class RecordOwnerLockFactory extends NativeFSLockFactory {
     @CheckForNull
     Thread getOwner() {
         return owner;
-    }    
+    }
+
+    @CheckForNull
+    Exception getCaller() {
+        return caller;
+    }
 
     /**
      * Force freeing of lock file.
@@ -79,13 +85,22 @@ class RecordOwnerLockFactory extends NativeFSLockFactory {
      * happens in it. This method tries to do the best to do free it.
      * @throws IOException if lock(s) cannot be freed.
      */
-    synchronized void forceRemoveLock() throws IOException {
-        try {
-            for (RecordOwnerLock l : locked) {
-                l.forceRemoveLock();
+    synchronized void forceRemoveLocks() throws IOException {
+        final Collection<? extends RecordOwnerLock> safeIt = new ArrayList<RecordOwnerLock>(locked);
+        Throwable cause = null;
+        for (RecordOwnerLock l : safeIt) {
+            try {
+                l.release();
+            } catch (Throwable t) {
+                if (t instanceof ThreadDeath) {
+                    throw (ThreadDeath) t;
+                } else if (cause == null) {
+                    cause = t;
+                }
             }
-        } finally {
-            locked.clear();
+        }
+        if (cause != null) {
+            throw new IOException(cause);
         }
     }
     
@@ -98,7 +113,10 @@ class RecordOwnerLockFactory extends NativeFSLockFactory {
     @Override
     public void clearLock(String lockName) throws IOException {
         super.clearLock(lockName);
-        owner = null;
+        synchronized (this) {
+            owner = null;
+            caller = null;
+        }
     }
 
 
@@ -107,7 +125,10 @@ class RecordOwnerLockFactory extends NativeFSLockFactory {
         @NonNull final RecordOwnerLock l) {
         Parameters.notNull("t", t); //NOI18N
         Parameters.notNull("l", l); //NOI18N
-        owner = t;
+        if (owner != t) {
+            owner = t;
+            caller = new Exception();
+        }
         locked.add(l);
     }
 
@@ -116,6 +137,7 @@ class RecordOwnerLockFactory extends NativeFSLockFactory {
         Parameters.notNull("l", l); //NOI18N
         locked.remove(l);
         owner = null;
+        caller = null;
     }
     
     private class RecordOwnerLock extends Lock {
@@ -146,27 +168,5 @@ class RecordOwnerLockFactory extends NativeFSLockFactory {
         public boolean isLocked() throws IOException {
             return delegate.isLocked();
         }
-
-        private void forceRemoveLock() throws IOException {
-            try {
-                final Class<? extends Lock> delegateClass = delegate.getClass();
-                final Field lockPathField = delegateClass.getDeclaredField("path"); //NOI18N
-                lockPathField.setAccessible(true);
-                final File path = (File) lockPathField.get(delegate);
-                final Field lockHeldField = delegateClass.getDeclaredField("LOCK_HELD"); //NOI18N
-                lockHeldField.setAccessible(true);
-                Collection lockHeld = (Collection) lockHeldField.get(null);
-                synchronized (lockHeld) {
-                    lockHeld.remove(path.getCanonicalPath());
-                }
-                path.delete();
-            } catch (NoSuchFieldException nfe) {
-                throw new IOException(nfe);
-            } catch (IllegalAccessException iae) {
-                throw new IOException(iae);
-            }
-        }
-    
-    }
-    
+    }    
 }

@@ -45,8 +45,12 @@
 package org.netbeans.modules.websvc.api.jaxws.wsdlmodel;
 
 import java.lang.ref.WeakReference;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -55,11 +59,11 @@ import java.util.WeakHashMap;
 public class WsdlModelerFactory {
     
     private static WsdlModelerFactory factory;
-    WeakHashMap<URL, WeakReference<WsdlModeler>> modelers;
+    WeakHashMap<URI, WeakReference<WsdlModeler>> modelers;
     
     /** Creates a new instance of WsdlModelerFactory */
     private WsdlModelerFactory() {
-        modelers = new WeakHashMap<URL, WeakReference<WsdlModeler>>(5);
+        modelers = new WeakHashMap<URI, WeakReference<WsdlModeler>>(5);
     }
     
     /**
@@ -74,29 +78,38 @@ public class WsdlModelerFactory {
     /** Get WsdlModeler for particular WSDL
      */
     public WsdlModeler getWsdlModeler(URL wsdlUrl) {
+        URI uri;
+        try {
+            uri = wsdlUrl.toURI();
+        }
+        catch (URISyntaxException e) {
+            Logger.getLogger(WsdlModel.class.getName()).log(Level.WARNING, 
+                    null , e);
+            return null;
+        }
         WsdlModeler modeler = null;
         synchronized (modelers) {
-            modeler = getFromCache(wsdlUrl);
+            modeler = getFromCache(uri);
             if (modeler!=null) {
                 return modeler;
             }
             modeler = new WsdlModeler(wsdlUrl);
-            modelers.put(wsdlUrl, new WeakReference<WsdlModeler>(modeler));
+            modelers.put(uri, new WeakReference<WsdlModeler>(modeler));
         }
         return modeler;
     }
     
-    private WsdlModeler getFromCache (URL url) {
-        if (url == null) {
+    private WsdlModeler getFromCache (URI uri) {
+        if (uri == null) {
             return null;
         }
-        WeakReference wr = modelers.get(url);
+        WeakReference<WsdlModeler> wr = modelers.get(uri);
         if (wr == null) {
             return null;
         }
-        WsdlModeler modeler = (WsdlModeler) wr.get();
+        WsdlModeler modeler = wr.get();
         if (modeler == null) {
-            modelers.remove(url);
+            modelers.remove(uri);
         }
         return modeler;
     }

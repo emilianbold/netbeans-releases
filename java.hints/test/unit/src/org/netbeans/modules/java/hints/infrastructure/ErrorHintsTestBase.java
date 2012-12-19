@@ -265,16 +265,7 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         prepareTest(fileName, code);
         
         if (pos == (-1)) {
-            Set<String> supportedErrorKeys = getSupportedErrorKeys();
-            for (Diagnostic<?> d : info.getDiagnostics()) {
-                if (d.getKind() == Diagnostic.Kind.ERROR && (supportedErrorKeys == null || supportedErrorKeys.contains(d.getCode()))) {
-                    if (pos == (-1)) {
-                        pos = (int) d.getPosition();
-                    } else {
-                        throw new IllegalStateException("More than one error: " + info.getDiagnostics().toString());
-                    }
-                }
-            }
+            pos = positionForErrors();
         }
         
         TreePath path = info.getTreeUtilities().pathFor(pos);
@@ -319,5 +310,24 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
     
     protected Set<String> getSupportedErrorKeys() {
         return null;
+    }
+
+    protected final int positionForErrors() throws IllegalStateException {
+        Set<String> supportedErrorKeys = getSupportedErrorKeys();
+        Integer pos = null;
+        for (Diagnostic<?> d : info.getDiagnostics()) {
+            if (d.getKind() == Diagnostic.Kind.ERROR && (supportedErrorKeys == null || supportedErrorKeys.contains(d.getCode()))) {
+                if (pos == null) {
+                    pos = (int) d.getPosition();
+                } else {
+                    throw new IllegalStateException("More than one error: " + info.getDiagnostics().toString());
+                }
+            }
+        }
+        if (pos == null) {
+            throw new IllegalStateException("No error found: " + info.getDiagnostics().toString());
+        }
+        
+        return pos;
     }
 }

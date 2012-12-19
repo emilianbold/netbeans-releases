@@ -160,36 +160,12 @@ final class MagicSurroundWithTryCatchFix implements Fix {
                 }
 
                 //find try block containing this statement, if exists:
-                TreePath catchTree = currentPath;
+                TreePath tryPath = enclosingTry(currentPath);
 
-                while (catchTree != null
-                        && catchTree.getLeaf().getKind() != Kind.TRY
-                        && !TreeUtilities.CLASS_TREE_KINDS.contains(catchTree.getLeaf().getKind())
-                        && catchTree.getLeaf().getKind() != Kind.CATCH)
-                    catchTree = catchTree.getParentPath();
-
-                boolean createNewTryCatch = false;
-
-                if (catchTree.getLeaf().getKind() == Kind.TRY) {
-                    TryTree tt = (TryTree) catchTree.getLeaf();
-                    //#104085: if the statement to be wrapped is inside a finally block of the try-catch,
-                    //do not attempt to extend existing catches...:
-                    for (Tree t : currentPath) {
-                        if (tt.getFinallyBlock() == t) {
-                            createNewTryCatch = true;
-                            break;
-                        }
-                    }
-
-                    if (!createNewTryCatch) {
+                if (tryPath != null) {
                     //only add catches for uncaught exceptions:
-                    new TransformerImpl(wc, thandles, streamAlike, statement).scan(catchTree, null);
-                    }
+                    new TransformerImpl(wc, thandles, streamAlike, statement).scan(tryPath, null);
                 } else {
-                    createNewTryCatch = true;
-                }
-
-                if (createNewTryCatch) {
                     //find block containing this statement, if exists:
                     TreePath blockTree = currentPath;
 
@@ -205,6 +181,30 @@ final class MagicSurroundWithTryCatchFix implements Fix {
         });
         
         return Utilities.commitAndComputeChangeInfo(js.getFileObjects().iterator().next(), mr);
+    }
+    
+    static TreePath enclosingTry(TreePath from) {
+        TreePath tryPath = from;
+        while (tryPath != null
+                && tryPath.getLeaf().getKind() != Kind.TRY
+                && !TreeUtilities.CLASS_TREE_KINDS.contains(tryPath.getLeaf().getKind())
+                && tryPath.getLeaf().getKind() != Kind.CATCH)
+            tryPath = tryPath.getParentPath();
+
+        if (tryPath.getLeaf().getKind() == Kind.TRY) {
+            TryTree tt = (TryTree) tryPath.getLeaf();
+            //#104085: if the statement to be wrapped is inside a finally block of the try-catch,
+            //do not attempt to extend existing catches...:
+            for (Tree t : from) {
+                if (tt.getFinallyBlock() == t) {
+                    return null;
+                }
+            }
+            
+            return tryPath;
+        }
+        
+        return null;
     }
     
     private final class TransformerImpl extends TreePathScanner<Void, Void> {
@@ -224,9 +224,10 @@ final class MagicSurroundWithTryCatchFix implements Fix {
         }
         
         public @Override Void visitTry(TryTree tt, Void p) {
-            List<CatchTree> catches = createCatches(info, make, thandles, statement);
-            
+            List<CatchTree> catches = new ArrayList<CatchTree>();
+                    
             catches.addAll(tt.getCatches());
+            catches.addAll(createCatches(info, make, thandles, statement));
             
             if (!streamAlike) {
                 info.rewrite(tt, make.Try(tt.getResources(), tt.getBlock(), catches, tt.getFinallyBlock()));

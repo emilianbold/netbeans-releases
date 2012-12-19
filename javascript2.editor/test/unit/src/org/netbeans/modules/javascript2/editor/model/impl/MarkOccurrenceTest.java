@@ -638,8 +638,51 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testIssue223465() throws Exception {
         checkOccurrences("testfiles/markoccurences/issue223465.js", "var so^me = {", true);
     }
+   
+    public void testIssue223699_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue223699.js","        this[bug].init( a, b^ug, this );", true);
+    }
 
-        
+    public void testIssue223699_02() throws Exception {
+        checkOccurrences("testfiles/coloring/issue223699.js","        this[bug].init( a^, bug, this );", true);
+    }
+    
+    public void testIssue223823_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue223823.js","var watch = function(scope, attr, name, defau^ltVal) {", true);
+    }
+    
+    public void testIssue223823_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue223823.js","            scope[name] = v^al;", true);
+    }
+    
+    public void testIssue223891_01() throws Exception {
+        checkOccurrences("testfiles/structure/issue223891/issue223891.js"," * @param {Date} a^a", true);
+    }
+     
+    public void testIssue223891_02() throws Exception {
+        checkOccurrences("testfiles/structure/issue223891/issue223891.js"," * @returns {Utils22^3891}", true);
+    }
+    
+    public void testIssue223891_03() throws Exception {
+        checkOccurrences("testfiles/structure/issue223891/issue223891.js","    this.t^est = aa.getDay();", true);
+    }
+    
+    public void testIssue217938_01() throws Exception {
+        checkOccurrences("testfiles/structure/issue217938.js","    this.par1 = pa^r1; // this one is not in navigator", true);
+    }
+    
+    public void testIssue217938_02() throws Exception {
+        checkOccurrences("testfiles/structure/issue217938.js","    this.pa^r1 = par1; // this one is not in navigator", true);
+    }
+    
+    public void testIssue210136() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue210136.js","va^lue = 1;", true);
+    }
+
+    public void testIssue223952() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue223952.js","function UserToConnectio^ns(ahoj) {", true);
+    }
+    
     private String getTestPath() {
         return getTestFolderPath() + "/" + getTestName() + ".js";//NOI18N
     }

@@ -94,7 +94,7 @@ public interface CsmMacroExpansionDocProvider {
      * @param endOffset - end offset for expansion
      * @return - expansion, null otherwise
      */
-    public String expand(Document doc, CsmFile file, int startOffset, int endOffset);
+    public String expand(Document doc, CsmFile file, int startOffset, int endOffset, boolean updateIfNeeded);
 
     /**
      * Macro expands specified string in specified contest and excludes comments.

@@ -576,7 +576,7 @@ public class ModelTest extends JsTestBase {
         assertEquals(2, object.getProperties().size());
         
         JsObject variable = object.getProperty("param");
-        assertEquals(JsElement.Kind.VARIABLE, variable.getJSKind());
+        assertEquals(JsElement.Kind.OBJECT, variable.getJSKind());
         assertEquals(true, variable.isDeclared());
         assertEquals(4, variable.getProperties().size());
     }

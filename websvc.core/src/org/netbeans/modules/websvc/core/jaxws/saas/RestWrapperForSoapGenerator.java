@@ -89,7 +89,7 @@ public class RestWrapperForSoapGenerator {
     private WsdlOperation operation;
     private Project project;
     private Map<String, Class> primitiveTypes;
-    public static final Modifier[] PUBLIC = new Modifier[]{Modifier.PUBLIC};
+    private static final Modifier[] PUBLIC = new Modifier[]{Modifier.PUBLIC};
     public static final String INDENT = "        ";
     public static final String INDENT_2 = "             ";
     public static final String APP_XML_MIME = "application/xml";
@@ -141,7 +141,7 @@ public class RestWrapperForSoapGenerator {
             "return new {7}.ObjectFactory().create{8}(response);\n";
 
     static final String CLOSE_IF_PORT = "\n'}'\n";//NOI18N
-    private String wsdlUrl;
+    //private String wsdlUrl;
 
     public RestWrapperForSoapGenerator(WsdlService service, WsdlPort port,
             WsdlOperation operation, Project project, FileObject targetFile, String wsdlUrl) {
@@ -150,9 +150,10 @@ public class RestWrapperForSoapGenerator {
         this.operation = operation;
         this.targetFile = targetFile;
         this.project = project;
-        this.wsdlUrl = wsdlUrl;
+        //this.wsdlUrl = wsdlUrl;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     public Set<FileObject> generate() throws IOException {
         JavaSource targetSource = JavaSource.forFileObject(targetFile);
         final String returnType = operation.getReturnTypeName();
@@ -241,12 +242,17 @@ public class RestWrapperForSoapGenerator {
         Object[] methodAnnotationAttrs = getOperationAnnotationAttrs(operation.getName(), retType, paramTypes);
         String bodyText = getSOAPClientInvocation(retType);
 
-        String comment = "Invokes the SOAP method " + operation.getName() + "\n";
+        StringBuilder comment = new StringBuilder("Invokes the SOAP method ");//NOI18N
+        comment.append(operation.getName());
+        comment.append( '\n' );
         for (String param : parameters) {
-            comment += "@param $PARAM$ resource URI parameter\n".replace("$PARAM$", param);
+            comment.append( "@param ");                     //NOI18N 
+            comment.append(param);
+            comment.append(" resource URI parameter\n");    //NOI18N
         }
-        if (!retType.equals("void")) {
-            comment += "@return an instance of " + retType;
+        if (!retType.equals("void")) {                      //NOI18N
+            comment.append("@return an instance of ");      //NOI18N
+            comment.append( retType);
         }
         int index = methodAnnotations[0].lastIndexOf(".");
         String methodPrefix = methodAnnotations[0].substring(index + 1).toLowerCase();
@@ -254,7 +260,7 @@ public class RestWrapperForSoapGenerator {
                 modifiers, methodAnnotations, methodAnnotationAttrs,
                 getMethodName(methodPrefix), retType, parameters, paramTypes,
                 paramAnnotations, paramAnnotationAttrs,
-                bodyText, comment);      //NOI18N
+                bodyText, comment.toString());      
 
     }
 
@@ -298,8 +304,7 @@ public class RestWrapperForSoapGenerator {
             return Boolean.FALSE;
         }
         if (type == Character.class) {
-            return new Character(
-                    '\0');
+            return Character.valueOf('\0');
         }
         return null;
     }
@@ -494,7 +499,6 @@ public class RestWrapperForSoapGenerator {
         String operationJavaName = operation.getJavaName();
         String portJavaName = port.getJavaName();
         String portGetterMethod = port.getPortGetter();
-        String serviceJavaName = service.getJavaName();
         List<WsdlParameter> arguments = operation.getParameters();
         String returnTypeName = operation.getReturnTypeName();
         StringBuffer argumentBuffer = new StringBuffer();

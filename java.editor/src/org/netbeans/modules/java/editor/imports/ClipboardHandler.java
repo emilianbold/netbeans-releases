@@ -140,6 +140,7 @@ public class ClipboardHandler {
                     copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
 
                     TreePath context = copy.getTreeUtilities().pathFor(caret);
+                    Scope scope = copy.getTrees().getScope(context);
                     List<Position[]> spans = new ArrayList<Position[]>(inSpans);
 
                     Collections.sort(spans, new Comparator<Position[]>() {
@@ -164,7 +165,10 @@ public class ClipboardHandler {
                                 handled = SourceUtils.resolveImport(copy, context, fqn);
                             } else {
                                 CompilationUnitTree cut = (CompilationUnitTree) copy.resolveRewriteTarget(copy.getCompilationUnit());
-                                copy.rewrite(copy.getCompilationUnit(), GeneratorUtilities.get(copy).addImports(cut, Collections.singleton(e)));
+                                if (e.getModifiers().contains(Modifier.STATIC) && copy.getTreeUtilities().isAccessible(scope, e, e.getEnclosingElement().asType())
+                                        && copy.getElementUtilities().outermostTypeElement(e) != copy.getElementUtilities().outermostTypeElement(scope.getEnclosingClass())) {
+                                    copy.rewrite(copy.getCompilationUnit(), GeneratorUtilities.get(copy).addImports(cut, Collections.singleton(e)));
+                                }
                                 handled = e.getSimpleName().toString();
                             }
                             imported.put(currentSimpleName, handled);

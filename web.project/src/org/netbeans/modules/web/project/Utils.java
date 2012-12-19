@@ -57,6 +57,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.*;
+import org.netbeans.api.annotations.common.NonNull;
 
 import org.netbeans.api.j2ee.core.Profile;
 import org.openide.filesystems.FileUtil;
@@ -209,8 +210,9 @@ public class Utils {
                 JavaPlatform platform = platforms[i];
                 String antName = (String)platform.getProperties().get(PLATFORM_ANT_NAME);
                 if (antName != null && antName.equals(platformName)) {
-                    if(specFilter == null || specFilter.equalsIgnoreCase(platform.getSpecification().getName()))
-                    return platform;
+                    if(specFilter == null || specFilter.equalsIgnoreCase(platform.getSpecification().getName())) {
+                        return platform;
+                    }
                 }
             }
         }
@@ -243,9 +245,9 @@ public class Utils {
      *
      * @return Java package corresponding to the given path
      */
-    private static final String makeJavaPackage(String path) {
+    private static String makeJavaPackage(String path) {
         String classNameComponents[] = split(path,"/");
-        StringBuffer legalClassNames = new StringBuffer();
+        StringBuilder legalClassNames = new StringBuilder();
         for (int i = 0; i < classNameComponents.length; i++) {
             legalClassNames.append(makeJavaIdentifier(classNameComponents[i]));
             if (i < classNameComponents.length - 1) {
@@ -262,7 +264,7 @@ public class Utils {
      * @param pat Pattern to split at
      * @return the components of the path
      */
-    private static final String [] split(String path, String pat) {
+    private static String [] split(String path, String pat) {
         Vector<String> comps = new Vector<String>();
         int pos = path.indexOf(pat);
         int start = 0;
@@ -292,9 +294,9 @@ public class Utils {
      *
      * @return Legal Java identifier corresponding to the given identifier
      */
-    private static final String makeJavaIdentifier(String identifier) {
-        StringBuffer modifiedIdentifier = 
-            new StringBuffer(identifier.length());
+    private static String makeJavaIdentifier(String identifier) {
+        StringBuilder modifiedIdentifier =
+            new StringBuilder(identifier.length());
         if (!Character.isJavaIdentifierStart(identifier.charAt(0))) {
             modifiedIdentifier.append('_');
         }
@@ -318,7 +320,7 @@ public class Utils {
     /**
      * Mangle the specified character to create a legal Java class name.
      */
-    private static final String mangleChar(char ch) {
+    private static String mangleChar(char ch) {
         char[] result = new char[5];
         result[0] = '_';
         result[1] = Character.forDigit((ch >> 12) & 0xf, 16);
@@ -382,16 +384,19 @@ public class Utils {
         USG_LOGGER.log(logRecord);
     }
     
+    @NonNull
     public static String getServletName(FileObject docBase, FileObject jsp) {
         String jspRelativePath = FileUtil.getRelativePath(docBase, jsp);
         return getServletResourcePath(null, jspRelativePath);
     }
     
+    @NonNull
     public static String getServletResourcePath(String moduleContextPath, String jspResourcePath) {
         return getServletPackageName(jspResourcePath).replace('.', '/') + '/' +
             getServletClassName(jspResourcePath) + ".java";
     }
 
+    @NonNull
     private static String getServletPackageName(String jspUri) {
         String dPackageName = getDerivedPackageName(jspUri);
         if (dPackageName.length() == 0) {
@@ -434,6 +439,7 @@ public class Utils {
         WebModule wm = WebModule.getWebModule(p.getProjectDirectory());
         if (wm != null && Profile.J2EE_13.equals(wm.getJ2eeProfile())) { // NOI18N
             filter = new LibraryChooser.Filter() {
+                @Override
                 public boolean accept(Library library) {
                     if ("javascript".equals(library.getType())) { //NOI18N
                         return false;

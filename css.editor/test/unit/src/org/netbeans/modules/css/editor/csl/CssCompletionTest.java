@@ -303,4 +303,8 @@ public class CssCompletionTest extends CssModuleTestBase {
     public void testInheritInColor() throws ParseException {
         checkCC("div { color:|  }", arr("inherit"), Match.CONTAINS_ONCE);
     }
+    
+    public void testURICompletion() throws ParseException {
+        checkCC("div { background-image: | } ", arr("url"), Match.CONTAINS);
+    }
 }
