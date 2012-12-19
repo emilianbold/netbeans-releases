@@ -131,9 +131,9 @@ class ArchiveViews {
         
         protected Node[] createNodes(String key) {
             Node n = null;
-            if (key == KEY_DOC_BASE) {
+            if (KEY_DOC_BASE.equals(key)) {
                 n = new DocBaseNode (getFolder(EarProjectProperties.META_INF));
-            } else if (key == KEY_SETUP_DIR) {
+            } else if (KEY_SETUP_DIR.equals(key)) {
                 n = J2eeProjectView.createServerResourcesNode(project);
             }
             return n == null ? new Node[0] : new Node[] {n};

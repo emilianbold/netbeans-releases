@@ -308,22 +308,22 @@ public final class EarProjectGenerator {
             } catch (IOException ioe) {
                 Logger.getLogger("global").log(Level.INFO, ioe.getLocalizedMessage());
             }
-        }
         
-        setupDD(j2eeProfile, docBase, earProject);
-        
-        if (userModules == null || userModules.isEmpty()) {
-            userModules = ModuleType.detectModules(srcPrjDirFO);
-        }
-        addUserModules(earProject, userModules, platformName, earHelper, earProject);
-        
-        // XXX all web module URI-to-ContextRoot mapping should happen here
-        
-        ProjectManager.getDefault().saveProject(earProject);
-        
-        earProject.getAppModule().getConfigSupport().createInitialConfiguration();
-        if (sourceLevel != null) {
-            EarProjectGenerator.setPlatformSourceLevel(earHelper, sourceLevel);
+            setupDD(j2eeProfile, docBase, earProject);
+
+            if (userModules == null || userModules.isEmpty()) {
+                userModules = ModuleType.detectModules(srcPrjDirFO);
+            }
+            addUserModules(earProject, userModules, platformName, earHelper, earProject);
+
+            // XXX all web module URI-to-ContextRoot mapping should happen here
+
+            ProjectManager.getDefault().saveProject(earProject);
+
+            earProject.getAppModule().getConfigSupport().createInitialConfiguration();
+            if (sourceLevel != null) {
+                EarProjectGenerator.setPlatformSourceLevel(earHelper, sourceLevel);
+            }
         }
         
         return earHelper;
