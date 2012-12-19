@@ -130,7 +130,7 @@ public class HtmlRuleContext {
         if (cssIndex == null) {
             Project project = FileOwnerQuery.getOwner(getFile());
             if (project != null) {
-                cssIndex = CssIndex.create(project);
+                cssIndex = CssIndex.get(project);
             }
         }
         return cssIndex;
