@@ -62,9 +62,13 @@ import org.openide.util.CharSequences;
 
     protected final int fileNameIndex;
     
+    protected ProjectFileNameBasedKey(int unitID, int fileID) {
+        super(unitID);
+        this.fileNameIndex = fileID;
+    }
+    
     protected ProjectFileNameBasedKey(FileImpl file) {
-        super(getFileUnitId(file));
-        this.fileNameIndex = getFileNameId(file);
+        this(getFileUnitId(file), getFileNameId(file));
     }
 
     protected ProjectFileNameBasedKey(KeyDataPresentation presentation) {
@@ -72,7 +76,7 @@ import org.openide.util.CharSequences;
         fileNameIndex = presentation.getFilePresentation();
     }
 
-    private static int getFileUnitId(FileImpl file) {
+    static int getFileUnitId(FileImpl file) {
         CndUtils.assertNotNull(file, "Null file"); //NOI18N
         // judging by #208877 null might occur here, although it's definitely wrong
         return file == null ? -1 : file.getUnitId();

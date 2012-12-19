@@ -1920,7 +1920,7 @@ public final class FileImpl implements CsmFile,
     }
     
     public int getFileId() {
-        return KeyUtilities.getProjectFileIndex(((KeyBasedUID)uid).getKey());
+        return KeyUtilities.getProjectFileIndex(((KeyBasedUID)getUID()).getKey());
     }
 
     public int getUnitId() {
