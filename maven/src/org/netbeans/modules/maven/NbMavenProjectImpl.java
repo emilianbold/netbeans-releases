@@ -158,6 +158,25 @@ public final class NbMavenProjectImpl implements Project {
         }
     }
 
+    //#224012
+    private ProjectOpenedHookImpl hookImpl;
+    private Exception ex;
+    private final Object LOCK_224012 = new Object();
+    boolean setIssue224012(ProjectOpenedHookImpl hook, Exception exception) {
+        synchronized (LOCK_224012) {
+            if (hookImpl == null) {
+                hookImpl = hook;
+                ex = exception;
+                return true;
+            } else {
+                LOG.log(Level.INFO, "    first creation stacktrace", ex);
+                LOG.log(Level.INFO, "    second creation stacktrace", exception);
+                LOG.log(Level.WARNING, "Spotted issue 224012 (https://netbeans.org/bugzilla/show_bug.cgi?id=224012). Please report the incident.");
+                return false;
+            }
+        }
+    }
+
 
     public static abstract class WatcherAccessor {
 

@@ -330,6 +330,9 @@ public abstract class CCCCompiler extends AbstractCompiler {
                         reader.close();
                     }
                 }
+                process.waitFor();
+                startedProcess = null;
+                errorTask = null;
             }
         } catch (IOException ex) {
             throw ex;
