@@ -171,7 +171,7 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
         initColumnsData();
         initComponents();
         updateProjectsCombo();
-        updateButtons();
+        notifyProfilingStateChanged();
         ProfilingPointsManager.getDefault().addPropertyChangeListener(this);
     }
 

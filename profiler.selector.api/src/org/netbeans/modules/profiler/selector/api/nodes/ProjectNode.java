@@ -71,7 +71,8 @@ public class ProjectNode extends ContainerNode {
         protected List<SelectorNode> prepareChildren(ProjectNode parent) {
             List<SelectorNode> nodes = new ArrayList<SelectorNode>(2);
             nodes.add(new ProjectSourcesNode(includeSubprojects, parent));
-            nodes.add(new ProjectLibrariesNode(includeSubprojects, parent));
+            if (!Boolean.getBoolean("profiler.roots.hide.libraries")) // NOI18N
+                nodes.add(new ProjectLibrariesNode(includeSubprojects, parent));
 
             return nodes;
         }
