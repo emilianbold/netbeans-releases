@@ -45,6 +45,7 @@ package org.netbeans.modules.html.editor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
@@ -247,6 +248,10 @@ public class HtmlPreferences {
         lazyIntialize();
         //return modifiable collection!
         ArrayList<String> list = new ArrayList<String>();
+        if(mimetypesWithEnabledHtmlErrorChecking == null) {
+            //somehow broken configuration, should normally be already loaded
+            return Collections.emptyList();
+        }
         list.addAll(Arrays.asList(mimetypesWithEnabledHtmlErrorChecking.split(mimetypesDelimiter)));
         return list;
     }
