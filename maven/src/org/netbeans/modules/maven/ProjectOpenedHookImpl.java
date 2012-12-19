@@ -148,6 +148,7 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
     
     public ProjectOpenedHookImpl(Project proj) {
         this.proj = proj;
+        assert checkIssue224012(proj);
     }
 
     @Messages("UI_MAVEN_PROJECT_OPENED=A Maven project was opened. Appending the project's packaging type.")
@@ -470,6 +471,14 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
             }
             registerWithSubmodules(FileUtilities.resolveFilePath(basedir, module), registered);
         }
+    }
+
+    private boolean checkIssue224012(Project project) {
+        if (project instanceof NbMavenProjectImpl) { //unfortunately cannot use lookup here, rendering the assert useless for ergonomics turned on..
+            NbMavenProjectImpl im = (NbMavenProjectImpl)project;
+            return im.setIssue224012(this, new Exception("Thread:" + Thread.currentThread().getName() + " at " + System.currentTimeMillis()));
+        }
+        return true;
     }
 
 }
