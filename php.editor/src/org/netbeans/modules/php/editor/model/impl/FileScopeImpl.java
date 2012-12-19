@@ -76,7 +76,9 @@ final class FileScopeImpl extends ScopeImpl implements FileScope  {
                 name,
                 Union2.<String, FileObject>createSecond(info != null ? info.getSnapshot().getSource().getFileObject() : null),
                 new OffsetRange(0, 0),
-                PhpElementKind.PROGRAM);        this.info = info;
+                PhpElementKind.PROGRAM,
+                false);
+        this.info = info;
     }
 
     void addCodeMarker(CodeMarkerImpl codeMarkerImpl) {
