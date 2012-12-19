@@ -84,6 +84,7 @@ public abstract class SocketFramework implements Runnable {
     }
     
     public void close( SelectionKey key ) throws IOException {
+        chanelClosed( key );
         key.channel().close();
         key.cancel();
     }
@@ -136,12 +137,10 @@ public abstract class SocketFramework implements Runnable {
                     process(key);
                 }
                 catch( ClosedChannelException e ){
-                    chanelClosed( key );
                     close(key);
                 }
                 catch( IOException e ){
                     LOG.log(Level.INFO, null, e);
-                    chanelClosed( key );
                     close(key);
                 }
             }

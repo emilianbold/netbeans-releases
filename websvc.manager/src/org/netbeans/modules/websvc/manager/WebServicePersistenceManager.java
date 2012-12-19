@@ -242,7 +242,7 @@ public class WebServicePersistenceManager implements ExceptionListener {
             encoder.writeObject(model.getPartnerServices());
 
             List<WebServiceData> wsDataSet = model.getWebServiceSet();
-            encoder.writeObject(new Integer(wsDataSet.size()));
+            encoder.writeObject(wsDataSet.size());
 
             synchronized (wsDataSet) {
                 for (WebServiceData wsData : wsDataSet) {
@@ -440,7 +440,7 @@ public class WebServicePersistenceManager implements ExceptionListener {
         ErrorManager.getDefault().notify(exc);
     }
 
-    public class WebServiceDataPersistenceDelegate extends DefaultPersistenceDelegate {
+    public static class WebServiceDataPersistenceDelegate extends DefaultPersistenceDelegate {
 
         /**
          * Suppress the writing of 

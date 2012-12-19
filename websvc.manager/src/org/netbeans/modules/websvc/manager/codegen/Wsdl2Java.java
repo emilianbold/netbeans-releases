@@ -44,9 +44,11 @@
 
 package org.netbeans.modules.websvc.manager.codegen;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.net.Proxy;
 import java.net.URI;
 import java.util.List;
@@ -65,6 +67,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.ProxySelector;
+import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.websvc.manager.util.ManagerUtil;
@@ -332,7 +335,8 @@ public class Wsdl2Java {
             final String wsdlConfigEntry = "\t<wsdl location=\"" + wsdlFileName +
                     "\" packageName=\"" + packageName + "\"/>"; // NOI81N
             
-            PrintWriter configWriter = new PrintWriter(out);
+            PrintWriter configWriter = new PrintWriter( new OutputStreamWriter(
+                    out, Charset.forName("UTF-8")));            // NOI18N
             
             try {
                 configWriter.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); // NOI18N
