@@ -175,31 +175,9 @@ public class RuleEditorPanel extends JPanel {
                         northWestPanel.revalidate();
                         northWestPanel.repaint();
 
-                        //re-set the css model as the CssCaretAwareSourceTask won't work 
-                        //if the modified file is not opened in editor
-                        Model model = getModel();
-                        if (model != null) {
-                            Document doc = model.getLookup().lookup(Document.class);
-                            if (doc != null) {
-                                try {
-                                    Source source = Source.create(doc);
-                                    ParserManager.parse(Collections.singleton(source), new UserTask() {
-                                        @Override
-                                        public void run(ResultIterator resultIterator) throws Exception {
-                                            resultIterator = WebUtils.getResultIterator(resultIterator, "text/css");
-                                            if (resultIterator != null) {
-                                                CssParserResult result = (CssParserResult) resultIterator.getParserResult();
-                                                final Model model = Model.getModel(result);
-                                                LOG.log(Level.FINE, "Model.CHANGES_APPLIED_TO_DOCUMENT event handler - setting new model {0}", model);
-                                                setModel(model);
-                                            }
-                                        }
-                                    });
-                                } catch (ParseException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
-                            }
-                        }
+                        //XXX this should not be called in EDT, but due to the current "increment support" design it has to.                        
+                        refreshModel();
+                        
                     } else if (Model.MODEL_WRITE_TASK_FINISHED.equals(evt.getPropertyName())) {
                         if (createdDeclaration != null) {
                             //select & edit the property corresponding to the created declaration
@@ -338,6 +316,34 @@ public class RuleEditorPanel extends JPanel {
         
         northEastPanel.add(toolbar, BorderLayout.WEST);
        
+    }
+    
+    /**
+     * Explicitly refreshes the CSS Source Model.
+     */
+    public void refreshModel() {
+        if (model != null) {
+            Document doc = model.getLookup().lookup(Document.class);
+            if (doc != null) {
+                try {
+                    Source source = Source.create(doc);
+                    ParserManager.parse(Collections.singleton(source), new UserTask() {
+                        @Override
+                        public void run(ResultIterator resultIterator) throws Exception {
+                            resultIterator = WebUtils.getResultIterator(resultIterator, "text/css");
+                            if (resultIterator != null) {
+                                CssParserResult result = (CssParserResult) resultIterator.getParserResult();
+                                final Model model = Model.getModel(result);
+                                LOG.log(Level.FINE, "Model.CHANGES_APPLIED_TO_DOCUMENT event handler - setting new model {0}", model);
+                                setModel(model);
+                            }
+                        }
+                    });
+                } catch (ParseException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
     }
     
     //called fro the containing TC's componentDeactivated();
