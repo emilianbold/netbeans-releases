@@ -281,9 +281,9 @@ final public class EjbJarProjectProperties {
     
     //Hotfix of the issue #70058 (copied from J2seProjectProperties)
     //Should be removed when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
-    private static final Integer BOOLEAN_KIND_TF = new Integer( 0 );
-    private static final Integer BOOLEAN_KIND_YN = new Integer( 1 );
-    private static final Integer BOOLEAN_KIND_ED = new Integer( 2 );
+    private static final Integer BOOLEAN_KIND_TF = 0;
+    private static final Integer BOOLEAN_KIND_YN = 1;
+    private static final Integer BOOLEAN_KIND_ED = 2;
 
     private final List<ActionListener> optionListeners = new CopyOnWriteArrayList<ActionListener>();
 
@@ -698,10 +698,10 @@ final public class EjbJarProjectProperties {
     //Hotfix of the issue #70058 (copied from J2SEProjectProperties)
     //Should be removed when the StoreGroup SPI will be extended to allow false default value in ToggleButtonModel
     private static String encodeBoolean (boolean value, Integer kind) {
-        if ( kind == BOOLEAN_KIND_ED ) {
+        if ( BOOLEAN_KIND_ED.equals(kind) ) {
             return value ? "on" : "off"; // NOI18N
         }
-        else if ( kind == BOOLEAN_KIND_YN ) { // NOI18N
+        else if ( BOOLEAN_KIND_YN.equals(kind) ) { // NOI18N
             return value ? "yes" : "no";
         }
         else {

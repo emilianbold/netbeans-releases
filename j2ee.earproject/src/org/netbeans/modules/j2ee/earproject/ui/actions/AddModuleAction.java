@@ -84,7 +84,7 @@ public class AddModuleAction extends CookieAction {
     
     @Override
     public Class[] cookieClasses() {
-        return COOKIE_ARRAY;
+        return COOKIE_ARRAY.clone();
     }
     
     @Override
