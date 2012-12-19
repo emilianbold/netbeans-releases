@@ -102,6 +102,7 @@ public final class ProjectManager {
     
     private ProjectManager() {
         factories.addLookupListener(new LookupListener() {
+            @Override
             public void resultChanged(LookupEvent e) {
                 clearNonProjectCache();
             }
@@ -232,6 +233,7 @@ public final class ProjectManager {
         }
         try {
             return mutex().readAccess(new Mutex.ExceptionAction<Project>() {
+                @Override
                 public Project run() throws IOException {
                     // Read access, but still needs to synch on the cache since there
                     // may be >1 reader.
@@ -447,6 +449,7 @@ public final class ProjectManager {
             }
         }
         return mutex().readAccess(new Mutex.Action<Result>() {
+            @Override
             public Result run() {
                 synchronized (dir2Proj) {
                     Union2<Reference<Project>,LoadStatus> o;
@@ -560,10 +563,12 @@ public final class ProjectManager {
             this.p = p;
         }
         
+        @Override
         public void markModified() {
             assert p != null;
             LOG.log(Level.FINE, "markModified({0})", p.getProjectDirectory());
             mutex().writeAccess(new Mutex.Action<Void>() {
+                @Override
                 public Void run() {
                     if (proj2Factory.containsKey(p)) {
                         modifiedProjects.add(p);
@@ -575,11 +580,13 @@ public final class ProjectManager {
             });
         }
 
+        @Override
         public void notifyDeleted() throws IllegalStateException {
             assert p != null;
             final FileObject dir = p.getProjectDirectory();
             LOG.log(Level.FINE, "notifyDeleted: {0}", dir);
             mutex().writeAccess(new Mutex.Action<Void>() {
+                @Override
                 public Void run() {
                     synchronized (dir2Proj) {
                         Union2<Reference<Project>,LoadStatus> o = dir2Proj.get(dir);
@@ -616,6 +623,7 @@ public final class ProjectManager {
      */
     public Set<Project> getModifiedProjects() {
         return mutex().readAccess(new Mutex.Action<Set<Project>>() {
+            @Override
             public Set<Project> run() {
                 return new HashSet<Project>(modifiedProjects);
             }
@@ -630,6 +638,7 @@ public final class ProjectManager {
      */
     public boolean isModified(final Project p) {
         return mutex().readAccess(new Mutex.Action<Boolean>() {
+            @Override
             public Boolean run() {
                 synchronized (dir2Proj) {
                     if (!proj2Factory.containsKey(p)) {
@@ -660,6 +669,7 @@ public final class ProjectManager {
     public void saveProject(final Project p) throws IOException {
         try {
             mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
                 public Void run() throws IOException {
                     //removed projects are the ones that cannot be mapped to an existing project type anymore.
                     if (removedProjects.contains(p)) {
@@ -697,6 +707,7 @@ public final class ProjectManager {
     public void saveAllProjects() throws IOException {
         try {
             mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
                 public Void run() throws IOException {
                     Iterator<Project> it = modifiedProjects.iterator();
                     while (it.hasNext()) {
@@ -729,6 +740,7 @@ public final class ProjectManager {
      */
     public boolean isValid(final Project p) {
         return mutex().readAccess(new Mutex.Action<Boolean>() {
+            @Override
             public Boolean run() {
                 synchronized (dir2Proj) {
                     return proj2Factory.containsKey(p);
