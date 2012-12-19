@@ -44,6 +44,7 @@ package org.netbeans.modules.remote.spi;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -70,9 +71,9 @@ public final class FileSystemProvider {
         void problemOccurred(FileSystem fileSystem, String path);
         void recovered(FileSystem fileSystem);
     }
-    
-    private static final  Collection<? extends FileSystemProviderImplementation> ALL_PROVIDERS =
-            Lookup.getDefault().lookupAll(FileSystemProviderImplementation.class);
+    // create own copy of lookup to avoid performance issues in ProxyLookup.LazyCollection.iterator()
+    private static final  Collection<FileSystemProviderImplementation> ALL_PROVIDERS =
+            new ArrayList<FileSystemProviderImplementation>(Lookup.getDefault().lookupAll(FileSystemProviderImplementation.class));
 
     private FileSystemProvider() {
     }
