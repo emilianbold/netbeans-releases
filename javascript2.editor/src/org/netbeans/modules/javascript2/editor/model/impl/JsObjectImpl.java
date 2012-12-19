@@ -61,6 +61,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     final private boolean hasName;
     private String documentation;
     protected JsElement.Kind kind;
+    private boolean deprecated;
     
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange) {
         super((parent != null ? parent.getFileObject() : null), name.getName(), name.getName().equals("prototype"),  offsetRange, EnumSet.of(Modifier.PUBLIC));
@@ -71,6 +72,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         this.assignments = new HashMap<Integer, Collection<TypeUsage>>();
         this.hasName = name.getOffsetRange().getStart() != name.getOffsetRange().getEnd();
         this.kind = null;
+        this.deprecated = false;
     }
     
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange, boolean isDeclared, Set<Modifier> modifiers) {
@@ -82,6 +84,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         this.assignments = new HashMap<Integer, Collection<TypeUsage>>();
         this.hasName = name.getOffsetRange().getStart() != name.getOffsetRange().getEnd();
         this.kind = null;
+        this.deprecated = false;
     }
     
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange, boolean isDeclared) {
@@ -96,6 +99,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         this.occurrences = new ArrayList<Occurrence>();
         this.assignments = new HashMap<Integer, Collection<TypeUsage>>();
         this.hasName = false;
+        this.deprecated = false;
     }
     
     @Override
@@ -276,6 +280,8 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     public boolean isAnonymous() {
         return false;
     }
+    
+   
 
     @Override
     public boolean hasExactName() {
@@ -473,5 +479,14 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
  
     public void setDocumentation(String doc) {
         this.documentation = doc;
+    }
+
+    @Override
+    public boolean isDeprecated() {
+        return deprecated;
+    }
+    
+    public void setDeprecated(boolean depreceted) {
+        this.deprecated = depreceted;
     }
 }

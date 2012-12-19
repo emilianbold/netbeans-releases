@@ -73,6 +73,8 @@ public interface JsObject extends JsElement {
     
     public boolean isAnonymous();
     
+    public boolean isDeprecated();
+    
     /**
      * 
      * @return true if the object/function is identified by a name. 

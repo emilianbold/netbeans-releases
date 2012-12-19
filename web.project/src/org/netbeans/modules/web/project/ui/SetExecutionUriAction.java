@@ -75,6 +75,7 @@ import org.netbeans.modules.web.project.WebAppMetadataHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 /** 
 *
 * @author Milan Kuchtiak
@@ -91,10 +92,11 @@ public final class SetExecutionUriAction extends NodeAction {
     /**
      * Creates and starts a thread for generating documentation
      */
+    @Override
     protected void performAction(Node[] activatedNodes) {
         if ((activatedNodes != null) && (activatedNodes.length == 1)) {
             if (activatedNodes[0] != null) {
-                DataObject data = (DataObject)activatedNodes[0].getCookie(DataObject.class);
+                DataObject data = (DataObject)activatedNodes[0].getLookup().lookup(DataObject.class);
                 if (data != null) {
                     FileObject servletFo = data.getPrimaryFile();
                     WebModule webModule = WebModule.getWebModule(servletFo);
@@ -108,12 +110,13 @@ public final class SetExecutionUriAction extends NodeAction {
                         if (res.equals(NotifyDescriptor.YES_OPTION)) {
                             try {
                                 servletFo.setAttribute(ATTR_EXECUTION_URI,uriPanel.getServletUri());
-                            } catch (java.io.IOException ex){}
-                        } else return;
+                            } catch (java.io.IOException ex){
+                                // ignore
+                            }
+                        }
                     } else {
-                        String mes = java.text.MessageFormat.format (
-                                NbBundle.getMessage (SetExecutionUriAction.class, "TXT_missingServletMappings"),
-                                new Object [] {servletFo.getName()}); //NOI18N
+                        String mes = NbBundle.getMessage (
+                                SetExecutionUriAction.class, "TXT_missingServletMappings",servletFo.getName()); //NOI18N
                         NotifyDescriptor desc = new NotifyDescriptor.Message(mes,NotifyDescriptor.Message.ERROR_MESSAGE);
                         DialogDisplayer.getDefault().notify(desc);
                     }
@@ -122,10 +125,11 @@ public final class SetExecutionUriAction extends NodeAction {
         }
     }
     
+    @Override
     protected boolean enable (Node[] activatedNodes) {
         if ((activatedNodes != null) && (activatedNodes.length == 1)) {
             if (activatedNodes[0] != null) {
-                DataObject data = (DataObject)activatedNodes[0].getCookie(DataObject.class);
+                DataObject data = (DataObject)activatedNodes[0].getLookup().lookup(DataObject.class);
                 if (data != null) {
                     FileObject javaClass = data.getPrimaryFile();
                     WebModule webModule = WebModule.getWebModule(javaClass);
@@ -160,14 +164,16 @@ public final class SetExecutionUriAction extends NodeAction {
      * Help context where to find more about the action.
      * @return the help context for this action
      */
+    @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx (SetExecutionUriAction.class);
+        return new HelpCtx ("org.netbeans.modules.web.project.ui.SetExecutionUriAction");
     }
 
     /**
      * Human presentable name of the action. This should be presented as an item in a menu.
      * @return the name of the action
      */
+    @Override
     public String getName() {
         return NbBundle.getMessage(SetExecutionUriAction.class, "LBL_serveltExecutionUriAction");
     }
@@ -205,6 +211,7 @@ public final class SetExecutionUriAction extends NodeAction {
                 final ProjectWebModule source = prjWebModule;
                 PropertyChangeListener listener = new PropertyChangeListener() {
                     
+                    @Override
                     public void propertyChange( PropertyChangeEvent event ) {
                         String name = event.getPropertyName();
                         if ( ProjectWebModule.LOOKUP_ITEM.equals(name) &&
@@ -239,10 +246,14 @@ public final class SetExecutionUriAction extends NodeAction {
     {
         // Fix for IZ#170419 - Invoking Run took 29110 ms.
         assert checkScanFinished( webModule , javaClass );
-        if (webModule == null)
+        if (webModule == null) {
             return null;
+        }
         
         ClassPath classPath = ClassPath.getClassPath (javaClass, ClassPath.SOURCE);
+        if (classPath == null) {
+            return null;
+        }
         String className = classPath.getResourceName(javaClass,'.',false);
 
         try {
@@ -258,7 +269,7 @@ public final class SetExecutionUriAction extends NodeAction {
             mappingList.toArray(mappings);
             return mappings;
         } catch (java.io.IOException ex) {
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
             return null;
         }
     }
@@ -301,6 +312,7 @@ public final class SetExecutionUriAction extends NodeAction {
                         MarkerClass.class );
                 if ( marker == null ){
                     Runnable runnable = new Runnable(){
+                        @Override
                         public void run() {
                             isServletFile(webModule, fileObject , true );
                             prjWebModule.removeCookie( MARKER);
@@ -366,7 +378,7 @@ public final class SetExecutionUriAction extends NodeAction {
             }
             return result;
         } catch (java.io.IOException ex) {
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
         }
         return false;
     }
@@ -384,6 +396,7 @@ public final class SetExecutionUriAction extends NodeAction {
             }
             try {
             javaSource.runUserActionTask( new Task<CompilationController>(){
+                @Override
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase( Phase.ELEMENTS_RESOLVED );
                     for( String servletClass : servletClasses){
@@ -406,12 +419,13 @@ public final class SetExecutionUriAction extends NodeAction {
             }, true);
             }
             catch(IOException e ){
-                e.printStackTrace();
+                Exceptions.printStackTrace(e);
             }
         }
         else {
             Runnable runnable = new Runnable() {
                 
+                @Override
                 public void run() {
                     setServletClasses(servletClasses, orig, true);
                 }

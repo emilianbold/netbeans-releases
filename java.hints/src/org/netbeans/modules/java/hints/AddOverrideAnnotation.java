@@ -101,7 +101,11 @@ public class AddOverrideAnnotation {
             ExecutableElement ee = (ExecutableElement) e;
             List<ElementDescription> result = new ArrayList<ElementDescription>();
 
-            AnnotationType type = ComputeOverriding.detectOverrides(compilationInfo, (TypeElement) ee.getEnclosingElement(), ee, result);
+            Element enclEl = ee.getEnclosingElement();
+            if (!enclEl.getKind().isClass() && !enclEl.getKind().isInterface())
+                return null;
+
+            AnnotationType type = ComputeOverriding.detectOverrides(compilationInfo, (TypeElement) enclEl, ee, result);
 
             boolean hasOverriddenAnnotation = false;
 

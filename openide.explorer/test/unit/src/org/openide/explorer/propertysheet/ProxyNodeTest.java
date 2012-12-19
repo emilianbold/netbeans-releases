@@ -202,6 +202,44 @@ public class ProxyNodeTest extends NbTestCase {
         assertEquals("Value", 10, prop.getValue());
     }
 
+    public void testNullInPropertySets() throws Exception {
+        class MN extends AbstractNode {
+            public MN() {
+                super(Children.LEAF);
+                this.ps = new PropertySet[]{new PropertySet() {
+                    @Override
+                    public Property<?>[] getProperties() {
+                        final Property[] arr = new Property[1];
+                        arr[0] = new PropertySupport("name", String.class, "my name", "my real name", true, false) {
+                            @Override
+                            public Object getValue() throws IllegalAccessException, InvocationTargetException {
+                                return "Name";
+                            }
+                            
+                            @Override
+                            public void setValue(Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                                throw new IllegalAccessException();
+                            }
+                        };
+                        return arr;
+                    }
+                }};
+            }
+            private PropertySet[] ps;
+            @Override
+            public PropertySet[] getPropertySets() {
+                return ps;
+            }
+            
+        }
+        MN n = new MN();
+        ProxyNode pn = new ProxyNode(n);
+        
+        Property<?> prop = findProperty(pn, "name");
+        assertEquals("Name", "name", prop.getName());
+        assertEquals("Value", "Name", prop.getValue());
+    }
+
     private static Property<?> findProperty(ProxyNode pn, String name) {
         for (Node.PropertySet propertySet : pn.getPropertySets()) {
             for (Property<?> property : propertySet.getProperties()) {

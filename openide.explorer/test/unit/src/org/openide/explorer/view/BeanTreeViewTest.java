@@ -61,6 +61,7 @@ import junit.framework.AssertionFailedError;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -181,6 +182,7 @@ public class BeanTreeViewTest extends NbTestCase {
         return awt.p.getExplorerManager();
     }
     
+    @RandomlyFails // NB-Core-Build #8711, 8764, 8828, 8880, 9318: Still Unstable
     public void testVisibleVisNodesAreNotGCed() throws InterruptedException, Throwable {
         doTestVisibleVisNodesAreNotGCed(false);
     }

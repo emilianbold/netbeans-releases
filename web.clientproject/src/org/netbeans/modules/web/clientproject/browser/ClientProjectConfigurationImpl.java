@@ -68,12 +68,18 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
     private BrowserSupport browserSupport;
     private ProjectConfigurationCustomizerImpl cust = null;
     private ServerURLMappingImplementation mapping;
-    private Boolean browserIntegration;
+    private BrowserIntegration browserIntegration;
     private int order;
     private boolean disableIntegration;
 
+    public static enum BrowserIntegration {
+        ENABLED,
+        DISABLE,
+        NONE
+    }
+
     public ClientProjectConfigurationImpl(ClientSideProject project, WebBrowser browser, 
-        ClientProjectPlatformImpl platform, Boolean browserIntegration, int order, boolean disableIntegration) {
+        ClientProjectPlatformImpl platform, BrowserIntegration browserIntegration, int order, boolean disableIntegration) {
         this.project = project;
         this.browser = browser;
         this.platform = platform;
@@ -94,7 +100,7 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
 
     @Override
     public void save() {
-        if (cust != null && getBrowserIntegration() == Boolean.TRUE) {
+        if (cust != null && getBrowserIntegration() == BrowserIntegration.ENABLED) {
             EditableProperties p = project.getProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             p.put(ClientSideProjectConstants.PROJECT_AUTO_REFRESH+"."+getId(), Boolean.toString(cust.panel.isAutoRefresh())); //NOI18N
             p.put(ClientSideProjectConstants.PROJECT_HIGHLIGHT_SELECTION+"."+getId(), Boolean.toString(cust.panel.isHighlightSelection())); //NOI18N
@@ -107,22 +113,22 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
      *    NetBeans integration; TRUE means it has and it is in enabled; FALSE means it has 
      *    but it is disabled
      */
-    public Boolean getBrowserIntegration() {
+    public BrowserIntegration getBrowserIntegration() {
         return browserIntegration;
     }
     
     public boolean canBeDefaultConfiguration() {
-        return Boolean.TRUE.equals(browserIntegration) && 
+        return browserIntegration == BrowserIntegration.ENABLED &&
             (browser.getBrowserFamily() == BrowserFamilyId.CHROME || browser.getBrowserFamily() == BrowserFamilyId.CHROMIUM);
     }
     
     public boolean isAutoRefresh() {
         String val = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_AUTO_REFRESH+"."+getId()); //NOI18N
         if (val != null) {
-            return Boolean.parseBoolean(val) && getBrowserIntegration() == Boolean.TRUE;
+            return Boolean.parseBoolean(val) && getBrowserIntegration() == BrowserIntegration.ENABLED;
         } else {
             // if browserIntegration is available then default is true for AutoRefresh
-            return getBrowserIntegration() == Boolean.TRUE;
+            return getBrowserIntegration() == BrowserIntegration.ENABLED;
         }
     }
 
@@ -130,16 +136,16 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
     public boolean isHighlightSelectionEnabled() {
         String val = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_HIGHLIGHT_SELECTION+"."+getId()); //NOI18N
         if (val != null) {
-            return Boolean.parseBoolean(val) && getBrowserIntegration() == Boolean.TRUE;
+            return Boolean.parseBoolean(val) && getBrowserIntegration() == BrowserIntegration.ENABLED;
         } else {
             // if browserIntegration is available then default is true for HighlightSelectionEnabled
-            return getBrowserIntegration() == Boolean.TRUE;
+            return getBrowserIntegration() == BrowserIntegration.ENABLED;
         }
     }
 
     @Override
     public String getDisplayName() {
-        if (browserIntegration == Boolean.TRUE && browser.getBrowserFamily() != BrowserFamilyId.JAVAFX_WEBVIEW) {
+        if (browserIntegration == BrowserIntegration.ENABLED && browser.getBrowserFamily() != BrowserFamilyId.JAVAFX_WEBVIEW) {
             return NbBundle.getMessage(ClientProjectConfigurationImpl.class, "WITH_NETBEANS_INTEGRATION", browser.getName());
         }
         return browser.getName();

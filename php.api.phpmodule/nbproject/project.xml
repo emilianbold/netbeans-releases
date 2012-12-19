@@ -164,8 +164,10 @@
                 <friend>org.netbeans.modules.php.symfony</friend>
                 <friend>org.netbeans.modules.php.symfony2</friend>
                 <friend>org.netbeans.modules.php.zend</friend>
+                <friend>org.netbeans.modules.php.zend2</friend>
                 <package>org.netbeans.modules.php.api.phpmodule</package>
                 <package>org.netbeans.modules.php.api.util</package>
+                <package>org.netbeans.modules.php.api.validation</package>
             </friend-packages>
         </data>
     </configuration>

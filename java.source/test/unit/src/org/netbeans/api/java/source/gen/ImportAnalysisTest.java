@@ -52,6 +52,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.prefs.Preferences;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -60,6 +61,9 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -268,6 +272,8 @@ public class ImportAnalysisTest extends GeneratorTestBase {
 
     public void testAddImport6() throws IOException {
         JavaSource src = getJavaSource(testFile);
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("importInnerClasses", true);
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
@@ -288,11 +294,14 @@ public class ImportAnalysisTest extends GeneratorTestBase {
             }
         };
         src.runModificationTask(task).commit();
+        preferences.remove("importInnerClasses");
         assertFiles("testAddImport6.pass");
     }
 
     public void testAddImport7() throws IOException {
         JavaSource src = getJavaSource(testFile);
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("importInnerClasses", true);
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
@@ -312,11 +321,14 @@ public class ImportAnalysisTest extends GeneratorTestBase {
             }
         };
         src.runModificationTask(task).commit();
+        preferences.remove("importInnerClasses");
         assertFiles("testAddImport6.pass"); //the same as testAddImport6, so using only one golden file
     }
 
     public void testAddImport8() throws IOException {
         JavaSource src = getJavaSource(testFile);
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("importInnerClasses", true);
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
@@ -338,6 +350,7 @@ public class ImportAnalysisTest extends GeneratorTestBase {
             }
         };
         src.runModificationTask(task).commit();
+        preferences.remove("importInnerClasses");
         assertFiles("testAddImport8.pass");
     }
 

@@ -60,6 +60,7 @@ import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.DocumentModel;
 import org.netbeans.modules.xml.xam.dom.DocumentModelAccess;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
+import org.netbeans.modules.xml.xam.dom.DocumentModelAccess2;
 import org.netbeans.modules.xml.xam.dom.ElementIdentity;
 import org.netbeans.modules.xml.xdm.XDMModel;
 import org.netbeans.modules.xml.xdm.diff.NodeInfo;
@@ -69,6 +70,7 @@ import org.netbeans.modules.xml.xdm.nodes.Element;
 import org.netbeans.modules.xml.xdm.nodes.Node;
 import org.netbeans.modules.xml.xdm.nodes.NodeImpl;
 import org.netbeans.modules.xml.xdm.nodes.Token;
+import org.netbeans.modules.xml.xdm.visitor.EndPositionFinderVisitor;
 import org.netbeans.modules.xml.xdm.visitor.NodeByPositionVisitor;
 import org.netbeans.modules.xml.xdm.visitor.PathFromRootVisitor;
 import org.netbeans.modules.xml.xdm.visitor.PositionFinderVisitor;
@@ -79,7 +81,7 @@ import org.w3c.dom.NamedNodeMap;
  *
  * @author nn136682
  */
-public class XDMAccess extends DocumentModelAccess {
+public class XDMAccess extends DocumentModelAccess2 {
     private final XDMModel xdmModel;
     private final AbstractDocumentModel model;
     private final XDMListener xdmListener;
@@ -414,6 +416,11 @@ public class XDMAccess extends DocumentModelAccess {
     @Override
     public int findPosition(org.w3c.dom.Node node){
         return (new PositionFinderVisitor()).findPosition(xdmModel.getDocument(), (Node)node);
+    }
+    
+    @Override
+    public int findEndPosition(org.w3c.dom.Node node) {
+        return (new EndPositionFinderVisitor()).findPosition(xdmModel.getDocument(), (Node)node);
     }
     
     @Override

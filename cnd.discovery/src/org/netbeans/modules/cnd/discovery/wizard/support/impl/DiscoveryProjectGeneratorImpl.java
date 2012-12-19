@@ -426,12 +426,12 @@ public class DiscoveryProjectGeneratorImpl {
         } else {
             if (added.isDiskFolder()) {
                 String additionalPath = used.getFolder();
-                String folderPath = CndPathUtilitities.toAbsolutePath(folder.getConfigurationDescriptor().getBaseDir(), added.getRootPath());
+                String folderPath = CndPathUtilitities.toAbsolutePath(folder.getConfigurationDescriptor().getBaseDirFileObject(), added.getRootPath());
                 Folder logicalCandidate = null;
                 if (!additionalPath.equals(folderPath)) {
                     for (Folder candidate : folder.getFolders()) {
                         if (candidate.isDiskFolder()) {
-                            folderPath = CndPathUtilitities.toAbsolutePath(folder.getConfigurationDescriptor().getBaseDir(), candidate.getRootPath());
+                            folderPath = CndPathUtilitities.toAbsolutePath(folder.getConfigurationDescriptor().getBaseDirFileObject(), candidate.getRootPath());
                             if (additionalPath.equals(folderPath)) {
                                 added = candidate;
                                 break;

@@ -47,8 +47,14 @@ import org.openide.filesystems.FileObject;
  * See DependentFileQuery API for more info.
  */
 public interface DependentFileQueryImplementation {
+
+    public static enum Dependency {
+        YES,
+        NO,
+        UNKNOWN,
+    }
     
-    Boolean isDependent(FileObject master, FileObject dependent);
+    Dependency isDependent(FileObject master, FileObject dependent);
     
     //Set<FileObject> getDependent( FileObject fileObject );
     

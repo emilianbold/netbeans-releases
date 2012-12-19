@@ -60,10 +60,15 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -440,6 +445,8 @@ public final class Terminal extends JComponent {
 		flags |= Term.DEBUG_WRAP;
 	    else if (s.toLowerCase().equals("margins"))		// NOI18N
 		flags |= Term.DEBUG_MARGINS;
+	    else if (s.toLowerCase().equals("sequences"))	// NOI18N
+		term.setSequenceLogging(true);
 	    else
 		;
 	}
@@ -530,6 +537,40 @@ public final class Terminal extends JComponent {
 	public boolean isEnabled() {
 	    return closable;
 	}
+    }
+    
+        private final class DumpSequencesAction extends AbstractAction {
+        public DumpSequencesAction() {
+            super("Dump Sequences");	// NOI18N
+        }
+
+        private void dump(String title, Set<String> set) {
+            File file = new File(String.format("/tmp/term-sequences-%s", title)); // NOI18N
+            PrintStream ps;
+            try {
+                ps = new PrintStream(file);
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(Terminal.class.getName()).log(Level.SEVERE, null, ex);
+                return;
+            }
+
+            if (set != null) {
+                for (String s : set) {
+                    ps.printf("%s\n", s); // NOI18N
+		}
+            }
+
+            ps.close();
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (!isEnabled()) {
+		return;
+	    }
+            dump("completed", term.getCompletedSequences()); // NOI18N
+            dump("unrecognized", term.getUnrecognizedSequences()); // NOI18N
+        }
     }
     
     private final class SetTitleAction extends AbstractAction {
@@ -653,6 +694,7 @@ public final class Terminal extends JComponent {
     private final Action wrapAction = new WrapAction();
     private final Action clearAction = new ClearAction();
     private final Action closeAction = new CloseAction();
+    private final Action dumpSequencesAction = new DumpSequencesAction();
 
 
 
@@ -856,6 +898,10 @@ public final class Terminal extends JComponent {
         addMenuItem(menu, clearAction);
 	if (isClosable())
 	    addMenuItem(menu, closeAction);
+
+	if (System.getProperty("Term.debug") != null) {
+            addMenuItem(menu, dumpSequencesAction);
+        }
 
         findAction.setEnabled(! findState.isVisible());
 

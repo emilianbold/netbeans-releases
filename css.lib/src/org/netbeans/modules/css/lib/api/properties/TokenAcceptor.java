@@ -114,6 +114,10 @@ public abstract class TokenAcceptor {
     
     public abstract boolean accepts(Token token);
     
+    Collection<String> getFixedImageTokens() {
+        return null;
+    }
+    
     public static class Resolution extends NumberPostfixAcceptor {
 
         private static final List<String> POSTFIXES = Arrays.asList(new String[]{"dpi", "dppx", "dpcm"}); //NOI18N
@@ -513,6 +517,8 @@ public abstract class TokenAcceptor {
 
     public static class Uri extends TokenAcceptor {
 
+        private static final String URL_TOKEN_IMAGE = "url";
+        
         public Uri(String id) {
             super(id);
         }
@@ -521,6 +527,12 @@ public abstract class TokenAcceptor {
         public boolean accepts(Token token) {
             return token.tokenId() == CssTokenId.URI;
         }
+
+        @Override
+        Collection<String> getFixedImageTokens() {
+            return Collections.singleton(URL_TOKEN_IMAGE);
+        }
+        
     }
     
     private static class GenericFunctionContent extends TokenAcceptor {

@@ -158,7 +158,8 @@ public class ImageNavigatorPanel implements NavigatorPanel {
 
             @Override
             public void run() {
-                InputStream inputStream;
+                InputStream inputStream = null;
+                BufferedImage image = null;
                 try {
                     FileObject fileObject = dataObject.getPrimaryFile();
                     if (fileObject == null) {
@@ -168,20 +169,26 @@ public class ImageNavigatorPanel implements NavigatorPanel {
                     if (inputStream == null) {
                         return;
                     }
-                    final BufferedImage image = ImageIO.read(inputStream);
                     if (panelUI == null) {
                         getComponent();
                     }
-                    
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            panelUI.setImage(image);                    
-                        }
-                    });
+                    try {
+                        image = ImageIO.read(inputStream);
+                    } catch (IllegalArgumentException iaex) {
+                        Logger.getLogger(ImageNavigatorPanel.class.getName()).info(NbBundle.getMessage(ImageNavigatorPanel.class, "ERR_IOFile"));
+                        inputStream.close();
+                    }
                     inputStream.close();
                 } catch (IOException ex) {
                     Logger.getLogger(ImageNavigatorPanel.class.getName()).info(NbBundle.getMessage(ImageNavigatorPanel.class, "ERR_IOFile"));
+                } finally {
+                    final BufferedImage fImage = image;
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            panelUI.setImage(fImage);
+                        }
+                    });
                 }
             }
         });

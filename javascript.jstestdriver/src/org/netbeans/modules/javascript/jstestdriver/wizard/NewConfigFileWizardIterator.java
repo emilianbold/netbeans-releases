@@ -76,7 +76,7 @@ public class NewConfigFileWizardIterator implements WizardDescriptor.Asynchronou
     @Override
     public void initialize(WizardDescriptor wizard) {
         this.descriptor = wizard;
-        Templates.setTargetName(wizard, "jsTestDriver"); // NOTICES
+        Templates.setTargetName(wizard, "jsTestDriver"); //NOI18N
         panels = getPanels();
 
         // make sure list of steps is accurate.

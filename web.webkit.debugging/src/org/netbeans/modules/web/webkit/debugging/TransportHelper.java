@@ -220,8 +220,8 @@ public class TransportHelper {
        return IOProvider.getDefault().getIO(Bundle.WebKitDebuggingProtocolPane(), false); 
     }
     
-    private static final SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss:SSS");
     public static String getCurrentTime() {
+        SimpleDateFormat formatter = new SimpleDateFormat("HH:mm:ss:SSS");
         return formatter.format(new Date(System.currentTimeMillis()));
     }
     
