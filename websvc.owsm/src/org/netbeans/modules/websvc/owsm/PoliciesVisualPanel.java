@@ -225,11 +225,7 @@ public class PoliciesVisualPanel extends javax.swing.JPanel {
         for (AnnotationMirror annotationMirror : allAnnotationMirrors) {
             Element annotationElement = annotationMirror.getAnnotationType().asElement();
             if ( annotationElement instanceof TypeElement ){
-                String fqn = null ;
-                if ( annotationElement instanceof TypeElement ){
-                    fqn = ((TypeElement)annotationElement).getQualifiedName().
-                        toString();
-                }
+                String fqn = ((TypeElement)annotationElement).getQualifiedName(). toString();
                 if ( "javax.jws.WebService".equals( fqn )){
                     isWebService = true;
                 }
