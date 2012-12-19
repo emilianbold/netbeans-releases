@@ -1197,6 +1197,8 @@ public class RuleEditorNode extends AbstractNode {
 
         private AutocompleteJComboBox editor;
         private AddPropertyFD property;
+        
+        private boolean cancelled;
 
         public AddPropertyCellEditorComponent(AutocompleteJComboBox jcb, AddPropertyFD addFDProperty) {
             super(jcb);
@@ -1205,7 +1207,9 @@ public class RuleEditorNode extends AbstractNode {
             this.editor.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent ae) {
-                    property.setValue((String)editor.getSelectedItem());
+                    if(!cancelled) {
+                        property.setValue((String)editor.getSelectedItem());
+                    }
                 }
             });
             
@@ -1216,6 +1220,12 @@ public class RuleEditorNode extends AbstractNode {
             return editor;
         }
 
+        @Override
+        protected void fireEditingCanceled() {
+            cancelled = true;
+            super.fireEditingCanceled();
+        }
+        
     }
 
     /**

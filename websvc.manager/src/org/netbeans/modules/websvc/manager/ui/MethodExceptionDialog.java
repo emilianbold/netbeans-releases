@@ -127,32 +127,31 @@ public class MethodExceptionDialog extends javax.swing.JPanel {
         "</HEAD>" +
         "<BODY>";
         String htmlEnd = "</BODY></HTML>";
-        String exceptionString = "";
         /**
          * unwrap the exceptions.
          */
         Throwable cause = inException;
+        StringBuilder builder = new StringBuilder();
         while(null != cause) {
-            exceptionString += "<BR><FONT COLOR=\"RED\">" + cause.getLocalizedMessage() + "</FONT>";
+            builder.append( "<BR><FONT COLOR=\"RED\">" );
+            builder.append( cause.getLocalizedMessage());
+            builder.append(  "</FONT>");
             StackTraceElement [] traceElements = cause.getStackTrace();
-            String stackTrace = "<BR>Stack Trace<BR><BR>";
+            builder.append( "<BR>Stack Trace<BR>");
             for(int ii=0;ii < traceElements.length;ii++) {
-                exceptionString += "<BR>" + traceElements[ii].toString();
+                builder.append( "<BR>" );
+                builder.append(  traceElements[ii].toString());
             }
             cause = cause.getCause();
         }
         
         
         if(keepOld) {
-            currentMessage += exceptionString;
-        } else {
-            currentMessage = exceptionString;
-        }
-        
-        
-        
-        
-        messagePane.setText(htmlStart + currentMessage + htmlEnd);
+            builder.insert(0, currentMessage);
+        } 
+        builder.insert(0, htmlStart);
+        builder.append(htmlEnd);
+        messagePane.setText(builder.toString());
     }
     
     
