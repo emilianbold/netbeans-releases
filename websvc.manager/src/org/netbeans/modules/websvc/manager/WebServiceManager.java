@@ -77,18 +77,15 @@ import org.openide.util.NbBundle;
 
 public final class WebServiceManager {
 
-    private static WebServiceManager wsMgr;
-    public static String WEBSVC_HOME = WebServiceDescriptor.WEBSVC_HOME;
+    public static final String WEBSVC_HOME = WebServiceDescriptor.WEBSVC_HOME;
     private int mutatorCount;
+    private static final WebServiceManager INSTANCE = new WebServiceManager();
 
     private WebServiceManager() {
     }
 
     public static WebServiceManager getInstance() {
-        if (wsMgr == null) {
-            wsMgr = new WebServiceManager();
-        }
-        return wsMgr;
+        return INSTANCE;
     }
 
     public void addWebService(WebServiceData wsData) throws IOException {
@@ -458,7 +455,7 @@ public final class WebServiceManager {
                 throw new IOException(NbBundle.getMessage(WebServiceManager.class, "WSDL_COPY_ERROR"));
             }
 
-            FileObject userdir = FileUtil.createFolder(new File(WEBSVC_HOME));
+            FileUtil.createFolder(new File(WEBSVC_HOME));
             File result = FileUtil.toFile(wsdlFO);
             success = true;
             return result;
@@ -575,14 +572,10 @@ public final class WebServiceManager {
     private static void saveDescriptor(WebServiceData data) {
         WebServicePersistenceManager mgr = new WebServicePersistenceManager();
         try {
-            WsdlServiceProxyDescriptor desc = data.getJaxWsDescriptor();
-            if (desc instanceof WebServiceDescriptor) {
-                mgr.saveDescriptor((WebServiceDescriptor) desc);
-            }
+            WebServiceDescriptor desc = data.getJaxWsDescriptor();
+            mgr.saveDescriptor(desc);
             desc = data.getJaxRpcDescriptor();
-            if (desc instanceof WebServiceDescriptor) {
-                mgr.saveDescriptor((WebServiceDescriptor) desc);
-            }
+            mgr.saveDescriptor(desc);
         } catch (Exception ex) {
         }
     }
