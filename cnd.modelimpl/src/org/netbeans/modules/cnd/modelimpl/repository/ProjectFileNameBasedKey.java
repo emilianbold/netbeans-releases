@@ -61,15 +61,10 @@ import org.openide.util.CharSequences;
     protected static final CharSequence NO_FILE = CharSequences.create("<No File Name>"); // NOI18N
 
     protected final int fileNameIndex;
-
-    protected ProjectFileNameBasedKey(int unitId, CharSequence fileName) {
-        super(unitId);
-        assert fileName != null;
-        this.fileNameIndex = KeyUtilities.getFileIdByName(getUnitId(), fileName);
-    }
-
+    
     protected ProjectFileNameBasedKey(FileImpl file) {
-        this(getFileUnitId(file), getFileName(file)); 
+        super(getFileUnitId(file));
+        this.fileNameIndex = getFileNameId(file);
     }
 
     protected ProjectFileNameBasedKey(KeyDataPresentation presentation) {
@@ -83,10 +78,10 @@ import org.openide.util.CharSequences;
         return file == null ? -1 : file.getUnitId();
     }
 
-    private static CharSequence getFileName(FileImpl file) {
+    private static int getFileNameId(FileImpl file) {
         // extra check for #208877
         assert file != null;
-        return file == null ? NO_FILE : file.getAbsolutePath();
+        return file == null ? -1 : file.getFileId();
     }
 
     @Override
