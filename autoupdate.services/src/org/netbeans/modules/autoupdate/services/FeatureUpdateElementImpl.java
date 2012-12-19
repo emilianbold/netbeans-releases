@@ -247,16 +247,23 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
     
     @Override
     public List<ModuleInfo> getModuleInfos () {
-        List<ModuleInfo> infos = new ArrayList<ModuleInfo> ();
-        for (ModuleUpdateElementImpl impl : getContainedModuleElements ()) {
-            if (! infos.contains (impl.getModuleInfo ())) {
-                infos.add (impl.getModuleInfo ());
+        return getModuleInfos(false);
+    }
+    
+    @Override
+    public List<ModuleInfo> getModuleInfos(boolean recursive) {
+        List<ModuleInfo> infos = new ArrayList<ModuleInfo>();
+        for (ModuleUpdateElementImpl impl : getContainedModuleElements()) {
+            if (! infos.contains(impl.getModuleInfo())) {
+                infos.add(impl.getModuleInfo());
             }
         }
-        for (FeatureUpdateElementImpl featureImpl : getDependingFeatures()) {
-            for (ModuleUpdateElementImpl modImpl : featureImpl.getContainedModuleElements()) {
-                if (!infos.contains(modImpl.getModuleInfo())) {
-                    infos.add(modImpl.getModuleInfo());
+        if (recursive) {
+            for (FeatureUpdateElementImpl featureImpl : getDependingFeatures()) {
+                for (ModuleUpdateElementImpl modImpl : featureImpl.getContainedModuleElements()) {
+                    if (! infos.contains(modImpl.getModuleInfo())) {
+                        infos.add(modImpl.getModuleInfo());
+                    }
                 }
             }
         }
