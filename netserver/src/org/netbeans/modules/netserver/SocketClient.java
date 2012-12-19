@@ -73,12 +73,26 @@ public class SocketClient extends SocketFramework {
     @Override
     public void run() {
         super.run();
+        chanelClosed(null);
         try {
             socketChannel.close();
         }
         catch (IOException e) {
             LOG.log(Level.WARNING, null, e);
         }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.netserver.SocketFramework#isStopped()
+     */
+    @Override
+    public boolean isStopped() {
+        if ( !getChannel().isOpen() || !getChannel().isConnected() || 
+                getChannel().keyFor( getSelector())==null)
+        {
+            return true;
+        }
+        return super.isStopped();
     }
 
     /* (non-Javadoc)
