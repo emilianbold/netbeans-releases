@@ -16,18 +16,22 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="1" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="previewPanel" max="32767" attributes="0"/>
-                  <Component id="jPanel2" alignment="0" max="32767" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="lblTitle" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="173" max="32767" attributes="0"/>
-                      <Component id="btnRestore" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="previewPanel" alignment="1" max="32767" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="jPanel2" max="32767" attributes="0"/>
+                          <Group type="102" alignment="1" attributes="0">
+                              <Component id="lblTitle" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace pref="103" max="32767" attributes="0"/>
+                              <Component id="btnRestore" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -64,48 +68,32 @@
               <Group type="102" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="lblErrorColor" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="lblStandardColor" alignment="0" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace min="-2" pref="104" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="cmbErrorColor" max="32767" attributes="0"/>
-                              <Component id="cmbStandardColor" max="32767" attributes="0"/>
-                          </Group>
-                      </Group>
-                      <Group type="102" alignment="0" attributes="0">
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="lblLinkColor" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="lblFontFamily" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="lblBackgroundColor" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="lblFontSize" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="lblLinkStyle" alignment="0" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace min="79" pref="79" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="cmbLinkStyle" max="32767" attributes="0"/>
-                              <Component id="cmbLinkColor" max="32767" attributes="0"/>
-                              <Group type="102" alignment="1" attributes="0">
-                                  <Component id="fldFontFamily" max="32767" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="btnSelectFont" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <Component id="cmbImportantLinkColor" max="32767" attributes="0"/>
-                              <Component id="cmbBackgroundColor" alignment="0" max="32767" attributes="0"/>
-                              <Group type="102" attributes="0">
-                                  <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="lblUnwrappedOnly" min="-2" max="-2" attributes="0"/>
-                                      <Component id="spnFontSize" min="-2" pref="71" max="-2" attributes="0"/>
-                                  </Group>
-                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                              </Group>
-                          </Group>
-                      </Group>
+                      <Component id="lblErrorColor" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="lblStandardColor" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="lblLinkColor" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="lblFontFamily" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="lblBackgroundColor" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="lblFontSize" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="lblLinkStyle" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <Component id="fldFontFamily" max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="btnSelectFont" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <Component id="lblUnwrappedOnly" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="spnFontSize" alignment="0" min="-2" pref="71" max="-2" attributes="0"/>
+                      <Component id="cmbBackgroundColor" alignment="0" max="32767" attributes="0"/>
+                      <Component id="cmbStandardColor" alignment="0" max="32767" attributes="0"/>
+                      <Component id="cmbErrorColor" alignment="0" max="32767" attributes="0"/>
+                      <Component id="cmbLinkColor" alignment="0" max="32767" attributes="0"/>
+                      <Component id="cmbImportantLinkColor" alignment="0" max="32767" attributes="0"/>
+                      <Component id="cmbLinkStyle" alignment="0" max="32767" attributes="0"/>
+                  </Group>
+                  <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>

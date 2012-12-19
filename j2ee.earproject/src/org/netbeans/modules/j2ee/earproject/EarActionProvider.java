@@ -149,7 +149,7 @@ public class EarActionProvider implements ActionProvider {
     }
     
     public String[] getSupportedActions() {
-        return supportedActions;
+        return supportedActions.clone();
     }
     
     public void invokeAction( final String command, final Lookup context ) throws IllegalArgumentException {
@@ -215,6 +215,7 @@ public class EarActionProvider implements ActionProvider {
                         @Override
                         public void taskFinished(Task task) {
                             Deployment.getDefault().resumeDeployOnSave(app);
+                            assert task instanceof ExecutorTask;
                             listener.finished(((ExecutorTask) task).result() == 0);
                         }
                     });

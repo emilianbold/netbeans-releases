@@ -203,7 +203,6 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
         }
         
         AuxiliaryConfiguration aux = h.createAuxiliaryConfiguration();
-        ReferenceHelper refHelper = new ReferenceHelper(h, aux, h.getStandardPropertyEvaluator());
         Project webProject = null;
         if (null != warName) {
             File webAppDir = FileUtil.normalizeFile(new File(dirF, warName));
@@ -221,11 +220,13 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
             createData.setServerLibraryName(serverLibraryName);
             createData.setCDIEnabled(cdi);
 
-            if (handle != null)
+            if (handle != null) {
                 handle.progress(NbBundle.getMessage(NewEarProjectWizardIterator.class, "LBL_NewEarProjectWizardIterator_WizardProgress_WAR"), 3);
+            }
             AntProjectHelper webHelper = WebProjectUtilities.createProject(createData);
-            if (handle != null)
+            if (handle != null) {
                 handle.progress(4);
+            }
 
             FileObject webAppDirFO = FileUtil.toFileObject(webAppDir);
             webProject = ProjectManager.getDefault().findProject(webAppDirFO);

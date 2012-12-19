@@ -134,7 +134,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     private static final String JSF_SERVLET_NAME="Faces Servlet";   //NOI18N
     private String jsfServletName=null;
     private JSFConfigurationPanel panel;
-    private boolean customizer;
+    private boolean isFrameworkAddition;
+    private boolean inCustomizer;
 
     private final List<LibraryItem> jsfLibraries = new ArrayList<LibraryItem>();
     //    private final List<JsfComponentDescriptor> componentsLibraries = new ArrayList<JsfComponentDescriptor>();
@@ -169,11 +170,17 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             "jsp-compilation-syscp", //NOI18N
             "javaee-api-5.0")); //NOI18N
 
-    /** Creates new form JSFConfigurationPanelVisual */
-    public JSFConfigurationPanelVisual(JSFConfigurationPanel panel, boolean customizer) {
+    /**
+     * Creates new form JSFConfigurationPanelVisual.
+     * @param panel panel to which is this visual component binded
+     * @param isFrameworkAddition {@code true} if it's addition of JSF framework, {@code false} otherwise
+     * @param inCustomizer {@code true} if the panel is called in customizer, {@code false} otherwise
+     */
+    public JSFConfigurationPanelVisual(JSFConfigurationPanel panel, boolean isFrameworkAddition, boolean inCustomizer) {
         this.panel = panel;
-        this.customizer = customizer;
-        this.jsfComponentsTableModel = new JSFComponentsTableModel(customizer);
+        this.isFrameworkAddition = isFrameworkAddition;
+        this.inCustomizer = inCustomizer;
+        this.jsfComponentsTableModel = new JSFComponentsTableModel();
 
         initComponents();
 
@@ -209,11 +216,11 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         initJsfComponentsLibraries();
 
         // in customizer preselected included JSF library
-        if (customizer) {
+        if (!isFrameworkAddition) {
             preselectJsfLibrary();
         }
 
-        if (customizer) {
+        if (!isFrameworkAddition) {
             enableComponents(false);
         } else {
             updateLibrary();
@@ -530,7 +537,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             rbNewLibrary.setSelected(true);
             panel.setLibrary((Library) null);
         } else if (items.size() != 0 &&  panel.getLibraryType() == LibraryType.USED){
-            if (!customizer) {
+            if (isFrameworkAddition) {
                 rbRegisteredLibrary.setEnabled(true);
                 cbLibraries.setEnabled(true);
             }
@@ -554,7 +561,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             rbRegisteredLibrary.setSelected(true);
             panel.setServerLibrary((ServerLibrary) null);
         } else if (!items.isEmpty() && panel.getLibraryType() == LibraryType.SERVER){
-            if (!customizer) {
+            if (isFrameworkAddition) {
                 rbServerLibrary.setEnabled(true);
                 serverLibraries.setEnabled(true);
             }
@@ -618,7 +625,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         preferredLanguages.clear();
         preferredLanguages.add(PreferredLanguage.JSP);
         if (faceletsPresent) {
-            if (!customizer) {
+            if (isFrameworkAddition) {
                 panel.setEnableFacelets(true);
             }
 
@@ -968,7 +975,7 @@ private void customBundleTextFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN
 }//GEN-LAST:event_customBundleTextFieldKeyPressed
 
 private void cbPreferredLangActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbPreferredLangActionPerformed
-    if (!customizer) {
+    if (isFrameworkAddition) {
         PreferredLanguage selectedLanguage = getPreferredLanguage();
         if (PreferredLanguage.Facelets == selectedLanguage) {
             panel.updateEnableFacelets(true, true);
@@ -1116,7 +1123,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         StringBuilder errorMessage = new StringBuilder();
         String suiteError = suiteErrorMessage == null ? "" : suiteErrorMessage; //NOI18N
         String localizedError = NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_JsfComponentNotValid", suiteName); //NOI18N
-        if (!customizer) {
+        if (!inCustomizer) {
             errorMessage.append("<html><b>").append(localizedError).append("</b><br>").append(suiteError).append("</html>"); //NOI18N
         } else {
             errorMessage.append(localizedError).append("\n").append(suiteError); //NOI18N
@@ -1133,7 +1140,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
     private void setErrorMessage(String message) {
         ExtenderController controller = panel.getController();
         controller.setErrorMessage(message);
-        if (!customizer) {
+        if (isFrameworkAddition) {
             controller.getProperties().setProperty(WizardDescriptor.PROP_INFO_MESSAGE, message);
         }
     }
@@ -1422,7 +1429,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
     }
 
     private void updateJsfComponents() {
-        if (currentJSFVersion != null && customizer) {
+        if (currentJSFVersion != null && !isFrameworkAddition) {
            initJsfComponentLibraries(currentJSFVersion);
         }
     }
@@ -1470,7 +1477,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
     }
 
     private String getJsfComponentsLabelText() {
-        if (!customizer) {
+        if (isFrameworkAddition) {
             return org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_JSF_Components_Desc_New_Project"); //NOI18N
         } else {
             return org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_JSF_Components_Desc_Customizer"); //NOI18N
@@ -1736,11 +1743,9 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
 
         private final Class<?>[] COLUMN_TYPES = new Class<?>[] {Boolean.class, JsfComponentImplementation.class, JButton.class};
         private DefaultListModel model;
-        private boolean inCustomizer;
 
-        public JSFComponentsTableModel(boolean inCustomizer) {
+        public JSFComponentsTableModel() {
             model = new DefaultListModel();
-            this.inCustomizer = inCustomizer;
         }
 
         public int getColumnCount() {

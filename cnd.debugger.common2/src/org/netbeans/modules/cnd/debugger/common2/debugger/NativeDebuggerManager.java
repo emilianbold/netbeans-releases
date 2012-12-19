@@ -1060,7 +1060,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
         if (runFirst) {
             ndi.setAction(RUN);
         } else {
-            if (isStandalone() || !DebuggerOption.RUN_AUTOSTART.isEnabled(globalOptions())) {
+            if (isStandalone() || isPL() || !DebuggerOption.RUN_AUTOSTART.isEnabled(globalOptions())) {
                 ndi.setAction(LOAD);
             } else {
                 ndi.setAction(this.getAction());
