@@ -141,19 +141,19 @@ public final class EjbJarProjectCreateData {
     }
 
     public File[] getSourceFolders() {
-        return sourceFolders;
+        return sourceFolders != null ? sourceFolders.clone() : null;
     }
 
     public void setSourceFolders(File[] sourceFolders) {
-        this.sourceFolders = sourceFolders;
+        this.sourceFolders = sourceFolders != null ? sourceFolders.clone() : null;
     }
 
     public File[] getTestFolders() {
-        return testFolders;
+        return testFolders != null ? testFolders.clone() : null;
     }
 
     public void setTestFolders(File[] testFolders) {
-        this.testFolders = testFolders;
+        this.testFolders = testFolders != null ? testFolders.clone() : null;
     }
 
     public boolean isCDIEnabled() {

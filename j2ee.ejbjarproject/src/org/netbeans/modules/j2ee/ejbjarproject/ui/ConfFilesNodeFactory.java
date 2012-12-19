@@ -65,6 +65,7 @@ public class ConfFilesNodeFactory implements NodeFactory {
     public ConfFilesNodeFactory() {
     }
 
+        @Override
     public NodeList<?> createNodes(Project p) {
         EjbJarProject project = p.getLookup().lookup(EjbJarProject.class);
         assert project != null;
@@ -80,20 +81,24 @@ public class ConfFilesNodeFactory implements NodeFactory {
             this.project = proj;
         }
         
+        @Override
         public List<String> keys() {
             return Collections.singletonList(CONF_FILES);
         }
 
+        @Override
         public void addChangeListener(ChangeListener l) {
             // Ignore, not generating change event.
         }
 
+        @Override
         public void removeChangeListener(ChangeListener l) {
             // Ignore, not generating change event.
         }
 
+        @Override
         public Node node(String key) {
-            if (key == CONF_FILES) {
+            if (CONF_FILES.equals(key)) {
                 FileObject metaInf = project.getAPIEjbJar().getMetaInf();
                 if (metaInf != null) {
                     return J2eeProjectView.createConfigFilesView(metaInf);
@@ -105,9 +110,11 @@ public class ConfFilesNodeFactory implements NodeFactory {
             return null;
         }
 
+        @Override
         public void addNotify() {
         }
 
+        @Override
         public void removeNotify() {
         }
     }       

@@ -134,7 +134,7 @@ public class CustomizerProviderImpl implements CustomizerProvider, ProjectSharab
         CustomizerLibraries.makeSharable(uiProperties, serverLibraryName);
     }
 
-    private class StoreListener implements ActionListener {
+    private static class StoreListener implements ActionListener {
     
         private EarProjectProperties uiProperties;
         
@@ -149,14 +149,12 @@ public class CustomizerProviderImpl implements CustomizerProvider, ProjectSharab
     }
     
     /** Listens to the actions on the Customizer's option buttons */
-    private class OptionListener extends WindowAdapter implements ActionListener {
+    private static class OptionListener extends WindowAdapter implements ActionListener {
     
         private Project project;
-        private EarProjectProperties uiProperties;
         
         OptionListener(Project project, EarProjectProperties uiProperties) {
             this.project = project;
-            this.uiProperties = uiProperties;
         }
         
         // Listening to OK button ----------------------------------------------
