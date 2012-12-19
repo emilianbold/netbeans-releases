@@ -440,10 +440,8 @@ public class FXMLCompletionTestBase extends NbTestCase {
     // ONLY FOR TESTS!
     static List<? extends CompletionItem> query(Source source, int queryType, int offset, int substitutionOffset, Document doc) throws Exception {
         assert source != null;
-        assert (queryType & FXMLCompletion.COMPLETION_QUERY_TYPE) != 0;
-        FXMLCompletion.Query query = new FXMLCompletion.Query();
-        query.query(null, doc, offset);
-        return query.results;
+        fail();
+        return Collections.emptyList();
     }
 
 }

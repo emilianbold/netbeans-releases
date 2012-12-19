@@ -132,7 +132,6 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     @Override
     public boolean canCopy(Lookup lookup) {
         Collection<? extends Node> nodes = new HashSet<Node>(lookup.lookupAll(Node.class));
-        ExplorerContext drop = lookup.lookup(ExplorerContext.class);
         FileObject fo = getTarget(lookup);
         if (fo != null) {
             if (!fo.isFolder()) {
@@ -141,78 +140,21 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             if (!JavaRefactoringUtils.isOnSourceClasspath(fo)) {
                 return false;
             }
-            
-            //it is drag and drop
-            Set<DataFolder> folders = new HashSet<DataFolder>();
-            boolean jdoFound = false;
-            for (Node n:nodes) {
-                DataObject dob = n.getLookup().lookup(DataObject.class);
-                if (dob==null) {
-                    return false;
-                }
-                if (!JavaRefactoringUtils.isOnSourceClasspath(dob.getPrimaryFile())) {
-                    return false;
-                }
-                if (dob instanceof DataFolder) {
-                    if (FileUtil.getRelativePath(dob.getPrimaryFile(), fo)!=null) {
-                        return false;
-                    }
-                    folders.add((DataFolder)dob);
-                } else if (RefactoringUtils.isJavaFile(dob.getPrimaryFile())) {
-                    jdoFound = true;
-                }
-            }
-            if (jdoFound) {
-                return true;
-            }
-            for (DataFolder fold:folders) {
-                for (Enumeration<DataObject> e = (fold).children(true); e.hasMoreElements();) {
-                    if (RefactoringUtils.isJavaFile(e.nextElement().getPrimaryFile())) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        } else {
-            //regular invokation
-            boolean result = false;
-            nodesloop:
-            for (Node n:nodes) {
-                DataObject dob = n.getCookie(DataObject.class);
-                if (dob==null) {
-                    return false;
-                }
-                if (dob instanceof DataFolder) {
-                    if (drop==null) {
-                        return false;
-                    } else {
-                        //Ctrl-X
-                        if (!JavaRefactoringUtils.isOnSourceClasspath(dob.getPrimaryFile()) || RefactoringUtils.isClasspathRoot(dob.getPrimaryFile())) {
-                            return false;
-                        } else {
-                            LinkedList<DataFolder> folders = new LinkedList<DataFolder>();
-                            folders.add((DataFolder) dob);
-                            while (!folders.isEmpty()) {
-                                DataFolder fold = folders.remove();
-                                for (Enumeration<DataObject> e = fold.children(true); e.hasMoreElements();) {
-                                    if (RefactoringUtils.isJavaFile(e.nextElement().getPrimaryFile())) {
-                                        result = true;
-                                        continue nodesloop;
-                                    } else if (e instanceof DataFolder) {
-                                        folders.add((DataFolder) e);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                if (RefactoringUtils.isJavaFile(dob.getPrimaryFile())
-                        && ClassPath.getClassPath(dob.getPrimaryFile(), ClassPath.SOURCE) != null) {
-                    result = true;
-                }
-            }
-            return result;
         }
+        boolean result = true;
+        for (Node n:nodes) {
+            DataObject dob = n.getLookup().lookup(DataObject.class);
+            if (dob == null || dob.getPrimaryFile().isFolder()) {
+                result = false;
+                break;
+            }
+            if (!RefactoringUtils.isJavaFile(dob.getPrimaryFile())
+                    || ClassPath.getClassPath(dob.getPrimaryFile(), ClassPath.SOURCE) == null) {
+                result = false;
+                break;
+            }
+        }
+        return result;
     }    
 
     @Override
