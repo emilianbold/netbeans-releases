@@ -41,6 +41,17 @@
  */
 package org.netbeans.modules.web.el;
 
+import com.sun.el.parser.ELParserConstants;
+import com.sun.el.parser.ELParserTokenManager;
+import com.sun.el.parser.SimpleCharStream;
+import com.sun.el.parser.Token;
+import java.io.StringReader;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.csl.api.OffsetRange;
+
 /**
  * Converts expression language expressions with respect to the given conversion table.
  * Allows to convert offset between the original and converted expressions.
@@ -53,7 +64,9 @@ package org.netbeans.modules.web.el;
  * @author marekfukala
  */
 public class ELPreprocessor {
-    
+
+    private static final Logger LOG = Logger.getLogger(ELPreprocessor.class.getName());
+
     /** 
      * Html entity references conversion table.
      */
@@ -67,12 +80,12 @@ public class ELPreprocessor {
     
     //escaped chars conversion for attribute values
     public static String[][] ESCAPED_CHARACTERS = new String[][]{
-        {"\\\\", "\\"},
-        {"\\<", "<"},
-        {"\\>", ">"},
-        {"\\\"", "\""},
-        {"\\'", "'"},
-        {"\\&", "&"},
+        {"\\\\", "\\"}, /* \\ -> \ */
+        {"\\<", "<"},   /* \< -> < */
+        {"\\>", ">"},   /* \> -> > */
+        {"\\\"", "\""}, /* \" -> " */
+        {"\\'", "'"},   /* \' -> ' */
+        {"\\&", "&"},   /* \& -> & */
     };
     
     private final String originalExpression;
@@ -80,6 +93,8 @@ public class ELPreprocessor {
     
     private String preprocessedExpression;
     private final boolean[] diffs;
+
+    private List<OffsetRange> stringLiterals = new LinkedList<OffsetRange>();
     
     public ELPreprocessor(String expression, String[][]... conversionTables) {
         this.originalExpression = expression;
@@ -121,8 +136,11 @@ public class ELPreprocessor {
     //the algorithm is far from the most effective one, but for relatively small
     //set of the patterns the complexity is acceptable
     private void init() {
+        long start = System.nanoTime();
         boolean[] localDiffs = new boolean[diffs.length];
         String result = originalExpression;
+        preprocessStringLiterals();
+        LOG.log(Level.FINEST, "StringLiteral preprocessing took: {0} ns", (System.nanoTime() - start));
         for(String[][] table : conversionTables) {
             for(String[] patternPair : table) {
                 //create local diffs copy - needs to be used to properly convert positions during the processing
@@ -137,6 +155,12 @@ public class ELPreprocessor {
                 int match;
                 int lastMatchEnd = 0;
                 while((match = result.indexOf(source, lastMatchEnd)) != -1) {
+                    if (isInsideStringLiteral(match)) {
+                        resolved.append(result.substring(lastMatchEnd, match));
+                        resolved.append(source);
+                        lastMatchEnd = match + source.length();
+                        continue;
+                    }
                     resolved.append(result.substring(lastMatchEnd, match));
                     resolved.append(dest);
                     int originalSourceMatch = getOriginalOffset(match); //we operate on the already modified source text
@@ -159,8 +183,9 @@ public class ELPreprocessor {
             
         }
         this.preprocessedExpression = result;
+        LOG.log(Level.FINEST, "All preprocessing took: {0} ns", (System.nanoTime() - start));
     }
-    
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -195,5 +220,31 @@ public class ELPreprocessor {
         
         return sb.toString();
     }
-    
+
+    private void preprocessStringLiterals() {
+        // optimalization - epressions w/out any string mustn't be preprocessed
+        if (!originalExpression.contains("'") && !originalExpression.contains("\"")) { //NOI18N
+            return;
+        }
+        SimpleCharStream simpleCharStream = new SimpleCharStream(new StringReader(originalExpression));
+        ELParserTokenManager tokenManager = new ELParserTokenManager(simpleCharStream);
+        while (true) {
+            Token t = tokenManager.getNextToken();
+            if (t.kind == ELParserConstants.EOF) {
+                break;
+            } else if (t.kind == ELParserConstants.STRING_LITERAL) {
+                stringLiterals.add(new OffsetRange(t.beginColumn, t.beginColumn + t.image.length()));
+            }
+        }
+    }
+
+    private boolean isInsideStringLiteral(int offset) {
+        for (OffsetRange offsetRange : stringLiterals) {
+            if (offsetRange.containsInclusive(offset)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

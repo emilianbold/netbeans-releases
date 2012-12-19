@@ -477,7 +477,7 @@ made subject to such option by the copyright holder.
         <condition property="test.bootclasspath.prepend.args" value="-Xbootclasspath/p:${bootclasspath.prepend}">
             <isset property="bootclasspath.prepend"/>
         </condition>
-        <property name="test.bootclasspath.prepend.args" value=""/>
+        <property name="test.bootclasspath.prepend.args" value="-Dno.netbeans.bootclasspath.prepend.needed=true"/>
         <macrodef name="test-init">
             <attribute name="test.type"/>
             <sequential>
@@ -685,7 +685,7 @@ made subject to such option by the copyright holder.
                     </batchtest>
                     <classpath refid="test.@{test.type}.run.cp"/>
                     <syspropertyset refid="test.@{test.type}.properties"/>
-                    <jvmarg line="${test.bootclasspath.prepend.args}"/>
+                    <jvmarg value="${test.bootclasspath.prepend.args}"/>
                     <jvmarg line="${test.run.args}"/>
                     <!--needed to have tests NOT to steal focus when running, works in latest apple jdk update only.-->
                     <sysproperty key="apple.awt.UIElement" value="@{disable.apple.ui}"/>
@@ -713,7 +713,7 @@ made subject to such option by the copyright holder.
                     <classfileset dir="${build.test.@{test.type}.classes.dir}" excludes="${test.excludes}" includes="${test.includes}"/>
                     <propertyset refid="test.@{test.type}.properties"/>
                     <classpath refid="test.@{test.type}.run.cp"/>
-                    <jvmarg line="${test.bootclasspath.prepend.args}"/>
+                    <jvmarg value="${test.bootclasspath.prepend.args}"/>
                     <jvmarg line="${test.run.args}"/>
                     <!-- needed to have tests NOT to steal focus when running, works in latest apple jdk update only.-->
                     <sysproperty key="apple.awt.UIElement" value="@{disable.apple.ui}"/>
@@ -781,7 +781,7 @@ made subject to such option by the copyright holder.
                     <classpath refid="test.@{test.type}.run.cp"/>
                     <syspropertyset refid="test.@{test.type}.properties"/>
                     <jvmarg line="${test.run.args}"/>
-                    <jvmarg line="${test.bootclasspath.prepend.args}"/>
+                    <jvmarg value="${test.bootclasspath.prepend.args}"/>
                     <jvmarg line="${run.args.ide}"/>
                     <jvmarg line="${run.jvmargs.ide}"/>
                     <formatter type="brief" usefile="false"/>
@@ -808,7 +808,7 @@ made subject to such option by the copyright holder.
                 >
                     <propertyset refid="test.@{test.type}.properties"/>
                     <classpath refid="test.@{test.type}.run.cp"/>
-                    <jvmarg line="${test.bootclasspath.prepend.args}"/>
+                    <jvmarg value="${test.bootclasspath.prepend.args}"/>
                     <jvmarg line="${test.run.args}"/>
                     <!-- needed to have tests NOT to steal focus when running, works in latest apple jdk update only.-->
                     <sysproperty key="apple.awt.UIElement" value="@{disable.apple.ui}"/>
@@ -858,7 +858,7 @@ made subject to such option by the copyright holder.
                         <pathelement location="${ant.home}/lib/ant-junit.jar"/>
                         <pathelement location="${ant.home}/lib/ant-junit4.jar"/>
                     </classpath>
-                    <jvmarg line="${test.bootclasspath.prepend.args}"/>
+                    <jvmarg value="${test.bootclasspath.prepend.args}"/>
                     <syspropertyset refid="test.@{test.type}.properties"/>
                     <arg value="${test.class}"/>
                     <arg value="showoutput=true"/>
@@ -886,7 +886,7 @@ made subject to such option by the copyright holder.
                     <jvmarg value="-Xdebug"/>
                     <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
                     <jvmarg line="${test.run.args}"/>
-                    <jvmarg line="${test.bootclasspath.prepend.args}"/>
+                    <jvmarg value="${test.bootclasspath.prepend.args}"/>
                     <classpath refid="test.@{test.type}.run.cp"/>
                     <syspropertyset refid="test.@{test.type}.properties"/>
                     <jvmarg value="-ea"/>
@@ -903,7 +903,7 @@ made subject to such option by the copyright holder.
                     <classfileset dir="${build.test.@{test.type}.classes.dir}" excludes="${test.excludes}" includes="**/*Test.class"/>
                     <propertyset refid="test.@{test.type}.properties"/>
                     <classpath refid="test.@{test.type}.run.cp"/>
-                    <jvmarg line="${test.bootclasspath.prepend.args}"/>
+                    <jvmarg value="${test.bootclasspath.prepend.args}"/>
                     <jvmarg line="${test.run.args}"/>
                     <jvmarg value="-Xdebug"/>
                     <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
@@ -965,7 +965,7 @@ made subject to such option by the copyright holder.
                     <classpath refid="test.@{test.type}.run.cp"/>
                     <syspropertyset refid="test.@{test.type}.properties"/>
                     <jvmarg line="${test.run.args}"/>
-                    <jvmarg line="${test.bootclasspath.prepend.args}"/>
+                    <jvmarg value="${test.bootclasspath.prepend.args}"/>
                     <jvmarg line="${run.jvmargs.ide}"/>
                     <formatter type="brief" usefile="false"/>
                     <formatter type="xml"/>
@@ -990,7 +990,7 @@ made subject to such option by the copyright holder.
                 >
                     <propertyset refid="test.@{test.type}.properties"/>
                     <classpath refid="test.@{test.type}.run.cp"/>
-                    <jvmarg line="${test.bootclasspath.prepend.args}"/>
+                    <jvmarg value="${test.bootclasspath.prepend.args}"/>
                     <jvmarg line="${test.run.args}"/>
                     <!-- needed to have tests NOT to steal focus when running, works in latest apple jdk update only.-->
                     <sysproperty key="apple.awt.UIElement" value="@{disable.apple.ui}"/>
@@ -1113,7 +1113,7 @@ made subject to such option by the copyright holder.
                     <jvmarg line="${profiler.info.jvmargs}"/>
                     <test name="${profile.class}" todir="${build.test.@{test.type}.results.dir}"/>
                     <classpath refid="test.@{test.type}.run.cp"/>
-                    <jvmarg line="${test.bootclasspath.prepend.args}"/>
+                    <jvmarg value="${test.bootclasspath.prepend.args}"/>
                     <syspropertyset refid="test.@{test.type}.properties"/>
                     <jvmarg line="${test.run.args}"/>
                     <formatter type="brief" usefile="false"/>

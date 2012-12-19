@@ -1247,7 +1247,7 @@ public class FolderObjTest extends NbTestCase {
         
         assertTrue(f.delete());
         testFolder.refresh();
-        assertEquals(1, l.size());        
+        assertEquals("Events: " + l, 1, l.size());        
     }
 
     public void testExternalDelete4_1() throws IOException {
@@ -1367,7 +1367,7 @@ public class FolderObjTest extends NbTestCase {
             }            
             @Override
             public void fileChanged(FileEvent fe) {
-                fail();
+                fail("Unexpected event " + fe);
             }
             
         };
@@ -1377,7 +1377,7 @@ public class FolderObjTest extends NbTestCase {
         
         f.delete();
         testFolder.refresh(true);
-        assertEquals(1, l.size());        
+        assertEquals("Events: " + l, 1, l.size());        
         testFolder.getFileSystem().removeFileChangeListener(fcl);
 
     }

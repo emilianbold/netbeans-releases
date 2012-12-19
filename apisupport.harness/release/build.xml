@@ -212,19 +212,17 @@ made subject to such option by the copyright holder.
         <property name="build.javahelp.dir" location="${build.dir}/javahelp"/>
         <property name="javahelp.base" value="${code.name.base.slashes}/docs"/>
         <property name="javahelp.search" value="JavaHelpSearch"/>
-        <pathconvert property="retouche.javac.api.patterns" pathsep=",">
-            <path path="${cluster.path.final}"/>
-            <regexpmapper from="(.*)" to="\1/modules/ext/*javac*api*.jar"/>
-        </pathconvert>
         <pathconvert property="retouche.javac.api">
-            <files includes="${retouche.javac.api.patterns}"/>
-        </pathconvert>
-        <pathconvert property="retouche.javac.impl.patterns" pathsep=",">
-            <path path="${cluster.path.final}"/>
-            <regexpmapper from="(.*)" to="\1/modules/ext/*javac*impl*.jar"/>
+            <pathfileset>
+                <path path="${cluster.path.final}"/>
+                <filename name="modules/ext/*javac*api*.jar"/>
+            </pathfileset>
         </pathconvert>
         <pathconvert property="retouche.javac.impl">
-            <files includes="${retouche.javac.impl.patterns}"/>
+            <pathfileset>
+                <path path="${cluster.path.final}"/>
+                <filename name="modules/ext/*javac*impl*.jar"/>
+            </pathfileset>
             <fileset dir="${nbjdk.home}/../Classes" erroronmissingdir="false">
                 <include name="*.jar"/>
             </fileset>
