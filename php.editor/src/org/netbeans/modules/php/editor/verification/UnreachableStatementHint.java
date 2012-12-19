@@ -87,19 +87,18 @@ public class UnreachableStatementHint extends AbstractHint {
 
     private final class CheckVisitor extends DefaultVisitor {
         private final FileObject fileObject;
-        private final List<Hint> hints;
         private final Stack<CheckedBlock> blocks;
         private final List<CheckedBlock> processedBlocks;
 
         public CheckVisitor(FileObject fileObject) {
             this.fileObject = fileObject;
-            hints = new LinkedList<Hint>();
             blocks = new Stack<CheckedBlock>();
             processedBlocks = new LinkedList<CheckedBlock>();
         }
 
         @NbBundle.Messages("UnreachableStatementHintText=Unreachable Statement")
         public List<Hint> getHints() {
+            List<Hint> hints = new LinkedList<Hint>();
             for (CheckedBlock checkedBlock : processedBlocks) {
                 ASTNode unreachableStatement = checkedBlock.getUnreachableStatement();
                 if (unreachableStatement != null) {
