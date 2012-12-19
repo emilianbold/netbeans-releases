@@ -47,26 +47,30 @@ import java.util.prefs.Preferences;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHPImmutableVariablesHintTest extends PHPHintsTestBase {
+public class UninitializedVariableHintTest extends PHPHintsTestBase {
 
-    public PHPImmutableVariablesHintTest(String testName) {
+    public UninitializedVariableHintTest(String testName) {
         super(testName);
     }
 
-    public void testWith1AllowedAssignments() throws Exception {
-        checkHintsInStartEndFile(new ImmutablevariablesHintStub(1), "testImmutableVariablesHint.php");
+    public void testWithRefs() throws Exception {
+        checkHintsInStartEndFile(new UninitializedVariableHintStub(true), "testUninitializedVariableHint.php");
     }
 
-    private class ImmutablevariablesHintStub extends ImmutableVariablesHint {
-        private final int numberOfAllowedAssignments;
+    public void testWithoutRefs() throws Exception {
+        checkHintsInStartEndFile(new UninitializedVariableHintStub(false), "testUninitializedVariableHint.php");
+    }
 
-        public ImmutablevariablesHintStub(final int numberOfAllowedAssignments) {
-            this.numberOfAllowedAssignments = numberOfAllowedAssignments;
+    private class UninitializedVariableHintStub extends UninitializedVariableHint {
+        private final boolean uninitializedVariable;
+
+        public UninitializedVariableHintStub(boolean uninitializedVariable) {
+            this.uninitializedVariable = uninitializedVariable;
         }
 
         @Override
-        public int getNumberOfAllowedAssignments(Preferences preferences) {
-            return numberOfAllowedAssignments;
+        public boolean checkVariablesInitializedByReference(Preferences preferences) {
+            return uninitializedVariable;
         }
 
     }

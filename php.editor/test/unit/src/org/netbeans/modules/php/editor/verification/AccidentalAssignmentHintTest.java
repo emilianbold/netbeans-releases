@@ -47,30 +47,45 @@ import java.util.prefs.Preferences;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHPUnusedVariableHintTest extends PHPHintsTestBase {
+public class AccidentalAssignmentHintTest extends PHPHintsTestBase {
 
-    public PHPUnusedVariableHintTest(String testName) {
+    public AccidentalAssignmentHintTest(String testName) {
         super(testName);
     }
 
-    public void testWithParams() throws Exception {
-        checkHintsInStartEndFile(new UnusedVariableHintStub(true), "testUnusedVariableHint.php");
+    public void testInSubAndInWhile() throws Exception {
+        checkHintsInStartEndFile(new AccidentalAssignmentHintStub(true, true), "testAccidentalAssignmentHint.php");
     }
 
-    public void testWithoutParams() throws Exception {
-        checkHintsInStartEndFile(new UnusedVariableHintStub(false), "testUnusedVariableHint.php");
+    public void testInSubAndNotInWhile() throws Exception {
+        checkHintsInStartEndFile(new AccidentalAssignmentHintStub(true, false), "testAccidentalAssignmentHint.php");
     }
 
-    private class UnusedVariableHintStub extends UnusedVariableHint {
-        private final boolean unusedFormalParameters;
+    public void testNotInSubAndNotInWhile() throws Exception {
+        checkHintsInStartEndFile(new AccidentalAssignmentHintStub(false, false), "testAccidentalAssignmentHint.php");
+    }
 
-        public UnusedVariableHintStub(boolean unusedFormalParameters) {
-            this.unusedFormalParameters = unusedFormalParameters;
+    public void testNotInSubAndInWhile() throws Exception {
+        checkHintsInStartEndFile(new AccidentalAssignmentHintStub(false, true), "testAccidentalAssignmentHint.php");
+    }
+
+    private class AccidentalAssignmentHintStub extends AccidentalAssignmentHint {
+        private final boolean assignmentsInSubStatements;
+        private final boolean assignmentsInWhileStatements;
+
+        public AccidentalAssignmentHintStub(boolean assignmentsInSubStatements, boolean assignmentsInWhileStatements) {
+            this.assignmentsInSubStatements = assignmentsInSubStatements;
+            this.assignmentsInWhileStatements = assignmentsInWhileStatements;
         }
 
         @Override
-        public boolean checkUnusedFormalParameters(Preferences preferences) {
-            return unusedFormalParameters;
+        public boolean checkAssignmentsInSubStatements(Preferences preferences) {
+            return assignmentsInSubStatements;
+        }
+
+        @Override
+        public boolean checkAssignmentsInWhileStatements(Preferences preferences) {
+            return assignmentsInWhileStatements;
         }
 
     }

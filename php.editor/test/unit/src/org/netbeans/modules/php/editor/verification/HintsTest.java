@@ -45,9 +45,9 @@ package org.netbeans.modules.php.editor.verification;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHPHintsTest extends PHPHintsTestBase {
+public class HintsTest extends PHPHintsTestBase {
 
-    public PHPHintsTest(String testName) {
+    public HintsTest(String testName) {
         super(testName);
     }
 

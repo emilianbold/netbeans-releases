@@ -47,45 +47,30 @@ import java.util.prefs.Preferences;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHPAccidentalAssignmentHintTest extends PHPHintsTestBase {
+public class UnusedVariableHintTest extends PHPHintsTestBase {
 
-    public PHPAccidentalAssignmentHintTest(String testName) {
+    public UnusedVariableHintTest(String testName) {
         super(testName);
     }
 
-    public void testInSubAndInWhile() throws Exception {
-        checkHintsInStartEndFile(new AccidentalAssignmentHintStub(true, true), "testAccidentalAssignmentHint.php");
+    public void testWithParams() throws Exception {
+        checkHintsInStartEndFile(new UnusedVariableHintStub(true), "testUnusedVariableHint.php");
     }
 
-    public void testInSubAndNotInWhile() throws Exception {
-        checkHintsInStartEndFile(new AccidentalAssignmentHintStub(true, false), "testAccidentalAssignmentHint.php");
+    public void testWithoutParams() throws Exception {
+        checkHintsInStartEndFile(new UnusedVariableHintStub(false), "testUnusedVariableHint.php");
     }
 
-    public void testNotInSubAndNotInWhile() throws Exception {
-        checkHintsInStartEndFile(new AccidentalAssignmentHintStub(false, false), "testAccidentalAssignmentHint.php");
-    }
+    private class UnusedVariableHintStub extends UnusedVariableHint {
+        private final boolean unusedFormalParameters;
 
-    public void testNotInSubAndInWhile() throws Exception {
-        checkHintsInStartEndFile(new AccidentalAssignmentHintStub(false, true), "testAccidentalAssignmentHint.php");
-    }
-
-    private class AccidentalAssignmentHintStub extends AccidentalAssignmentHint {
-        private final boolean assignmentsInSubStatements;
-        private final boolean assignmentsInWhileStatements;
-
-        public AccidentalAssignmentHintStub(boolean assignmentsInSubStatements, boolean assignmentsInWhileStatements) {
-            this.assignmentsInSubStatements = assignmentsInSubStatements;
-            this.assignmentsInWhileStatements = assignmentsInWhileStatements;
+        public UnusedVariableHintStub(boolean unusedFormalParameters) {
+            this.unusedFormalParameters = unusedFormalParameters;
         }
 
         @Override
-        public boolean checkAssignmentsInSubStatements(Preferences preferences) {
-            return assignmentsInSubStatements;
-        }
-
-        @Override
-        public boolean checkAssignmentsInWhileStatements(Preferences preferences) {
-            return assignmentsInWhileStatements;
+        public boolean checkUnusedFormalParameters(Preferences preferences) {
+            return unusedFormalParameters;
         }
 
     }
