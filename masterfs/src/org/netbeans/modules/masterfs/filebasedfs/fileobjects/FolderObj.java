@@ -511,11 +511,12 @@ public final class FolderObj extends BaseFileObj {
             } else if (operationId == ChildrenCache.REMOVED_CHILD) {
                 if (newChild != null) {
                     if (newChild.isValid()) {
-                        newChild.setValid(false);
                         if (newChild instanceof FolderObj) {
                             getProvidedExtensions().deletedExternally(newChild);
                             ((FolderObj)newChild).refreshImpl(expected, fire);
+                            newChild.setValid(false);
                         } else {
+                            newChild.setValid(false);
                             if (fire) {
                                 getProvidedExtensions().deletedExternally(newChild);
                                 newChild.fireFileDeletedEvent(expected);
