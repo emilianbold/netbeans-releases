@@ -67,13 +67,11 @@ import org.openide.util.Exceptions;
  */
 public class EjbProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAXWSSupportImpl*/ {
     private EjbJarProject project;
-    private AntProjectHelper antProjectHelper;
     
     /** Creates a new instance of JAXWSSupport */
     public EjbProjectJAXWSSupport(EjbJarProject project, AntProjectHelper antProjectHelper) {
         super(project,antProjectHelper);
         this.project = project;
-        this.antProjectHelper = antProjectHelper;
     }
 
     public FileObject getWsdlFolder(boolean create) throws java.io.IOException {

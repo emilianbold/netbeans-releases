@@ -247,9 +247,11 @@ public class EjbJarProjectOperations implements DeleteOperationImplementation, C
 
                 if (path.startsWith(originalPath.getAbsolutePath())) {
                     String relative = PropertyUtils.relativizeFile(originalPath, new File(path));
-                    String fixedPath = new File(projectDir, relative).getAbsolutePath();
-                    props.setProperty(property, fixedPath);
-                    project.getAntProjectHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                    if (relative != null) {
+                        String fixedPath = new File(projectDir, relative).getAbsolutePath();
+                        props.setProperty(property, fixedPath);
+                        project.getAntProjectHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                    }
                 }
             }
         });

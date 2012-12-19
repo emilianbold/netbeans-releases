@@ -1037,11 +1037,12 @@ public final class EarProjectProperties {
                 case ClassPathSupport.Item.TYPE_LIBRARY:
                     full = item.getLibrary().getName();
                     break;
+                default: assert false;
             }
         } else {
             full = project.evaluator().evaluate(item.getReference());
         }
-        int lastSlash = full.lastIndexOf('/'); // NOI18N
+        int lastSlash = full != null ? full.lastIndexOf('/') : -1; // NOI18N
         String trimmed = null;
         trimmed = (lastSlash != -1) ? full.substring(lastSlash+1) : full;
         String path = item.getAdditionalProperty(ClassPathSupportCallbackImpl.PATH_IN_DEPLOYMENT);
