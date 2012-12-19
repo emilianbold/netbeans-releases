@@ -369,21 +369,30 @@ public class EncodingUtil {
     * the document prolog is an encoding attribute.
     * @return java encoding names ("UTF8", "ASCII", etc.) or null if no guess
     */
-    private static String doDetectEncoding(Document doc) throws IOException {
+    private static String doDetectEncoding(final Document doc) throws IOException {
         if (doc == null) return null;
 
-        try {
-            String text = doc.getText(0,
-                                      doc.getLength() > EXPECTED_PROLOG_LENGTH ?
-                                      EXPECTED_PROLOG_LENGTH : doc.getLength()
-                                     );
-            InputStream in = new ByteArrayInputStream(text.getBytes());
-            return detectEncoding(in);
-
-        } catch (BadLocationException ex) {
-            throw new RuntimeException(ex.toString());
+        final String[] text = new String[1];
+        final BadLocationException[] exc = new BadLocationException[1];
+        doc.render(new Runnable() {
+            public void run() {
+                try {
+                    text[0] = doc.getText(0,
+                        doc.getLength() > EXPECTED_PROLOG_LENGTH ?
+                        EXPECTED_PROLOG_LENGTH : doc.getLength()
+                    );
+                } catch (BadLocationException e) {
+                    exc[0] = e;
+                }
+            }
+        });
+        if (exc[0] != null) {
+            IOException e = new IOException("Cannot read contents");
+            e.initCause(exc[0]);
+            throw e;
         }
-
+        InputStream in = new ByteArrayInputStream(text[0].getBytes());
+        return detectEncoding(in);
     }
     
 

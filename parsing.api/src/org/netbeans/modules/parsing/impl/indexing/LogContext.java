@@ -196,7 +196,12 @@ import org.openide.util.Utilities;
         log(true, true);
     }
     
-    private static long EXEC_TRESHOLD = 3 /* mins */ * 60 /* secs */ *  1000 /* millis */;
+    /**
+     * org.netbeans.modules.parsing.impl.indexing.LogContext.cancelTreshold specifies
+     * the mandatory delay for scanning reports in seconds.
+     */
+    private static final long EXEC_TRESHOLD = Integer.getInteger(LogContext.class.getName() + ".cancelTreshold", 
+            3 /* mins */ * 60) * 1000 /* millis */;
 
     void log(boolean cancel, boolean logAbsorbed) {
         // prevent logging of events within 3 minutes from the start of scan. Do not freeze...
