@@ -213,7 +213,7 @@ public class EjbJarActionProvider extends BaseActionProvider {
 
     @Override
     public String[] getSupportedActions() {
-        return supportedActions;
+        return supportedActions.clone();
     }
 
     @Override
