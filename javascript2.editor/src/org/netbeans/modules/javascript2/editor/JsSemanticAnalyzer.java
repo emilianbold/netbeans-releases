@@ -55,7 +55,6 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
@@ -151,20 +150,22 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                     break;
                 case OBJECT:
                 case OBJECT_LITERAL:
-                    if (parent.getParent() == null && !GLOBAL_TYPES.contains(object.getName())) {
-                        highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.GLOBAL_SET);
-                        for (Occurrence occurence : object.getOccurrences()) {
-                            if (!isCommentOccurence(result, occurence)) {
-                                highlights.put(occurence.getOffsetRange(), ColoringAttributes.GLOBAL_SET);
+                    if(!"UNKNOWN".equals(object.getName())) {
+                        if (parent.getParent() == null && !GLOBAL_TYPES.contains(object.getName())) {
+                            highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.GLOBAL_SET);
+                            for (Occurrence occurence : object.getOccurrences()) {
+                                if (!isCommentOccurence(result, occurence)) {
+                                    highlights.put(occurence.getOffsetRange(), ColoringAttributes.GLOBAL_SET);
+                                }
                             }
-                        }
-                    } else if (object.isDeclared() && !"prototype".equals(object.getName()) && !object.isAnonymous()) {
-                        if((object.getOccurrences().isEmpty()
-                                || (object.getOccurrences().size() == 1 && object.getOccurrences().get(0).getOffsetRange().equals(object.getDeclarationName().getOffsetRange())))
-                                && object.getModifiers().contains(Modifier.PRIVATE)) {
-                            highlights.put(object.getDeclarationName().getOffsetRange(), UNUSED_OBJECT_SET);
-                        } else {
-                            highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.CLASS_SET);
+                        } else if (object.isDeclared() && !"prototype".equals(object.getName()) && !object.isAnonymous()) {
+                            if((object.getOccurrences().isEmpty()
+                                    || (object.getOccurrences().size() == 1 && object.getOccurrences().get(0).getOffsetRange().equals(object.getDeclarationName().getOffsetRange())))
+                                    && object.getModifiers().contains(Modifier.PRIVATE)) {
+                                highlights.put(object.getDeclarationName().getOffsetRange(), UNUSED_OBJECT_SET);
+                            } else {
+                                highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.CLASS_SET);
+                            }
                         }
                     }
                     break;

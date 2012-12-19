@@ -298,7 +298,9 @@ public final class FileUtil extends Object {
             if (f2H.containsKey(path)) {
                 throw new IllegalArgumentException("Already listening to " + path); // NOI18N
             }
-            f2H.put(path, new Holder(listener, path));
+            final Holder holder = new Holder(listener, path);
+            f2H.put(path, holder);
+            holder.locateCurrent();
         }
     }
 
@@ -449,10 +451,9 @@ public final class FileUtil extends Object {
             super(listener, Utilities.activeReferenceQueue());
             assert path != null;
             this.path = path;
-            locateCurrent();
         }
 
-        private void locateCurrent() {
+        void locateCurrent() {
             FileObject oldCurrent = current;
             currentF = FileUtil.normalizeFile(path);
             while (true) {

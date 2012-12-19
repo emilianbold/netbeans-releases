@@ -156,7 +156,7 @@ public class RuleEditorNode extends AbstractNode {
 
     //called by the RuleEditorPanel when any of the properties affecting 
     //the PropertySet-s generation changes.
-    void fireContextChanged(boolean forceRefresh) {
+    public void fireContextChanged(boolean forceRefresh) {
         try {
             PropertySetsInfo oldInfo = getCachedPropertySetsInfo();
             PropertySetsInfo newInfo = createPropertySetsInfo();

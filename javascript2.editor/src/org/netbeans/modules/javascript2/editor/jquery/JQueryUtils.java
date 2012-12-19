@@ -60,7 +60,7 @@ public class JQueryUtils {
             return false;
         }
         ts.move(offset);
-        if (!(ts.moveNext() && ts.movePrevious())) {
+        if (!ts.moveNext() && !ts.movePrevious()) {
             return false;
         }
         Token<? extends JsTokenId> lastToken = ts.token();
