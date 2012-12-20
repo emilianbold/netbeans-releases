@@ -232,6 +232,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
     private JSeparator extraSettingsPanelSeparator;
     private JSeparator projectsChooserSeparator;
     private List<SimpleFilter> predefinedInstrFilterKeys;
+    private FileObject lastAttachProjectFO;
     private Object lastAttachProject; // Actually may be also EXTERNAL_APPLICATION_STRING, is reset to null when project is closed
     private Lookup.Provider project;
     private SettingsConfigurator configurator;
@@ -255,7 +256,6 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
 
     // --- Private implementation ------------------------------------------------
     private SelectProfilingTask() {
-        initClosedProjectHook();
         initComponents();
         initTasks();
         Runnable r = new Runnable() {
@@ -307,6 +307,10 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         assert !SwingUtilities.isEventDispatchThread();
 
         final SelectProfilingTask spt = getDefault();
+        
+        if (spt.lastAttachProject == null && spt.lastAttachProjectFO != null)
+            spt.lastAttachProject = ProjectUtilities.getProject(spt.lastAttachProjectFO);
+        
         spt.setSubmitButton(spt.attachButton);
         spt.setupAttachProfiler(project);
 
@@ -333,6 +337,14 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
 
             if (dd.getValue() == spt.attachButton) {
                 result = new Configuration(spt.project, spt.createFinalSettings(), spt.getAttachSettings());
+            }
+            
+            if (spt.lastAttachProject instanceof Lookup.Provider) {
+                spt.lastAttachProjectFO = ProjectUtilities.getProjectDirectory(
+                        (Lookup.Provider)spt.lastAttachProject);
+                spt.lastAttachProject = null;
+            } else {
+                spt.lastAttachProjectFO = null;
             }
 
             spt.cleanup(result != null);
@@ -614,24 +626,6 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         } else {
             return null;
         }
-    }
-
-    private void initClosedProjectHook() {
-        ProjectUtilities.addOpenProjectsListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                Lookup.Provider[] openedProjects = ProjectUtilities.getOpenedProjects();
-
-                for (Lookup.Provider openedProject : openedProjects) {
-                    if (lastAttachProject == openedProject) {
-                        return;
-                    }
-                }
-
-                // lastAttachProject points to a closed project
-                lastAttachProject = null; // NOTE: projectsChooserCombo should not be opened, no need to remove the project
-            }
-        });
     }
 
     // --- UI definition ---------------------------------------------------------
