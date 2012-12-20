@@ -544,7 +544,7 @@ nested_name_specifier returns [ name_specifier_t namequal ]
     ;
 
 lookup_nested_name_specifier:
-        IDENT SCOPE
+        simple_template_id_or_IDENT SCOPE
 //        (
 //            IDENT SCOPE
 //        |
