@@ -141,16 +141,20 @@ public class ClientJavaSourceHelper {
             // add REST and Jersey dependencies
             ClassPath cp = ClassPath.getClassPath(targetFo, ClassPath.COMPILE);
             List<Library> restLibs = new ArrayList<Library>();
-            if (cp.findResource("javax/ws/rs/WebApplicationException.class") == null) { //NOI18N
+            if (cp ==null || 
+                    cp.findResource("javax/ws/rs/WebApplicationException.class") == null)//NOI18N 
+            { 
                 Library lib = LibraryManager.getDefault().getLibrary("restapi"); //NOI18N
                 if (lib != null) {
                     restLibs.add(lib);
                 }
             }
-            if (cp.findResource("com/sun/jersey/api/client/WebResource.class") == null ||
+            if (cp == null ||
+                    cp.findResource("com/sun/jersey/api/client/WebResource.class") == null ||
                 (Security.Authentication.OAUTH == security.getAuthentication() && 
                  cp.findResource("com/sun/jersey/oauth/client/OAuthClientFilter.class") == null)
-                    ) {
+                    ) 
+            {
                 Library lib = LibraryManager.getDefault().getLibrary("restlib"); //NOI18N
                 if (lib != null) {
                     restLibs.add(lib);
@@ -268,7 +272,8 @@ public class ClientJavaSourceHelper {
                             (Security.Authentication.OAUTH == security.getAuthentication() ||
                             Security.Authentication.SESSION_KEY == security.getAuthentication())
                             ) {
-                        if (cp.findResource("org/openide/DialogDisplayer.class.class") == null ||
+                        if (cp == null ||
+                            cp.findResource("org/openide/DialogDisplayer.class.class") == null ||
                             cp.findResource("org/openide/util/NbPreferences.class.class") == null ||
                             cp.findResource("org/openide/awt/HtmlBrowser.class") == null) {
                             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
