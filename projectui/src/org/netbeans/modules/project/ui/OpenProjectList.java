@@ -527,8 +527,7 @@ public final class OpenProjectList {
 
         }
 
-        public @Override void resultChanged(LookupEvent ev) {
-            Hacks.RP.post(new Runnable() {
+        private RequestProcessor.Task resChangedTask = Hacks.RP.create(new Runnable() {
                 public @Override void run() {
                     Set<FileObject> lazyPDirs = new HashSet<FileObject>();
                     for (FileObject fileObject : currentFiles.allInstances()) {
@@ -542,6 +541,8 @@ public final class OpenProjectList {
                     }
                 }
             });
+        public @Override void resultChanged(LookupEvent ev) {
+            resChangedTask.schedule(50);
         }
 
         final void enter() {
