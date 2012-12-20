@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.javascript2.editor.hints;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -61,12 +63,16 @@ import org.openide.util.NbBundle;
  */
 public class GlobalIsNotDefined extends JsAstRule {
 
+    private static List<String> knownGlobalObjects = Arrays.asList("window", "document"); //NOI18N
+    
     @Override
     void computeHints(JsRuleContext context, List<Hint> hints, HintsProvider.HintsManager manager) {
         JsObject globalObject = context.getJsParserResult().getModel().getGlobalObject();
         Collection<? extends JsObject> variables = ModelUtils.getVariables((DeclarationScope)globalObject);
         for (JsObject variable : variables) {
-            if(!variable.isDeclared() && (variable.getJSKind() == JsElement.Kind.VARIABLE
+            if(!variable.isDeclared() 
+                    && !knownGlobalObjects.contains(variable.getName()) 
+                    && (variable.getJSKind() == JsElement.Kind.VARIABLE
                     || variable.getJSKind() == JsElement.Kind.OBJECT)) {
                 if (variable.getOccurrences().isEmpty()) {
                     hints.add(new Hint(this, Bundle.JsGlobalIsNotDefinedDN(),
