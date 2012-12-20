@@ -88,7 +88,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
     private PUDataObject dObj;
     private Project project;
     private boolean isContainerManaged;
-    private boolean jpa20=false;
+    private boolean jpa2x=false;
 
     //jpa2.0 specific
     private final java.lang.String[] validationModes = {"AUTO", "CALLBACK", "NONE"};//NOI18N
@@ -97,7 +97,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
     public PersistenceUnitPanel(SectionView view, final PUDataObject dObj,  final PersistenceUnit persistenceUnit) {
         super(view);
         this.dObj=dObj;
-        this.jpa20=Persistence.VERSION_2_0.equals(dObj.getPersistence().getVersion());
+        this.jpa2x=Double.parseDouble(Persistence.VERSION_2_0)<=Double.parseDouble(dObj.getPersistence().getVersion());
         this.persistenceUnit=persistenceUnit;
         this.project = FileOwnerQuery.getOwner(this.dObj.getPrimaryFile());
         
@@ -135,7 +135,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         initEntityList();
         
         initDataSource();
-        if(jpa20)
+        if(jpa2x)
         {
             initCache();
             initValidation();
@@ -172,7 +172,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         addImmediateModifier(ddCreate);
         addImmediateModifier(ddUnknown);
         addImmediateModifier(includeAllEntities);
-        if(jpa20)
+        if(jpa2x)
         {
             addImmediateModifier(ddAll);
             addImmediateModifier(ddNone);
@@ -200,10 +200,10 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         jdbcComboBox.setVisible(!isContainerManaged);
         jdbcLabel.setVisible(!isContainerManaged);
         //
-        validationStrategyPanel.setVisible(jpa20);
-        validationStrategyLabel.setVisible(jpa20);
-        cachingStrategyPanel.setVisible(jpa20);
-        cachingStrategyLabel.setVisible(jpa20);
+        validationStrategyPanel.setVisible(jpa2x);
+        validationStrategyLabel.setVisible(jpa2x);
+        cachingStrategyPanel.setVisible(jpa2x);
+        cachingStrategyLabel.setVisible(jpa2x);
     }
     private void initCache(){
         org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit pu2=(org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit) persistenceUnit;
@@ -456,7 +456,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         } else if (source == jtaCheckBox){
             setDataSource();
         }
-        else if(jpa20)
+        else if(jpa2x)
         {
             if(source==ddAll)
             {
