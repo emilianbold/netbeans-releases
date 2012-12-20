@@ -52,11 +52,13 @@ import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -215,7 +217,7 @@ class Wadl2JavaHelper {
 
     static List<MethodTree> createHttpMethods(WorkingCopy copy, WadlSaasMethod saasMethod, HttpParams httpParams, Security security) {
         List<MethodTree> httpMethods = new ArrayList<MethodTree>();
-        String methodName = saasMethod.getName();
+        //String methodName = saasMethod.getName();
         Method wadlMethod = saasMethod.getWadlMethod();
         String methodType = wadlMethod.getName();
         //HeaderParamsInfo headerParamsInfo = new HeaderParamsInfo(saasMethod);
@@ -504,8 +506,9 @@ class Wadl2JavaHelper {
                         }
                     } else {
                         Map<String, String> fixedParams = httpParams.getFixedQueryParams();
-                        for (String paramName : fixedParams.keySet()) {
-                            String paramValue = fixedParams.get(paramName);
+                        for(Entry<String, String> entry: fixedParams.entrySet()) {
+                            String paramName = entry.getKey();
+                            String paramValue = entry.getValue();
                             queryP.append(".queryParam(\""+paramName+"\",\""+paramValue+"\")"); //NOI18N"
                         }
                     }
@@ -562,8 +565,8 @@ class Wadl2JavaHelper {
     }
 
     private static Pair<String> getParamList(List<String> requiredParams, Map<String,String> fixedParams) {
-        StringBuffer paramNames = new StringBuffer();
-        StringBuffer paramValues = new StringBuffer();
+        StringBuilder paramNames = new StringBuilder();
+        StringBuilder paramValues = new StringBuilder();
         boolean first = true;
         for (String p : requiredParams) {
             if (first) {
@@ -572,10 +575,13 @@ class Wadl2JavaHelper {
                 paramNames.append(",");
                 paramValues.append(",");
             }
-            paramNames.append("\""+p+"\"");
+            paramNames.append("\"");
+            paramNames.append(+p);
+            paramNames.append("\"");
             paramValues.append(makeJavaIdentifier(p));
         }
-        for (String p : fixedParams.keySet()) {
+        for(Entry<String,String> entry: fixedParams.entrySet()){
+            String p = entry.getKey();
             if (first) {
                 first = false;
             } else {
@@ -583,8 +589,12 @@ class Wadl2JavaHelper {
                 paramValues.append(",");
                 
             }
-            paramNames.append("\""+p+"\"");
-            paramValues.append("\""+fixedParams.get(p)+"\"");
+            paramNames.append("\"");
+            paramNames.append(p);
+            paramNames.append("\"");
+            paramValues.append("\"");
+            paramNames.append(entry.getValue());
+            paramNames.append("\"");
         }
 
         return new Pair<String>(paramNames.toString(), paramValues.toString());
@@ -900,7 +910,8 @@ class Wadl2JavaHelper {
                 InputStreamReader is = null;
                 StringWriter writer = null;
                 try {
-                    is = new InputStreamReader(templateFo.getInputStream());
+                    is = new InputStreamReader(templateFo.getInputStream(), 
+                            Charset.forName("UTF-8"));          // NOI18N
                     writer = new StringWriter();
                     char[] buffer = new char[1024];
                     int b;

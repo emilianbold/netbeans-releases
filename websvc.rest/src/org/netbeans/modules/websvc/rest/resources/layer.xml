@@ -129,7 +129,7 @@
             <file name="JaxRsFilter.java">
                 <attr name="position" intvalue="495"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="templateCategory" stringvalue="web-types"/>
+                <attr name="templateCategory" stringvalue="REST-client"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.JaxRsFilterIterator"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/JaxRsFilter.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
@@ -138,7 +138,7 @@
             <file name="JaxRsInterceptor.java">
                 <attr name="position" intvalue="496"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="templateCategory" stringvalue="web-types"/>
+                <attr name="templateCategory" stringvalue="REST-client"/>
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.websvc.rest.wizard.InterceptorIterator"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/JaxRsInterceptor.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>

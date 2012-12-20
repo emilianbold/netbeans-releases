@@ -74,7 +74,6 @@ import org.openide.util.NbBundle;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
-import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
@@ -260,7 +259,7 @@ abstract class AbstractJaxRsFeatureIterator implements
             }
         }
     }
-
+    
     private WizardDescriptor myWizard;
     private WizardDescriptor.Panel[] myPanels;
     private Panel myPanel;
