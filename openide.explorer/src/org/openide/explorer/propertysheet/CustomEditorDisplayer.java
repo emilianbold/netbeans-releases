@@ -67,7 +67,7 @@ import java.util.logging.Logger;
 
 import javax.swing.*;
 import javax.swing.event.*;
-import org.netbeans.modules.openide.explorer.UIException;
+import org.openide.util.Exceptions;
 
 /** An implementation of PropertyDisplayer.EDITABLE which manages communication
  * with a custom editor, to replace that aspect of PropertyPanel's behavior.
@@ -277,7 +277,7 @@ final class CustomEditorDisplayer implements PropertyDisplayer_Editable {
                     if ((msg != null) && !PropertyEnv.STATE_VALID.equals(env.getState())) {
                         IllegalArgumentException iae = new IllegalArgumentException("Error setting value"); //NOI18N
 
-                        UIException.annotateUser(iae, null, msg, null, null);
+                        Exceptions.attachLocalizedMessage(iae, msg);
 
                         //set the state to invalid
                         if (!env.STATE_INVALID.equals(env.getState())) {
@@ -311,11 +311,10 @@ final class CustomEditorDisplayer implements PropertyDisplayer_Editable {
                     PropertyDialogManager.notify(exception);
 
                     IllegalArgumentException iae = new IllegalArgumentException("Error setting value"); //NOI18N
-                    UIException.annotateUser(iae, null,
+                    Exceptions.attachLocalizedMessage(iae,
                                              PropUtils.findLocalizedMessage(exception,
                                                                             entered,
-                                                                            getProperty().getDisplayName()),
-                                             exception, null);
+                                                                            getProperty().getDisplayName()));
                     throw iae;
                 }
             }

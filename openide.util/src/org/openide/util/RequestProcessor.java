@@ -2043,7 +2043,12 @@ outer:  do {
                 boolean loggable = em.isLoggable(Level.FINE);
 
                 if (loggable) {
-                    em.log(Level.FINE, "Begining work {0}", getName()); // NOI18N
+                    try {
+                        procesing = current;
+                        em.log(Level.FINE, "Begining work {0}", getName()); // NOI18N
+                    } finally {
+                        procesing = null;
+                    }
                 }
 
                 // while we have something to do
@@ -2058,11 +2063,11 @@ outer:  do {
                     setPrio(todo.getPriority());
 
                     try {
+                        procesing = current;
                         if (loggable) {
                             em.log(Level.FINE, "  Executing {0}", todo); // NOI18N
                         }
                         registerParallel(todo, current);
-                        procesing = current;
                         todo.run();
 
                         if (loggable) {
@@ -2098,7 +2103,12 @@ outer:  do {
                 }
 
                 if (loggable) {
-                    em.log(Level.FINE, "Work finished {0}", getName()); // NOI18N
+                    try {
+                        procesing = current;
+                        em.log(Level.FINE, "Work finished {0}", getName()); // NOI18N
+                    } finally {
+                        procesing = null;
+                    }
                 }
             }
         }

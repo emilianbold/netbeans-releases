@@ -86,6 +86,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     @SuppressWarnings("NonConstantLogger")
     private final Logger err;
     /** last refresh task */
+    private volatile Collection<FolderChildrenPair> pairs;
     private volatile Task refTask = Task.EMPTY;
     private static final boolean DELAYED_CREATION_ENABLED;
     static {
@@ -125,6 +126,11 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     /** used from DataFolder */
     DataFilter getFilter () {
         return filter;
+    }
+    
+    void applyKeys(Collection<FolderChildrenPair> pairs) {
+        setKeys(pairs);
+        this.pairs = pairs;
     }
 
     static void waitRefresh() {
@@ -181,7 +187,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
 
                 try {
                     if (op == RefreshMode.CLEAR) {
-                        setKeys(Collections.<FolderChildrenPair>emptyList());
+                        applyKeys(Collections.<FolderChildrenPair>emptyList());
                         return;
                     }
 
@@ -200,13 +206,13 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
                     }
 
                     if (op == RefreshMode.DEEP_LATER) {
-                        setKeys(Collections.<FolderChildrenPair>emptyList());
-                        setKeys(positioned);
+                        applyKeys(Collections.<FolderChildrenPair>emptyList());
+                        applyKeys(positioned);
                         return;
                     }
 
                     if (op == RefreshMode.SHALLOW) {
-                        setKeys(positioned);
+                        applyKeys(positioned);
                         return;
                     }
 
@@ -374,7 +380,29 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     @Override
     public Node findChild(String name) {
         if (checkChildrenMutex()) {
-            getNodesCount(true);
+            waitOptimalResult();
+        }
+        int i = 0;
+        final Collection<FolderChildrenPair> tmp = pairs;
+        if (tmp != null) {
+            for (FolderChildrenPair p : tmp) {
+                final FileObject pf = p.primaryFile;
+                if (pf.getNameExt().startsWith(name)) {
+                    try {
+                        Node original = DataObject.find(pf).getNodeDelegate();
+                        if (!original.getName().equals(name)) {
+                            continue;
+                        }
+                        Node candidate = getNodeAt(i);
+                        if (candidate != null && candidate.getName().equals(name)) {
+                            return candidate;
+                        }
+                    } catch (DataObjectNotFoundException ex) {
+                        err.log(Level.INFO, "Can't find object for " + pf, ex);
+                    }
+                }
+                i++;
+            }
         }
         return super.findChild(name);
     }
@@ -445,7 +473,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
 
         // we need to clear the children now
         List<FolderChildrenPair> emptyList = Collections.emptyList();
-        setKeys(emptyList);
+        applyKeys(emptyList);
         err.fine("removeNotify end");
     }
 
