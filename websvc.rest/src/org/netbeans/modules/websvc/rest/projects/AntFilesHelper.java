@@ -70,7 +70,7 @@ public class AntFilesHelper {
      */
     public static final int CURRENT_DEPENDECIES_VERSION = 4;
     // dependency(from, to)
-    public static Map<String,String> dependencies = new HashMap<String,String>();
+    public static final Map<String,String> dependencies = new HashMap<String,String>();
     static {
         //IMPORTANT: bump up version when you change the dependencies list
         //dependencies.put("-post-compile", "-rest-post-compile");
