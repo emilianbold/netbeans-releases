@@ -127,10 +127,19 @@ public class AndroidActionProvider implements ActionProvider {
                         }
                     }
                     if (build.isPhoneGapBuild(p)) {
-                        build.perform(build.RUN_ANDROID, p);
+                        build.perform(BuildPerformer.RUN_ANDROID, p);
                     } else {
                         PropertyProvider config = (PropertyProvider) p.getLookup().lookup(ProjectConfigurationProvider.class).getActiveConfiguration();
-                        config.getDevice().openUrl(build.getUrl(p));
+                        final Device device = config.getDevice();
+                        device.openUrl(build.getUrl(p));
+                        if (Browser.CHROME.getName().equals(config.getProperty(Device.BROWSER_PROP))) {
+                            try {
+                                Thread.sleep(5000);
+                            } catch (InterruptedException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                            build.startDebugging(device, p);
+                        }
                     }
 
                 }
