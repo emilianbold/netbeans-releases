@@ -43,11 +43,15 @@ package org.netbeans.modules.php.twig.editor.completion;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
@@ -68,14 +72,17 @@ import org.netbeans.modules.php.twig.editor.completion.TwigDocumentationFactory.
 import org.netbeans.modules.php.twig.editor.completion.TwigDocumentationFactory.TagDocumentationFactory;
 import org.netbeans.modules.php.twig.editor.completion.TwigDocumentationFactory.TestDocumentationFactory;
 import org.netbeans.modules.php.twig.editor.completion.TwigElement.Parameter;
+import org.netbeans.modules.php.twig.editor.lexer.TwigLexerUtils;
 import org.netbeans.modules.php.twig.editor.lexer.TwigTokenId;
 import org.netbeans.modules.php.twig.editor.lexer.TwigTopTokenId;
 import org.netbeans.modules.php.twig.editor.parsing.TwigParserResult;
 import org.openide.util.NbBundle;
 
 public class TwigCompletionHandler implements CodeCompletionHandler {
-
+    private static final Logger LOGGER = Logger.getLogger(TwigCompletionHandler.class.getName());
     private static final DocumentationDecorator DOCUMENTATION_DECORATOR = DocumentationDecorator.getInstance();
+    private static final Collection<Character> AUTOPOPUP_STOP_CHARS = new TreeSet<Character>(
+            Arrays.asList('=', ';', '+', '-', '*', '/', '%', '(', ')', '[', ']', '{', '}', '?', ' ', '\t'));
 
     private static final Set<TwigElement> TAGS = new HashSet<TwigElement>();
     static {
@@ -218,6 +225,10 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
             request.context = TwigCompletionContextFinder.find(request.parserResult, caretOffset);
             doCompletion(completionProposals, request);
         }
+        LOGGER.log(
+                Level.INFO,
+                "TWIG complete():codeCompletionContext.getQueryType():{0}|><|threadName:{1}",
+                new Object[] {codeCompletionContext.getQueryType(), Thread.currentThread().getName()});
         return new DefaultCompletionResult(completionProposals, false);
     }
 
@@ -314,8 +325,28 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
     }
 
     @Override
-    public QueryType getAutoQuery(JTextComponent jtc, String string) {
-        return QueryType.ALL_COMPLETION;
+    public QueryType getAutoQuery(JTextComponent component, String typedText) {
+        QueryType result = QueryType.ALL_COMPLETION;
+        if (typedText.length() == 0) {
+            result = QueryType.NONE;
+        } else {
+            char lastChar = typedText.charAt(typedText.length() - 1);
+            if (AUTOPOPUP_STOP_CHARS.contains(Character.valueOf(lastChar))) {
+                result = QueryType.STOP;
+            } else {
+                Document document = component.getDocument();
+                int offset = component.getCaretPosition();
+                TokenSequence<? extends TwigTokenId> ts = TwigLexerUtils.getTwigMarkupTokenSequence(document, offset);
+                if (ts == null) {
+                    result = QueryType.STOP;
+                }
+            }
+        }
+        LOGGER.log(
+                Level.INFO,
+                "TWIG getAutoQuery():typedText:{0}|><|queryType:{1}|><|threadName:{2}",
+                new Object[] {typedText, result, Thread.currentThread().getName()});
+        return result;
     }
 
     @Override
