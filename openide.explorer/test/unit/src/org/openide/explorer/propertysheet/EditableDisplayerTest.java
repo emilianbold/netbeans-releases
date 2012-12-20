@@ -89,15 +89,13 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.openide.explorer.UIException;
-import org.openide.ErrorManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /* A comprehensive test of EditablePropertyDisplayer */
 public class EditableDisplayerTest extends NbTestCase {
@@ -1428,8 +1426,7 @@ public class EditableDisplayerTest extends NbTestCase {
                 myVal = val;
             } else {
                 IllegalArgumentException iae = new IllegalArgumentException("No!");
-                UIException.annotateUser(iae, "NoNo!", "Localized message", null,
-                                         null);
+                Exceptions.attachLocalizedMessage(iae, "Localized message");
                 throw iae;
             }
         }
@@ -1563,8 +1560,7 @@ public class EditableDisplayerTest extends NbTestCase {
                 }
             }
             IllegalArgumentException iae = new IllegalArgumentException(txt);
-            UIException.annotateUser(iae, txt, txt + " is not a valid value",
-                                     null, null);
+            Exceptions.attachMessage(iae, txt + " is not a valid value");
         }
         
         public Object getValue() {

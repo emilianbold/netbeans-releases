@@ -139,14 +139,16 @@ public final class FileUtil extends Object {
         if (file == null) {
             return "NULL-ref"; // NOI18N
         } else {
-            return file + "(" + file.getClass() + ")"; // NOI18N
+            return file.getPath() + "(" + file.getClass() + ")"; // NOI18N
         }
     }
     
     private static boolean assertNormalized(File path) {
         if (path != null) {
             File np;
-            assert path.equals(np = FileUtil.normalizeFileCached(path)) : "Need to normalize " + toDebugString(path) + " was " + toDebugString(np);  //NOI18N
+            assert path.getClass().getName().startsWith("sun.awt.shell") ||
+                path.equals(np = FileUtil.normalizeFileCached(path)) : 
+                "Need to normalize " + toDebugString(path) + " was " + toDebugString(np);  //NOI18N
         }
         return true;
     }
