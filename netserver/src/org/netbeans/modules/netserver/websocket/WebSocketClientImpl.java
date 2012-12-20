@@ -94,7 +94,7 @@ public class WebSocketClientImpl extends SocketClient {
     public void sendMessage( String message){
         SelectionKey key = getKey();
         if ( key == null ){
-            getSelector().wakeup();
+	    stop();
             return;
         }
         byte[] bytes = getHandler().createTextFrame( message);
