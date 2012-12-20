@@ -576,7 +576,7 @@ class Wadl2JavaHelper {
                 paramValues.append(",");
             }
             paramNames.append("\"");
-            paramNames.append(+p);
+            paramNames.append(p);
             paramNames.append("\"");
             paramValues.append(makeJavaIdentifier(p));
         }

@@ -193,15 +193,16 @@ public class GenericResourceGenerator extends AbstractGenerator {
                     body.append( name );
                     body.append( " != null) { this.");      //NOI18N
                     body.append(name );
-                    body.append(" = " );
+                    body.append(" = " );		    //NOI18N
                     body.append( name );
                     body.append("; }\n");                   //NOI18N
                 }
+		body.append("}\n");			    //NOI18N
                 
                 ClassTree modifiedTree = JavaSourceHelper.addConstructor(copy, tree,
                         Constants.PUBLIC,
                         getParamNames(params), getParamTypeNames(params),
-                        body, null);
+                        body.toString(), null);
                 
                 copy.rewrite(tree, modifiedTree);
             }
@@ -376,7 +377,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
         Object[] paramAnnotationAttrs = getParamAnnotationAttributes(parameters.length);
 
         GenericResourceBean subBean = getSubresourceBean();
-        StringBuilder comment = new StringBuilder"POST method for creating an instance of ");
+        StringBuilder comment = new StringBuilder("POST method for creating an instance of ");
         comment.append(subBean == null ? bean.getName() : subBean.getName());
         comment.append( "\n");
         for (int i=0; i<parameters.length-1; i++) {
