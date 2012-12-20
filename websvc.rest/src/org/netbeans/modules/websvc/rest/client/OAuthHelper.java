@@ -848,7 +848,7 @@ public class OAuthHelper {
     }
 
     private static String getInitOAuthBodyWeb(Metadata oauthMetadata) {
-        MethodType accessTokenMethod = oauthMetadata.getFlow().getAccessToken();
+        //MethodType accessTokenMethod = oauthMetadata.getFlow().getAccessToken();
         StringBuffer bodyBuf = new StringBuffer();
         bodyBuf.append("{"); //NOI18N
         bodyBuf.append("HttpSession session = request.getSession();"); //NOI18N
@@ -958,7 +958,7 @@ public class OAuthHelper {
 
     private static String getAuthorizeConsumerBodyNb(Metadata oauthMetadata) {
         String dialogPanel = Wadl2JavaHelper.getMethodBody("Templates/SaaSServices/OAuthAuthorizationPanelNb.java"); //NOI18N
-        MethodType accessTokenMethod = oauthMetadata.getFlow().getAccessToken();
+        //MethodType accessTokenMethod = oauthMetadata.getFlow().getAccessToken();
         StringBuffer bodyBuf = new StringBuffer();
         bodyBuf.append("{"); //NOI18N
         bodyBuf.append(dialogPanel); //NOI18N
