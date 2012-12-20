@@ -246,7 +246,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     }
 
     // for testing purposes only
-    public ProjectBase addProject(ProjectBase prj) {
+    public ProjectBase testAddProject(ProjectBase prj) {
         synchronized (lock) {
             Object id = prj.getPlatformProject();
             assert id != null : "It is expected that prj.getPlatformProject() is not NULL here"; // NOI18N
