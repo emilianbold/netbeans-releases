@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.twig.editor.lexer;
 
 import java.util.List;
+import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -58,6 +59,11 @@ public final class TwigLexerUtils {
 
     public static TokenSequence<? extends TwigTokenId> getTwigMarkupTokenSequence(final Snapshot snapshot, final int offset) {
         return getTokenSequence(snapshot.getTokenHierarchy(), offset, TwigTokenId.language());
+    }
+
+    public static TokenSequence<? extends TwigTokenId> getTwigMarkupTokenSequence(final Document document, final int offset) {
+        TokenHierarchy<Document> th = TokenHierarchy.get(document);
+        return getTokenSequence(th, offset, TwigTokenId.language());
     }
 
     public static <L> TokenSequence<? extends L> getTokenSequence(final TokenHierarchy<?> th, final int offset, final Language<? extends L> language) {

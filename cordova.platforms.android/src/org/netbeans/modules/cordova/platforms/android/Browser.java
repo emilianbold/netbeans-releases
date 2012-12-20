@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,21 +37,33 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.ppoints;
-
-import org.openide.modules.OnStop;
+package org.netbeans.modules.cordova.platforms.android;
 
 /**
- * Manages a module's lifecycle. Remember that an installer is optional and
- * often not needed at all.
+ *
+ * @author Jan Becicka
  */
-@OnStop
-public class Installer implements Runnable {
-    @Override
-    public void run() {
-        if (ProfilingPointsManager.hasDefault())
-            ProfilingPointsManager.getDefault().ideClosing(); // TODO: dirty profiling points should be persisted on document save!
+public enum Browser {
+    
+    DEFAULT("default", "com.android.browser/.BrowserActivity"),
+    CHROME("chrome", "com.android.chrome/.Main");
+    
+    private String name;
+    private String command;
+    
+    private Browser (String name, String command) {
+        this.name = name;
+        this.command = command;
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getCommand() {
+        return command;
+    }
+    
 }
