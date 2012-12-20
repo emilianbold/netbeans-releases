@@ -99,6 +99,7 @@ public class WebPersistenceProviderSupplier implements PersistenceProviderSuppli
         candidates.add(ProviderUtil.OPENJPA_PROVIDER);
         candidates.add(ProviderUtil.OPENJPA_PROVIDER1_0);
         candidates.add(ProviderUtil.ECLIPSELINK_PROVIDER);
+        candidates.add(ProviderUtil.ECLIPSELINK_PROVIDER2_0);
         addPersistenceProviders(candidates, platform, result);
         
         return result;

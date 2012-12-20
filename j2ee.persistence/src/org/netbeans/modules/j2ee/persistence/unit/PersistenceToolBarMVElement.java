@@ -536,7 +536,7 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
         @Override
         public boolean isEnabled() {
             //according to jpa 2.0 there should be at least one persistence unit
-            boolean disable=puDataObject.getPersistence().sizePersistenceUnit()<=1 && puDataObject.getPersistence().getVersion().equals(Persistence.VERSION_2_0);
+            boolean disable=puDataObject.getPersistence().sizePersistenceUnit()<=1 && (Double.parseDouble(puDataObject.getPersistence().getVersion())>=Double.parseDouble(Persistence.VERSION_2_0));
             return !disable;
         }
     }

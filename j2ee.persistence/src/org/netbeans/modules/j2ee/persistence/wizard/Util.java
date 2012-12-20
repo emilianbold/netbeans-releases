@@ -260,7 +260,7 @@ public class Util {
             boolean specialCase = Util.isJPAVersionSupported(project, Persistence.VERSION_2_0) && (defProviderVersion == null || defProviderVersion.equals(Persistence.VERSION_1_0));//jpa 2.0 is supported by default (or first) is jpa1.0 or udefined version provider
             if(specialCase){
                 for (int i = 1; i<providers.size() ; i++){
-                    if(ProviderUtil.ECLIPSELINK_PROVIDER.equals(providers.get(i))){//eclipselink jpa2.0 is preferred provider
+                    if(ProviderUtil.ECLIPSELINK_PROVIDER2_0.equals(providers.get(i))){//eclipselink jpa2.0 is preferred provider
                         defIndex = i;
                         break;
                     }
