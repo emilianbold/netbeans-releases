@@ -140,7 +140,7 @@ abstract class GetRemoteChangesAction extends SingleRepositoryAction {
             errorLabel,
             NotifyDescriptor.DEFAULT_OPTION,
             NotifyDescriptor.ERROR_MESSAGE,
-            new Object[]{NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION},
+            new Object[]{NotifyDescriptor.OK_OPTION},
             NotifyDescriptor.OK_OPTION);
         DialogDisplayer.getDefault().notify(nd);
     }

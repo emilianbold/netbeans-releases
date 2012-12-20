@@ -43,8 +43,6 @@
 package org.netbeans.modules.ide.ergonomics.fod;
 
 import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
 import junit.framework.Test;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
@@ -55,24 +53,27 @@ import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 
-import org.openide.util.Lookup;
-import org.openide.modules.ModuleInfo;
 
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author Jiri Rechtacek <jrechtacek@netbeans.org>
  */
-public class EnableJ2EEEnablesJavaTest extends NbTestCase {
+public class DisableJ2EEKeepsMobilityEnabledTest extends NbTestCase {
 
-    public EnableJ2EEEnablesJavaTest(String name) {
+    private FeatureInfo j2ee = null;
+    private FeatureInfo mobility = null;
+    private UpdateElement j2eeUE = null;
+    private UpdateElement mobilityUE = null;
+    
+    public DisableJ2EEKeepsMobilityEnabledTest(String name) {
         super(name);
     }
 
     public static Test suite() {
         Test test = NbModuleSuite.create(
             NbModuleSuite.emptyConfiguration().
-            addTest(EnableJ2EEEnablesJavaTest.class).
+            addTest(DisableJ2EEKeepsMobilityEnabledTest.class).
             gui(false).
             clusters("ergonomics.*").
             clusters(".*").
@@ -82,48 +83,55 @@ public class EnableJ2EEEnablesJavaTest extends NbTestCase {
         return test;
     }
 
-    public void testEnablingJ2EEEnablesJavaViaAutoUpdateManager() throws Exception {
-        FeatureInfo j2ee = null;
-        FeatureInfo java = null;
+    @Override
+    protected void setUp() throws Exception {
+        clearWorkDir();
         for (FeatureInfo f : FeatureManager.features()) {
             if (f.getCodeNames().contains("org.netbeans.modules.j2ee.kit")) {
                 j2ee = f;
             }
-            if (f.getCodeNames().contains("org.netbeans.modules.java.kit")) {
-                java = f;
+            if (f.getCodeNames().contains("org.netbeans.modules.mobility.kit")) {
+                mobility = f;
             }
         }
         assertNotNull("j2ee feature found", j2ee);
-        assertNotNull("java feature found", java);
+        assertNotNull("mobility feature found", mobility);
+
+        assertFalse("j2ee disabled", j2ee.isEnabled());
+        assertFalse("mobility disabled", mobility.isEnabled());
 
         List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.FEATURE);
-        UpdateElement j2eeUE = null;
-        StringBuilder sb = new StringBuilder();
+        
         for (UpdateUnit uu : units) {
-            sb.append(uu.getCodeName()).append('\n');
             if (uu.getCodeName().equals("fod.org.netbeans.modules.j2ee.kit")) {
                 j2eeUE = uu.getInstalled();
             }
+            if (uu.getCodeName().equals("fod.org.netbeans.modules.mobility.kit")) {
+                mobilityUE = uu.getInstalled();
+            }
         }
-        assertNotNull("J2EE found: " + sb, j2eeUE);
+        assertNotNull("J2EE found", j2eeUE);
+        assertNotNull("Mobility found", mobilityUE);
+        
         OperationContainer<OperationSupport> cc = OperationContainer.createForEnable();
-        OperationInfo<OperationSupport> info = cc.add(j2eeUE);
+        OperationInfo<OperationSupport> info;
+        info = cc.add(j2eeUE);
+        cc.add(info.getRequiredElements());
+        info = cc.add(mobilityUE);
         cc.add(info.getRequiredElements());
         cc.getSupport().doOperation(null);
 
+        assertTrue("j2ee enabled", j2ee.isEnabled());
+        assertTrue("mobility enabled", mobility.isEnabled());
+    }
 
-        Set<String> expectedNames = new HashSet<String>(java.getCodeNames());
-        for (ModuleInfo mi : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
-            if (mi.isEnabled()) {
-                expectedNames.remove(mi.getCodeNameBase());
-            }
-        }
-        if (!expectedNames.isEmpty()) {
-            fail(
-                "java cluster shall be fully enabled, but this was missing:\n" +
-                expectedNames.toString().replace(',', '\n')
-            );
-        }
+    public void testEnablingJ2EEEnablesJavaViaAutoUpdateManager() throws Exception {
+        OperationContainer<OperationSupport> cc = OperationContainer.createForDisable();
+        OperationInfo<OperationSupport> info;
+        info = cc.add(j2eeUE);
+        assertFalse("Mobility remains enabled so far", cc.listAll().toString().contains("org.netbeans.modules.mobility.kit"));
+        cc.add(info.getRequiredElements());
+        assertFalse("Mobility remains enabled finally", cc.listAll().toString().contains("org.netbeans.modules.mobility.kit"));
     }
 
 }
