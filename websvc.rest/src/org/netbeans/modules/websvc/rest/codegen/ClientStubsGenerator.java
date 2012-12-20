@@ -391,17 +391,23 @@ public class ClientStubsGenerator extends AbstractGenerator {
             } else {
                 fs.runAtomicAction(new FileSystem.AtomicAction() {
                     public void run() throws IOException {
-                        InputStream in = new FileInputStream(src);
-                        OutputStream out = new FileOutputStream(dst);
+                        InputStream in = null;
+                        OutputStream out = null;
                         try {
+                            in = new FileInputStream(src);
+                            out = new FileOutputStream(dst);
                             byte[] buf = new byte[1024];
                             int len;
                             while ((len = in.read(buf)) > 0) {
                                 out.write(buf, 0, len);
                             }
                         } finally {
-                            in.close();
-                            out.close();
+                            if ( in!= null ){
+                                in.close();
+                            }
+                            if ( out!= null ){
+                                out.close();
+                            }
                         }
                     }
                 });

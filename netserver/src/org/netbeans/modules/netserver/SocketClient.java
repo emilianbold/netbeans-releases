@@ -83,19 +83,6 @@ public class SocketClient extends SocketFramework {
     }
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.netserver.SocketFramework#isStopped()
-     */
-    @Override
-    public boolean isStopped() {
-        if ( !getChannel().isOpen() || !getChannel().isConnected() || 
-                getChannel().keyFor( getSelector())==null)
-        {
-            return true;
-        }
-        return super.isStopped();
-    }
-
-    /* (non-Javadoc)
      * @see org.netbeans.modules.netserver.SocketFramework#chanelClosed(java.nio.channels.SelectionKey)
      */
     @Override

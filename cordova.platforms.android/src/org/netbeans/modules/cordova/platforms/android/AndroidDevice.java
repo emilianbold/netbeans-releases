@@ -79,17 +79,19 @@ public class AndroidDevice implements Device {
         while (r.ready() && ((line = r.readLine()) != null)) {
             Matcher m = pattern.matcher(line);
             if (m.matches()) {
-                AndroidDevice device = new AndroidDevice(m.group(1));
+                AndroidDevice device = new AndroidDevice(m.group(1), Browser.DEFAULT);
                 result.add(device);
             }
         }
         return result;
     }
+    
+    private Browser browser;
 
     @Override
     public void openUrl(String url) {
         try {
-            String s = ProcessUtils.callProcess(getPlatform().getSdkLocation() + "/platform-tools/adb", false, isEmulator()?"-d":"-e", "wait-for-device", "shell", "am", "start", "-a", "android.intent.action.VIEW", "-n", "com.android.browser/.BrowserActivity", url); //NOI18N
+            String s = ProcessUtils.callProcess(getPlatform().getSdkLocation() + "/platform-tools/adb", true, isEmulator() ? "-d" : "-e", "wait-for-device", "shell", "am", "start", "-a", "android.intent.action.VIEW", "-n", getPrefferedBrowser(), url); //NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -98,13 +100,19 @@ public class AndroidDevice implements Device {
     static Device get(String name, EditableProperties props) {
         final String property = props.getProperty(Device.VIRTUAL_DEVICE_PROP);
         final boolean b = Boolean.parseBoolean(property);
-        return new AndroidDevice(b ? "emulator" + name: name);
+        String property1 = props.getProperty(Device.BROWSER_PROP);
+        if (property1!=null && property1.equals(Browser.CHROME.getName())) {
+            return new AndroidDevice(b ? "emulator" + name: name, Browser.CHROME);
+        }
+
+        return new AndroidDevice(b ? "emulator" + name: name, Browser.DEFAULT);
     }
     
     private final String name;
 
-    private AndroidDevice(String name) {
+    private AndroidDevice(String name, Browser browser) {
         this.name = name;
+        this.browser = browser;
     }
     
     public boolean isEmulator() {
@@ -142,5 +150,8 @@ public class AndroidDevice implements Device {
     public ProjectConfigurationCustomizer getProjectConfigurationCustomizer(Project project, PropertyProvider aThis) {
         return new AndroidConfigurationPanel.AndroidConfigurationCustomizer(project, aThis);
     }
-    
+
+    private String getPrefferedBrowser() {
+        return browser.getCommand();
+    }
 }
