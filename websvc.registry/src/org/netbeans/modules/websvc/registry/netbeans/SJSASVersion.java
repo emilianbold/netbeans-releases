@@ -136,6 +136,9 @@ public final class SJSASVersion {
 	}
 	
 	public boolean equals(Object obj) {
+		if ( !(obj instanceof SJSASVersion )){
+		    return false;
+	        }
 		SJSASVersion target = (SJSASVersion) obj;
 		return sjsasVersion.equals(target.sjsasVersion);
 	}
