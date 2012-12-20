@@ -57,7 +57,6 @@ public class SubResourceLocatorImpl extends RestMethodDescriptionImpl
         implements SubResourceLocator {
     
     private String uriTemplate;
-    private String resourceType;
     
     public SubResourceLocatorImpl(ExecutableElement methodElement) {
         super(methodElement);
@@ -70,7 +69,7 @@ public class SubResourceLocatorImpl extends RestMethodDescriptionImpl
     }
     
     public String getResourceType() {
-        return resourceType;
+        return null;
     }
     
     public Status refresh(Element element) {
