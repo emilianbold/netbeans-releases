@@ -41,7 +41,8 @@
  */
 package org.netbeans.modules.cnd.repository.impl;
 
-import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.disk.FilesAccessStrategy;
@@ -63,7 +64,10 @@ public abstract class BaseRepository implements Repository, UnitCodec {
     private final RepositoryTranslatorImpl translator;
     private final StorageAllocator storageAllocator;
     private final FilesAccessStrategy filesAccessStrategy;
-    
+
+    private final Map<Integer, Object> unitLocks = new HashMap<Integer, Object>();
+    private static final class UnitLock {}
+    private final Object mainUnitLock = new UnitLock();
 
     protected BaseRepository(int id, CacheLocation cacheLocation) {
         this.id = id;
@@ -73,6 +77,17 @@ public abstract class BaseRepository implements Repository, UnitCodec {
         this.translator = new RepositoryTranslatorImpl(storageAllocator, this);
     }
 
+    public final Object getUnitLock(int unitId) {
+        synchronized (mainUnitLock) {
+            Object lock = unitLocks.get(unitId);
+            if (lock == null) {
+                lock = new NamedLock("unitId=" + unitId); // NOI18N
+                unitLocks.put(unitId, lock);
+            }
+            return lock;
+        }
+    }
+   
     @Override
     public int removeRepositoryID(int unitId) {
         return unitId % REPO_DENOM; // write it *without* repository ID
@@ -103,4 +118,40 @@ public abstract class BaseRepository implements Repository, UnitCodec {
     public String toString() {
         return getClass().getSimpleName() + ' ' + id + ' ' + cacheLocation;
     }
+    
+    private static final class NamedLock {
+
+        private final String name;
+
+        public NamedLock(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return this.name;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final NamedLock other = (NamedLock) obj;
+            if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 97 * hash + (this.name != null ? this.name.hashCode() : 0);
+            return hash;
+        }
+    }   
 }

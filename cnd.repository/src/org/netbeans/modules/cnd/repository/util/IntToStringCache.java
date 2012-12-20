@@ -80,7 +80,7 @@ public final class IntToStringCache {
     
     private IntToStringCache(long timestamp, CharSequence unitName, boolean dummy) {
         this.unitName = unitName;
-        creationStack = Stats.TRACE_IZ_215449 ? new Exception((dummy ? "INVALID " : "") + "IntToStringCache for " + unitName + "@" + Thread.currentThread().getName()) : null;
+        creationStack = Stats.TRACE_IZ_215449 ? new Exception((dummy ? "INVALID " : "") + "IntToStringCache for " + unitName + " Thread=" + Thread.currentThread().getName()) : null; // NOI18N
         this.cache = new ArrayList<CharSequence>();
         this.version = RepositoryTranslatorImpl.getVersion();
         this.timestamp = timestamp;
@@ -99,7 +99,7 @@ public final class IntToStringCache {
     private IntToStringCache(DataInput stream, CharSequence unitName) throws IOException {
         this.dummy = false;
         this.unitName = unitName;
-        creationStack = Stats.TRACE_IZ_215449 ? new Exception("deserialized for IntToStringCache " + unitName + "@" + Thread.currentThread().getName()) : null;
+        creationStack = Stats.TRACE_IZ_215449 ? new Exception("deserialized for IntToStringCache " + unitName + " Thread=" + Thread.currentThread().getName()) : null; // NOI18N
         assert stream != null;
 
         cache = new ArrayList<CharSequence>();

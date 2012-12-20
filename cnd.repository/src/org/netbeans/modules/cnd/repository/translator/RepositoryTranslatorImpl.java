@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.repository.translator;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.cnd.repository.disk.StorageAllocator;
+import org.netbeans.modules.cnd.repository.impl.BaseRepository;
 import org.netbeans.modules.cnd.repository.util.IntToStringCache;
 import org.netbeans.modules.cnd.repository.util.UnitCodec;
 
@@ -93,26 +94,26 @@ public class RepositoryTranslatorImpl {
     private final Object initLock = new Object();
     private volatile boolean loaded = false;
     private final StorageAllocator storageAllocator;
-    private final UnitCodec unitCodec;
+    private final BaseRepository repository;
 
     private static final int DEFAULT_VERSION_OF_PERSISTENCE_MECHANIZM = 0;
     private static int version = DEFAULT_VERSION_OF_PERSISTENCE_MECHANIZM;
 
     /** Creates a new instance of RepositoryTranslatorImpl */
-    public RepositoryTranslatorImpl(StorageAllocator storageAllocator, UnitCodec unitCodec) {
+    public RepositoryTranslatorImpl(StorageAllocator storageAllocator, BaseRepository repository) {
         this.storageAllocator = storageAllocator;
-        this.unitCodec = unitCodec;
+        this.repository = repository;
     }
 
     public int getFileIdByName(int unitId, final CharSequence fileName) {
         assert fileName != null;
-        unitId = unitCodec.removeRepositoryID(unitId);
-        final IntToStringCache unitFileNames = getUnitFileNames(unitId);
+        unitId = repository.removeRepositoryID(unitId);
+        IntToStringCache unitFileNames = getUnitFileNames(unitId);
         return unitFileNames.getId(fileName);
     }
 
     public CharSequence getFileNameById(int unitId, final int fileId) {
-        unitId = unitCodec.removeRepositoryID(unitId);
+        unitId = repository.removeRepositoryID(unitId);
         final IntToStringCache fileNames = getUnitFileNames(unitId);
         // #215449 - IndexOutOfBoundsException in RepositoryTranslatorImpl.getFileNameById
         int size = fileNames.isDummy() ? -1 : fileNames.size();
@@ -134,7 +135,7 @@ public class RepositoryTranslatorImpl {
     }
 
     public CharSequence getFileNameByIdSafe(int unitId, final int fileId) {
-        unitId = unitCodec.removeRepositoryID(unitId);
+        unitId = repository.removeRepositoryID(unitId);
         final IntToStringCache fileNames = getUnitFileNames(unitId);
         final CharSequence fileName = fileNames.containsId(fileId) ? fileNames.getValueById(fileId) : "?"; // NOI18N
         return fileName;
@@ -147,17 +148,17 @@ public class RepositoryTranslatorImpl {
             storageAllocator.deleteUnitFiles(unitName, false);
         }
         int unitId = unitNamesCache.getId(unitName);
-        unitId = unitCodec.addRepositoryID(unitId);
+        unitId = repository.addRepositoryID(unitId);
         return unitId;
     }
 
     public CharSequence getUnitName(int unitId) {
-        unitId = unitCodec.removeRepositoryID(unitId);
+        unitId = repository.removeRepositoryID(unitId);
         return unitNamesCache.getValueById(unitId);
     }
 
     public CharSequence getUnitNameSafe(int unitId) {
-        unitId = unitCodec.removeRepositoryID(unitId);
+        unitId = repository.removeRepositoryID(unitId);
         return unitNamesCache.containsId(unitId) ? unitNamesCache.getValueById(unitId) : "No Index " + unitId + " in " + unitNamesCache; // NOI18N
     }
 
@@ -178,8 +179,11 @@ public class RepositoryTranslatorImpl {
         storageAllocator.purgeCaches();
     }
 
-    public void loadUnitIndex(final CharSequence unitName) {
-        unitNamesCache.loadUnitIndex(unitName, new HashSet<CharSequence>());
+    public IntToStringCache loadUnitIndex(final int unitId, final CharSequence unitName) {
+        synchronized (repository.getUnitLock(unitId)) {
+            unitNamesCache.loadUnitIndex(unitName, new HashSet<CharSequence>());
+            return unitNamesCache.getFileNames(unitId);
+        }
     }
 
     public void removeUnit(final CharSequence unitName) {
@@ -192,8 +196,16 @@ public class RepositoryTranslatorImpl {
     }
 
     private IntToStringCache getUnitFileNames(int unitId) {
-        unitId = unitCodec.removeRepositoryID(unitId);
-        return unitNamesCache.getFileNames(unitId);
+        unitId = repository.removeRepositoryID(unitId);
+        IntToStringCache unitFileNames = unitNamesCache.getFileNames(unitId);
+        if (unitFileNames.isDummy()) {
+            // load unit index
+            if (unitNamesCache.containsId(unitId)) {
+                CharSequence unitName = unitNamesCache.getValueById(unitId);
+                unitFileNames = loadUnitIndex(unitId, unitName);
+            }
+        }
+        return unitFileNames;
     }
 
     private void init(UnitCodec unitCodec) {
