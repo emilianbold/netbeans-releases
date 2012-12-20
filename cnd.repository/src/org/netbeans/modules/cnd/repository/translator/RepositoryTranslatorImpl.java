@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.repository.translator;
 
 import java.util.HashSet;
 import java.util.Set;
-import org.netbeans.modules.cnd.repository.api.RepositoryTranslation;
 import org.netbeans.modules.cnd.repository.disk.StorageAllocator;
 import org.netbeans.modules.cnd.repository.util.IntToStringCache;
 import org.netbeans.modules.cnd.repository.util.UnitCodec;
@@ -116,17 +115,17 @@ public class RepositoryTranslatorImpl {
         unitId = unitCodec.removeRepositoryID(unitId);
         final IntToStringCache fileNames = getUnitFileNames(unitId);
         // #215449 - IndexOutOfBoundsException in RepositoryTranslatorImpl.getFileNameById
-        if (fileNames.size() <= fileId) {
+        int size = fileNames.isDummy() ? -1 : fileNames.size();
+        if (size <= fileId) {
             StringBuilder message = new StringBuilder();
             message.append("Unit: ").append(getUnitName(unitId)); //NOI18N
             message.append(" FileIndex: ").append(fileId); //NOI18N
-            message.append(" CacheSize: ").append(fileNames.size()); //NOI18N
-            StackTraceElement[] cacheCreationStack = fileNames.getCreationStack();
-            if (cacheCreationStack == null) {
+            message.append(" CacheSize: ").append(size); //NOI18N
+            message.append(" Thread=").append(Thread.currentThread().getName()); //NOI18N
+            Exception cause = fileNames.getCreationStack();
+            if (cause == null) {
                 throw new IllegalArgumentException(message.toString());
             } else {
-                Exception cause = new Exception("Files cache creation stack"); //NOI18N
-                cause.setStackTrace(cacheCreationStack);
                 throw new IllegalArgumentException(message.toString(), cause);
             }
         }

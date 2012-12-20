@@ -292,7 +292,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                     _closeProject2(csmProject, platformProjectKey, cleanRepository);
                 }
             };
-            this.enqueueModelTask(task, "Closing Project "); // NOI18N
+            this.enqueueModelTask(task, "Closing Project " + csmProject.getDisplayName()); // NOI18N
         } else {
             _closeProject2(csmProject, platformProjectKey, cleanRepository);
         }

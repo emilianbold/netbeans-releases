@@ -60,23 +60,46 @@ import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 public final class IntToStringCache {
 
     private final List<CharSequence> cache;
-    private final StackTraceElement[] creationStack;
+    private final Exception creationStack;
     private final int version;
     private final long timestamp;
+    private transient final CharSequence unitName;
+    private transient final boolean dummy;
 
-    public IntToStringCache() {
-        this(System.currentTimeMillis());
+    public static IntToStringCache createEmpty(CharSequence unitName) {
+        return new IntToStringCache(System.currentTimeMillis(), unitName, false);
     }
-
-    public IntToStringCache(long timestamp) {
-        creationStack = Stats.TRACE_IZ_215449 ? Thread.currentThread().getStackTrace() : null;
+    
+    public static IntToStringCache createDummy(long ts, CharSequence unitName) {
+        return new IntToStringCache(ts, unitName, true);
+    }
+    
+    public static IntToStringCache createFromStream(DataInput stream, CharSequence unitName) throws IOException {
+        return new IntToStringCache(stream, unitName);
+    }
+    
+    private IntToStringCache(long timestamp, CharSequence unitName, boolean dummy) {
+        this.unitName = unitName;
+        creationStack = Stats.TRACE_IZ_215449 ? new Exception((dummy ? "INVALID " : "") + "IntToStringCache for " + unitName + "@" + Thread.currentThread().getName()) : null;
         this.cache = new ArrayList<CharSequence>();
         this.version = RepositoryTranslatorImpl.getVersion();
         this.timestamp = timestamp;
+        this.dummy = dummy;
     }
 
-    public IntToStringCache(DataInput stream) throws IOException {
-        creationStack = Stats.TRACE_IZ_215449 ? Thread.currentThread().getStackTrace() : null;
+    private void assertNotDummy() {
+        if (isDummy()) {
+            new IllegalStateException("INVALID cache for " + unitName + "@" + Thread.currentThread().getName()).printStackTrace(System.err); // NOI18N
+            if (creationStack != null) {
+                creationStack.printStackTrace(System.err);
+            }
+        }
+    }
+    
+    private IntToStringCache(DataInput stream, CharSequence unitName) throws IOException {
+        this.dummy = false;
+        this.unitName = unitName;
+        creationStack = Stats.TRACE_IZ_215449 ? new Exception("deserialized for IntToStringCache " + unitName + "@" + Thread.currentThread().getName()) : null;
         assert stream != null;
 
         cache = new ArrayList<CharSequence>();
@@ -99,6 +122,7 @@ public final class IntToStringCache {
     }
 
     public void convert(IndexConverter converter) {
+        assertNotDummy();
         for (int i = 0; i < cache.size(); i++) {
             CharSequence v = cache.get(i);
             v = converter.convert(v);
@@ -106,11 +130,16 @@ public final class IntToStringCache {
         }
     }
 
+    @Override
+    public String toString() {
+        return (dummy ? "INVALID " : "") + "IntToStringCache{" + "version=" + version + ", timestamp=" + timestamp + ", unitName=" + unitName + '}'; // NOI18N
+    }
     /*
      * Persists the master index: unit name <-> integer index
      *
      */
     public void write(DataOutput stream) throws IOException {
+        assertNotDummy();
         assert cache != null;
         assert stream != null;
 
@@ -130,6 +159,10 @@ public final class IntToStringCache {
         }
     }
 
+    public boolean isDummy() {
+        return dummy;
+    }
+
     /*
      * This is a simple cache that keeps last found index by string.
      * Cache reduces method consuming time in 10 times (on huge projects).
@@ -140,8 +173,9 @@ public final class IntToStringCache {
     private int oneItemCacheInt; // Cached last index
 
     public int getId(CharSequence value) {
-        CharSequence prevString = null;
-        int prevInt = 0;
+        assertNotDummy();
+        CharSequence prevString;
+        int prevInt;
         synchronized (oneItemCacheLock) {
             prevString = oneItemCacheString;
             prevInt = oneItemCacheInt;
@@ -155,7 +189,8 @@ public final class IntToStringCache {
             synchronized (cache) {
                 id = cache.indexOf(value);
                 if (id == -1) {
-                    id = makeId(value);
+                    id = cache.size();
+                    cache.add(value);
                 }
             }
         }
@@ -167,35 +202,32 @@ public final class IntToStringCache {
         return id;
     }
 
-    /**
-     * synchronization is controlled by calling getId() method
-     */
-    private int makeId(CharSequence value) {
-        cache.add(value);
-        return cache.indexOf(value);
-    }
-
     public CharSequence getValueById(int id) {
+        assertNotDummy();
         return cache.get(id);
     }
 
     public boolean containsId(int id) {
+        assertNotDummy();
         return 0 <= id && id < cache.size();
     }
 
     public int size() {
+        assertNotDummy();
         return cache.size();
     }
 
     public int getVersion() {
+        assertNotDummy();
         return version;
     }
 
     public long getTimestamp() {
+//        assertNotDummy();
         return timestamp;
     }
 
-    public StackTraceElement[] getCreationStack() {
+    public Exception getCreationStack() {
         return creationStack;
     }
 }
