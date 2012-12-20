@@ -44,13 +44,10 @@ package org.netbeans.modules.cloud.amazon.ui.serverplugin;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cloud.amazon.serverplugin.AmazonJ2EEServerInstanceProvider;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -58,7 +55,6 @@ import org.openide.util.Exceptions;
 public class AmazonJ2EEServerWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator<WizardDescriptor> {
 
     private ChangeSupport listeners;
-    private WizardDescriptor wizard;
     private AmazonJ2EEServerWizardPanel panel;
 
     public AmazonJ2EEServerWizardIterator() {
@@ -74,7 +70,6 @@ public class AmazonJ2EEServerWizardIterator implements WizardDescriptor.Asynchro
 
     @Override
     public void initialize(WizardDescriptor wizard) {
-        this.wizard = wizard;
     }
 
     @Override
