@@ -45,6 +45,7 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 import com.oracle.nashorn.ir.AccessNode;
 import com.oracle.nashorn.ir.BinaryNode;
 import com.oracle.nashorn.ir.CallNode;
+import com.oracle.nashorn.ir.CatchNode;
 import com.oracle.nashorn.ir.FunctionNode;
 import com.oracle.nashorn.ir.IdentNode;
 import com.oracle.nashorn.ir.IndexNode;
@@ -381,7 +382,8 @@ public class ModelVisitor extends PathNodeVisitor {
                 || previousVisited instanceof VarNode
                 || previousVisited instanceof BinaryNode
                 || previousVisited instanceof PropertyNode)) {
-            addOccurence(identNode, false);
+            boolean declared = previousVisited instanceof CatchNode;
+            addOccurence(identNode, declared);
         }
         return super.enter(identNode);
     }

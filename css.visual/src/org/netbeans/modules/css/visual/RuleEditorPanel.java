@@ -356,6 +356,7 @@ public class RuleEditorPanel extends JPanel {
         //alphabetical order - lets do that when the TopComponent containing
         //rhe RuleEditor panel lost focus.
         createdDeclarationsIdsList.clear();
+        createdDeclaration = null;
         node.fireContextChanged(true);
     }
     
@@ -405,18 +406,18 @@ public class RuleEditorPanel extends JPanel {
     
     private void editCreatedDeclaration() {
         DeclarationProperty descriptor = node.getDeclarationProperty(createdDeclaration);
-        assert descriptor != null;
-        
-        sheet.requestFocus();
-//        sheet.select(descriptor, true);
-        try {
-            call_PropertySheet_select(sheet, descriptor, true);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+        if(descriptor != null) {
+            sheet.requestFocus();
+    //        sheet.select(descriptor, true);
+            try {
+                call_PropertySheet_select(sheet, descriptor, true);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            editedDeclaration = createdDeclaration;
+            createdDeclaration = null;
         }
-        
-        editedDeclaration = createdDeclaration;
-        createdDeclaration = null;
     }
     
     private void call_PropertySheet_select(PropertySheet sheet, FeatureDescriptor descriptor, boolean edit) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {

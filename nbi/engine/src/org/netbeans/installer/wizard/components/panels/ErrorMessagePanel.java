@@ -51,12 +51,12 @@ import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.helper.NbiThread;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
-import org.netbeans.installer.wizard.ui.SwingUi;
-import org.netbeans.installer.wizard.ui.WizardUi;
 import org.netbeans.installer.wizard.components.WizardPanel;
 import org.netbeans.installer.wizard.components.WizardPanel.WizardPanelSwingUi;
 import org.netbeans.installer.wizard.components.WizardPanel.WizardPanelUi;
 import org.netbeans.installer.wizard.containers.SwingContainer;
+import org.netbeans.installer.wizard.ui.SwingUi;
+import org.netbeans.installer.wizard.ui.WizardUi;
 
 /**
  *
@@ -234,7 +234,7 @@ public class ErrorMessagePanel extends WizardPanel {
             }
         }
         
-        protected String getWarningMessage() {
+        protected String getWarningMessage() {                 
             return null;
         }
         
@@ -295,8 +295,8 @@ public class ErrorMessagePanel extends WizardPanel {
         // private //////////////////////////////////////////////////////////////////
         private void initComponents() {
             // errorLabel ///////////////////////////////////////////////////////////
-            errorLabel = new NbiLabel();           
-            
+            errorLabel = new NbiLabel();
+
             // this /////////////////////////////////////////////////////////////////
             add(errorLabel, new GridBagConstraints(
                     0, 99,                             // x, y

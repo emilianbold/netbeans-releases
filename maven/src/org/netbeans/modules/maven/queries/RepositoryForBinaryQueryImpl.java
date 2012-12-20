@@ -279,6 +279,8 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
         private final ChangeListener mfoListener;
         private final PropertyChangeListener projectListener;
         private final FileChangeListener sourceJarChangeListener;
+        private final RequestProcessor.Task checkChangesTask;
+        private final static int CHECK_CHANGES_DELAY = 50;
         private final String groupId;
         private final String artifactId;
         private final String version;
@@ -297,16 +299,26 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
             this.classifier = classifier;
             
             support = new ChangeSupport(this);
-            mfoListener = new ChangeListener() {
-                @Override
-                public void stateChanged(ChangeEvent e) {
-                    //external root in local repository changed..
-                    RP.post(new Runnable() {
+            checkChangesTask = RP.create(
+                    new Runnable() {
                         @Override
                         public void run() {
                             checkChanges(true);
                         }
                     });
+            mfoListener = new ChangeListener() {
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    if (e instanceof MavenFileOwnerQueryImpl.GAVCHangeEvent) {
+                        MavenFileOwnerQueryImpl.GAVCHangeEvent gav = (MavenFileOwnerQueryImpl.GAVCHangeEvent)e;
+                        //reload only when the project mapping for the current result's gav changed.
+                        if (gav.getGroupId().equals(SrcResult.this.groupId) && gav.getArtifactId().equals(SrcResult.this.artifactId) && gav.getVersion().equals(SrcResult.this.version)) {
+                            checkChangesTask.schedule(CHECK_CHANGES_DELAY);
+                        }
+                    } else {
+                        //external roots in local repository changed..
+                        checkChangesTask.schedule(CHECK_CHANGES_DELAY);
+                    }
                 }
             };
             projectListener = new PropertyChangeListener() {
@@ -314,12 +326,7 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
                 void propertyChange(PropertyChangeEvent event) {
                     if (NbMavenProject.PROP_PROJECT.equals(event.getPropertyName())) {
                         //project could have changed source roots..
-                        RP.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                checkChanges(true);
-                            }
-                        });
+                        checkChangesTask.schedule(CHECK_CHANGES_DELAY);
                     }
                 }
             };
@@ -327,12 +334,7 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
                 @Override
                 public void fileDataCreated(FileEvent fe) {
                     //source jar was created..
-                    RP.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            checkChanges(true);
-                        }
-                    });
+                    checkChangesTask.schedule(CHECK_CHANGES_DELAY);
                 }
  
             };
@@ -342,7 +344,7 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
                     WeakListeners.create(ChangeListener.class, mfoListener, MavenFileOwnerQueryImpl.getInstance()));
          
             if (sourceJarFile != null) {
-                FileUtil.addFileChangeListener(FileUtil.weakFileChangeListener(sourceJarChangeListener, sourceJarFile));
+                FileUtil.addFileChangeListener(FileUtil.weakFileChangeListener(sourceJarChangeListener, null));
             }
         }
         
