@@ -540,7 +540,7 @@ public final class MakeActionProvider implements ActionProvider {
                     path = CndPathUtilitities.toAbsolutePath(conf.getBaseDir(), path);
                     
                     conf = conf.clone();    //  Replacing output path with test output path
-                    StringConfiguration sc = new StringConfiguration(null, "OutputPath");
+                    StringConfiguration sc = new StringConfiguration(null, "OutputPath"); // NOI18N
                     sc.setValue(path);
                     conf.getLinkerConfiguration().setOutput(sc);
                 }
