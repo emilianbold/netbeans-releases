@@ -318,6 +318,7 @@ public class RuleEditorNode extends AbstractNode {
         if (isShowCategories()) {
             //create property sets for property categories
 
+            Map<PropertyDefinition, Declaration> created = new HashMap<PropertyDefinition, Declaration>();
             Map<PropertyCategory, List<Declaration>> categoryToDeclarationsMap = new EnumMap<PropertyCategory, List<Declaration>>(PropertyCategory.class);
             for (Declaration d : declarations) {
                 if (addedDeclarations.containsValue(d)) {
@@ -329,6 +330,12 @@ public class RuleEditorNode extends AbstractNode {
                 if (property != null && propertyValue != null) {
                     if (matchesFilterText(property.getContent().toString())) {
                         PropertyDefinition def = Properties.getPropertyDefinition(property.getContent().toString());
+                        
+                        String declarationId = PropertyUtils.getDeclarationId(getRule(), d);
+                        if(panel.getCreatedDeclarationsIdsList().contains(declarationId)) {
+                            created.put(def, d);
+                        }
+                        
                         PropertyCategory category;
                         if (def != null) {
                             category = def.getPropertyCategory();
@@ -350,6 +357,12 @@ public class RuleEditorNode extends AbstractNode {
             for (Entry<PropertyCategory, List<Declaration>> entry : categoryToDeclarationsMap.entrySet()) {
 
                 List<Declaration> categoryDeclarations = entry.getValue();
+                
+                if(isShowAllProperties()) {
+                    //remove the "just created"
+                    categoryDeclarations.removeAll(created.values());
+                }
+                
                 //sort alpha
                 Collections.sort(categoryDeclarations, PropertyUtils.getDeclarationsComparator());
 
@@ -385,6 +398,9 @@ public class RuleEditorNode extends AbstractNode {
                     //add the rest of unused properties to the property set
                     for (PropertyDefinition pd : allInCat) {
                         Declaration alreadyAdded = addedDeclarations.get(pd);
+                        if(alreadyAdded == null) {
+                            alreadyAdded = created.get(pd);
+                        }
                         if (alreadyAdded != null) {
                             propertySet.add(alreadyAdded, true);
                         } else {
