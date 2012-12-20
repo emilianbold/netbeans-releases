@@ -66,4 +66,8 @@ public class JsGlobalIsNotDeclaredTest extends HintTestBase {
     public void testIssue224040() throws Exception {
         checkHints(this, createRule(), "testfiles/hints/issue224040.js", null);
     }
+    
+    public void testIssue224041() throws Exception {
+        checkHints(this, createRule(), "testfiles/hints/issue224041.js", null);
+    }
 }
