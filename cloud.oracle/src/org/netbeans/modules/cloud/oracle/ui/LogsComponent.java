@@ -84,10 +84,12 @@ public class LogsComponent extends TopComponent {
     private OracleInstance oi;
     
     /** Creates new form LogsComponent */
-    public LogsComponent(OracleInstance oi) {
-        this.oi = oi;
+    public LogsComponent() {
         initComponents();
+    }
         
+    private void init(OracleInstance oi) {
+        this.oi = oi;
         setName(NbBundle.getMessage(LogsComponent.class, "CTL_LogsTopComponent", oi.getName()));
         setToolTipText(NbBundle.getMessage(LogsComponent.class, "HINT_LogsTopComponent"));
         this.am = oi.getApplicationManager();
@@ -244,7 +246,11 @@ public class LogsComponent extends TopComponent {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        LogsComponent.this.appLogs.setText(os.toString());
+                        try {
+                            LogsComponent.this.appLogs.setText(os.toString("UTF-8"));
+                        } catch (UnsupportedEncodingException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                     }
                 });
                 return null;
@@ -402,7 +408,8 @@ public class LogsComponent extends TopComponent {
     public static void showJobsDialog(OracleInstance oi) {
         LogsComponent p;
         try {
-            p = new LogsComponent(oi);
+            p = new LogsComponent();
+            p.init(oi);
         } catch (SDKException ex) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(LogsComponent.class, "MSG_SDKMisconfigured")));
             return;

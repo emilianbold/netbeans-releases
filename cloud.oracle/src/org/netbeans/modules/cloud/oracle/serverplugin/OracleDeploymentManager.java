@@ -141,7 +141,7 @@ public class OracleDeploymentManager implements DeploymentManager2 {
             po.updateDepoymentResult(DeploymentStatus.FAILED, null);
             return po;
         }
-        Future<DeploymentStatus> task = OracleInstance.deployAsync(pm, f, identityDomain, javaServiceName, po, cloudInstanceName, getOnPremiseServiceInstanceId());
+        OracleInstance.deployAsync(pm, f, identityDomain, javaServiceName, po, cloudInstanceName, getOnPremiseServiceInstanceId());
         return po;
     }
 
