@@ -102,6 +102,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.platform.Platform;
@@ -537,6 +538,11 @@ public final class MakeActionProvider implements ActionProvider {
                     path = targetFolder.getFolderConfiguration(conf).getLinkerConfiguration().getOutputValue();
                     path = conf.expandMacros(path);
                     path = CndPathUtilitities.toAbsolutePath(conf.getBaseDir(), path);
+                    
+                    conf = conf.clone();    //  Replacing output path with test output path
+                    StringConfiguration sc = new StringConfiguration(null, "OutputPath");
+                    sc.setValue(path);
+                    conf.getLinkerConfiguration().setOutput(sc);
                 }
             }
             RunProfile runProfile = createRunProfile(conf, cancelled);
