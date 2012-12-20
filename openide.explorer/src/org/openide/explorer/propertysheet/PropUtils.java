@@ -63,7 +63,6 @@ import javax.swing.plaf.SplitPaneUI;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
 import javax.swing.plaf.metal.*;
-import org.netbeans.modules.openide.explorer.UIException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.*;
@@ -665,14 +664,10 @@ final class PropUtils {
 
             String msg = NbBundle.getMessage(
                     PropUtils.class, "FMT_ErrorSettingProperty", newValue, title); //NOI18N
-            UIException.annotateUser(throwable, msg,
-                                     throwable.getLocalizedMessage(), throwable,
-                                     new Date());
+            Exceptions.attachLocalizedMessage(throwable, msg);
         } else if (throwable instanceof NumberFormatException) {
             //Handle NFE's from the core sun.beans property editors w/o raising stack traces
-            UIException.annotateUser(throwable, throwable.getMessage(),
-                                     NbBundle.getMessage(PropUtils.class, "FMT_BAD_NUMBER_FORMAT", newValue),
-                                     null, null);
+            Exceptions.attachLocalizedMessage(throwable, NbBundle.getMessage(PropUtils.class, "FMT_BAD_NUMBER_FORMAT", newValue));
         }
 
         String msg = Exceptions.findLocalizedMessage(throwable);

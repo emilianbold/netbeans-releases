@@ -62,13 +62,12 @@ import javax.swing.JFrame;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.openide.explorer.UIException;
-import org.openide.ErrorManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
+import org.openide.util.Exceptions;
 
 /** Tests property marking functionality and the ability of a Property to
  * provide a "postSetAction" action hint, which will be run if the user
@@ -385,9 +384,7 @@ public class FocusAfterBadEditTest extends NbTestCase {
         
         public void setAsText(String txt) {
             IllegalArgumentException iae = new IllegalArgumentException("Bad, bad, bad");
-            UIException.annotateUser(iae, "bad, bad, bad",
-                                     "I can\'t be nice, I\'m the evil property editor.",
-                                     null, null);
+            Exceptions.attachLocalizedMessage(iae, "I can\'t be nice, I\'m the evil property editor.");
             throw iae;
         }
     }

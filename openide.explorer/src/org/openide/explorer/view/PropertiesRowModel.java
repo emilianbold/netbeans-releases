@@ -59,7 +59,6 @@ import javax.swing.ToolTipManager;
 import javax.swing.event.TableModelEvent;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
-import org.netbeans.modules.openide.explorer.UIException;
 import org.netbeans.swing.outline.Outline;
 import org.netbeans.swing.outline.RowModel;
 import org.openide.DialogDisplayer;
@@ -378,14 +377,10 @@ class PropertiesRowModel implements RowModel {
 
             String msg = NbBundle.getMessage(
                     PropertiesRowModel.class, "FMT_ErrorSettingValue", newValue, title); //NOI18N
-            UIException.annotateUser(throwable, msg,
-                                     throwable.getLocalizedMessage(), throwable,
-                                     new Date());
+            Exceptions.attachLocalizedMessage(throwable, msg);
         } else if (throwable instanceof NumberFormatException) {
             //Handle NFE's from the core sun.beans property editors w/o raising stack traces
-            UIException.annotateUser(throwable, throwable.getMessage(),
-                                     NbBundle.getMessage(PropertiesRowModel.class, "FMT_BAD_NUMBER_FORMAT", newValue),
-                                     null, null);
+            Exceptions.attachLocalizedMessage(throwable, NbBundle.getMessage(PropertiesRowModel.class, "FMT_BAD_NUMBER_FORMAT", newValue));
         }
 
         String msg = Exceptions.findLocalizedMessage(throwable);

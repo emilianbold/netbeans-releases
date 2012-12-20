@@ -60,7 +60,7 @@ import java.util.*;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.openide.explorer.UIException;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -281,9 +281,7 @@ class IndexedPropertyEditor extends Object implements ExPropertyEditor {
             setValue(a);
         } catch (Exception x) {
             IllegalArgumentException iae = new IllegalArgumentException();
-            UIException.annotateUser(iae, getString("EXC_ErrorInIndexedSetter"),
-                                     getString("EXC_ErrorInIndexedSetter"), x,
-                                     new Date());
+            Exceptions.attachLocalizedMessage(iae, getString("EXC_ErrorInIndexedSetter"));
             throw iae;
         }
     }
