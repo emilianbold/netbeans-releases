@@ -42,8 +42,10 @@
 package org.netbeans.modules.cordova.platforms;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.nio.channels.SelectionKey;
 import java.nio.charset.Charset;
 import org.json.simple.JSONObject;
@@ -51,11 +53,14 @@ import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
 import org.netbeans.modules.netserver.api.WebSocketClient;
 import org.netbeans.modules.netserver.api.WebSocketReadHandler;
+import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.spi.Command;
 import org.netbeans.modules.web.webkit.debugging.spi.Response;
 import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
 import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
+import org.netbeans.modules.web.webkit.debugging.spi.netbeansdebugger.NetBeansJavaScriptDebuggerFactory;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -99,7 +104,7 @@ public abstract class MobileDebugTransport implements TransportImplementation, W
     @Override
     public URL getConnectionURL() {
         try {
-            return webSocket.getURI().toURL();
+            return new URL(indexHtmlLocation);
         } catch (MalformedURLException ex) {
             throw new RuntimeException(ex);
         }
@@ -127,27 +132,19 @@ public abstract class MobileDebugTransport implements TransportImplementation, W
 
     @Override
     public void closed(SelectionKey key) {
+        Lookup.getDefault().lookup(BuildPerformer.class).stopDebugging();
     }
 
 
     public abstract WebSocketClient createWebSocket(WebSocketReadHandler handler) throws IOException;
 
     public String translate(String toString) {
-        if (toString.contains("Debugger.setBreakpointByUrl")) { //NOI18N
-            JSONObject json = (JSONObject) JSONValue.parse(toString);
-            JSONObject params = ((JSONObject) json.get("params")); //NOI18N
-            String url = (String) params.get("url"); //NOI18N
-            
-            String suffix = url.substring(url.indexOf("ClientSideProject6") + "ClientSideProject6/".length(), url.length()); //NOI18N
-
-                     
-            String newUrl = indexHtmlLocation.substring(0, indexHtmlLocation.length()-"index.html".length()); //NOI18N
-            
-            params.put("url", newUrl + suffix); //NOI18N
-            System.out.println(json.toJSONString());
-            return json.toJSONString();
+        try {
+            //TODO: hack to workaround #221791
+            return toString.replaceAll("localhost", InetAddress.getLocalHost().getHostAddress());
+        } catch (UnknownHostException ex) {
+            throw new RuntimeException(ex);
         }
-        return toString;
     }
 
     public void setBaseUrl(String documentURL) {
