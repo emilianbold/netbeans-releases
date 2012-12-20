@@ -49,17 +49,25 @@ import java.net.UnknownHostException;
 import java.util.Properties;
 import java.util.prefs.Preferences;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cordova.platforms.BuildPerformer;
+import org.netbeans.modules.cordova.platforms.Device;
+import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
 import org.netbeans.modules.cordova.project.ClientProjectConfigurationImpl;
 import org.netbeans.modules.cordova.project.ClientProjectUtilities;
+import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.common.api.WebServer;
+import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
+import org.netbeans.modules.web.webkit.debugging.spi.Factory;
+import org.netbeans.modules.web.webkit.debugging.spi.netbeansdebugger.NetBeansJavaScriptDebuggerFactory;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.*;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -86,6 +94,10 @@ public class CordovaPerformer implements BuildPerformer {
             Exceptions.printStackTrace(ex);
         }
     }
+    private NetBeansJavaScriptDebuggerFactory javascriptDebuggerFactory;
+    private Session debuggerSession;
+    private WebKitDebugging webKitDebugging;
+    private MobileDebugTransport transport;
 
     
     @Override
@@ -185,13 +197,14 @@ public class CordovaPerformer implements BuildPerformer {
     @Override
     public String getUrl(Project p) {
         if (org.netbeans.modules.cordova.project.ClientProjectUtilities.isUsingEmbeddedServer(p)) {
-            WebServer.getWebserver().start(p, org.netbeans.modules.cordova.project.ClientProjectUtilities.getStartFile(p), org.netbeans.modules.cordova.project.ClientProjectUtilities.getWebContextRoot(p));
+            WebServer.getWebserver().start(p, org.netbeans.modules.cordova.project.ClientProjectUtilities.getSiteRoot(p), org.netbeans.modules.cordova.project.ClientProjectUtilities.getWebContextRoot(p));
         } else {
             WebServer.getWebserver().stop(p);
         }
         
         FileObject fileObject = org.netbeans.modules.cordova.project.ClientProjectUtilities.getStartFile(p);
         try {
+            //TODO: hack to workaround #221791
             return ServerURLMapping.toServer(p, fileObject).toExternalForm().replace("localhost", InetAddress.getLocalHost().getHostAddress());
         } catch (UnknownHostException ex) {
             Exceptions.printStackTrace(ex);
@@ -204,5 +217,42 @@ public class CordovaPerformer implements BuildPerformer {
         Preferences preferences = ProjectUtils.getPreferences(p, CordovaPlatform.class, true);
         return Boolean.parseBoolean(preferences.get("phonegap", "false"));
     }
+    
+    @Override
+    public void startDebugging(Device device, Project p) {
+        transport = device.getPlatform().getDebugTransport();
+        transport.setBaseUrl(getUrl(p));
+        transport.attach();
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        webKitDebugging = Factory.createWebKitDebugging(transport);
+        webKitDebugging.getDebugger().enable();
+        javascriptDebuggerFactory = Lookup.getDefault().lookup(NetBeansJavaScriptDebuggerFactory.class);
+        debuggerSession = javascriptDebuggerFactory.createDebuggingSession(webKitDebugging, Lookups.singleton(p));
+        PageInspector.getDefault().inspectPage(Lookups.fixed(webKitDebugging, p));
+    }
 
+    @Override
+    public void stopDebugging() {
+            if (webKitDebugging == null || webKitDebugging == null) {
+                return;
+            }
+            if (debuggerSession != null) {
+                javascriptDebuggerFactory.stopDebuggingSession(debuggerSession);
+            }
+            debuggerSession = null;
+            if (webKitDebugging.getDebugger().isEnabled()) {
+                webKitDebugging.getDebugger().disable();
+            }
+            webKitDebugging.reset();
+            transport.detach();
+            transport = null;
+            webKitDebugging = null;
+            javascriptDebuggerFactory = null;
+            PageInspector.getDefault().inspectPage(Lookup.EMPTY);
+    }
+    
 }
