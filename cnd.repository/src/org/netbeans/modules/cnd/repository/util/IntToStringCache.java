@@ -89,7 +89,7 @@ public final class IntToStringCache {
     }
 
     private void assertNotDummy() {
-        if (isDummy()) {
+        if (isDummy() && !CndUtils.isUnitTestMode()) {
             new IllegalStateException("access INVALID cache for " + unitName + " Thread=" + Thread.currentThread().getName()).printStackTrace(System.err); // NOI18N
             if (creationStack != null) {
                 creationStack.printStackTrace(System.err);
