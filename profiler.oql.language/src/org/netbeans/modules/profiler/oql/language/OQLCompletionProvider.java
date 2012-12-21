@@ -178,7 +178,7 @@ public class OQLCompletionProvider implements CompletionProvider {
                             ts.moveNext();
                         }
 
-                        int wsPosDiff = tokentext.indexOf(tokentextTrim);
+                        int wsPosDiff = tokenTrimLen==0 ? tokenLen-1 : tokentext.indexOf(tokentextTrim);
                         for(String function : functions) {
                             if (tokenTrimLen == 0 || function.startsWith(tokentextTrim)) {
                                 resultSet.addItem(new FunctionCompletionItem("00", function, ts.offset() + tokenTrimLen + wsPosDiff, tokenTrimLen)); // NOI18N
