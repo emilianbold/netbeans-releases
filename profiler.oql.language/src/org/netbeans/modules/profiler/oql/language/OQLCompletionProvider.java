@@ -202,10 +202,10 @@ public class OQLCompletionProvider implements CompletionProvider {
                         if (tokentextTrim.isEmpty()) {
                             resultSet.addItem(new KeywordCompletionItem("01", "from", ts.offset() + tokenLen, tokenTrimLen)); // NOI18N
                         } else {
-                            StringTokenizer t = new StringTokenizer(tokentext, " ");
+                            StringTokenizer t = new StringTokenizer(tokentext, " ");  // NOI18N
                             while (t.hasMoreTokens()) {
                                 String tt = t.nextToken();
-                                if ("FROM".startsWith(tt.trim().toUpperCase())) {
+                                if ("FROM".startsWith(tt.trim().toUpperCase())) {  // NOI18N
                                     int pos = tokentext.indexOf(tt);
                                     int wsPos = tokentext.indexOf(' ', pos);
                                     int ttTrimLen = tt.trim().length();
@@ -325,7 +325,7 @@ public class OQLCompletionProvider implements CompletionProvider {
     }
 
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        if (typedText.endsWith(".")) return CompletionProvider.COMPLETION_QUERY_TYPE;
+        if (typedText.endsWith(".")) return CompletionProvider.COMPLETION_QUERY_TYPE;  // NOI18N
         return CompletionProvider.COMPLETION_ALL_QUERY_TYPE;
     }
 
