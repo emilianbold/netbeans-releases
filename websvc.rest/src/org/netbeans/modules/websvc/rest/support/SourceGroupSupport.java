@@ -340,9 +340,6 @@ public class SourceGroupSupport {
                     if (dotIndex != -1) {
                         className = className.substring(0, dotIndex);
                     }
-                    if (className == null) {
-                        return;
-                    }
 
                     String path = packageName.replace('.', '/') + '/'
                             + className + ".class"; // NOI18N

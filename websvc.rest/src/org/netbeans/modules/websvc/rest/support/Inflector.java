@@ -819,7 +819,7 @@ public class Inflector {
      * match the specified regular expression to a specified word, and
      * (if successful) perform the appropriate substitutions.</p>
      */
-    private class Replacer {
+    private static class Replacer {
 
         // --------------------------------------------------------- Constructor
 
@@ -835,7 +835,6 @@ public class Inflector {
         // -------------------------------------------------- Instance Variables
 
 
-        private String input = null;
         private Matcher matcher = null;
         private Pattern pattern = null;
         private String rule = null;
@@ -856,10 +855,8 @@ public class Inflector {
 
             matcher = pattern.matcher(input);
             if (matcher.matches()) {
-                this.input = input;
                 return true;
             } else {
-                this.input = null;
                 this.matcher = null;
                 return false;
             }
