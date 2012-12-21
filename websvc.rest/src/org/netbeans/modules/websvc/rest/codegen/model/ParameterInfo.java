@@ -144,7 +144,7 @@ public class ParameterInfo {
         }
     
         if (type == Character.class) {
-            return new Character('\0');
+            return Character.valueOf('\0');
         }
         
         return null;
