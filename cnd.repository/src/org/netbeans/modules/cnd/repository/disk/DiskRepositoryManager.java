@@ -88,10 +88,6 @@ public class DiskRepositoryManager extends BaseRepository implements RepositoryW
     private final RepositoryThreadManager threadManager;
     private final Persistent removedObject;
     private final ReadWriteLock queueLock;
-    private final Map<Integer, Object> unitLocks = new HashMap<Integer, Object>();
-
-    private static final class UnitLock {}
-    private final Object mainUnitLock = new UnitLock();
 
     public DiskRepositoryManager(int id, CacheLocation cacheLocation) {
         super(id, cacheLocation);
@@ -112,17 +108,6 @@ public class DiskRepositoryManager extends BaseRepository implements RepositoryW
                     unitKey.getUnitId(), getUnitNameSafe(unitKey), new RepositoryException(ex));
         }
         return null;
-    }
-
-    private Object getUnitLock(int unitId) {
-        synchronized (mainUnitLock) {
-            Object lock = unitLocks.get(unitId);
-            if (lock == null) {
-                lock = new NamedLock("unitId=" + unitId); // NOI18N
-                unitLocks.put(unitId, lock);
-            }
-            return lock;
-        }
     }
 
     /** Never returns null - throws exceptions */
@@ -147,7 +132,7 @@ public class DiskRepositoryManager extends BaseRepository implements RepositoryW
                 unit = units.get(unitId);
                 if (unit == null) {
                     if (RepositoryListenersManager.getInstance().fireUnitOpenedEvent(unitId, unitName)) {
-                        getTranslation().loadUnitIndex(unitName);
+                        getTranslation().loadUnitIndex(unitId, unitName);
                         unit = new UnitImpl(unitId, unitName, this);
                         units.put(unitId, unit);
                     }
@@ -320,7 +305,7 @@ public class DiskRepositoryManager extends BaseRepository implements RepositoryW
     }
 
     private void closeUnit2(final int unitId, final CharSequence unitName, final boolean cleanRepository, Set<CharSequence> requiredUnits) {
-
+        assert Thread.holdsLock(getUnitLock(unitId));
         try {
             queueLock.writeLock().lock();
             Collection<RepositoryQueue.Entry<Key, Persistent>> removedEntries = queue.clearQueue(new UnitFilter(unitId));
@@ -484,38 +469,4 @@ public class DiskRepositoryManager extends BaseRepository implements RepositoryW
         return getTranslation().getUnitNameSafe(key.getUnitId());
     }
 
-    private static final class NamedLock {
-        private final String name;
-
-        public NamedLock(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String toString() {
-            return this.name;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final NamedLock other = (NamedLock) obj;
-            if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 5;
-            hash = 97 * hash + (this.name != null ? this.name.hashCode() : 0);
-            return hash;
-        }
-    }
 }

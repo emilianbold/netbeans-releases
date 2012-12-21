@@ -223,6 +223,7 @@ public class RepositoryListenerImpl implements RepositoryListener {
     }
 
     private void scheduleClosing(final int unitId) {
+        assert Thread.holdsLock(lock);
         final CharSequence unitName = KeyUtilities.getUnitName(unitId);
         if (explicitelyOpened.contains(unitId)) {
             if (TraceFlags.TRACE_REPOSITORY_LISTENER) {
@@ -250,7 +251,7 @@ public class RepositoryListenerImpl implements RepositoryListener {
                 }
                 RepositoryUtils.closeUnit(unitId, null, !TraceFlags.PERSISTENT_REPOSITORY); // null means the list of required units stays unchanged
             }
-        }, "Closing implicitly opened project"); // NOI18N
+        }, "Closing implicitly opened project " + unitName + ":" + unitId); // NOI18N
     }
 
     private void trace(String format, Object... args) {
