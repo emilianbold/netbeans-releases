@@ -61,7 +61,7 @@ made subject to such option by the copyright holder.
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <property>
             <name>maven-dependencies</name>
-            <value>org.eclipse.persistence:org.eclipse.persistence.jpa.modelgen.processor:2.5.0.v20121120-ec51fcc:jar</value>
+            <value>org.eclipse.persistence:org.eclipse.persistence.jpa.modelgen.processor:2.5.0-SNAPSHOT:jar</value>
         </property>
         <property>
             <name>maven-repositories</name>

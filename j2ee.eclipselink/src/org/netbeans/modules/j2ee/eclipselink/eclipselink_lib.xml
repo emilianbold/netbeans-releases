@@ -64,7 +64,7 @@ made subject to such option by the copyright holder.
         <property>
             <name>maven-dependencies</name>
             <value>
-                org.eclipse.persistence:eclipselink:2.5.0.v20121120-ec51fcc:jar
+                org.eclipse.persistence:eclipselink:2.5.0-SNAPSHOT:jar
                 org.eclipse.persistence:javax.persistence:2.0.102.v201209201404:jar
             </value>
         </property>
