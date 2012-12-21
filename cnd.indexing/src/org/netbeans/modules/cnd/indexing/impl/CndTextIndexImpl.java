@@ -48,6 +48,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.indexing.api.CndTextIndexKey;
+import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
@@ -73,9 +74,12 @@ public final class CndTextIndexImpl {
         }
     });
     private static final int STORE_DELAY = 3000;
+    private final UnitCodec unitCodec;
 
-    public CndTextIndexImpl(DocumentIndex index) {
+    public CndTextIndexImpl(DocumentIndex index, UnitCodec unitCodec) {
         this.index = index;
+        assert unitCodec != null;
+        this.unitCodec = unitCodec;
     }
 
     public void put(CndTextIndexKey key, Collection<String> values) {
@@ -144,13 +148,14 @@ public final class CndTextIndexImpl {
         return Collections.emptySet();
     }
     
-    private static String toPrimaryKey(CndTextIndexKey key) {
-        return String.valueOf(((long) key.getUnitId() << 32) + (long) key.getFileNameIndex());
-        }
+    private String toPrimaryKey(CndTextIndexKey key) {
+        return String.valueOf(((long) unitCodec.unmaskRepositoryID(key.getUnitId()) << 32) + (long) key.getFileNameIndex());
+    }
 
-    private static CndTextIndexKey fromPrimaryKey(String ext) {
+    private CndTextIndexKey fromPrimaryKey(String ext) {
         long value = Long.parseLong(ext);
         int unitId = (int) (value >> 32);
+        unitId = unitCodec.maskByRepositoryID(unitId);
         int fileNameIndex = (int) (value & 0xFFFFFFFF);
         return new CndTextIndexKey(unitId, fileNameIndex);
     }

@@ -20,9 +20,10 @@ such as different colors, underlining, or font weights to make the code easier t
 <ol>
 <li>Choose Tools &gt; Options.</li>
 <li>
-Click C/C++ in the top pane of the window.
+Click Editor in the top pane of the window.
 </li>
 <li>Click the Highlighting tab.</li>
+<li>Choose C/C++ Source Files in the Language list.</li>
 <li>
 Modify the properties as desired.</li>
 </ol>
@@ -40,14 +41,23 @@ functions, variable, and macros remain highlighted until you move the cursor to 
 <li><b>Highlight Inactive Code.</b> If this option selected, inactive code 
 is highlighted.
 </li>
-<li><b>Highlight Class' Fields.</b> If this option selected, class 
-fields are highlighted.
-</li>
-<li><b>Highlight Function's Names.</b> If this option selected, 
-function names are highlighted.
-</li>
 <li><b>Highlight Macros.</b> If this option selected, macros are highlighted.
 </li>
+<li>
+        <b>Highlight Class Fields Declarations.</b> If this option selected, class field
+        declarations are highlighted.
+      </li>
+<li><b>Highlight Class Fields.</b> If this option selected, class 
+fields are highlighted.
+</li>
+<li>
+        <b>Highlight Function Declarations and Definitions.</b> If this option selected, function
+        declarations and definitions are highlighted.
+      </li>
+<li><b>Highlight Functions Names.</b> If this option selected, 
+function names are highlighted.
+</li>
+
 <li><b>Highlight Typedefs.</b> If this option is selected, 
 typedefs are highlighted.
 </li>
@@ -57,10 +67,6 @@ typedefs are highlighted.
     be resolved are highlighted.
 </li>
 <li><b>Highlight Unresolved Identifiers.</b> If this option is selected, unresolved identifiers are highlighted.</li>
-<li><b>Reparse on file change.</b> If this option is selected, files you edit are reparsed to check syntax after
-    each change, to keep the syntax highlighting accurate. If you deselect this option, reparsing occurs only
-    when the file is saved. Deselecting this option might be useful when working with very large files
-    if reparsing causes delays, but might cause temporary inaccuracy with highlighting.</li>
 <li><b>Show Overridden Annotations.</b> If this option is selected, the editor will show pop-up annotations for
 methods that override a parent method, or that are overridden by a descendent class. The annotations contain links to
 the associated methods and classes.</li>

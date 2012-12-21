@@ -75,7 +75,7 @@ public class RefreshManager {
     private final Object queueLock = new Object();
     
     private static final boolean REFRESH_ON_FOCUS = getBoolean("cnd.remote.refresh.on.focus", true); //NOI18N
-    private static final boolean REFRESH_ON_CONNECT = getBoolean("cnd.remote.refresh.on.connect", true); //NOI18N
+    public static final boolean REFRESH_ON_CONNECT = getBoolean("cnd.remote.refresh.on.connect", true); //NOI18N
 
     private final class RefreshWorker implements Runnable {
         private final boolean expected;

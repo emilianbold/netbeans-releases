@@ -696,7 +696,7 @@ public class Gdb {
                 signalled = true;
                 this.silentStop = silentStop;
                 if (interruptGdb) {
-                    executor.interruptGroup();
+                    executor.interrupt();
                 } else {
                     Executor signaller = Executor.getDefault("signaller", factory.host, 0); // NOI18N
                     signaller.interrupt(pid);

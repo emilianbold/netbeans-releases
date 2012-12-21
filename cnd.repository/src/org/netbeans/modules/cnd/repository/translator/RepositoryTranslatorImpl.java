@@ -45,10 +45,10 @@ package org.netbeans.modules.cnd.repository.translator;
 
 import java.util.HashSet;
 import java.util.Set;
-import org.netbeans.modules.cnd.repository.api.RepositoryTranslation;
 import org.netbeans.modules.cnd.repository.disk.StorageAllocator;
+import org.netbeans.modules.cnd.repository.impl.BaseRepository;
 import org.netbeans.modules.cnd.repository.util.IntToStringCache;
-import org.netbeans.modules.cnd.repository.util.UnitCodec;
+import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
 
 /**
  * This class is responsible for int <-> String translation for both
@@ -94,39 +94,39 @@ public class RepositoryTranslatorImpl {
     private final Object initLock = new Object();
     private volatile boolean loaded = false;
     private final StorageAllocator storageAllocator;
-    private final UnitCodec unitCodec;
+    private final BaseRepository repository;
 
     private static final int DEFAULT_VERSION_OF_PERSISTENCE_MECHANIZM = 0;
     private static int version = DEFAULT_VERSION_OF_PERSISTENCE_MECHANIZM;
 
     /** Creates a new instance of RepositoryTranslatorImpl */
-    public RepositoryTranslatorImpl(StorageAllocator storageAllocator, UnitCodec unitCodec) {
+    public RepositoryTranslatorImpl(StorageAllocator storageAllocator, BaseRepository repository) {
         this.storageAllocator = storageAllocator;
-        this.unitCodec = unitCodec;
+        this.repository = repository;
     }
 
     public int getFileIdByName(int unitId, final CharSequence fileName) {
         assert fileName != null;
-        unitId = unitCodec.removeRepositoryID(unitId);
-        final IntToStringCache unitFileNames = getUnitFileNames(unitId);
+        unitId = repository.unmaskRepositoryID(unitId);
+        IntToStringCache unitFileNames = getUnitFileNames(unitId);
         return unitFileNames.getId(fileName);
     }
 
     public CharSequence getFileNameById(int unitId, final int fileId) {
-        unitId = unitCodec.removeRepositoryID(unitId);
+        unitId = repository.unmaskRepositoryID(unitId);
         final IntToStringCache fileNames = getUnitFileNames(unitId);
         // #215449 - IndexOutOfBoundsException in RepositoryTranslatorImpl.getFileNameById
-        if (fileNames.size() <= fileId) {
+        int size = fileNames.isDummy() ? -1 : fileNames.size();
+        if (size <= fileId) {
             StringBuilder message = new StringBuilder();
             message.append("Unit: ").append(getUnitName(unitId)); //NOI18N
             message.append(" FileIndex: ").append(fileId); //NOI18N
-            message.append(" CacheSize: ").append(fileNames.size()); //NOI18N
-            StackTraceElement[] cacheCreationStack = fileNames.getCreationStack();
-            if (cacheCreationStack == null) {
+            message.append(" CacheSize: ").append(size); //NOI18N
+            message.append(" Thread=").append(Thread.currentThread().getName()); //NOI18N
+            Exception cause = fileNames.getCreationStack();
+            if (cause == null) {
                 throw new IllegalArgumentException(message.toString());
             } else {
-                Exception cause = new Exception("Files cache creation stack"); //NOI18N
-                cause.setStackTrace(cacheCreationStack);
                 throw new IllegalArgumentException(message.toString(), cause);
             }
         }
@@ -135,7 +135,7 @@ public class RepositoryTranslatorImpl {
     }
 
     public CharSequence getFileNameByIdSafe(int unitId, final int fileId) {
-        unitId = unitCodec.removeRepositoryID(unitId);
+        unitId = repository.unmaskRepositoryID(unitId);
         final IntToStringCache fileNames = getUnitFileNames(unitId);
         final CharSequence fileName = fileNames.containsId(fileId) ? fileNames.getValueById(fileId) : "?"; // NOI18N
         return fileName;
@@ -148,17 +148,17 @@ public class RepositoryTranslatorImpl {
             storageAllocator.deleteUnitFiles(unitName, false);
         }
         int unitId = unitNamesCache.getId(unitName);
-        unitId = unitCodec.addRepositoryID(unitId);
+        unitId = repository.maskByRepositoryID(unitId);
         return unitId;
     }
 
     public CharSequence getUnitName(int unitId) {
-        unitId = unitCodec.removeRepositoryID(unitId);
+        unitId = repository.unmaskRepositoryID(unitId);
         return unitNamesCache.getValueById(unitId);
     }
 
     public CharSequence getUnitNameSafe(int unitId) {
-        unitId = unitCodec.removeRepositoryID(unitId);
+        unitId = repository.unmaskRepositoryID(unitId);
         return unitNamesCache.containsId(unitId) ? unitNamesCache.getValueById(unitId) : "No Index " + unitId + " in " + unitNamesCache; // NOI18N
     }
 
@@ -179,8 +179,12 @@ public class RepositoryTranslatorImpl {
         storageAllocator.purgeCaches();
     }
 
-    public void loadUnitIndex(final CharSequence unitName) {
-        unitNamesCache.loadUnitIndex(unitName, new HashSet<CharSequence>());
+    public IntToStringCache loadUnitIndex(int unitId, CharSequence unitName) {
+        synchronized (repository.getUnitLock(unitId)) {
+            unitNamesCache.loadUnitIndex(unitName, new HashSet<CharSequence>());
+            unitId = repository.unmaskRepositoryID(unitId);
+            return unitNamesCache.getFileNames(unitId);
+        }
     }
 
     public void removeUnit(final CharSequence unitName) {
@@ -193,8 +197,16 @@ public class RepositoryTranslatorImpl {
     }
 
     private IntToStringCache getUnitFileNames(int unitId) {
-        unitId = unitCodec.removeRepositoryID(unitId);
-        return unitNamesCache.getFileNames(unitId);
+        unitId = repository.unmaskRepositoryID(unitId);
+        IntToStringCache unitFileNames = unitNamesCache.getFileNames(unitId);
+        if (unitFileNames.isDummy()) {
+            // load unit index
+            if (unitNamesCache.containsId(unitId)) {
+                CharSequence unitName = unitNamesCache.getValueById(unitId);
+                unitFileNames = loadUnitIndex(unitId, unitName);
+            }
+        }
+        return unitFileNames;
     }
 
     private void init(UnitCodec unitCodec) {

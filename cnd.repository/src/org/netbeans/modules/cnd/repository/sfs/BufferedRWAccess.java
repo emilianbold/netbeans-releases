@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
-import org.netbeans.modules.cnd.repository.util.UnitCodec;
+import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
 
 /**
  * 

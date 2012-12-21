@@ -1029,7 +1029,7 @@ abstract public class CsmCompletionQuery {
                     if(CsmKindUtilities.isStatement(var.getScope()) ) {
                         if(((CsmStatement) var.getScope()).getKind().equals(CsmStatement.Kind.RANGE_FOR)) {
                             CsmRangeForStatement forStmt = (CsmRangeForStatement) var.getScope();
-                            CsmExpression initializer = forStmt.getInitializer();
+                            final CsmExpression initializer = forStmt.getInitializer();
                             if(initializer != null && initializer.getText() != null) {
                                 TokenHierarchy<String> hi = TokenHierarchy.create(initializer.getText().toString(), CndLexerUtilities.getLanguage(getBaseDocument()));
                                 List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(initializer.getEndOffset(), true);
@@ -1047,9 +1047,15 @@ abstract public class CsmCompletionQuery {
                                 if(cppts != null && !antiLoop.contains(initializer)) {
                                     antiLoop.add(initializer);
 
-                                    CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(initializer.getEndOffset(), initializer.getStartOffset());
+                                    final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(initializer.getEndOffset(), initializer.getStartOffset());
                                     tp.enableTemplateSupport(true);
-                                    CndTokenUtilities.processTokens(tp, getBaseDocument(), initializer.getStartOffset(), initializer.getEndOffset());
+                                    final BaseDocument doc = getBaseDocument();
+                                    doc.render(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            CndTokenUtilities.processTokens(tp, doc, initializer.getStartOffset(), initializer.getEndOffset());
+                                        }
+                                    });
                                     CsmCompletionExpression exp = tp.getResultExp();
 
                                     resolveType = resolveType(exp);

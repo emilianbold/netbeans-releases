@@ -62,7 +62,7 @@ import javax.swing.JButton;
 import org.netbeans.modules.cnd.repository.disk.StorageAllocator;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.repository.util.IntToStringCache;
-import org.netbeans.modules.cnd.repository.util.UnitCodec;
+import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -225,7 +225,7 @@ import org.openide.util.NbBundle;
             // (with timestamps from master index)
             unit2requnint.put(value, readRequiredUnits(stream));
             // new dummy int/string cache (with the current (???!) timestamp
-            fileNamesCaches.add(new IntToStringCache(ts));            
+            fileNamesCaches.add(IntToStringCache.createDummy(ts, v));            
         }
         return converter;
     }
@@ -259,7 +259,7 @@ import org.openide.util.NbBundle;
                     boolean success = false;
                     try {
                         is = new DataInputStream(new BufferedInputStream(new FileInputStream(unitIndexFileName)));
-                        IntToStringCache filesCache = new IntToStringCache(is);
+                        IntToStringCache filesCache = IntToStringCache.createFromStream(is, unitName);
                         filesCache.convert(converter);
                         os = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(unitIndexFileName, false)));
                         filesCache.write(os);
@@ -417,7 +417,7 @@ import org.openide.util.NbBundle;
         assert name != null;
         assert stream != null;
 
-        IntToStringCache filesCache = new IntToStringCache(stream);
+        IntToStringCache filesCache = IntToStringCache.createFromStream(stream, name);
         if (Stats.TRACE_REPOSITORY_TRANSLATOR) {
             trace("Read unit files cache for %s ts=%d\n", name, filesCache.getTimestamp()); // NOI18N
         }
@@ -425,7 +425,7 @@ import org.openide.util.NbBundle;
             insertUnitFileCache(name, filesCache);
             return true;
         } else {
-            filesCache = new IntToStringCache();
+            filesCache = IntToStringCache.createEmpty(name);
             if (Stats.TRACE_REPOSITORY_TRANSLATOR) {
                 trace("Req. units validation failed for %s. Setting ts=%d\n", name, filesCache.getTimestamp()); // NOI18N
             }
@@ -610,8 +610,7 @@ import org.openide.util.NbBundle;
             return false;
         }
         int id = cache.indexOf(unitName);
-        if (fileNamesCaches.get(id).size() != 0) {
-            //incorrect! there might be 0 files!
+        if (!fileNamesCaches.get(id).isDummy()) {
             return true;
         }
         return false;
@@ -635,7 +634,7 @@ import org.openide.util.NbBundle;
             fileNames = fileNamesCaches.get(index);
             long ts = fileNames.getTimestamp();
             unit2timestamp.put(unitName, ts);
-            fileNamesCaches.set(index, new IntToStringCache(ts));
+            fileNamesCaches.set(index, IntToStringCache.createDummy(ts, unitName));
         }
         return fileNames;
     }
@@ -646,7 +645,7 @@ import org.openide.util.NbBundle;
     private int makeId(CharSequence unitName) {
         unitName = getFileKey(unitName);
         int id = cache.indexOf(null);
-        IntToStringCache fileCache = new IntToStringCache();
+        IntToStringCache fileCache = IntToStringCache.createEmpty(unitName);
         if (id == -1) {
             cache.add(unitName);
             id = cache.indexOf(unitName);
@@ -683,9 +682,8 @@ import org.openide.util.NbBundle;
     }
 
     private void cleanUnitData(CharSequence unitName) {
-        IntToStringCache fileCache = new IntToStringCache();
         unit2requnint.put(unitName, new CopyOnWriteArraySet<RequiredUnit>());
-        unit2timestamp.put(unitName, fileCache.getTimestamp());
+        unit2timestamp.put(unitName, System.currentTimeMillis());
     }
 
     private CharSequence getFileKey(CharSequence str) {
@@ -721,17 +719,17 @@ import org.openide.util.NbBundle;
 
         public RequiredUnit(DataInput stream, UnitCodec unitCodec) throws IOException {
             this.unitCodec = unitCodec;
-            unitId = unitCodec.addRepositoryID(stream.readInt());
+            unitId = unitCodec.maskByRepositoryID(stream.readInt());
             timestamp = stream.readLong();
         }
 
         public void write(DataOutput stream) throws IOException {
-            stream.writeInt(unitCodec.removeRepositoryID(unitId));
+            stream.writeInt(unitCodec.unmaskRepositoryID(unitId));
             stream.writeLong(timestamp);
         }
 
         public CharSequence getName() {
-            return getValueById(unitCodec.removeRepositoryID(unitId));
+            return getValueById(unitCodec.unmaskRepositoryID(unitId));
         }
 
         public int getUnitId() {
