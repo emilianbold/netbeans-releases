@@ -109,7 +109,24 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
-      <change id="DataShadow.findOriginal">
+      <change id="lazymenu.properties">
+          <api name="awt"/>
+          <summary>Control what client properties pulldown menus have</summary>
+          <version major="7" minor="44"/>
+          <date day="21" month="12" year="2012"/>
+          <author login="jtulach"/>
+          <compatibility addition="yes"/>
+          <description>
+             <p>Layer declaration of a menu can influence what client properties
+                 the actual <a href="@JDK@/javax/swing/JMenu.html">JMenu</a> 
+                 instances will have. More 
+                 <a href="architecture-summary.html#layer-Menu">details</a>.
+              </p>
+          </description>
+          <class package="org.openide.awt" name="MenuBar"/>
+          <issue number="222138"/>
+      </change>      
+       <change id="DataShadow.findOriginal">
           <api name="loaders"/>
           <summary>
               Introduced <code>DataShadow.findOriginal</code> which extracts the original file from
