@@ -137,6 +137,11 @@ public class LazyLookupProviders {
                     }
                 };
             }
+            
+            @Override
+            public String toString() {
+                return "LazyLookupProviders.LookupProvider[" + (String) attrs.get("service") + "]";
+            }
         };
     }
     private static Object loadPSPInstance(String implName, String methodName, Lookup lkp) throws Exception {
