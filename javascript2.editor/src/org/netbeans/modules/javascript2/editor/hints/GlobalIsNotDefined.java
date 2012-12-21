@@ -63,7 +63,10 @@ import org.openide.util.NbBundle;
  */
 public class GlobalIsNotDefined extends JsAstRule {
 
-    private static List<String> knownGlobalObjects = Arrays.asList("window", "document"); //NOI18N
+    private static List<String> knownGlobalObjects = Arrays.asList("window", "document", "console",
+            "clearInterval", "clearTimeout", "event", "frames", "history",
+            "Image", "location", "name", "navigator", "Option", "parent", "screen", "setInterval", "setTimeout",
+            "XMLHttpRequest"); //NOI18N
     
     @Override
     void computeHints(JsRuleContext context, List<Hint> hints, HintsProvider.HintsManager manager) {
