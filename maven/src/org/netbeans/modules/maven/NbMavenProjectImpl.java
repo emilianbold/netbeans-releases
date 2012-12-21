@@ -217,7 +217,7 @@ public final class NbMavenProjectImpl implements Project {
         // @PSP's and the like, and PackagingProvider impls, may check project lookup for e.g. NbMavenProject, so init lookup in two stages:
         basicLookup = createBasicLookup(projectState, auxiliary);
         //here we always load the MavenProject instance because we need to touch the packaging from pom.
-        completeLookup = new PackagingTypeDependentLookup(watcher, basicLookup);
+        completeLookup = LookupProviderSupport.createCompositeLookup(basicLookup, new PackagingTypeDependentLookup(watcher));
     }
 
     public File getPOMFile() {
@@ -711,16 +711,14 @@ public final class NbMavenProjectImpl implements Project {
     private static class PackagingTypeDependentLookup extends ProxyLookup implements PropertyChangeListener {
 
         private final NbMavenProject watcher;
-        private final Lookup baseLookup;
         private String packaging;
         private final Lookup general;
 
         @SuppressWarnings("LeakingThisInConstructor")
-        PackagingTypeDependentLookup(NbMavenProject watcher, Lookup baseLookup) {
+        PackagingTypeDependentLookup(NbMavenProject watcher) {
             this.watcher = watcher;
-            this.baseLookup = baseLookup;
+            //needs to be kept around to prevent recreating instances
             general = Lookups.forPath("Projects/org-netbeans-modules-maven/Lookup"); //NOI18N
-
             check();
             watcher.addPropertyChangeListener(this);
         }
@@ -733,7 +731,7 @@ public final class NbMavenProjectImpl implements Project {
             if (!newPackaging.equals(packaging)) {
                 packaging = newPackaging;
                 Lookup pack = Lookups.forPath("Projects/org-netbeans-modules-maven/" + packaging + "/Lookup");
-                setLookups(LookupProviderSupport.createCompositeLookup(baseLookup, new ProxyLookup(general, pack)));
+                setLookups(general, pack);
             }
         }
 
