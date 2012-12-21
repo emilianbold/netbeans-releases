@@ -2967,9 +2967,10 @@ class JavaCodeGenerator extends CodeGenerator {
         } else {
             toRemove = Collections.emptyList();
         }
-        listenersInMainClass_lastSet = listenersInMainClass;
 
-        formEditor.getFormJavaSource().modifyInterfaces(toAdd, toRemove);
+        if (formEditor.getFormJavaSource().modifyInterfaces(toAdd, toRemove)) {
+            listenersInMainClass_lastSet = listenersInMainClass;
+        }
     }
 
     // ---------
