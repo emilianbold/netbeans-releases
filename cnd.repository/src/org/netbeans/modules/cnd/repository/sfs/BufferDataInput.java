@@ -47,7 +47,7 @@ package org.netbeans.modules.cnd.repository.sfs;
 import java.io.*;
 import java.nio.*;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
-import org.netbeans.modules.cnd.repository.util.UnitCodec;
+import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
 
 /**
  * ByteBuffer based DataInput implementation

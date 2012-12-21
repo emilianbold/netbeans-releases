@@ -62,7 +62,7 @@ import javax.swing.JButton;
 import org.netbeans.modules.cnd.repository.disk.StorageAllocator;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.repository.util.IntToStringCache;
-import org.netbeans.modules.cnd.repository.util.UnitCodec;
+import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

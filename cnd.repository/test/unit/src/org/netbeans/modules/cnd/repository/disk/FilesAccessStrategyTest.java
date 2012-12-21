@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.test.TestObject;
 import org.netbeans.modules.cnd.repository.test.TestObjectCreator;
-import org.netbeans.modules.cnd.repository.util.UnitCodec;
+import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
 import org.openide.util.RequestProcessor;
 
 /**

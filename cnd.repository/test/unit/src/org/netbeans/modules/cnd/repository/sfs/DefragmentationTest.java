@@ -50,7 +50,7 @@ import java.io.IOException;
 import java.util.Collection;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
-import org.netbeans.modules.cnd.repository.util.UnitCodec;
+import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
 
 /**
  * A test for DoubleFileStorage defragmentation

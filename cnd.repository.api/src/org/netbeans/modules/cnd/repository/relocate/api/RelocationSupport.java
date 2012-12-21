@@ -39,13 +39,45 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.repository.util;
+package org.netbeans.modules.cnd.repository.relocate.api;
+
+import java.util.Collection;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
+import org.netbeans.modules.cnd.repository.relocate.spi.RelocationSupportProvider;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author vk155633
+ * @author Vladimir Voskresensky
  */
-public interface UnitCodec {
-    int unmaskRepositoryID(int unitId);
-    int maskByRepositoryID(int unitId);
+public final class RelocationSupport {
+    
+    public static UnitCodec get(CacheLocation cacheLocation) {
+        Collection<? extends RelocationSupportProvider> providers = Lookups.forPath(RelocationSupportProvider.PATH).lookupAll(RelocationSupportProvider.class);
+        for (RelocationSupportProvider relocationCodecProvider : providers) {
+            UnitCodec unitCodec = relocationCodecProvider.getUnitCodec(cacheLocation);
+            if (unitCodec != null) {
+                return unitCodec;
+            }
+        }
+        System.err.println("No Code Provider was found for " + cacheLocation);
+        return EMPTY;
+    }    
+
+    private static final UnitCodec EMPTY = new NoopUnitCodecImpl();
+    private static final class NoopUnitCodecImpl implements UnitCodec {
+
+        public NoopUnitCodecImpl() {
+        }
+
+        @Override
+        public int unmaskRepositoryID(int clientUnitId) {
+            return clientUnitId;
+        }
+
+        @Override
+        public int maskByRepositoryID(int internalUnitId) {
+            return internalUnitId;
+        }
+    }
 }
