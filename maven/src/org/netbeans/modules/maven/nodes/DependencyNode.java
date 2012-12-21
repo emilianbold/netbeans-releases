@@ -175,7 +175,12 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     @NonNull
     private static Lookup createLookup(@NonNull final Project project, @NonNull final Artifact art, @NullAllowed final Node nodeDelegate) {
         final PathFinder pathFinderDelegate = nodeDelegate == null ? null : nodeDelegate.getLookup().lookup(PathFinder.class);
-        return Lookups.fixed(project, art, PathFinders.createDelegatingPathFinder(pathFinderDelegate));
+        final FileObject fo = nodeDelegate == null ? null : nodeDelegate.getLookup().lookup(FileObject.class);
+        if (fo != null) {
+            return Lookups.fixed(project, art, PathFinders.createDelegatingPathFinder(pathFinderDelegate), fo);
+        } else {
+            return Lookups.fixed(project, art, PathFinders.createDelegatingPathFinder(pathFinderDelegate));
+        }
     }
 
     @CheckForNull
