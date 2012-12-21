@@ -93,8 +93,8 @@ made subject to such option by the copyright holder.
     <fontcolor name="mod-constructor" default="constructor" />
     <fontcolor name="mod-method-declaration" default="method" />
     <fontcolor name="mod-method" default="method" />
-    <fontcolor name="mod-field-declaration" default="field" />
-    <fontcolor name="mod-field" default="field" />
+    <fontcolor name="mod-field-declaration" foreColor="098A18" default="field" />
+    <fontcolor name="mod-field" foreColor="098A18" default="field" />
     <fontcolor name="mod-local-variable-declaration" default="local-variable" />
     <fontcolor name="mod-local-variable" default="local-variable" />
     <fontcolor name="mod-parameter-declaration" default="method-parameter" />
