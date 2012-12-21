@@ -54,6 +54,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -539,6 +540,20 @@ public class MenuBar extends JMenuBar implements Externalizable {
             this.slave = new MenuFolder();
             
             setName(df.getName());
+            final FileObject pf = df.getPrimaryFile();
+            Object prefix = pf.getAttribute("property-prefix"); // NOI18N
+            if (prefix instanceof String) {
+                Enumeration<String> en = pf.getAttributes();
+                while (en.hasMoreElements()) {
+                    String attrName = en.nextElement();
+                    if (attrName.startsWith((String)prefix)) {
+                        putClientProperty(
+                            attrName.substring(((String)prefix).length()), 
+                            pf.getAttribute(attrName)
+                        );
+                    }
+                }
+            }
 
             // Listen for changes in Node's DisplayName/Icon
             Node n = master.getNodeDelegate ();
