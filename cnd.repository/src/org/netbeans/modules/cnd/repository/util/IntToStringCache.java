@@ -51,6 +51,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.repository.translator.IndexConverter;
 import org.netbeans.modules.cnd.repository.translator.RepositoryTranslatorImpl;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 
 /**
@@ -80,7 +81,7 @@ public final class IntToStringCache {
     
     private IntToStringCache(long timestamp, CharSequence unitName, boolean dummy) {
         this.unitName = unitName;
-        creationStack = Stats.TRACE_IZ_215449 ? new Exception((dummy ? "INVALID " : "") + "IntToStringCache for " + unitName + " Thread=" + Thread.currentThread().getName()) : null; // NOI18N
+        creationStack = Stats.TRACE_IZ_215449 ? new Exception((dummy ? "INVALID for " : "for ") + unitName + " created from Thread=" + Thread.currentThread().getName()) : null; // NOI18N
         this.cache = new ArrayList<CharSequence>();
         this.version = RepositoryTranslatorImpl.getVersion();
         this.timestamp = timestamp;
@@ -89,7 +90,7 @@ public final class IntToStringCache {
 
     private void assertNotDummy() {
         if (isDummy()) {
-            new IllegalStateException("INVALID cache for " + unitName + "@" + Thread.currentThread().getName()).printStackTrace(System.err); // NOI18N
+            new IllegalStateException("access INVALID cache for " + unitName + " Thread=" + Thread.currentThread().getName()).printStackTrace(System.err); // NOI18N
             if (creationStack != null) {
                 creationStack.printStackTrace(System.err);
             }
@@ -99,7 +100,7 @@ public final class IntToStringCache {
     private IntToStringCache(DataInput stream, CharSequence unitName) throws IOException {
         this.dummy = false;
         this.unitName = unitName;
-        creationStack = Stats.TRACE_IZ_215449 ? new Exception("deserialized for IntToStringCache " + unitName + " Thread=" + Thread.currentThread().getName()) : null; // NOI18N
+        creationStack = Stats.TRACE_IZ_215449 ? new Exception("deserialized for " + unitName + " Thread=" + Thread.currentThread().getName()) : null; // NOI18N
         assert stream != null;
 
         cache = new ArrayList<CharSequence>();
