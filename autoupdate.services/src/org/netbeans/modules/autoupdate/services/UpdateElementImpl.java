@@ -117,6 +117,9 @@ public abstract class UpdateElementImpl extends Object {
     
    // XXX: try to rid of this
     public abstract List<ModuleInfo> getModuleInfos ();
+    public List<ModuleInfo> getModuleInfos(boolean recursive) {
+        return getModuleInfos();
+    }
     
     // XXX: try to rid of this
     public abstract InstallInfo getInstallInfo ();

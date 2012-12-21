@@ -55,12 +55,10 @@ import org.openide.util.lookup.Lookups;
  */
 public class AmazonInstanceNode extends AbstractNode {
     
-    private AmazonInstance ai;
     private static final String AMAZON_ICON = "org/netbeans/modules/cloud/amazon/ui/resources/amazon.png"; // NOI18N
     
     public AmazonInstanceNode(AmazonInstance ai) {
         super(Children.LEAF, Lookups.fixed(ai));
-        this.ai = ai;
         setName(""); // NOI18N
         setDisplayName(ai.getName());
         setIconBaseWithExtension(AMAZON_ICON);
@@ -80,8 +78,7 @@ public class AmazonInstanceNode extends AbstractNode {
     }
     
     private Image badgeIcon(Image origImg) {
-        Image badge = null;        
-        return badge != null ? ImageUtilities.mergeImages(origImg, badge, 15, 8) : origImg;
+        return origImg;
     }
     @Override
     public Action[] getActions(boolean context) {

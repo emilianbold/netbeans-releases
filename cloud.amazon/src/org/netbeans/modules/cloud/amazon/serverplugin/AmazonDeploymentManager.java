@@ -93,7 +93,7 @@ public class AmazonDeploymentManager implements DeploymentManager2 {
     public ProgressObject distribute(Target[] targets, DeploymentContext deployment) {
         File f = deployment.getModuleFile();
         ProgressObjectImpl po = new ProgressObjectImpl(NbBundle.getMessage(AmazonDeploymentManager.class, "AmazonDeploymentManager.distributing"), false);
-        Future<DeploymentStatus> task = AmazonInstance.deployAsync(f, appName, envID, keyId, key, po, regionUrl);
+        AmazonInstance.deployAsync(f, appName, envID, keyId, key, po, regionUrl);
         return po;
     }
 
