@@ -179,9 +179,10 @@ public class RepositoryTranslatorImpl {
         storageAllocator.purgeCaches();
     }
 
-    public IntToStringCache loadUnitIndex(final int unitId, final CharSequence unitName) {
+    public IntToStringCache loadUnitIndex(int unitId, CharSequence unitName) {
         synchronized (repository.getUnitLock(unitId)) {
             unitNamesCache.loadUnitIndex(unitName, new HashSet<CharSequence>());
+            unitId = repository.removeRepositoryID(unitId);
             return unitNamesCache.getFileNames(unitId);
         }
     }
