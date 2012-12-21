@@ -109,14 +109,13 @@ public class AndroidDebugTransport extends MobileDebugTransport {
                 }
             }
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            throw new IllegalStateException("Cannot get websocket address", ex);
         } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
+            throw new IllegalStateException("Cannot get websocket address", ex);
         } catch (URISyntaxException ex) {
-            Exceptions.printStackTrace(ex);
+            throw new IllegalStateException("Cannot get websocket address", ex);
         }
         throw new IllegalStateException("Cannot get websocket address");
-                
     }
 
 }
