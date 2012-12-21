@@ -116,8 +116,6 @@ public class ProgressDialog {
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
 
         Frame mainWindow = WindowManager.getDefault().getMainWindow();
-        int windowX = mainWindow.getX();
-        int windowY = mainWindow.getY();
         int windowWidth = mainWindow.getWidth();
         int windowHeight = mainWindow.getHeight();
         int dialogWidth = dialog.getWidth();
@@ -128,7 +126,7 @@ public class ProgressDialog {
         dialog.setLocation(dialogX, dialogY);
     }
 
-    private class ProgressPanel extends JPanel {
+    private static class ProgressPanel extends JPanel {
 
         private JLabel messageLabel;
         private JComponent progressBar;
