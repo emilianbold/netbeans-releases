@@ -67,7 +67,7 @@ public class RepositoryDataInputStream extends DataInputStream implements Reposi
 
     @Override
     public int readUnitId() throws IOException {        
-        return unitCodec.addRepositoryID(readInt());
+        return unitCodec.maskByRepositoryID(readInt());
     }
 
     private static final int sharedArrySize = 1024;

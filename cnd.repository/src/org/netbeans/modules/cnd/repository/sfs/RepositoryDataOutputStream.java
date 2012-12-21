@@ -67,7 +67,7 @@ public class RepositoryDataOutputStream extends DataOutputStream implements Repo
 
     @Override
     public void writeUnitId(int unitId) throws IOException {
-        writeInt(unitCodec.removeRepositoryID(unitId));
+        writeInt(unitCodec.unmaskRepositoryID(unitId));
     }
 
     private static final int sharedArrySize = 1024;

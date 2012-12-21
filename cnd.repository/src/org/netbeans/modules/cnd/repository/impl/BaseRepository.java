@@ -89,12 +89,12 @@ public abstract class BaseRepository implements Repository, UnitCodec {
     }
    
     @Override
-    public int removeRepositoryID(int unitId) {
+    public int unmaskRepositoryID(int unitId) {
         return unitId % REPO_DENOM; // write it *without* repository ID
     }
 
     @Override
-    public int addRepositoryID(int unitId) {
+    public int maskByRepositoryID(int unitId) {
         return id * REPO_DENOM + (unitId % REPO_DENOM); // add repository ID
     }
 

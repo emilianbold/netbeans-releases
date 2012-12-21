@@ -46,6 +46,6 @@ package org.netbeans.modules.cnd.repository.util;
  * @author vk155633
  */
 public interface UnitCodec {
-    int removeRepositoryID(int unitId);
-    int addRepositoryID(int unitId);
+    int unmaskRepositoryID(int unitId);
+    int maskByRepositoryID(int unitId);
 }

@@ -719,17 +719,17 @@ import org.openide.util.NbBundle;
 
         public RequiredUnit(DataInput stream, UnitCodec unitCodec) throws IOException {
             this.unitCodec = unitCodec;
-            unitId = unitCodec.addRepositoryID(stream.readInt());
+            unitId = unitCodec.maskByRepositoryID(stream.readInt());
             timestamp = stream.readLong();
         }
 
         public void write(DataOutput stream) throws IOException {
-            stream.writeInt(unitCodec.removeRepositoryID(unitId));
+            stream.writeInt(unitCodec.unmaskRepositoryID(unitId));
             stream.writeLong(timestamp);
         }
 
         public CharSequence getName() {
-            return getValueById(unitCodec.removeRepositoryID(unitId));
+            return getValueById(unitCodec.unmaskRepositoryID(unitId));
         }
 
         public int getUnitId() {

@@ -69,7 +69,7 @@ public class RepositoryRandomAccessFile extends RandomAccessFile implements Repo
 
     @Override
     public void writeUnitId(int unitId) throws IOException {
-        writeInt(unitCodec.removeRepositoryID(unitId));
+        writeInt(unitCodec.unmaskRepositoryID(unitId));
     }
 
     @Override
@@ -79,7 +79,7 @@ public class RepositoryRandomAccessFile extends RandomAccessFile implements Repo
 
     @Override
     public int readUnitId() throws IOException {
-        return unitCodec.addRepositoryID(readInt());
+        return unitCodec.maskByRepositoryID(readInt());
     }
 
     private static final int sharedArrySize = 1024;

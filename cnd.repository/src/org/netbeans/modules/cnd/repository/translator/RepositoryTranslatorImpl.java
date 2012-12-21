@@ -107,13 +107,13 @@ public class RepositoryTranslatorImpl {
 
     public int getFileIdByName(int unitId, final CharSequence fileName) {
         assert fileName != null;
-        unitId = repository.removeRepositoryID(unitId);
+        unitId = repository.unmaskRepositoryID(unitId);
         IntToStringCache unitFileNames = getUnitFileNames(unitId);
         return unitFileNames.getId(fileName);
     }
 
     public CharSequence getFileNameById(int unitId, final int fileId) {
-        unitId = repository.removeRepositoryID(unitId);
+        unitId = repository.unmaskRepositoryID(unitId);
         final IntToStringCache fileNames = getUnitFileNames(unitId);
         // #215449 - IndexOutOfBoundsException in RepositoryTranslatorImpl.getFileNameById
         int size = fileNames.isDummy() ? -1 : fileNames.size();
@@ -135,7 +135,7 @@ public class RepositoryTranslatorImpl {
     }
 
     public CharSequence getFileNameByIdSafe(int unitId, final int fileId) {
-        unitId = repository.removeRepositoryID(unitId);
+        unitId = repository.unmaskRepositoryID(unitId);
         final IntToStringCache fileNames = getUnitFileNames(unitId);
         final CharSequence fileName = fileNames.containsId(fileId) ? fileNames.getValueById(fileId) : "?"; // NOI18N
         return fileName;
@@ -148,17 +148,17 @@ public class RepositoryTranslatorImpl {
             storageAllocator.deleteUnitFiles(unitName, false);
         }
         int unitId = unitNamesCache.getId(unitName);
-        unitId = repository.addRepositoryID(unitId);
+        unitId = repository.maskByRepositoryID(unitId);
         return unitId;
     }
 
     public CharSequence getUnitName(int unitId) {
-        unitId = repository.removeRepositoryID(unitId);
+        unitId = repository.unmaskRepositoryID(unitId);
         return unitNamesCache.getValueById(unitId);
     }
 
     public CharSequence getUnitNameSafe(int unitId) {
-        unitId = repository.removeRepositoryID(unitId);
+        unitId = repository.unmaskRepositoryID(unitId);
         return unitNamesCache.containsId(unitId) ? unitNamesCache.getValueById(unitId) : "No Index " + unitId + " in " + unitNamesCache; // NOI18N
     }
 
@@ -182,7 +182,7 @@ public class RepositoryTranslatorImpl {
     public IntToStringCache loadUnitIndex(int unitId, CharSequence unitName) {
         synchronized (repository.getUnitLock(unitId)) {
             unitNamesCache.loadUnitIndex(unitName, new HashSet<CharSequence>());
-            unitId = repository.removeRepositoryID(unitId);
+            unitId = repository.unmaskRepositoryID(unitId);
             return unitNamesCache.getFileNames(unitId);
         }
     }
@@ -197,7 +197,7 @@ public class RepositoryTranslatorImpl {
     }
 
     private IntToStringCache getUnitFileNames(int unitId) {
-        unitId = repository.removeRepositoryID(unitId);
+        unitId = repository.unmaskRepositoryID(unitId);
         IntToStringCache unitFileNames = unitNamesCache.getFileNames(unitId);
         if (unitFileNames.isDummy()) {
             // load unit index

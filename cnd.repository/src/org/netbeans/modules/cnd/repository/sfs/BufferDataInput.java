@@ -169,7 +169,7 @@ public class BufferDataInput implements RepositoryDataInput, SharedStringBuffer 
 
     @Override
     public int readUnitId() throws IOException {
-        return unitCodec.addRepositoryID(readInt());
+        return unitCodec.maskByRepositoryID(readInt());
     }
 
     private static final int sharedArrySize = 1024;
