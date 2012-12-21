@@ -273,7 +273,7 @@ public class OQLCompletionProvider implements CompletionProvider {
 
                         clzs = e.getHeap().getJavaClassesByRegExp(prefix).iterator();
                         while(clzs.hasNext()) {
-                            String className = (String)((JavaClass)clzs.next()).getName();
+                            String className = ((JavaClass)clzs.next()).getName();
 
                             String[] sig = splitClassName(className);
 
@@ -293,7 +293,7 @@ public class OQLCompletionProvider implements CompletionProvider {
                         if (camel != null) {
                             clzs = e.getHeap().getJavaClassesByRegExp(camel).iterator();
                             while(clzs.hasNext()) {
-                                String className = (String)((JavaClass)clzs.next()).getName();
+                                String className = ((JavaClass)clzs.next()).getName();
                                 completions.add("02 " + className); // NOI18N
                             }
                         }
