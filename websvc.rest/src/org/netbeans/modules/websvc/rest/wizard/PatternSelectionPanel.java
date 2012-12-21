@@ -53,7 +53,6 @@ import org.openide.util.HelpCtx;
  * @author nam
  */
 final class PatternSelectionPanel extends AbstractPanel {
-    private org.openide.util.HelpCtx helpCtx;
     private PatternSelectionPanelVisual component;
     private Pattern selectedPattern;
     
