@@ -62,58 +62,58 @@ public class PHP54FeaturesTest extends PHPLexerTestBase {
     }
 
     public void testTraits_01() throws Exception {
-        performTest("traits_01");
+        performTest("lexer/traits_01");
     }
 
     public void testTraits_02() throws Exception {
-        performTest("traits_02");
+        performTest("lexer/traits_02");
     }
 
     public void testTraits_03() throws Exception {
-        performTest("traits_03");
+        performTest("lexer/traits_03");
     }
 
     public void testTraits_04() throws Exception {
-        performTest("traits_04");
+        performTest("lexer/traits_04");
     }
 
     public void testTraits_05() throws Exception {
-        performTest("traits_05");
+        performTest("lexer/traits_05");
     }
 
     public void testTraits_06() throws Exception {
-        performTest("traits_06");
+        performTest("lexer/traits_06");
     }
 
     public void testShortArrays_01() throws Exception {
-        performTest("shortArrays_01");
+        performTest("lexer/shortArrays_01");
     }
 
     public void testShortArrays_02() throws Exception {
-        performTest("shortArrays_02");
+        performTest("lexer/shortArrays_02");
     }
 
     public void testShortArraysStaticScalar_01() throws Exception {
-        performTest("shortArraysStaticScalar_01");
+        performTest("lexer/shortArraysStaticScalar_01");
     }
 
     public void testShortArraysStaticScalar_02() throws Exception {
-        performTest("shortArraysStaticScalar_02");
+        performTest("lexer/shortArraysStaticScalar_02");
     }
 
     public void testBinaryNotation_01() throws Exception {
-        performTest("binaryNotation_01");
+        performTest("lexer/binaryNotation_01");
     }
 
     public void testBinaryNotation_02() throws Exception {
-        performTest("binaryNotation_02");
+        performTest("lexer/binaryNotation_02");
     }
 
     public void testBinaryNotation_03() throws Exception {
-        performTest("binaryNotation_03");
+        performTest("lexer/binaryNotation_03");
     }
 
     public void testBinaryNotation_04() throws Exception {
-        performTest("binaryNotation_04");
+        performTest("lexer/binaryNotation_04");
     }
 }
