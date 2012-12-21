@@ -90,6 +90,7 @@ import javax.swing.undo.CannotRedoException;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.ListenerList;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.modules.editor.indent.api.Reformat;
@@ -769,20 +770,32 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
         preInsertCheck(offset, text, attrs);
 
-        UndoableEdit edit = getContent().insertString(offset, text);
-
         if (LOG.isLoggable(Level.FINE)) {
-            String msg = "BaseDocument.insertString(): doc=" + this // NOI18N
-                    + (modified ? "" : " - first modification") // NOI18N
-                    + ", offset=" + Utilities.offsetToLineColumnString(this, offset) // NOI18N
-                    + (debugNoText ? "" : (", text='" + text + "'")); // NOI18N
+            StringBuilder sb = new StringBuilder(200);
+            sb.append("insertString(): doc="); // NOI18N
+            appendInfoTerse(sb);
+            sb.append(modified ? "" : " - first modification"). // NOI18N
+                    append(", offset=").append(Utilities.offsetToLineColumnString(this, offset)); // NOI18N
+            if (!debugNoText) {
+                sb.append(" \"");
+                appendContext(sb, offset);
+                sb.append("\" + \""); // NOI18N
+                if (modified) {
+                    CharSequenceUtilities.debugText(sb, text);
+                } else { // For first modification display regular text for easier orientation
+                    sb.append(text);
+                }
+                sb.append("\""); // NOI18N
+            }
 
             if (debugStack) {
-                LOG.log(Level.FINE, msg, new Throwable(msg));
+                LOG.log(Level.FINE, sb.toString(), new Throwable("Insert stack"));  // NOI18N
             } else {
-                LOG.log(Level.FINE, msg);
+                LOG.log(Level.FINE, sb.toString());
             }
         }
+
+        UndoableEdit edit = getContent().insertString(offset, text);
 
         BaseDocumentEvent evt = getDocumentEvent(offset, text.length(), DocumentEvent.EventType.INSERT, attrs);
 
@@ -828,6 +841,38 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             for (DocumentListener listener : postModificationDocumentListenerList.getListeners()) {
                 listener.insertUpdate(evt);
             }
+        }
+    }
+    
+    private void appendContext(StringBuilder sb, int offset) {
+        CharSequence docText = org.netbeans.lib.editor.util.swing.DocumentUtilities.getText(this);
+        int contextLen = 20; // Context in forward and backward directions
+        int back = contextLen;
+        int endOffset = offset;
+        int startOffset = offset;
+        while (back > 0 && startOffset > 0) {
+            if (docText.charAt(startOffset) == '\n') {
+                break;
+            }
+            startOffset--;
+            back--;
+        }
+        int docTextLen = docText.length();
+        int forward = contextLen;
+        while (forward > 0 && endOffset < docTextLen) {
+            if (docText.charAt(endOffset++) == '\n') {
+                break;
+            }
+            forward--;
+        }
+        if (startOffset > 0) {
+            sb.append("...");
+        }
+        CharSequenceUtilities.debugText(sb, docText.subSequence(startOffset, offset));
+        sb.append("|"); // Denote caret
+        CharSequenceUtilities.debugText(sb, docText.subSequence(offset, endOffset));
+        if (endOffset < docTextLen) {
+            sb.append("...");
         }
     }
 
@@ -935,16 +980,24 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         }
 
         if (LOG.isLoggable(Level.FINE)) {
-            String msg = "BaseDocument.remove(): doc=" + this // NOI18N
-                    + ", origDocLen=" + docLen // NOI18N
-                    + ", offset=" + Utilities.offsetToLineColumnString(this, offset) // NOI18N
-                    + ", len=" + length // NOI18N
-                    + (debugNoText ? "" : (", removedText='" + ((ContentEdit) edit).getText() + "'")); //NOI18N
+            StringBuilder sb = new StringBuilder(200);
+            sb.append("remove(): doc="); // NOI18N
+            appendInfoTerse(sb);
+            sb.append(",origDocLen=").append(docLen); // NOI18N
+            sb.append(", offset=").append(Utilities.offsetToLineColumnString(this, offset)); // NOI18N
+            sb.append(",len=").append(length); // NOI18N
+            if (!debugNoText) {
+                sb.append(" \"");
+                appendContext(sb, offset);
+                sb.append("\" - \""); // NOI18N
+                CharSequenceUtilities.debugText(sb, ((ContentEdit) edit).getText());
+                sb.append("\""); // NOI18N
+            }
 
             if (debugStack) {
-                LOG.log(Level.FINE, msg, new Throwable(msg));
+                LOG.log(Level.FINE, sb.toString(), new Throwable("Remove text")); // NOI18N
             } else {
-                LOG.log(Level.FINE, msg);
+                LOG.log(Level.FINE, sb.toString());
             }
         }
 
@@ -2082,6 +2135,12 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         ensureAtomicEditsInited();
         atomicEdits.setSignificant(false);
         return atomicEdits;
+    }
+    
+    void appendInfoTerse(StringBuilder sb) {
+        sb.append(getClass().getSimpleName()).append("@").append(System.identityHashCode(this));
+        sb.append(",version=").append(org.netbeans.lib.editor.util.swing.DocumentUtilities.getDocumentVersion(this));
+        sb.append(",StreamDesc=").append(getProperty(StreamDescriptionProperty));
     }
     
     public @Override String toString() {

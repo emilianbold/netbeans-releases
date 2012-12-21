@@ -105,7 +105,7 @@ import org.openide.util.lookup.ProxyLookup;
 public class FXMLCompletionTestBase extends NbTestCase {
     
     static {
-        FXMLCompletionTest.class.getClassLoader().setDefaultAssertionStatus(true);
+        FXMLCompletionTestBase.class.getClassLoader().setDefaultAssertionStatus(true);
         System.setProperty("org.openide.util.Lookup", Lkp.class.getName());
         Assert.assertEquals(Lkp.class, Lookup.getDefault().getClass());
 
@@ -440,8 +440,7 @@ public class FXMLCompletionTestBase extends NbTestCase {
     // ONLY FOR TESTS!
     static List<? extends CompletionItem> query(Source source, int queryType, int offset, int substitutionOffset, Document doc) throws Exception {
         assert source != null;
-        fail();
-        return Collections.emptyList();
+        return FXMLCompletion2.testQuery(source, doc, queryType, offset);
     }
 
 }

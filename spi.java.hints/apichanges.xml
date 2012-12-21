@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
 Copyright 2012 Oracle and/or its affiliates. All rights reserved.
@@ -45,6 +46,22 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
         <apidef name="JavaHintsSPI">Java Hints SPI</apidef>
     </apidefs>
     <changes>
+        <change id="ErrorDescriptionFactory.forSpan">
+            <api name="JavaHintsSPI"/>
+            <summary>Introducing ErrorDescriptionFactory.forSpan.</summary>
+            <version major="1" minor="9"/>
+            <date day="19" month="12" year="2012"/>
+            <author login="jlahoda"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added ErrorDescriptionFactory.forSpan to create the correct
+                    Java-enhanced ErrorDescription from a span.
+                </p>    
+            </description>
+            <class package="org.netbeans.spi.java.hints" name="ErrorDescriptionFactory"/>
+            <issue number="223723"/>
+        </change>
         <change id="TransformationSupport">
             <api name="JavaHintsSPI"/>
             <summary>Added support for using jackpot patterns from other modules (e.g. refactoring).</summary>

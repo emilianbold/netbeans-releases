@@ -48,9 +48,12 @@ package org.netbeans.modules.websvc.rest.samples.ui;
 import java.awt.Component;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
@@ -164,7 +167,7 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent)c;
                 // Step #.
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i)); // NOI18N
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i);
                 // Step name (actually the whole list for reference).
                 jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps); // NOI18N
             }
@@ -217,8 +220,11 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
         if(fo == null)
             return;
         FileLock lock = fo.lock();
+        BufferedReader reader = null;
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(FileUtil.toFile(fo)));
+            reader = new BufferedReader(new InputStreamReader(  
+                    new FileInputStream(FileUtil.toFile(fo)), 
+                    Charset.forName("UTF-8")));
             String line;
             StringBuffer sb = new StringBuffer();
             while ((line = reader.readLine()) != null) {
@@ -235,6 +241,9 @@ public class SampleWizardIterator  implements WizardDescriptor.InstantiatingIter
             }
         } finally {
             lock.releaseLock();
+            if ( reader!= null) {
+                reader.close();
+            }
         }        
     }
 }
