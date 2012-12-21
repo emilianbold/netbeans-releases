@@ -82,24 +82,26 @@ public final class GdbFrame extends Frame {
             args_list = (MITList) frameargs.value().asTuple().valueOf("args"); // NOI18N
 
         if (args_list != null) {
-            args = " ("; // NOI18N
+            StringBuilder sb = new StringBuilder();
+            sb.append(" ("); // NOI18N
             if (debugger.getVerboseStack()) {
                 int args_count = args_list.size();
                     // iterate through args list
                 for (int vx=0; vx < args_count; vx++) {
                     MIValue arg = (MIValue)args_list.get(vx);
                     if (vx != 0)
-                        args += ", "; // NOI18N
-                    args += arg.asTuple().getConstValue("name"); // NOI18N
+                        sb.append(", "); // NOI18N
+                    sb.append( arg.asTuple().getConstValue("name")); // NOI18N
                     MIValue value = arg.asTuple().valueOf("value"); // NOI18N
                     if (value != null) {
                         argsArray.add(new GdbLocal(arg));
-                        args += "="; // NOI18N
-                        args += value.asConst().value();
+                        sb.append("="); // NOI18N
+                        sb.append(value.asConst().value());
                     }
                 }
             }
-            args += ")"; // NOI18N
+            sb.append(")"); // NOI18N
+            args = sb.toString();
 	}
 
 	range_of_hidden = false;
