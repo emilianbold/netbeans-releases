@@ -62,7 +62,7 @@ import org.netbeans.modules.websvc.rest.wizard.Util;
 public class GenericResourceBean {
 
     public static final String RESOURCE_SUFFIX = "Resource";
-    public static final MimeType[] supportedMimeTypes = new MimeType[]{MimeType.XML, MimeType.JSON, MimeType.TEXT, MimeType.HTML};
+    private static final MimeType[] supportedMimeTypes = new MimeType[]{MimeType.XML, MimeType.JSON, MimeType.TEXT, MimeType.HTML};
     public static final HttpMethodType[] CONTAINER_METHODS = new HttpMethodType[]{HttpMethodType.GET, HttpMethodType.POST};
     public static final HttpMethodType[] ITEM_METHODS = new HttpMethodType[]{HttpMethodType.GET, HttpMethodType.PUT, HttpMethodType.DELETE};
     public static final HttpMethodType[] STAND_ALONE_METHODS = new HttpMethodType[]{HttpMethodType.GET, HttpMethodType.PUT};
@@ -73,7 +73,6 @@ public class GenericResourceBean {
     private MimeType[] mimeTypes;
     private String[] representationTypes;
     private Set<HttpMethodType> methodTypes;
-    private boolean privateFieldForQueryParam;
     private boolean generateUriTemplate = true;
     private boolean rootResource = true;
     private List<GenericResourceBean> subResources;
@@ -105,7 +104,7 @@ public class GenericResourceBean {
             throw new IllegalArgumentException("Unmatched media types and representation types");
         }
         this.mimeTypes = mediaTypes;
-        this.representationTypes = representationTypes == null ? new String[0] : representationTypes;
+        this.representationTypes = representationTypes;
     }
 
     public static MimeType[] getSupportedMimeTypes() {
