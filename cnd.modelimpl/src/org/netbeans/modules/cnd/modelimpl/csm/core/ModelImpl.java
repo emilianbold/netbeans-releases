@@ -512,6 +512,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 
         ParserThreadManager.instance().startup(CndUtils.isStandalone());
         RepositoryUtils.startup();
+        ReferencesIndex.startup();
     //if( ! isStandalone() ) {
     //    for( NativeProject nativeProject : ModelSupport.instance().getNativeProjects() ) {
     //    	addProject(nativeProject, nativeProject.getProjectDisplayName());
