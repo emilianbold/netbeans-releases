@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2009 Sun Microsystems, Inc. All rights reserved.
+Copyright &copy; 2009, 2012 Sun Microsystems, Inc. All rights reserved.
 Use is subject to license terms.
  -->
 <html>
@@ -34,8 +34,8 @@ Build a project
 Select the node of the project you want to build.
 </li>
 <li>
-Choose Run &gt; Build Main Project (F11) or right-click any project in the 
-Projects window and choose Build Project.
+Choose Run &gt; Build Project (F11) or right-click any project in the 
+Projects window and choose Build.
 </li>
 </ol>
 </td>
@@ -46,7 +46,7 @@ Compile a single file.
 </td>
 <td>
 <ul>
-<li>Select the node of the file you want to compile and choose Build &gt; Compile <tt>filename</tt> (F9).</li>
+<li>Select the node of the file you want to compile and choose Run &gt; Compile File (F9).</li>
 <li>Right-click the node of the file and choose Compile File.</li>
 </ul>
 </td>
@@ -58,19 +58,19 @@ Clean a project.
 <td>
 <ul>
 <li>
-Right-click the project node and choose Clean Project.
+Right-click the project node and choose More Build Commands &gt; Clean.
 </li>
 </ul>
 </td>
 </tr>
 <tr valign="top">
 <td>
-Clean and build the main project.
+Clean and build the selected project.
 </td>
 <td>
-<ol>
-<li>Select the node of the project you want to clean and build.</li>
-<li>Choose Run &gt; Clean and Build Main Project (Shift-F11).
+<ul>
+<li>Right-click the project node and choose Clean and Build.</li>
+<li>Select the node of the project you want to clean and build, choose Run &gt; Clean and Build (Shift-F11).
 </li>
 </ul>
 </td>
@@ -83,10 +83,9 @@ View build output.
 <li>
 In the Files window, expand the project folder node.
 </li>
-<li>Expand the <tt>build</tt> folder to view object (<tt>.o</tt>) files.
+<li>Expand the <tt>build</tt> folder and subfolders to view object (<tt>.o</tt>) files.
 </li>
-<li>Expand the <tt>dist</tt> folder to view executable (<tt>.exe</tt>) 
-files and built libraries.
+<li>Expand the <tt>dist</tt> folder and subfolders to view executable files and built libraries.
 </li>
 </ol>
 </td>
@@ -99,7 +98,7 @@ Correct compilation errors
 <ul>
 <li>
 In the Output window, click any highlighted syntax error to jump to the 
-location in the source code where the error occurred..
+location in the source code where the error occurred.
 </li>
 <li>
 In the Output window, click any make error to open the makefile in the 
