@@ -47,6 +47,7 @@ package org.netbeans.modules.languages.apacheconf;
 import java.io.IOException;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
+import org.netbeans.modules.languages.apacheconf.csl.ApacheConfLanguageConfig;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataNode;
@@ -73,7 +74,7 @@ public class ApacheConfDataObject extends MultiDataObject {
 
     public ApacheConfDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
-        registerEditor(ApacheConfLanguageProvider.MIME_TYPE, true);
+        registerEditor(ApacheConfLanguageConfig.MIME_TYPE, true);
     }
 
     @Override
@@ -91,7 +92,7 @@ public class ApacheConfDataObject extends MultiDataObject {
             displayName="#Source",
             iconBase="org/netbeans/modules/languages/apacheconf/resources/apache_conf_file_16.png",
             persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
-            mimeType=ApacheConfLanguageProvider.MIME_TYPE,
+            mimeType=ApacheConfLanguageConfig.MIME_TYPE,
             preferredID="neon.source",
             position=1
     )

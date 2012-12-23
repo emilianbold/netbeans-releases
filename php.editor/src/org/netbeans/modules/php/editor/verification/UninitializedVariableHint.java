@@ -70,35 +70,19 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
-import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.ContinueStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
-import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
-import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
-import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ListVariable;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocStaticAccessType;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPVarComment;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
-import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
@@ -324,91 +308,10 @@ public class UninitializedVariableHint extends AbstractHint implements PHPRuleWi
             }
         }
 
-        @Override
-        public void visit(ConstantDeclaration node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(ContinueStatement node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(FieldsDeclaration node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(GotoLabel node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(GotoStatement node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(InterfaceDeclaration node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(PHPDocBlock node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(PHPDocTypeTag node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(PHPDocMethodTag node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(PHPDocVarTypeTag node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(PHPDocStaticAccessType node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(PHPVarComment node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(SingleFieldDeclaration node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(StaticFieldAccess node) {
-            // intetionally
-        }
-
-        @Override
-        public void visit(UseStatement node) {
-            // intentionally
-        }
-
-        @Override
-        public void visit(UseStatementPart node) {
-            // intentionally
-        }
-
         private boolean isProcessableVariable(Variable node) {
             Identifier identifier = getIdentifier(node);
             return identifier != null && !UNCHECKED_VARIABLES.contains(identifier.getName()) && !isInitialized(node) && !isUninitialized(node);
         }
-
 
         private void initializeVariable(Variable variable) {
             if (!isInitialized(variable) && !isUninitialized(variable)) {

@@ -69,8 +69,8 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
     private final List<ModelElementImpl> elements = Collections.synchronizedList(new LinkedList<ModelElementImpl>());
 
     //new contructors
-    ScopeImpl(Scope inScope, ASTNodeInfo info, PhpModifiers modifiers, Block block) {
-        super(inScope, info, modifiers);
+    ScopeImpl(Scope inScope, ASTNodeInfo info, PhpModifiers modifiers, Block block, boolean isDeprecated) {
+        super(inScope, info, modifiers, isDeprecated);
         setBlockRange(block);
     }
 
@@ -79,15 +79,15 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
     }
     //old contructors
     ScopeImpl(Scope inScope, String name, Union2<String/*url*/, FileObject> file,
-            OffsetRange offsetRange, PhpElementKind kind) {
-        super(inScope, name, file, offsetRange, kind);
+            OffsetRange offsetRange, PhpElementKind kind, boolean isDeprecated) {
+        super(inScope, name, file, offsetRange, kind, isDeprecated);
         assert isScopeKind(kind) : kind.toString();
     }
 
     ScopeImpl(Scope inScope, String name, Union2<String/*url*/, FileObject> file,
             OffsetRange offsetRange, PhpElementKind kind,
-            PhpModifiers modifier) {
-        super(inScope, name, file, offsetRange, kind, modifier);
+            PhpModifiers modifier, boolean isDeprecated) {
+        super(inScope, name, file, offsetRange, kind, modifier, isDeprecated);
         assert isScopeKind(kind) : kind.toString();
     }
 
