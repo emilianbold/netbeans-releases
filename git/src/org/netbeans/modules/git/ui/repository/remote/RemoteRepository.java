@@ -350,7 +350,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         }
         for (String[] uris : preferSchemeUris ? new String[][] { schemeUris, sortedModelUrls } : new String[][] { sortedModelUrls }) {
             for (final String item : uris) {
-                if(item.toLowerCase().startsWith(uriString.toLowerCase())) {
+                if(item.startsWith(uriString)) {
                     final int start = selectAll ? 0 : uriString.length();
                     final int end = item.length();
                     EventQueue.invokeLater(new Runnable() {
