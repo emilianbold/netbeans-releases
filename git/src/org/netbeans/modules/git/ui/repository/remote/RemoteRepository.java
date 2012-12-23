@@ -172,7 +172,11 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     }
     
     public GitURI getURI() {
-        String uriString = getURIString();        
+        return getURI(true);
+    }
+    
+    private GitURI getURI (boolean trimSpaces) {
+        String uriString = getURIString(trimSpaces);        
         if(uriString != null && !uriString.isEmpty()) {
             try {
                 return new GitURI(uriString);
@@ -202,9 +206,9 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         support.addChangeListener(listener);
     }
     
-    private String getURIString() {
+    private String getURIString (boolean trimSpaces) {
         String uriString = (String) panel.urlComboBox.getEditor().getItem();
-        return uriString == null ? null : uriString.trim();
+        return uriString == null ? null : (trimSpaces ? uriString.trim() : uriString);
     }
     
     private void attachListeners () {
@@ -327,17 +331,17 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
 
     private boolean ignoreComboEvents = false;
     private void findComboItem(boolean selectAll, boolean resetFields) {
-        final GitURI uri = getURI();
-        String uriString = uri == null ? getURIString() : uri.setUser(null).setPass(null).toString();
+        final GitURI uri = getURI(false);
+        String uriString = uri == null ? getURIString(false) : uri.setUser(null).setPass(null).toString();
         if(uriString == null || uriString.isEmpty()) {
             return;
         }
         boolean preferSchemeUris = false;
         if (uri != null && uri.getScheme() != null && !Scheme.FILE.name.equals(uri.getScheme()) && uri.getHost() == null) {
-            uriString = getURIString();
+            uriString = getURIString(false);
             preferSchemeUris = !resetFields;
             resetFields = true;
-        } else if (uriString.endsWith("/") && !getURIString().endsWith("/")) { //NOI18N
+        } else if (uriString.endsWith("/") && !getURIString(false).endsWith("/")) { //NOI18N
             // GitURI adds a '/' at the end of its uri string
             uriString = uriString.substring(0, uriString.length() - 1);
         }
