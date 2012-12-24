@@ -91,49 +91,12 @@ public final class MeasurableSocketFactory implements SocketFactory {
 
     @Override
     public InputStream getInputStream(Socket socket) throws IOException {
-        final InputStream sis = socket.getInputStream();
-        InputStream is = new InputStream() {
-            @Override
-            public int read() throws IOException {
-                int res = sis.read();
-                fireDownload(1);
-                return res;
-            }
-
-            @Override
-            public int available() throws IOException {
-                return sis.available();
-            }
-
-            @Override
-            public void close() throws IOException {
-                sis.close();
-            }
-        };
-        return is;
+        return new MyIS(socket.getInputStream());
     }
 
     @Override
     public OutputStream getOutputStream(Socket socket) throws IOException {
-        final OutputStream sos = socket.getOutputStream();
-        OutputStream os = new OutputStream() {
-            @Override
-            public void write(int b) throws IOException {
-                fireUpload(1);
-                sos.write(b);
-            }
-
-            @Override
-            public void close() throws IOException {
-                sos.close();
-            }
-
-            @Override
-            public void flush() throws IOException {
-                sos.flush();
-            }
-        };
-        return os;
+        return new MyOS(socket.getOutputStream());
     }
 
     private void fireDownload(int bytes) {
@@ -153,5 +116,106 @@ public final class MeasurableSocketFactory implements SocketFactory {
         public void bytesUploaded(int bytes);
 
         public void bytesDownloaded(int bytes);
+    }
+
+    private final class MyIS extends InputStream {
+
+        private final InputStream in;
+
+        MyIS(InputStream is) {
+            this.in = is;
+        }
+
+        @Override
+        public int read() throws IOException {
+            int res = in.read();
+            fireDownload(res);
+            return res;
+        }
+
+        @Override
+        public int read(byte[] b) throws IOException {
+            int res = in.read(b);
+            fireDownload(res);
+            return res;
+        }
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            int res = in.read(b, off, len);
+            fireDownload(res);
+            return res;
+        }
+
+        @Override
+        public void close() throws IOException {
+            in.close();
+        }
+
+        @Override
+        public int available() throws IOException {
+            return in.available();
+        }
+
+        @Override
+        public synchronized void mark(int readlimit) {
+            in.mark(readlimit);
+        }
+
+        @Override
+        public boolean markSupported() {
+            return in.markSupported();
+        }
+
+        @Override
+        public synchronized void reset() throws IOException {
+            in.reset();
+        }
+
+        @Override
+        public long skip(long n) throws IOException {
+            return in.skip(n);
+        }
+    }
+
+    private final class MyOS extends OutputStream {
+
+        private final OutputStream out;
+
+        MyOS(OutputStream out) {
+            this.out = out;
+        }
+
+        @Override
+        public void write(int b) throws IOException {
+            out.write(b);
+            fireUpload(1);
+        }
+
+        @Override
+        public void write(byte[] b) throws IOException {
+            out.write(b);
+            fireUpload(b.length);
+        }
+
+        @Override
+        public void write(byte[] b, int off, int len) throws IOException {
+            out.write(b, off, len);
+            fireUpload(len);
+        }
+
+        @Override
+        public void close() throws IOException {
+            try {
+                out.flush();
+            } finally {
+                out.close();
+            }
+        }
+
+        @Override
+        public void flush() throws IOException {
+            out.flush();
+        }
     }
 }
