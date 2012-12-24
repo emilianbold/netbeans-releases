@@ -298,11 +298,12 @@ expression_statement
 
 expression_or_declaration_statement
     :
-        (declaration_statement) => declaration_statement
-    |
+        (expression SEMICOLON) => 
                                                                                 {action.expression_statement(input.LT(1));}
         expression SEMICOLON
                                                                                 {action.end_expression_statement(input.LT(0));}
+    |
+        declaration_statement
     ;
 
 
