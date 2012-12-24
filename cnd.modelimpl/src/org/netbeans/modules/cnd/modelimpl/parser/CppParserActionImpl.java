@@ -1695,7 +1695,8 @@ public class CppParserActionImpl implements CppParserActionEx {
                 declBuilder.setDeclaratorBuilder(declaratorBuilder);
                 
                 
-                if(declBuilder.getTemplateDescriptorBuilder() != null) {
+                if(declBuilder.getTemplateDescriptorBuilder() != null &&
+                        !declBuilder.isConstructor() && !declBuilder.isDestructor()) {
                     SymTabEntry classEntry = globalSymTab.lookupLocal(declaratorBuilder.getName());
                     if (classEntry == null) {
                         classEntry = globalSymTab.enterLocal(declaratorBuilder.getName());
@@ -1730,10 +1731,16 @@ public class CppParserActionImpl implements CppParserActionEx {
         declarator(token);        
         DeclaratorBuilder declaratorBuilder = (DeclaratorBuilder) builderContext.top();
         SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top(1);
-        CharSequence name = declBuilder.getTypeBuilder().getName();
-        declaratorBuilder.setName(name);
+        NameBuilder nameBuilder = declBuilder.getTypeBuilder().getNameBuilder();
+        CharSequence newName;
+        if(nameBuilder != null && !nameBuilder.getNames().isEmpty()) {
+            newName = nameBuilder.getLastNamePart();
+        } else {
+            newName = declBuilder.getTypeBuilder().getName();
+        }        
+        declaratorBuilder.setName(newName);
         declBuilder.setTypeBuilder(null);
-        if(name != null && name.toString().contains("~")) { // NOI18N
+        if(newName != null && newName.toString().contains("~")) { // NOI18N
             declBuilder.setDestructor();
         } else {
             declBuilder.setConstructor();
