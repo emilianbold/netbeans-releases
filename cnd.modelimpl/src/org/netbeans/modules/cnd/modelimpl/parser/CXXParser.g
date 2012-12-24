@@ -191,6 +191,39 @@ import org.netbeans.modules.cnd.modelimpl.parser.*;
 //        $Declaration::type_specifiers_count++;
 //        trace("store_type_specifier->", $Declaration::type_specifiers_count);
     }
+
+    public boolean isTemplateTooDeep(int currentLevel, int maxLevel) {
+        return isTemplateTooDeep(currentLevel, maxLevel, 0);
+    }
+
+    public static int TEMPLATE_PREVIEW_POS_LIMIT = 4096;
+    public boolean isTemplateTooDeep(int currentLevel, int maxLevel, int startPos) {
+        int level = currentLevel;
+        int pos = startPos;            
+        while(pos < TEMPLATE_PREVIEW_POS_LIMIT) {
+            int token = input.LA(pos);
+            pos++;
+            if(token == EOF || token == 0) {
+                break;
+            }
+            if(token == LCURLY || token == RCURLY) {
+                break;
+            }
+            if(token == LESSTHAN) {
+                level++;
+            } else if(token == GREATERTHAN) {
+                level--;
+            } 
+            if(level == 0) {
+                return false;
+            }
+            if(level >= maxLevel) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
 
 compilation_unit: translation_unit;
@@ -267,9 +300,9 @@ expression_or_declaration_statement
     :
         (declaration_statement) => declaration_statement
     |
-        {action.expression_statement(input.LT(1));}
+                                                                                {action.expression_statement(input.LT(1));}
         expression SEMICOLON
-        {action.end_expression_statement(input.LT(0));}
+                                                                                {action.end_expression_statement(input.LT(0));}
     ;
 
 
@@ -2163,6 +2196,13 @@ template_argument_list
 template_argument
     :                                                                           {action.template_argument(input.LT(1));}
     (
+        {(isTemplateTooDeep(1, 10))}? 
+        (~(GREATERTHAN | LESSTHAN | RCURLY | LCURLY))* 
+        (
+            lazy_template 
+            (~(GREATERTHAN | LESSTHAN | RCURLY | LCURLY | COMMA | ELLIPSIS))*
+        )+
+    |
         // id_exression is included into assignment_expression, thus we need to explicitly rule it up
         (id_expression ELLIPSIS? (COMMA | GREATERTHAN))=> id_expression
     |
@@ -2762,6 +2802,20 @@ skip_balanced_Curl
             )*
             RCURLY                                                              {if(state.backtracking == 0){action.skip_balanced_curlies(input.LT(0));}}
         ;
+
+
+
+lazy_template
+    :
+        LESSTHAN
+        (
+            (   ~(GREATERTHAN | LESSTHAN | RCURLY | LCURLY)
+            |   lazy_template
+            )*
+        )
+        GREATERTHAN
+    ;
+
 
 // $>
 // ==============
