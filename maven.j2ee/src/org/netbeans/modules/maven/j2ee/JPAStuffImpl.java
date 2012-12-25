@@ -129,7 +129,7 @@ public class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator,
         JpaSupport support = JpaSupport.getInstance(platform);
         JpaProvider provider = support.getDefaultProvider();
         if (provider != null) {
-            return (Persistence.VERSION_2_0.equals(version) && provider.isJpa2Supported())
+            return ((Persistence.VERSION_2_0.equals(version) || Persistence.VERSION_2_1.equals(version)) && provider.isJpa2Supported())//fo now, no much difference 2.0 and 2.1
                     || (Persistence.VERSION_1_0.equals(version) && provider.isJpa1Supported());
         }
         return null;

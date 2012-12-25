@@ -64,6 +64,7 @@ public class ProviderUtilTest extends NbTestCase {
     
     private PersistenceUnit persistenceUnit1;
     private PersistenceUnit persistenceUnit2;
+    private PersistenceUnit persistenceUnit3;
     
     public ProviderUtilTest(String testName) {
         super(testName);
@@ -72,6 +73,7 @@ public class ProviderUtilTest extends NbTestCase {
     protected void setUp() throws Exception {
         this.persistenceUnit1 = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit();
         this.persistenceUnit2 = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit();
+        this.persistenceUnit3 = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_1.PersistenceUnit();
     }
     
     protected void tearDown() throws Exception {

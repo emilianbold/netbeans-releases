@@ -145,6 +145,9 @@ public class PersistenceCfgProperties {
         possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(ProviderUtil.ECLIPSELINK_PROVIDER2_0.getJdbcUsername(),null);
         possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(ProviderUtil.ECLIPSELINK_PROVIDER2_0.getTableGenerationPropertyName()
                 ,new String[] {ProviderUtil.ECLIPSELINK_PROVIDER2_0.getTableGenerationCreateValue(),ProviderUtil.ECLIPSELINK_PROVIDER2_0.getTableGenerationDropCreateValue(), PersistenceUnitProperties.NONE });
+        //ECLIPSELINK 2.1 (initially just copy of 2.0)
+        possiblePropertyValues.put(ProviderUtil.ECLIPSELINK_PROVIDER, new HashMap<String, String[]>());
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).putAll(possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0));
         //hibernate //TODO? reuse hibernate module?
         possiblePropertyValues.put(ProviderUtil.HIBERNATE_PROVIDER2_0, new HashMap<String, String[]>());
         possiblePropertyValues.get(ProviderUtil.HIBERNATE_PROVIDER2_0).put(ProviderUtil.HIBERNATE_PROVIDER2_0.getTableGenerationPropertyName(), null);
@@ -219,7 +222,8 @@ public class PersistenceCfgProperties {
     public static List<String> getKeys(Provider provider){
         //TODO: cache lists?
         ArrayList<String> ret = new ArrayList<String>();
-        if(provider == null || Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(provider))) {
+        String ver = ProviderUtil.getVersion(provider);
+        if(provider == null || (ver!=null && !Persistence.VERSION_1_0.equals(ver))) {
             ret.addAll(possiblePropertyValues.get(null).keySet());
         }
         if(provider !=null ) {
