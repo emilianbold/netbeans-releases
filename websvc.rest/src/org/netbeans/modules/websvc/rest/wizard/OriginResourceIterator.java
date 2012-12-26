@@ -46,8 +46,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.Future;
@@ -58,6 +61,7 @@ import javax.lang.model.element.Modifier;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -71,6 +75,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.support.SourceGroups;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
@@ -84,6 +89,7 @@ import org.openide.WizardDescriptor.ProgressInstantiatingIterator;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
@@ -228,27 +234,82 @@ public class OriginResourceIterator implements
         
         Project project = Templates.getProject(myWizard);
         WebRestSupport support = project.getLookup().lookup(WebRestSupport.class);
-        if ( support!= null ){
-            boolean hasRequest = RestUtils.hasClass(project, 
-                    CONTAINER_CONTAINER_REQUEST.replace('.', '/')+CLASS);
-            boolean hasFilter = RestUtils.hasClass(project, 
-                    CONTAINER_RESPONSE_FILTER.replace('.', '/')+CLASS);
-            boolean hasResponse = RestUtils.hasClass(project, 
-                    CONTAINER_CONTAINER_RESPONSE.replace('.', '/')+CLASS);
-            if ( !hasRequest || !hasFilter || !hasResponse ){
-                handle.progress(NbBundle.getMessage(OriginResourceIterator.class, 
-                        "MSG_ExtendsClasspath"));                                // NOI18N 
-                JaxRsStackSupport jaxRsSupport = support.getJaxRsStackSupport();
-                if ( jaxRsSupport == null ) {
-                    jaxRsSupport = JaxRsStackSupport.getDefault();
-                }
-                jaxRsSupport.extendsJerseyProjectClasspath(project);
-            }
-        }
+        boolean addResponseFilter = extendClasspath(handle, support);
         
         handle.progress(NbBundle.getMessage(OriginResourceIterator.class, 
                 "MSG_GenerateClassFilter"));                                // NOI18N
         JavaSource javaSource = JavaSource.forFileObject(filterClass);
+        if (javaSource != null) {
+            String fqn = generateFilter(javaSource);
+
+            handle.progress(NbBundle.getMessage(OriginResourceIterator.class,
+                    "MSG_UpdateDescriptor")); // NOI18N
+            if (addResponseFilter) {
+                support.addInitParam(WebRestSupport.CONTAINER_RESPONSE_FILTER,
+                        fqn);
+            }
+        }
+        
+        return Collections.singleton(filterClass);
+    }
+
+    static boolean isJee7Profile( Project project ) {
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if ( webModule == null ){
+            return false;
+        }
+        Profile profile = webModule.getJ2eeProfile();
+        return  Profile.JAVA_EE_7_WEB.equals(profile) ||
+                        Profile.JAVA_EE_7_FULL.equals(profile);
+    }
+    
+    private String generateFilter( JavaSource javaSource ) throws IOException
+    {
+        Project project = Templates.getProject(myWizard);
+        if (isJee7Profile(project)){
+            generateJaxRs20Filter(javaSource);
+            return null;
+        }
+        return generateJerseyFilter(javaSource);
+    }
+
+    private void generateJaxRs20Filter( JavaSource javaSource ) throws IOException {
+        javaSource.runModificationTask( new Task<WorkingCopy>() {
+            
+            @Override
+            public void run( WorkingCopy  copy ) throws Exception {
+                copy.toPhase(Phase.ELEMENTS_RESOLVED);
+                ClassTree classTree = JavaSourceHelper.getTopLevelClassTree(copy);
+                
+                ClassTree newTree = classTree;
+                TreeMaker treeMaker = copy.getTreeMaker();
+                
+                GenerationUtils genUtils = GenerationUtils.newInstance(copy);
+                
+                AnnotationTree provider = genUtils.
+                        createAnnotation("javax.ws.rs.ext.Provider");
+                newTree = genUtils.addAnnotation(newTree, provider);
+                
+                LinkedHashMap<String,String> params = new LinkedHashMap<String, String>();
+                params.put("requestContext", 
+                        "javax.ws.rs.container.ContainerRequestContext");// NOI18N
+                params.put("response",
+                        "javax.ws.rs.container.ContainerResponseContext");// NOI18N
+                newTree = genUtils.addImplementsClause(newTree, 
+                        "javax.ws.rs.container.ContainerResponseFilter");// NOI18N
+                MethodTree method = AbstractJaxRsFeatureIterator.createMethod(
+                        genUtils, treeMaker, "filter",params, 
+                        getFilterBody(false));
+                newTree = treeMaker.addClassMember( newTree, method);
+                
+                copy.rewrite( classTree, newTree);
+            }
+        }).commit();        
+    }
+
+    private String generateJerseyFilter( JavaSource javaSource )
+            throws IOException
+    {
         final String fqn[] = new String[1];
         javaSource.runModificationTask( new Task<WorkingCopy>() {
             
@@ -280,44 +341,78 @@ public class OriginResourceIterator implements
                         "filter", 
                         maker.QualIdent(CONTAINER_CONTAINER_RESPONSE),
                         Collections.<TypeParameterTree>emptyList(), params, 
-                        Collections.<ExpressionTree>emptyList(), getFilterBody(), null);
+                        Collections.<ExpressionTree>emptyList(), 
+                        getFilterBody(true), null);
                 newTree = maker.addClassMember( newTree, method);
                 copy.rewrite( classTree, newTree);
             }
         }).commit();
-        
-        handle.progress(NbBundle.getMessage(OriginResourceIterator.class, 
-                "MSG_UpdateDescriptor"));               // NOI18N
-        if ( support != null ){
-            support.addInitParam(WebRestSupport.CONTAINER_RESPONSE_FILTER, fqn[0]);
-        }
-        
-        return Collections.singleton(filterClass);
+        return fqn[0];
     }
-    
-    private String getFilterBody(){
+
+    private boolean extendClasspath( ProgressHandle handle,WebRestSupport support )
+            throws IOException
+    {
+        Project project = Templates.getProject(myWizard);
+        if (isJee7Profile(project)){
+            return false;
+        }
+        if ( support!= null ){
+            boolean hasRequest = RestUtils.hasClass(project, 
+                    CONTAINER_CONTAINER_REQUEST.replace('.', '/')+CLASS);
+            boolean hasFilter = RestUtils.hasClass(project, 
+                    CONTAINER_RESPONSE_FILTER.replace('.', '/')+CLASS);
+            boolean hasResponse = RestUtils.hasClass(project, 
+                    CONTAINER_CONTAINER_RESPONSE.replace('.', '/')+CLASS);
+            if ( !hasRequest || !hasFilter || !hasResponse ){
+                handle.progress(NbBundle.getMessage(OriginResourceIterator.class, 
+                        "MSG_ExtendsClasspath"));                                // NOI18N 
+                JaxRsStackSupport jaxRsSupport = support.getJaxRsStackSupport();
+                if ( jaxRsSupport == null ) {
+                    jaxRsSupport = JaxRsStackSupport.getDefault();
+                }
+                jaxRsSupport.extendsJerseyProjectClasspath(project);
+            }
+        }
+        return support!=null;
+    }
+
+    private String getFilterBody(boolean isJersey){
+        String headers;
+        if ( isJersey ){
+            headers = "response.getHttpHeaders()";
+        }
+        else {
+            headers = "response.getHeaders()";
+        }
         StringBuilder builder = new StringBuilder();
         builder.append('{');
-        builder.append("response.getHttpHeaders().putSingle(\"Access-Control-Allow-Origin\",\"");//NOI18N
+        builder.append(headers);
+        builder.append(".putSingle(\"Access-Control-Allow-Origin\",\"");//NOI18N
         builder.append(myWizard.getProperty(RestFilterPanel.ORIGIN));
-        builder.append("\");");                                                                                                                      //NOI18N
+        builder.append("\");");                                          //NOI18N
         
-        builder.append("response.getHttpHeaders().putSingle(\"Access-Control-Allow-Methods\",\"");//NOI18N
+        builder.append(headers);
+        builder.append(".putSingle(\"Access-Control-Allow-Methods\",\"");//NOI18N
         List<HttpMethods> methods = (List<HttpMethods>)myWizard.getProperty(
                 RestFilterPanel.HTTP_METHODS);
         for (HttpMethods httpMethod : methods) {
             builder.append(httpMethod.toString().toUpperCase(Locale.ENGLISH));
-            builder.append(", ");                                                                                                                   //NOI18N
+            builder.append(", ");                                       //NOI18N
         }
         if ( !methods.isEmpty()){
             builder.delete(builder.length()-2, builder.length());
         }
-        builder.append("\");");                                                                                                                     //NOI18N
+        builder.append("\");");//NOI18N
         
-        builder.append("response.getHttpHeaders().putSingle(\"Access-Control-Allow-Headers\",\"");//NOI18N
+        builder.append(headers);
+        builder.append(".putSingle(\"Access-Control-Allow-Headers\",\"");//NOI18N
         builder.append(myWizard.getProperty(RestFilterPanel.HEADERS));
-        builder.append("\");");                                                     //NOI18N                                                              //NOI18N
-        builder.append("return response;}");                                        //NOI18N
+        builder.append("\");");                                         //NOI18N
+        if ( isJersey ){
+            builder.append("return response;");                        //NOI18N
+        }
+        builder.append('}');
         return builder.toString();
     }
     
