@@ -44,8 +44,7 @@ package org.netbeans.modules.websvc.rest.wizard;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.Set;
 
 import org.netbeans.api.java.source.JavaSource;
@@ -135,7 +134,7 @@ public class InterceptorIterator extends AbstractJaxRsFeatureIterator
                         .createAnnotation("javax.ws.rs.ext.Provider"); // NOI18N
                 newTree = genUtils.addAnnotation(newTree, provider);
                 
-                Map<String, String> params = new HashMap<String, String>();
+                LinkedHashMap<String, String> params = new LinkedHashMap<String, String>();
                 if (reader) {
                     params.put("context",
                             "javax.ws.rs.ext.ReaderInterceptorContext");    // NOI18N

@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -203,14 +204,27 @@ abstract class AbstractJaxRsFeatureIterator implements
     
     protected abstract String getTitleKey();
     
-    protected MethodTree createMethod(GenerationUtils genUtils,TreeMaker maker, 
-            String name ,Map<String,String> methodParams)
+    static MethodTree createMethod(GenerationUtils genUtils,TreeMaker maker, 
+            String name ,LinkedHashMap<String,String> methodParams)
     {
-        return createMethod(genUtils, maker, name, null, methodParams);
+        return createMethod(genUtils, maker, name, null, methodParams , null);
     }
     
-    protected MethodTree createMethod(GenerationUtils genUtils,TreeMaker maker, 
-            String name , String returnType, Map<String,  String> methodParams)
+    static MethodTree createMethod(GenerationUtils genUtils,TreeMaker maker, 
+            String name ,String returnType,LinkedHashMap<String,String> methodParams)
+    {
+        return createMethod(genUtils, maker, name, returnType, methodParams, null );
+    }
+    
+    static MethodTree createMethod(GenerationUtils genUtils,TreeMaker maker, 
+            String name ,LinkedHashMap<String,String> methodParams, String body)
+    {
+        return createMethod(genUtils, maker, name, null, methodParams, body );
+    }
+    
+    static MethodTree createMethod(GenerationUtils genUtils,TreeMaker maker, 
+            String name , String returnType, LinkedHashMap<String,String> methodParams,
+            String body)
     {
         ModifiersTree modifiers = maker.Modifiers(EnumSet.of(Modifier.PUBLIC));
         List<VariableTree> params=new ArrayList<VariableTree>();
@@ -222,14 +236,17 @@ abstract class AbstractJaxRsFeatureIterator implements
                     maker.Type(paramType), null));
         }
         Tree returnTree ;
-        String body ;
-        if ( returnType== null ){
+        String resultBody ;
+        if (returnType == null) {
             returnTree = maker.PrimitiveType(TypeKind.VOID);
-            body = "{}";                            // NOI18N
+            resultBody = "{}"; // NOI18N
         }
         else {
             returnTree = maker.Type(returnType);
-            body = "{ return null; }";              // NOI18N
+            resultBody = "{ return null; }"; // NOI18N
+        }
+        if ( body!= null ){
+            resultBody = body;
         }
         return maker.Method(
                 maker.addModifiersAnnotation(modifiers, genUtils.createAnnotation(
@@ -239,7 +256,7 @@ abstract class AbstractJaxRsFeatureIterator implements
                 Collections.<TypeParameterTree>emptyList(),
                 params,
                 Collections.<ExpressionTree>emptyList(),
-                body,                               
+                resultBody,                               
                 null);
     }
 

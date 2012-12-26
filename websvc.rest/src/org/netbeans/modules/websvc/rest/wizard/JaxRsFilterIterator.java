@@ -44,8 +44,7 @@ package org.netbeans.modules.websvc.rest.wizard;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.Set;
 
 import org.netbeans.api.java.source.JavaSource;
@@ -148,7 +147,7 @@ public class JaxRsFilterIterator extends AbstractJaxRsFeatureIterator
                     newTree = genUtils.addAnnotation(newTree, provider);
                 }
                 
-                Map<String,String> params = new HashMap<String, String>();
+                LinkedHashMap<String,String> params = new LinkedHashMap<String, String>();
                 if ( client ){
                     if ( request ){
                         params.put("requestContext", 
@@ -170,8 +169,8 @@ public class JaxRsFilterIterator extends AbstractJaxRsFeatureIterator
                     }
                 }
                 if ( server ){
+                    params.clear();
                     if ( request ){
-                        params.clear();
                         params.put("requestContext", 
                                 "javax.ws.rs.container.ContainerRequestContext");// NOI18N
                         newTree = genUtils.addImplementsClause(newTree, 
@@ -196,7 +195,7 @@ public class JaxRsFilterIterator extends AbstractJaxRsFeatureIterator
     }
     
     private MethodTree createMethod(GenerationUtils genUtils,TreeMaker maker, 
-            Map<String,String> methodParams)
+            LinkedHashMap<String,String> methodParams)
     {
         return createMethod(genUtils, maker, "filter", methodParams);       // NOI18N
     }
