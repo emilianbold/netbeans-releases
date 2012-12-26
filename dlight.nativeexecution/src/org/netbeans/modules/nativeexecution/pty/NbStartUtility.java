@@ -110,7 +110,11 @@ public class NbStartUtility extends HelperUtility {
                 case MACOSX:
                 case SUNOS:
                 case LINUX:
-                    return true;
+                    try {
+                        return getLocalFile(hostInfo) != null;
+                    } catch (MissingResourceException ex) {
+                    }
+                    return false;
                 case WINDOWS:
                     // For now will disable it on Windows, as there are some
                     // side-effects with paths (need deeper studying)
