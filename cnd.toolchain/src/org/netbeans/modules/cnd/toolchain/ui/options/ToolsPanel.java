@@ -114,10 +114,10 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     private ValidState valid = ValidState.UNKNOWN;
     private ToolsPanelModel model = null;
     private boolean customizeDebugger;
-    private ExecutionEnvironment execEnv;
-    private CompilerSetManagerImpl csm;
+    private volatile ExecutionEnvironment execEnv;
+    private volatile CompilerSetManagerImpl csm;
     private CompilerSet currentCompilerSet;
-    private ToolsCacheManagerImpl tcm = (ToolsCacheManagerImpl) ToolsPanelSupport.getToolsCacheManager();
+    private final ToolsCacheManagerImpl tcm = (ToolsCacheManagerImpl) ToolsPanelSupport.getToolsCacheManager();
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     private static final RequestProcessor RP = new RequestProcessor(ToolsPanel.class.getName(), 1);
     //See Bug #215447
@@ -211,7 +211,13 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         cbDevHost.setEnabled(model.getEnableDevelopmentHostChange());
         btEditDevHost.setEnabled(ENABLED_EDIT_HOST && model.getEnableDevelopmentHostChange());
         btEditDevHost.setVisible(ENABLED_EDIT_HOST);
-        execEnv = getSelectedRecord().getExecutionEnvironment();
+        final ExecutionEnvironment anExecEnv = getSelectedRecord().getExecutionEnvironment();
+        if (!anExecEnv.equals(execEnv)) {
+            execEnv = anExecEnv;
+            model.setSelectedDevelopmentHost(execEnv);
+            update(true, null, null);
+            return;
+        }
         btVersions.setEnabled(false);
         initCustomizableDebugger();
 
