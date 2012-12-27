@@ -109,6 +109,7 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.cnd.qnavigator</friend>
                 <friend>org.netbeans.modules.csl.api</friend>
                 <friend>org.netbeans.modules.java.navigation</friend>
                 <friend>org.netbeans.modules.latex.ui</friend>
