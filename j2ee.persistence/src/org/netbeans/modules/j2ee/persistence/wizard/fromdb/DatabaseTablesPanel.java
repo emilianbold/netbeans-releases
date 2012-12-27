@@ -328,6 +328,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel implements AncestorL
         try {
             puExists = ProviderUtil.persistenceExists(project);
         } catch (InvalidPersistenceXmlException ex) {
+        } catch (RuntimeException ex) {
         }
 
         if(puExists){
