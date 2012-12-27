@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.repository.api.*;
 import org.netbeans.modules.cnd.repository.spi.*;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * RepositoryListener implementation.
@@ -78,7 +79,9 @@ public class RepositoryListenerImpl implements RepositoryListener {
 
         @Override
         public void run() {
-            RepositoryUtils.shutdown();
+            if (!CndUtils.isUnitTestMode()) {
+                RepositoryUtils.shutdown();
+            }
         }
     }
 
