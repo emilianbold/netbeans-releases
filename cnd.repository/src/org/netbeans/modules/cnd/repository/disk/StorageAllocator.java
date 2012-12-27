@@ -51,6 +51,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
@@ -128,6 +129,7 @@ public class StorageAllocator {
                     } else {
                         if (!files[i].delete()) {
                             System.err.println("Cannot delete repository file "+files[i].getAbsolutePath());
+                            CndUtils.threadsDump();
                         }
                     }
                 }
