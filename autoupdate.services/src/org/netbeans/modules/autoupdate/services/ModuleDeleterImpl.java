@@ -461,8 +461,11 @@ public final class ModuleDeleterImpl  {
         if (version == null) {
             return Collections.emptySet();
         }
-        Set<String> files = new HashSet<String> ();
         NodeList fileNodes = version.getChildNodes ();
+        if (fileNodes == null) {
+            return Collections.emptySet();
+        }
+        Set<String> files = new HashSet<String> ();
         for (int i = 0; i < fileNodes.getLength (); i++) {
             if (fileNodes.item (i).hasAttributes ()) {
                 NamedNodeMap map = fileNodes.item (i).getAttributes ();
