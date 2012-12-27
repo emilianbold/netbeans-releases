@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
  * @author Vladimir Voskresensky
  */
 public final class TestModelHelper {
+    private static final Object LOCK = new Object();
     private final TraceModel traceModel;
     private CharSequence projectName;
     private NativeProject platformProject;
@@ -61,7 +62,9 @@ public final class TestModelHelper {
      * Creates a new instance of TestModelHelper
      */
     public TestModelHelper(boolean clearCache) {
-        traceModel = new TraceModel(clearCache);
+        synchronized (LOCK) {
+            traceModel = new TraceModel(clearCache);
+        }
     }
     
     /*package-local*/ TraceModel getTraceModel() {
@@ -70,30 +73,37 @@ public final class TestModelHelper {
     
     public void initParsedProject(String projectRoot, 
             List<String> sysIncludes, List<String> usrIncludes, List<String> libProjectsPaths) throws Exception {
-        traceModel.setIncludePaths(sysIncludes, usrIncludes, libProjectsPaths);
-        traceModel.test(new String[]{projectRoot}, System.out, System.err);
-        getProject();
+        synchronized (LOCK) {
+            traceModel.setIncludePaths(sysIncludes, usrIncludes, libProjectsPaths);
+            traceModel.test(new String[]{projectRoot}, System.out, System.err);
+            getProject();
+        }
     } 
     
     public void initParsedProject(String projectRoot) throws Exception {
-        traceModel.test(new String[]{projectRoot}, System.out, System.err);
-        getProject();
-        //traceModel.test(new File(projectRoot), System.out, System.err);
+        synchronized (LOCK) {
+            traceModel.test(new String[]{projectRoot}, System.out, System.err);
+            getProject();
+        }
     }     
     
     public ProjectBase getProject(){
-        ProjectBase project = traceModel.getProject();
-        if (projectName == null) {
-            projectName = project.getName();
-            platformProject = (NativeProject) project.getPlatformProject();
+        synchronized (LOCK) {
+            ProjectBase project = traceModel.getProject();
+            if (projectName == null) {
+                projectName = project.getName();
+                platformProject = (NativeProject) project.getPlatformProject();
+            }
+            return project;
         }
-        return project;
     }
 
     public ProjectBase reopenProject() {
-        assert platformProject != null;
-        ProjectBase project = traceModel.reopenProject(platformProject);
-        return project;
+        synchronized (LOCK) {
+            assert platformProject != null;
+            ProjectBase project = traceModel.reopenProject(platformProject);
+            return project;
+        }
     }
 
     public CharSequence getProjectName() {
@@ -102,15 +112,21 @@ public final class TestModelHelper {
     }
 
     public void resetProject() {
-	traceModel.resetProject();
+        synchronized (LOCK) {
+            traceModel.resetProject();
+        }
     }
 
     public CsmModel getModel(){
-        return traceModel.getModel();
+        synchronized (LOCK) {
+            return traceModel.getModel();
+        }
     }
     
     public void shutdown(boolean clearCache) {
-        traceModel.shutdown(clearCache);
+        synchronized (LOCK) {
+            traceModel.shutdown(clearCache);
+        }
     }
 
     @Override
