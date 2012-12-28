@@ -179,8 +179,7 @@ public final class MavenEmbedder {
      * @since 2.26
      */
     public File getLocalRepositoryFile() {
-        String s = getLocalRepository().getBasedir();
-        return FileUtil.normalizeFile(new File(s));
+        return FileUtil.normalizeFile(new File(getLocalRepository().getBasedir()));
     }
     
     //only for unit tests..
