@@ -57,6 +57,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import javax.swing.JButton;
 import org.netbeans.modules.cnd.repository.disk.StorageAllocator;
@@ -81,8 +82,11 @@ import org.openide.util.NbBundle;
     private final static String PROJECT_INDEX_FILE_NAME = "project-index"; //NOI18N
 
     private final File masterIndexFile;
-    private final List<CharSequence> cache = new ArrayList<CharSequence>();
+    private final List<CharSequence> cache = new CopyOnWriteArrayList<CharSequence>();
     private final long timestamp;
+    private static final Lock loadStoreMasterIndexLock = new Lock();
+    private volatile int modCount = 0;
+    private int lastStoredModCount = 0;
 
     /**
      * A list of int/string tables for units a table per unit.
@@ -168,6 +172,7 @@ import org.openide.util.NbBundle;
             IndexConverter converter = loadMasterIndex(randomAccessFile);
             if (converter != null) {
                 convertIfNeed(converter);
+                storeMasterIndex();
             }
             inited = true;
         } catch (FileNotFoundException e) {
@@ -198,36 +203,43 @@ import org.openide.util.NbBundle;
      * Fills fileNamesCaches with an empty int/string tables.
      */
     private IndexConverter loadMasterIndex(DataInput stream) throws IOException {
-        IndexConverter converter = null;
-        cache.clear();
-        fileNamesCaches.clear();
-        stream.readInt();
-        stream.readLong();
-        String oldIndexPath = stream.readUTF();
-        if( ! oldIndexPath.equals(masterIndexFile.getAbsolutePath())) {
-            converter = new IndexConverter(oldIndexPath, masterIndexFile.getAbsolutePath());
-        }
-        int size = stream.readInt();
-        if (Stats.TRACE_REPOSITORY_TRANSLATOR) {
-            trace("Reading master index (%d) elements\n", size); // NOI18N
-        }
-        for (int i = 0; i < size; i++) {
-            String v = stream.readUTF();
-            CharSequence value = getFileKey(CharSequences.create(v));
-            cache.add(value);
-            // timestamp from master index -> unit2timestamp
-            long ts = stream.readLong();
-            unit2timestamp.put(value, Long.valueOf(ts));
-            if (Stats.TRACE_REPOSITORY_TRANSLATOR) {
-                trace("\tRead %s ts=%d\n", value, ts); // NOI18N
+        synchronized (loadStoreMasterIndexLock) { // called only from ctor, so sync is just in case
+            IndexConverter converter = null;
+            try {
+                cache.clear();
+                fileNamesCaches.clear();
+                stream.readInt();
+                stream.readLong();
+                String oldIndexPath = stream.readUTF();
+                if( ! oldIndexPath.equals(masterIndexFile.getAbsolutePath())) {
+                    converter = new IndexConverter(oldIndexPath, masterIndexFile.getAbsolutePath());
+                }
+                int size = stream.readInt();
+                if (Stats.TRACE_REPOSITORY_TRANSLATOR) {
+                    trace("Reading master index (%d) elements\n", size); // NOI18N
+                }
+                for (int i = 0; i < size; i++) {
+                    String v = stream.readUTF();
+                    CharSequence value = getFileKey(CharSequences.create(v));
+                    cache.add(value);
+                    // timestamp from master index -> unit2timestamp
+                    long ts = stream.readLong();
+                    unit2timestamp.put(value, Long.valueOf(ts));
+                    if (Stats.TRACE_REPOSITORY_TRANSLATOR) {
+                        trace("\tRead %s ts=%d\n", value, ts); // NOI18N
+                    }
+                    // req. units list from master index -> unit2requnint
+                    // (with timestamps from master index)
+                    unit2requnint.put(value, readRequiredUnits(stream));
+                    // new dummy int/string cache (with the current (???!) timestamp
+                    fileNamesCaches.add(IntToStringCache.createDummy(ts, v));            
+                }
+            } finally {
+                modCount++;
+                lastStoredModCount = modCount;
             }
-            // req. units list from master index -> unit2requnint
-            // (with timestamps from master index)
-            unit2requnint.put(value, readRequiredUnits(stream));
-            // new dummy int/string cache (with the current (???!) timestamp
-            fileNamesCaches.add(IntToStringCache.createDummy(ts, v));            
+            return converter;
         }
-        return converter;
     }
 
     private void convertIfNeed(IndexConverter converter) {
@@ -240,7 +252,7 @@ import org.openide.util.NbBundle;
             CharSequence value = cache.get(i);
             CharSequence newValue = converter.convert(value);
             if (newValue != value) {
-                changed = true;
+                changed = true;                
                 cache.set(i, newValue);
                 Collection<RequiredUnit> reqUnits = unit2requnint.remove(value);
                 unit2requnint.put(newValue, reqUnits);
@@ -251,6 +263,7 @@ import org.openide.util.NbBundle;
             }
         }
         if (changed) {
+            modCount++;
             for (CharSequence unitName : cache) {
                 String unitIndexFileName = getUnitIndexName(unitName);
                 if (new File(unitIndexFileName).exists()) {
@@ -294,26 +307,36 @@ import org.openide.util.NbBundle;
     }
 
     void storeMasterIndex() {
-        try {
-            if (randomAccessFile == null) {
-                randomAccessFile = new RandomAccessFile(masterIndexFile, "rw"); // NOI18N
+        synchronized (loadStoreMasterIndexLock) {
+            if (lastStoredModCount == modCount) {
+                return;
             }
-            randomAccessFile.seek(0);
-            randomAccessFile.setLength(0);
-            write(randomAccessFile);
-        } catch (FileNotFoundException e) {
-            if (Stats.TRACE_REPOSITORY_TRANSLATOR) {
-                e.printStackTrace(System.err);
+            lastStoredModCount = modCount;
+            try {
+                if (randomAccessFile == null) {
+                    randomAccessFile = new RandomAccessFile(masterIndexFile, "rw"); // NOI18N
+                }
+                randomAccessFile.seek(0);
+                randomAccessFile.setLength(0);
+                write(randomAccessFile);
+            } catch (FileNotFoundException e) {
+                if (Stats.TRACE_REPOSITORY_TRANSLATOR) {
+                    e.printStackTrace(System.err);
+                }
+            } catch (IOException e) {
+                if (Stats.TRACE_REPOSITORY_TRANSLATOR) {
+                    e.printStackTrace(System.err);
+                }
+            } catch (Throwable tr) {
+                if (Stats.TRACE_REPOSITORY_TRANSLATOR) {
+                    tr.printStackTrace(System.err);
+                }
             }
-        } catch (IOException e) {
-            if (Stats.TRACE_REPOSITORY_TRANSLATOR) {
-                e.printStackTrace(System.err);
-            }
-        } catch (Throwable tr) {
-            if (Stats.TRACE_REPOSITORY_TRANSLATOR) {
-                tr.printStackTrace(System.err);
-            }
-        } finally {
+        }
+    }
+
+    void shutdown() {
+        synchronized (loadStoreMasterIndexLock) {
             try {
                 if (masterIndexLock != null) {
                     masterIndexLock.release();
@@ -324,12 +347,12 @@ import org.openide.util.NbBundle;
                 if (randomAccessFile != null) {
                     randomAccessFile.close();
                 }
-                
+
             } catch (IOException e) {
+                e.printStackTrace(System.err);
             }
         }
-    }
-    
+    }    
 
     private boolean loadUnitIndex(final CharSequence unitName, String unitIndexFileName, Set<CharSequence> antiLoop) {
         DataInputStream dis = null;
@@ -459,6 +482,7 @@ import org.openide.util.NbBundle;
             }
         }
         unit2requnint.put(unitName, unitReqUnits);
+        modCount++;
     }
 
     /**
@@ -625,6 +649,7 @@ import org.openide.util.NbBundle;
         fileNamesCaches.set(index, filesCache);
         unit2timestamp.put(name, Long.valueOf(filesCache.getTimestamp()));
         unit2requnint.put(name, new CopyOnWriteArraySet<RequiredUnit>());
+        modCount++;
     }
 
     IntToStringCache removeFileNames(CharSequence unitName) {
@@ -635,6 +660,7 @@ import org.openide.util.NbBundle;
             long ts = fileNames.getTimestamp();
             unit2timestamp.put(unitName, ts);
             fileNamesCaches.set(index, IntToStringCache.createDummy(ts, unitName));
+            modCount++;
         }
         return fileNames;
     }
@@ -657,6 +683,7 @@ import org.openide.util.NbBundle;
         assert fileNamesCaches.size() == cache.size();
         unit2requnint.put(unitName, new CopyOnWriteArraySet<RequiredUnit>());
         unit2timestamp.put(unitName, fileCache.getTimestamp());
+        modCount++;
         return id;
     }
 
@@ -692,6 +719,7 @@ import org.openide.util.NbBundle;
                 unitId = getId(unitName);
             }
             fileNamesCaches.set(unitId, IntToStringCache.createEmpty(unitName));
+            modCount++;
         }
     }
 

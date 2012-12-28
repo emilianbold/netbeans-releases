@@ -172,10 +172,12 @@ public class RepositoryTranslatorImpl {
         }
         unitNamesCache.storeUnitIndex(unitName);
         unitNamesCache.removeFileNames(unitName);
+        unitNamesCache.storeMasterIndex();
     }
 
     public void shutdown() {
         unitNamesCache.storeMasterIndex();
+        unitNamesCache.shutdown();
         storageAllocator.purgeCaches();
     }
 
