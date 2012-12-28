@@ -682,8 +682,17 @@ import org.openide.util.NbBundle;
     }
 
     private void cleanUnitData(CharSequence unitName) {
-        unit2requnint.put(unitName, new CopyOnWriteArraySet<RequiredUnit>());
-        unit2timestamp.put(unitName, System.currentTimeMillis());
+        synchronized (cache) {
+            unit2requnint.put(unitName, new CopyOnWriteArraySet<RequiredUnit>());
+            unit2timestamp.put(unitName, System.currentTimeMillis());
+            int unitId = cache.indexOf(unitName);
+            if (unitId < 0) {
+                // fix if something is really broken
+                CndUtils.assertTrueInConsole(false, "something is broken for unit " + unitName);
+                unitId = getId(unitName);
+            }
+            fileNamesCaches.set(unitId, IntToStringCache.createEmpty(unitName));
+        }
     }
 
     private CharSequence getFileKey(CharSequence str) {
