@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,16 +34,15 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
+ * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.cnd.highlight.semantic;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -107,7 +106,7 @@ public final class SemanticEntitiesProvider {
             return NbBundle.getMessage(SemanticEntitiesProvider.class, "Show-inactive-AD"); //NOI18N
         }
     }
-
+    
     @ServiceProviders({
         @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=300),
         @ServiceProvider(service = SemanticEntity.class, position=300)
@@ -184,7 +183,7 @@ public final class SemanticEntitiesProvider {
     })
     public static final class FastFunctionsCodeProvider extends AbstractSemanticEntity {
         private Map<String, AttributeSet> funUsageColors = new HashMap<String, AttributeSet>();
-
+        
         public FastFunctionsCodeProvider(){
             super(FontColorProvider.Entity.FUNCTION);
         }
@@ -239,14 +238,14 @@ public final class SemanticEntitiesProvider {
             funUsageColors.put(provider.getMimeType(), getFontColor(provider, FontColorProvider.Entity.FUNCTION_USAGE));
         }
     }
-
+    
     @ServiceProviders({
         @ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=600),
         @ServiceProvider(service = SemanticEntity.class, position=600)
     })
     public static final class FunctionsCodeProvider extends AbstractSemanticEntity {
         private Map<String, AttributeSet> funUsageColors = new HashMap<String, AttributeSet>();
-
+        
         public FunctionsCodeProvider() {
             super(FontColorProvider.Entity.FUNCTION);
         }
@@ -301,7 +300,7 @@ public final class SemanticEntitiesProvider {
     public static final class MacrosCodeProvider extends AbstractSemanticEntity {
         private Map<String, AttributeSet> sysMacroColors= new HashMap<String, AttributeSet>();
         private Map<String, AttributeSet> userMacroColors= new HashMap<String, AttributeSet>();
-
+        
         public MacrosCodeProvider() {
             super(FontColorProvider.Entity.DEFINED_MACRO);
         }
@@ -425,7 +424,7 @@ public final class SemanticEntitiesProvider {
             unusedToolTipColors.put(provider.getMimeType(), AttributesUtilities.createComposite(UNUSED_TOOLTIP, super.getColor(provider.getMimeType())));
         }
     }
-
+    
     private SemanticEntitiesProvider() {
         Collection<? extends SemanticEntity> lookupAll = Lookup.getDefault().lookupAll(SemanticEntity.class);
         if (HighlighterBase.MINIMAL) { // for QEs who want to save performance on UI tests
@@ -433,9 +432,9 @@ public final class SemanticEntitiesProvider {
             list.add(lookupAll.iterator().next());
         } else {
             list = new ArrayList<SemanticEntity>(Lookup.getDefault().lookupAll(SemanticEntity.class));
-        }
+        } 
     }
-
+    
     private static abstract class AbstractSemanticEntity extends SemanticEntity {
 
         private final ConcurrentHashMap<String, AttributeSet> color = new ConcurrentHashMap<String, AttributeSet>();
@@ -458,7 +457,7 @@ public final class SemanticEntitiesProvider {
         protected AttributeSet getColor(String mimeType) {
             return color.get(mimeType);
         }
-
+        
         @Override
         public void updateFontColors(FontColorProvider provider) {
             assert entity != null;
@@ -489,7 +488,7 @@ public final class SemanticEntitiesProvider {
         public Object getDefaultValue() {
             return true;
         }
-
+        
     }
 
     // Singleton

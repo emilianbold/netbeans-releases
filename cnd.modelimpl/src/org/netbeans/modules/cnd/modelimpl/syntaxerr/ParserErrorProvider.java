@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
+ * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.cnd.modelimpl.syntaxerr;
@@ -75,18 +75,18 @@ public class ParserErrorProvider extends CsmErrorProvider {
 
     @Override
     protected  void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
-//        Collection<CsmErrorInfo> errorInfos = new ArrayList<CsmErrorInfo>();
-//        Collection<CsmParserProvider.ParserError> errors = new ArrayList<CsmParserProvider.ParserError>();
-//        Thread currentThread = Thread.currentThread();
-//        FileImpl file = (FileImpl) request.getFile();
-//        currentThread.setName("Provider "+getName()+" prosess "+file.getAbsolutePath()); // NOI18N
-//        ReadOnlyTokenBuffer buffer = file.getErrors(errors);
-//        if (buffer != null) {
-//            ParserErrorFilter.getDefault().filter(errors, errorInfos, buffer, request.getFile());
-//            for (Iterator<CsmErrorInfo> iter = errorInfos.iterator(); iter.hasNext() && ! request.isCancelled(); ) {
-//                response.addError(iter.next());
-//            }
-//        }
+        Collection<CsmErrorInfo> errorInfos = new ArrayList<CsmErrorInfo>();
+        Collection<CsmParserProvider.ParserError> errors = new ArrayList<CsmParserProvider.ParserError>();
+        Thread currentThread = Thread.currentThread();
+        FileImpl file = (FileImpl) request.getFile();
+        currentThread.setName("Provider "+getName()+" prosess "+file.getAbsolutePath()); // NOI18N
+        ReadOnlyTokenBuffer buffer = file.getErrors(errors);
+        if (buffer != null) {
+            ParserErrorFilter.getDefault().filter(errors, errorInfos, buffer, request.getFile());
+            for (Iterator<CsmErrorInfo> iter = errorInfos.iterator(); iter.hasNext() && ! request.isCancelled(); ) {
+                response.addError(iter.next());
+            }
+        }
     }
 
     @Override

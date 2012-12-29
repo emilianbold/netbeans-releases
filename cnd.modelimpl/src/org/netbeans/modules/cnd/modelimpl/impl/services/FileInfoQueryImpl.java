@@ -274,9 +274,6 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     
     @Override
     public List<CsmReference> getMacroUsages(CsmFile file) {
-        if (true) {
-            return Collections.emptyList();
-        }
         List<CsmReference> out = Collections.<CsmReference>emptyList();
         if (file instanceof FileImpl) {
             FileImpl fileImpl = (FileImpl) file;

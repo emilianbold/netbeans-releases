@@ -101,8 +101,8 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
                 //        }
                 //    }
                 //}
-                target = null; //ReferencesSupport.instance().findReferencedObject(getContainingFile(), super.getDocument(),
-                        //this.offset, token, fileReferencesContext);
+                target = ReferencesSupport.instance().findReferencedObject(getContainingFile(), super.getDocument(),
+                        this.offset, token, fileReferencesContext);
                 if (target != null) {
                     initOwner();
                     initKind(target);
@@ -158,10 +158,10 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
 
     @Override
     public CsmObject getOwner() {
-//        if (owner == null && isValid()) {
-//            restoreIfPossible();
-//            initOwner();
-//        }
+        if (owner == null && isValid()) {
+            restoreIfPossible();
+            initOwner();
+        }
         return owner;
     }
 
@@ -266,7 +266,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
             CsmObject lastObject = context.getLastObject();
             if (CsmKindUtilities.isType(lastObject) || CsmKindUtilities.isTemplateParameter(lastObject)) {
                 lastObject = context.getLastScope();
-            }
+            }   
             closestTopLevelObject = CsmBaseUtilities.findClosestTopLevelObject(lastObject);
         }
     }
