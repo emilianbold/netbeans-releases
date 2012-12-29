@@ -1,3 +1,4 @@
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -294,7 +295,7 @@ abstract public class CsmCompletionQuery {
 
     public CsmCompletionResult query(JTextComponent component, final BaseDocument doc, final int offset,
             boolean openingSource, boolean sort, boolean instantiateTypes) {
-        return query(component, doc, offset, openingSource, sort, instantiateTypes, false);
+        return null;// query(component, doc, offset, openingSource, sort, instantiateTypes, false);
     }
     
     public CsmCompletionResult query(JTextComponent component, final BaseDocument doc, final int offset,
