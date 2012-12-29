@@ -134,7 +134,7 @@ public class ClientJavaSourceHelper {
             FileObject targetFo, String className, Security security) 
     {
         // TODO : choose strategy based on project 
-        ClientGenerationStrategy strategy = new JaxRsGenerationStrategy();//new JerseyGenerationStrategy();
+        ClientGenerationStrategy strategy = new JerseyGenerationStrategy();
         ProgressHandle handle = null;
         try {
             handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(ClientJavaSourceHelper.class, "MSG_creatingRESTClient"));
