@@ -622,11 +622,14 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
     
     public void rebuild(boolean doRelease) {
         Document doc = getComponent().getDocument();
+        /*
+         * Hotfix: Temporarily disabled because of issue #224192
         if (lastDocument != null && doc != lastDocument) {
             Throwable offending = (Throwable)doc.getProperty("Issue-222763-debug");
             LOG.log(Level.INFO, "Document changed, possible inconsistencies in root fold possible." +
                     " lastDocument = " + lastDocument + ", newDocument = " + doc, offending);
         }
+         */
 
         // Stop listening on the original document
         if (lastDocument != null) {
