@@ -96,6 +96,8 @@ import static org.netbeans.modules.java.hints.declarative.DeclarativeHintTokenId
  */
 public class DeclarativeHintsParser {
 
+    public static boolean disableCustomCode = false;
+    
     //used by tests:
     static Class<?>[] auxConditionClasses;
 
@@ -160,6 +162,11 @@ public class DeclarativeHintsParser {
         
         while (nextToken()) {
             if (id() == JAVA_BLOCK) {
+                if (disableCustomCode) {
+                    int pos = token().offset(null);
+                    errors.add(ErrorDescriptionFactory.createErrorDescription(Severity.ERROR, "Custom code not allowed", file, pos, pos + 2));
+                    break;
+                }
                 String text = token().text().toString();
                 text = text.substring(2, text.endsWith("?>") ? text.length() - 2 : text.length());
                 int[] span = new int[] {token().offset(null) + 2, token().offset(null) + token().length() - 2};
