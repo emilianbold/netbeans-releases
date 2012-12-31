@@ -69,8 +69,8 @@ interface Ops {
     public void op_soft_reset();
     public void op_full_reset();
 
-    public void op_as();            // map G1 into GL (~ switch to graphic font)
-    public void op_ae();            // map G0 into GL (~ switch to normal font)
+    public void op_as();            // LS1, SO, map G1 into GL (~ switch to graphic font)
+    public void op_ae();            // LS0, SI, map G0 into GL (~ switch to normal font)
     public void op_al(int count); // add new blank line
     public void op_bc(int count); // back cursor/column
     public void op_cm(int row, int col); // cursor motion
@@ -105,6 +105,10 @@ interface Ops {
     public void op_icon_name(String iconName);
     public void op_win_title(String winTitle);
     public void op_cwd(String currentWorkingDirectory);
+
+    // font mgmt
+    public void op_setG(int gx, int font);
+    public void op_selectGL(int gx);
 
 
     

@@ -93,11 +93,6 @@ class Attr {
     private final static int ACTIVEw = 1;
     public final static int ACTIVE = 0x1 << ACTIVEf;
 
-    private final static int FONTf = ACTIVEf + ACTIVEw;
-    private final static int FONTw = 4;
-    private final static int FONTm = 0xf;
-    public final static int FONT = FONTm << FONTf;
-
     // Since an attr value of 0 means render using default attributes
     // We need a value that signifies that no attribute has been set.
     // Can't use the highest (sign) bit since Java has no unsigned and
@@ -130,18 +125,6 @@ class Attr {
     }
 
     /**
-     * Set at the font value embedded in an attr.
-     * Value of 0 means default font.
-     * Values 1-9 means alternate fonts.
-     */
-    public static int setFont(int attr, int font) {
-	font &= FONTm;	// throw all but lowest relevant bits away
-	attr &= ~ FONT;	// 0 out existing bits
-	attr |= font << FONTf;
-	return attr;
-    }
-
-    /**
      * Use this to get at the FG color value embedded in an attr.
      */
     public static int foregroundColor(int attr) {
@@ -153,15 +136,6 @@ class Attr {
      */
     public static int backgroundColor(int attr) {
 	return (attr >> BGCOLORf) & BGCOLORm;
-    }
-
-    /**
-     * Get at the font value embedded in an attr.
-     * Value of 0 means default font.
-     * Values 1-9 means alternate fonts.
-     */
-    public static int font(int attr) {
-	return (attr >> FONTf) & FONTm;
     }
 
     /*
@@ -202,19 +176,6 @@ class Attr {
 		// Term specific
 		attr |= Attr.ACTIVE;
 		break;
-
-            case 10:
-            case 11:
-            case 12:
-            case 13:
-            case 14:
-            case 15:
-            case 16:
-            case 17:
-            case 18:
-            case 19:
-		attr = Attr.setFont(attr, value-10);
-                break;
 
 	    // turn individual attributes off (dtterm specific?)
 	    case 25:
@@ -329,20 +290,6 @@ class Attr {
 	    case 9:
 		attr &= ~ Attr.ACTIVE;
 		break;
-
-            case 10:
-            case 11:
-            case 12:
-            case 13:
-            case 14:
-            case 15:
-            case 16:
-            case 17:
-            case 18:
-            case 19:
-		attr = Attr.setFont(attr, 0);
-                break;
-
 
 	    case 30:
 	    case 31:

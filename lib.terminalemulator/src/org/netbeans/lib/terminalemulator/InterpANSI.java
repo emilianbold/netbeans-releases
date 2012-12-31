@@ -168,17 +168,6 @@ public class InterpANSI extends InterpProtoANSI {
     @Override
     protected boolean dispatchAttr(AbstractInterp ai, int n) {
         switch (n) {
-            case 0:
-            case 1:
-            case 2:
-            case 3:
-            case 4:
-            case 5:
-            case 6:
-            case 7:
-            case 8:
-            case 9:
-
             case 10:
             case 11:
             case 12:
@@ -189,6 +178,19 @@ public class InterpANSI extends InterpProtoANSI {
             case 17:
             case 18:
             case 19:
+                ai.ops.op_setG(0, n - 10);
+                return true;
+
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+            case 6:
+            case 7:
+            case 8:
+            case 9:
 
             case 20:
             case 21:
@@ -246,7 +248,7 @@ public class InterpANSI extends InterpProtoANSI {
             case 0031: return '.'; // (^Y) arrow pointing down        ACS_DARROW
             case 0333: return '0'; // solid square block              ACS_BLOCK
 
-            case 0004: return '\''; // diamond                        ACS_DIAMOND
+            case 0004: return '`'; // diamond                        ACS_DIAMOND
             case 0261: return 'a'; // checker board (stipple)         ACS_CKBOARD
             // no-char return 'b'; // HT
             // no-char return 'c'; // FF

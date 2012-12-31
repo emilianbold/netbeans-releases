@@ -3335,18 +3335,18 @@ public class Term extends JComponent implements Accessible {
 
         /**
          * map G1 into GL (~ switch to graphic font)
-         * No-op for now.
          */
 	@Override
         public void op_as() {
+            op_selectGL(1);
         }
 
         /**
          * map G0 into GL (~ switch to normal font)
-         * No-op for now.
          */
 	@Override
         public void op_ae() {
+            op_selectGL(0);
         }
 
 	@Override
@@ -3841,6 +3841,21 @@ public class Term extends JComponent implements Accessible {
             }
         }
 
+        public void op_setG(int gx, int fx) {
+            if (debugOps()) {
+                System.out.printf("op_setG(%d, %d)", gx, fx); // NOI18N
+            }
+            Term.this.st.setG(gx, fx);
+        }
+
+        public void op_selectGL(int gx) {
+            if (debugOps()) {
+                System.out.printf("op_selectGL(%d)", gx); // NOI18N
+            }
+            Term.this.st.selectGL(gx);
+        }
+
+
 	@Override
         public void op_margin(int from, int to) {
 
@@ -3932,6 +3947,14 @@ public class Term extends JComponent implements Accessible {
 	@Override
         public void op_soft_reset() {
             st.overstrike = true;
+
+            st.selectGL(0);
+
+            st.setG(0, 0);
+            st.setG(1, 0);
+            st.setG(2, 0);
+            st.setG(3, 0);
+
             top_margin = 0;		// 0 means default (see topMargin())
             bot_margin = 0;
             st.attr = 0;
@@ -4017,7 +4040,7 @@ public class Term extends JComponent implements Accessible {
      * @return the unicode character that renders the correct glyph.
      */
     private char mapChar(char inChar) {
-        switch (Attr.font(st.attr)) {
+        switch (st.font()) {
             case 0:
             default:
                 return inChar;

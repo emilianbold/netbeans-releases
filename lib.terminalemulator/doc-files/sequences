@@ -14,7 +14,7 @@ http://h30097.www3.hp.com/docs/base_doc/DOCUMENTATION/V51_HTML/MAN/MAN5/0200____
 http://www.s-gms.ms.edus.si/cgi-bin/man-cgi?dtterm+5
 
 S: appears in "standard"
-T: appears in termcap/infocmp -C
+T: appears in termcap/infocmp -C (on either solaris _or_ linux)
 N: Not supported
 -: Not supported
 ?: Unknown
@@ -27,11 +27,27 @@ sequence	mnemonic		termcap op	numbers	margin	ansi	dtterm	xterm	Term
 \BS		BS (Back Space) ^H	kb,le		-	?	S	ST	ST	dumb
 \HT		HT (tab) ^I		-		-	?	S	ST	ST	dumb
 \BEL		BEL (Bell)		-		-	-	S	ST	ST	dumb
-\SI		SI (Shift In) ^O	ae		-	-	S-	ST	S-	protoansi
-\SO		SO (Shift Out) ^N	as		-	-	S-	ST	S-	protoansi
 
-\ESC(B		SCS (ascii -> G0)	ae		-	-	--	S-	ST	N
-\ESC(0		SCS (line -> G0)	as		-	-	--	S-	ST	N
+
+# The following "code selection" sequences come from ECMA-35, not ECMA-48
+\SI ^O		SI/LS0 (Shift In/Map G0 into GL)
+					ae		-	-	S-	ST	S-	protoansi
+\SO ^N		SO/LS1 (Shift Out/Map G1 into GL)
+					as		-	-	S-	ST	S-	protoansi
+\ESCn		LS2 (Map G2 into GL)					S-	S-	S-	protoansi
+\ESCo		LS3 (Map G3 into GL)					S-	S-	S-	protoansi
+
+\ESC(%c		SCS (%c -> G0)											SCS is a dtterm std mnemonic, ECMA-35 use G*D*
+		ascii			ae,s0ds,sgr	B	-	ST	S-	ST	protoansi	\ESC( ) * + are part of ECMA-35, not ECMA-48
+		line			as,sgr		0	-	S-	S-	ST	protoansi
+
+\ESC)%c		SCS (%c -> G1)		s1ds (B-only)			ST	S-	S-	protoansi
+\ESC*%c		SCS (%c -> G2)		s2ds (B-only)			ST	S-	S-	protoansi
+\ESC+%c		SCS (%c -> G3)		s3ds (B-only)			ST	S-	S-	protoansi
+		ascii			-		B	-	ST	S-	S-	protoansi
+		line			-		0	-	S-	S-	S-	protoansi
+
+
 
 \ESC7		DECSC (Save Cursor)	sc		-		--	ST	ST	ansi
 \ESC8		DECRC (Restore Cursor)	rc		-		--	ST	ST	ansi
@@ -58,6 +74,10 @@ sequence	mnemonic		termcap op	numbers	margin	ansi	dtterm	xterm	Term
 					is		-	-	?-	ST	S-	N
 \ESC G		S8C1T (Select 8bit C1 Ctl Chars)
 					is		-	-	?-	ST	S-	N
+
+\ESCn		LS2 (Map G2 into GL)	-		-	-	?	S?	?	N
+\ESCo		LS2 (Map G3 into GL)	-		-	-	?	S?	?	N
+
 \ESC[s		PSCP (Save Cursor Pos)	-		-	-	--	--	S-	N	ansi.sys see \ESC7
 \ESC[u		PRCP (Restore Cursor Pos)-		-	-	--	--	S-	N	ansi.sys see \ESC8
 ----------------------------------------------------------------------------------------------------------------------------------------

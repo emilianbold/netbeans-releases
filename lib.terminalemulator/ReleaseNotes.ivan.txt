@@ -1,6 +1,40 @@
 207965 - Terminal incorrectly displays prompt string
 187345 - wrong characters in Terminals
 
+	- Implement sequences for ProtoANSI
+		  \ESCn
+		  \ESCo
+
+		  \ESC(B	\ESC(0
+		  \ESC)B	\ESC)0
+		  \ESC*B	\ESC*0
+		  \ESC+B	\ESC+0
+	  These utilize Ops.setG() and selectGL().
+
+	- Font selection is now done in a slightly more complex, two-step,
+	  process. Sequences \ESC(, ), * and + assign a font to one of 
+	  graphics sets G0, G1, G2 or G3. Then the sequences
+	  \SI, \SO, \ESCn and \ESCo choose one of G[0123] as the rendered
+	  font.
+	  All this info is now kept in State and State.font() returns 
+	  the "current font".
+
+	- For "ansi" emulation fonts are set using \ESC%dm.
+	  Previosuly this used to go through Ops.set_attr() but now it
+	  goes via Ops.op_setG() in InterpANSI.dispatchAttr().
+
+	- Attr used to store font info but that was only used by State not by 
+	  actual buffer cells. Now that font state is more complex it's stored
+	  explicitly in State and all Attr font handling becomes dead code.
+	  Removed the dead code.
+
+	- Fixed rendition of the diamond ACS graphic character.
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+
+	- Increment spec version to 1.25
+
 	- InterpProtoANSI and InterpProtoANSIX were supposed to be
 	  package private.
 

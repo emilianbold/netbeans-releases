@@ -56,9 +56,13 @@ class InterpProtoANSI extends InterpDumb {
     protected static class InterpTypeProtoANSI extends InterpTypeDumb {
 	protected final Actor act_reset_number = new ACT_RESET_NUMBER();
 	protected final Actor act_remember_digit = new ACT_REMEMBER_DIGIT();
+	protected final Actor act_remember1 = new ACT_REMEMBER1();
+	protected final Actor act_setg = new ACT_SETG();
 
 	protected final State st_esc = new State("esc");	// NOI18N
 	protected final State st_esc_lb = new State("esc_lb");	// NOI18N
+
+	protected final State st_esc_setg = new State("esc_setg");// NOI18N
 
 	protected InterpTypeProtoANSI() {
 	    st_base.setAction((char) 27, st_esc, new ACT_TO_ESC());
@@ -68,6 +72,17 @@ class InterpProtoANSI extends InterpDumb {
 	    st_esc.setRegular(st_esc, act_regular);
 	    st_esc.setAction('M', st_base, new ACT_M());
 	    st_esc.setAction('c', st_base, new ACT_FULL_RESET());
+
+	    st_esc.setAction('n', st_base, new ACT_LS2());
+	    st_esc.setAction('o', st_base, new ACT_LS3());
+
+	    st_esc.setAction('(', st_esc_setg, act_remember1);
+	    st_esc.setAction(')', st_esc_setg, act_remember1);
+	    st_esc.setAction('*', st_esc_setg, act_remember1);
+	    st_esc.setAction('+', st_esc_setg, act_remember1);
+                st_esc_setg.setAction('B', st_base, act_setg);
+                st_esc_setg.setAction('0', st_base, act_setg);
+
 	    st_esc.setAction('[', st_esc_lb, act_reset_number);
 
 	    st_esc_lb.setRegular(st_esc_lb, act_regular);
@@ -142,6 +157,52 @@ class InterpProtoANSI extends InterpDumb {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
 		ai.ops.op_full_reset();
+		return null;
+	    }
+	}
+
+	static final class ACT_LS2 implements Actor {
+	    @Override
+	    public String action(AbstractInterp ai, char c) {
+		ai.ops.op_selectGL(2);
+		return null;
+	    }
+	}
+
+	static final class ACT_LS3 implements Actor {
+	    @Override
+	    public String action(AbstractInterp ai, char c) {
+		ai.ops.op_selectGL(3);
+		return null;
+	    }
+	}
+
+	static final class ACT_REMEMBER1 implements Actor {
+	    @Override
+	    public String action(AbstractInterp ai, char c) {
+                InterpProtoANSI i = (InterpProtoANSI) ai;
+                i.rememberedChar = c;
+		return null;
+	    }
+	}
+
+	static final class ACT_SETG implements Actor {
+	    @Override
+	    public String action(AbstractInterp ai, char c) {
+                int gx = 0;
+                InterpProtoANSI i = (InterpProtoANSI) ai;
+                switch (i.rememberedChar) {
+                    case '(':           gx = 0;  break;
+                    case ')':           gx = 1;  break;
+                    case '*':           gx = 2;  break;
+                    case '+':           gx = 3;  break;
+                }
+                int fx = 0;
+                switch (c) {
+                    case 'B': fx = 0;   break;
+                    case '0': fx = 1;   break;
+                }
+                ai.ops.op_setG(gx, fx);
 		return null;
 	    }
 	}
@@ -348,6 +409,8 @@ class InterpProtoANSI extends InterpDumb {
     private InterpTypeProtoANSI type;
 
     private static final InterpTypeProtoANSI type_singleton = new InterpTypeProtoANSI();
+
+    private char rememberedChar;
 
     public InterpProtoANSI(Ops ops) {
 	super(ops, type_singleton);

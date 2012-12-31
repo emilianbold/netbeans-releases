@@ -266,7 +266,7 @@ class InterpProtoANSIX extends InterpProtoANSI {
             case '.': return inChar; // (^Y) arrow pointing down        ACS_DARROW
             case '0': return inChar; // solid square block              ACS_BLOCK
 
-            case '\'': return inChar; // diamond                        ACS_DIAMOND
+            case '`': return inChar; // diamond                        ACS_DIAMOND
             case 'a': return inChar; // checker board (stipple)         ACS_CKBOARD
             // no-char return 'b'; // HT
             // no-char return 'c'; // FF

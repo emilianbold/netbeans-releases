@@ -93,4 +93,26 @@ class State {
 	}
     }
     private BCoord saved_cursor = null;
+
+    private final int g[] = new int[] {10, 10, 10, 10};
+    private int gl = 0;         // index into 'g'
+
+    public void setG(int gx, int fx) {
+        assert gx >= 0 && gx <= 3;
+        assert fx >= 0 && fx <= 9;
+        g[gx] = fx;
+    }
+
+    public void selectGL(int gx) {
+        assert gx >= 0 && gx <= 3;
+        gl = gx;
+    }
+
+
+    /*
+     * Calculate the font.
+     */
+    public int font() {
+        return g[gl];
+    }
 } 
