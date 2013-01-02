@@ -346,7 +346,7 @@ public final class MavenSettings  {
         for (String path : paths) {
             File file = new File(path);
             path = FileUtil.normalizeFile(file).getAbsolutePath();
-            String version = getCommandLineMavenVersion(new File(path));
+            String version = getCommandLineMavenVersion(file);
             if (version != null) {
                 runtimes.add(path);
                 if (stopOnFirstValid) {

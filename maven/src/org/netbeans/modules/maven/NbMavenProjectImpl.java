@@ -317,6 +317,7 @@ public final class NbMavenProjectImpl implements Project {
         if (parent != null) {
             parent.setProjectBuildingRequest(null);
         }
+        MavenEmbedder.normalizePaths(parent);
         return parent;
     }
 
