@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -68,9 +69,11 @@ public class PhpRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
     private final String name;
     private final ElementKind kind;
     private RenamePanel panel;
+    private final PhpElementKind phpKind;
 
     public PhpRenameRefactoringUI(WhereUsedSupport usage) {
         kind = usage.getElementKind();
+        phpKind = usage.getPhpElementKind();
         name = getElementName(usage.getName(), kind);
         Collection<Object> lookupContent = new ArrayList<Object>();
         lookupContent.add(usage);
@@ -81,7 +84,7 @@ public class PhpRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
     static String getElementName(final String name, final ElementKind kind) {
         String retval = name;
         if (kind.equals(ElementKind.VARIABLE) || kind.equals(ElementKind.FIELD)) {
-            while (retval.length() > 1 && retval.startsWith("$")) {//NOI18N
+            while (retval.length() > 1 && retval.startsWith("$")) { //NOI18N
                 retval = retval.substring(1);
             }
         }
@@ -106,7 +109,7 @@ public class PhpRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
     @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
-            panel = new RenamePanel(name, parent, NbBundle.getMessage(RenamePanel.class, "LBL_Rename"), true, true); //NOI18N
+            panel = new RenamePanel(name, phpKind, parent, NbBundle.getMessage(RenamePanel.class, "LBL_Rename"), true, true); //NOI18N
         }
 
         return panel;
@@ -117,6 +120,7 @@ public class PhpRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
         String newName = panel.getNameValue();
         if (refactoring instanceof RenameRefactoring) {
             ((RenameRefactoring) refactoring).setNewName(newName);
+            ((RenameRefactoring) refactoring).getContext().add(new RenameDeclarationFile(panel.renameDeclarationFile()));
         }
         return refactoring.checkParameters();
     }
@@ -128,6 +132,7 @@ public class PhpRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
         }
         if (refactoring instanceof RenameRefactoring) {
             ((RenameRefactoring) refactoring).setNewName(panel.getNameValue());
+            ((RenameRefactoring) refactoring).getContext().add(new RenameDeclarationFile(panel.renameDeclarationFile()));
         }
         return refactoring.checkParameters();
     }
@@ -155,5 +160,18 @@ public class PhpRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
     @Override
     public void doRefactoringBypass() throws IOException {
         //TODO implement
+    }
+
+    public static final class RenameDeclarationFile {
+        private final boolean renameDeclarationFile;
+
+        public RenameDeclarationFile(boolean renameDeclarationFile) {
+            this.renameDeclarationFile = renameDeclarationFile;
+        }
+
+        public boolean renameDeclarationFile() {
+            return renameDeclarationFile;
+        }
+
     }
 }

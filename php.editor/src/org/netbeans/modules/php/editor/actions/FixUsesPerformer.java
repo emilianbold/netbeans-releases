@@ -68,8 +68,8 @@ import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.UseScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.SemanticAnalysis;
-import org.netbeans.modules.php.editor.parser.UnusedOffsetRanges;
+import org.netbeans.modules.php.editor.parser.UnusedUsesCollector;
+import org.netbeans.modules.php.editor.parser.UnusedUsesCollector.UnusedOffsetRanges;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
@@ -179,7 +179,7 @@ public class FixUsesPerformer {
 
     private boolean isUsed(final UseScope useElement) {
         boolean result = true;
-        for (UnusedOffsetRanges unusedRange : SemanticAnalysis.computeUnusedUsesOffsetRanges(parserResult)) {
+        for (UnusedOffsetRanges unusedRange : new UnusedUsesCollector(parserResult).collect()) {
             if (unusedRange.getRangeToVisualise().containsInclusive(useElement.getOffset())) {
                 result = false;
                 break;
