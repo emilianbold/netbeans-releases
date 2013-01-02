@@ -57,11 +57,9 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
-import org.openide.ErrorManager;
 import org.openide.util.WeakListeners;
 import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 
@@ -77,6 +75,7 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
     public JavadocForBinaryQueryLibraryImpl() {
     }
 
+    @Override
     public JavadocForBinaryQuery.Result findJavadoc(final URL b) {
         class R implements JavadocForBinaryQuery.Result, PropertyChangeListener {
 
@@ -90,6 +89,7 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
                 this.lib.addPropertyChangeListener (WeakListeners.propertyChange(this,this.lib));
             }
 
+            @Override
             public synchronized URL[] getRoots() {
                 if (this.cachedRoots == null) {
                     List<URL> result = new ArrayList<URL>();
@@ -101,16 +101,19 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
                 return this.cachedRoots;
             }
             
-            public synchronized void addChangeListener(ChangeListener l) {
+            @Override
+            public void addChangeListener(ChangeListener l) {
                 assert l != null : "Listener can not be null";
                 cs.addChangeListener(l);
             }
             
-            public synchronized void removeChangeListener(ChangeListener l) {
+            @Override
+            public void removeChangeListener(ChangeListener l) {
                 assert l != null : "Listener can not be null";
                 cs.removeChangeListener(l);
             }
             
+            @Override
             public void propertyChange (PropertyChangeEvent event) {
                 if (Library.PROP_CONTENT.equals(event.getPropertyName())) {
                     synchronized (this) {
@@ -162,12 +165,8 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
         if (normalizedURL == null) {
             FileObject fo = URLMapper.findFileObject(url);
             if (fo != null) {
-                try {
-                    normalizedURL = fo.getURL();
-                    this.normalizedURLCache.put (url, normalizedURL);
-                } catch (FileStateInvalidException e) {
-                    ErrorManager.getDefault().notify(e);
-                }
+                normalizedURL = fo.toURL();
+                this.normalizedURLCache.put (url, normalizedURL);                
             }
         }
         return normalizedURL;
@@ -200,12 +199,7 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
         if (index == null) {
             return url;
         }
-        try {
-            return index.getURL();
-        } catch (FileStateInvalidException e) {
-            e.printStackTrace();
-            return url;
-        }
+        return index.toURL();
     }
     
 }
