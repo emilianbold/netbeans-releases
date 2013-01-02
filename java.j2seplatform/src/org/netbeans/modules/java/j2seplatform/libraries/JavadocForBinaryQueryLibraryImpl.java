@@ -46,6 +46,8 @@ package org.netbeans.modules.java.j2seplatform.libraries;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,6 +64,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 
 /**
  * Implementation of Javadoc query for the library.
@@ -69,7 +72,7 @@ import org.openide.util.ChangeSupport;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation.class, position=150)
 public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryImplementation {
     
-    private final Map<URL,URL> normalizedURLCache = new HashMap<URL, URL>();
+    private final Map<URI,URL> normalizedURLCache = new HashMap<URI, URL>();
 
     /** Default constructor for lookup. */
     public JavadocForBinaryQueryLibraryImpl() {
@@ -161,12 +164,20 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
         //Todo: Should listen on the LibrariesManager and cleanup cache
         // in this case the search can use the cache onle and can be faster
         // from O(n) to O(ln(n))
-        URL normalizedURL = normalizedURLCache.get(url);
+        URI uri = null;
+        try {
+            uri = url.toURI();
+        } catch (URISyntaxException e) {
+            Exceptions.printStackTrace(e);
+        }
+        URL normalizedURL = uri == null ? null : normalizedURLCache.get(uri);
         if (normalizedURL == null) {
-            FileObject fo = URLMapper.findFileObject(url);
+            final FileObject fo = URLMapper.findFileObject(url);
             if (fo != null) {
                 normalizedURL = fo.toURL();
-                this.normalizedURLCache.put (url, normalizedURL);                
+                if (uri != null) {
+                    this.normalizedURLCache.put (uri, normalizedURL);
+                }
             }
         }
         return normalizedURL;
