@@ -155,7 +155,7 @@ public class WSDLBindingTest extends NbTestCase {
     }
     
     private URL getUrl(String file) throws java.net.MalformedURLException {
-        return new File(getDataDir(),file).toURL();
+        return new File(getDataDir(),file).toURI().toURL();
     }
     
     private File getFile(String file) {
