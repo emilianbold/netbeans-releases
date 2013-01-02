@@ -361,9 +361,10 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                 refreshDOM();
             }
         };
-        domDescription.addChangeListener(WeakListeners.change(changeListener, domDescription));
-        if (((root.getFileObject() == null && inspectedFileObject == null)) || 
-                (inspectedFileObject!=null && inspectedFileObject.equals(root.getFileObject()))) {
+        if (domDescription !=null)
+            domDescription.addChangeListener(WeakListeners.change(changeListener, domDescription));
+        if (root !=null && domDescription != null && (((root.getFileObject() == null && inspectedFileObject == null)) || 
+                (inspectedFileObject!=null && inspectedFileObject.equals(root.getFileObject())))) {
             root.setDescription(domDescription);
         } else {
             root.setDescription(WebKitNodeDescription.empty(WebKitNodeDescription.DOM));

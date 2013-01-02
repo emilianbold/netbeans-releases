@@ -262,7 +262,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
         return null;
     }
     private static @CheckForNull String[] findCoordinates(File parentGroup, String artifactID, String version) {
-        File repo = new File(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir()); // ~/.m2/repository
+        File repo = EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile(); // ~/.m2/repository
         String repoS = repo.getAbsolutePath();
         if (!repoS.endsWith(File.separator)) {
             repoS += File.separatorChar; // ~/.m2/repository/

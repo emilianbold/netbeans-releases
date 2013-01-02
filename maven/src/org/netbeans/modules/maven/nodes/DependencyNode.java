@@ -189,7 +189,8 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         if (!longLiving) {
             return null;
         }
-        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(art.getFile()));
+        //artifact.getFile() should be eagerly normalized
+        FileObject fo = FileUtil.toFileObject(art.getFile());
         if (fo != null && FileUtil.isArchiveFile(fo)) {
             return PackageView.createPackageView(new ArtifactSourceGroup(art));
         }
@@ -478,6 +479,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         return (!Artifact.SCOPE_SYSTEM.equals(art.getScope())) && getJavadocFile().exists();
     }
 
+    //normalized
     public File getJavadocFile() {
         File artifact = art.getFile();
         String version = artifact.getParentFile().getName();
@@ -485,6 +487,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         return new File(artifact.getParentFile(), artifactId + "-" + version + (art.getClassifier() != null ? "-" + art.getClassifier() : "") + "-javadoc.jar"); //NOI18N
     }
 
+    //normalized
     public File getSourceFile() {
         File artifact = art.getFile();
         String version = artifact.getParentFile().getName();
@@ -1087,9 +1090,10 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             this.art = art;
         }
 
+        //art.getFile() should be normalized
         @Override
         public FileObject getRootFolder() {
-            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(art.getFile()));
+            FileObject fo = FileUtil.toFileObject(art.getFile());
             if (fo != null) {
                 return FileUtil.getArchiveRoot(fo);
             }

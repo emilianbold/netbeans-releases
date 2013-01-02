@@ -301,7 +301,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
                 public DataObject convert(PhpProject obj) {
                     try {
                         final FileObject fo = obj.getProjectDirectory();
-                        return fo == null ? null : DataObject.find(fo);
+                        return fo != null && fo.isValid() ? DataObject.find(fo) : null;
                     } catch (DataObjectNotFoundException ex) {
                         LOGGER.log(Level.WARNING, null, ex);
                         return null;
