@@ -130,7 +130,12 @@ class FilesystemInterceptor extends VCSInterceptor {
             try {
                 client = git.getClient(root);
                 client.setIndexingBridgeDisabled(true);
-                client.reset(new File[] { file }, "HEAD", true, GitUtils.NULL_PROGRESS_MONITOR);
+                client.reset(new File[] { file }, GitUtils.HEAD, true, GitUtils.NULL_PROGRESS_MONITOR);
+            } catch (GitException.MissingObjectException ex) {
+                if (!GitUtils.HEAD.equals(ex.getObjectName())) {
+                    // log only if we already have a commit. Just initialized repository does not allow us to reset
+                    LOG.log(Level.INFO, "beforeCreate(): File: {0} {1}", new Object[] { file.getAbsolutePath(), ex.toString()}); //NOI18N
+                }
             } catch (GitException ex) {
                 LOG.log(Level.INFO, "beforeCreate(): File: {0} {1}", new Object[] { file.getAbsolutePath(), ex.toString()}); //NOI18N
             } finally {
