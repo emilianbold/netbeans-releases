@@ -67,8 +67,6 @@ import org.openide.awt.Actions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.CallableSystemAction;
 
@@ -107,7 +105,6 @@ public final class SubmitAction extends CallableSystemAction {
         private ImageIcon tacho;
         private ImageIcon tachoOk;
         private Timer timer;
-        private RequestProcessor logRecordsCountRP = new RequestProcessor("Log Records Count", 1);
         
         public NrButton(Action action) {
             Actions.connect(this, action);
@@ -131,20 +128,14 @@ public final class SubmitAction extends CallableSystemAction {
             setEnabled(true);
             timer.restart();
             
-            logRecordsCountRP.post(new Runnable() {
+            LRUtil.invokeWithLogRecordsCount(new LRUtil.LRRun() {
                 @Override
-                public void run() {
-                    final int logRecordsCount = Controller.getDefault().getLogRecordsCount();
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            setToolTipText(NbBundle.getMessage(
-                                SubmitAction.class,
-                                "MSG_SubmitAction",
-                                logRecordsCount
-                            )); // NOI18N
-                        }
-                    });
+                public void run(int logRecordsCount) {
+                    setToolTipText(NbBundle.getMessage(
+                        SubmitAction.class,
+                        "MSG_SubmitAction",
+                        logRecordsCount
+                    )); // NOI18N
                 }
             });
         }
@@ -165,16 +156,10 @@ public final class SubmitAction extends CallableSystemAction {
         
         @Override
         public void setIcon(final Icon original) {
-            logRecordsCountRP.post(new Runnable() {
+            LRUtil.invokeWithLogRecordsCount(new LRUtil.LRRun() {
                 @Override
-                public void run() {
-                    final int logRecordsCount = Controller.getDefault().getLogRecordsCount();
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            setIcon(original, logRecordsCount);
-                        }
-                    });
+                public void run(int logRecordsCount) {
+                    setIcon(original, logRecordsCount);
                 }
             });
         }
