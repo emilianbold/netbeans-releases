@@ -610,7 +610,7 @@ public class PluginPropertyUtils {
         Map<? extends String,? extends String> props = Collections.emptyMap();
         File basedir = prj.getBasedir();
         if (basedir != null) {
-        FileObject bsd = FileUtil.toFileObject(FileUtil.normalizeFile(basedir));
+        FileObject bsd = FileUtil.toFileObject(basedir);
         if (bsd != null) {
             Project p = FileOwnerQuery.getOwner(bsd);
             if (p != null) {

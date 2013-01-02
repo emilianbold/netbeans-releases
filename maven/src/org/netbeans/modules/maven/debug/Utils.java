@@ -65,6 +65,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.AuxiliaryProperties;
@@ -98,9 +99,7 @@ public class Utils {
         File[] fos = new File[strings.size()];
         int index = 0;
         for (String str : strings) {
-            File fil = new File(str);
-            fil = FileUtil.normalizeFile(fil);
-            fos[index] = fil;
+            fos[index] = FileUtilities.convertStringToFile(str);
             index++;
         }
         return fos;

@@ -257,7 +257,8 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
             if (missingArtifacts.add(a)) {
                 File f = a.getFile();
                 LOG.log(Level.FINE, "listening to {0} from {1}", new Object[] {f, projectPOMFile});
-                FileUtil.addFileChangeListener(fcl, FileUtil.normalizeFile(f));
+                //a.getFile should be already normalized
+                FileUtil.addFileChangeListener(fcl, f);
             }
         }
     }
@@ -294,7 +295,8 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                 File f = as.next().getFile();
                 if (f != null) {
                     LOG.log(Level.FINE, "ceasing to listen to {0} from {1}", new Object[] {f, projectPOMFile});
-                    FileUtil.removeFileChangeListener(fcl, FileUtil.normalizeFile(f));
+                    // a.getFile() should be normalized
+                    FileUtil.removeFileChangeListener(fcl, f);
                     if (f.isFile()) {
                         BatchProblemNotifier.resolved(f);
                     }
@@ -440,7 +442,8 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                     if (file == null) {
                         missingNonSibling = true;
                     } else {
-                        SourceForBinaryQuery.Result2 result = SourceForBinaryQuery.findSourceRoots2(FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(file)));
+                        //a.getFile should be already normalized
+                        SourceForBinaryQuery.Result2 result = SourceForBinaryQuery.findSourceRoots2(FileUtil.urlForArchiveOrDir(file));
                         if (!result.preferSources() || /* SourceForBinaryQuery.EMPTY_RESULT2.preferSources() so: */ result.getRoots().length == 0) {
                             missingNonSibling = true;
                         } // else #189442: typically a snapshot dep on another project
