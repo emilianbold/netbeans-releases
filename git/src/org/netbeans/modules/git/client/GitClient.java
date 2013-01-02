@@ -201,12 +201,14 @@ public final class GitClient {
     private static final Logger LOG = Logger.getLogger(GitClient.class.getName());
     private final File repositoryRoot;
     private boolean released;
+    private final ThreadLocal<Boolean> indexingBridgeDisabled;
 
     public GitClient (File repository, GitProgressSupport progressSupport, boolean handleAuthenticationIssues) throws GitException {
         this.repositoryRoot = repository;
         delegate = GitRepository.getInstance(repository).createClient();
         this.progressSupport = progressSupport;
         this.handleAuthenticationIssues = handleAuthenticationIssues;
+        this.indexingBridgeDisabled = new ThreadLocal<Boolean>();
     }
     
     public void add (final File[] roots, final ProgressMonitor monitor) throws GitException {
@@ -703,6 +705,10 @@ public final class GitClient {
         }, "unignore"); //NOI18N
     }
 
+    public void setIndexingBridgeDisabled (boolean disabled) {
+        indexingBridgeDisabled.set(disabled);
+    }
+
     private static class CleanTask implements Runnable {
 
         @Override
@@ -802,7 +808,7 @@ public final class GitClient {
                             }
                         }
                     };
-                    if (runsWithBlockedIndexing(methodName)) {
+                    if (!Boolean.TRUE.equals(indexingBridgeDisabled.get()) && runsWithBlockedIndexing(methodName)) {
                         LOG.log(Level.FINER, "Running command in indexing bridge: {0} on {1}", new Object[] { methodName, repositoryRoot.getAbsolutePath() }); //NOI18N
                         return IndexingBridge.getInstance().runWithoutIndexing(callable, roots.length > 0 ? roots : new File[] { repositoryRoot });
                     } else {

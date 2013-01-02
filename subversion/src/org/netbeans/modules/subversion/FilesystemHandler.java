@@ -123,6 +123,7 @@ class FilesystemHandler extends VCSInterceptor {
         if (!SvnUtils.isPartOfSubversionMetadata(file)) {
             try {
                 SvnClient client = Subversion.getInstance().getClient(false);
+                client.setIndexingBridgeDisabled(true);
                 try {
                     client.remove(new File [] { file }, true); // delete all files recursively
                     return;
@@ -380,6 +381,7 @@ class FilesystemHandler extends VCSInterceptor {
     private void svnCopyImplementation(final File from, final File to) throws IOException {
         try {
             SvnClient client = Subversion.getInstance().getClient(false);
+            client.setIndexingBridgeDisabled(true);
 
             // prepare destination, it must be under Subversion control
             removeInvalidMetadata();
@@ -516,6 +518,7 @@ class FilesystemHandler extends VCSInterceptor {
             if (!file.exists()) {
                 try {
                     SvnClient client = Subversion.getInstance().getClient(false);
+                    client.setIndexingBridgeDisabled(true);
                     // check if the file wasn't just deleted in this session
                     revertDeleted(client, file, true);
                 } catch (SVNClientException ex) {
@@ -553,6 +556,7 @@ class FilesystemHandler extends VCSInterceptor {
                     File temporary = FileUtils.generateTemporaryFile(file.getParentFile(), file.getName());
                     try {
                         SvnClient client = Subversion.getInstance().getClient(false);
+                        client.setIndexingBridgeDisabled(true);
                         if (file.renameTo(temporary)) {
                             client.revert(file, false);
                             file.delete();
@@ -772,6 +776,7 @@ class FilesystemHandler extends VCSInterceptor {
         try {
             boolean force = true; // file with local changes must be forced
             SvnClient client = Subversion.getInstance().getClient(false);
+            client.setIndexingBridgeDisabled(true);
 
             // prepare destination, it must be under Subversion control
             removeInvalidMetadata();
