@@ -54,6 +54,7 @@ import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
+import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.openide.util.NbBundle;
 
@@ -66,7 +67,8 @@ public class GlobalIsNotDefined extends JsAstRule {
     private static List<String> knownGlobalObjects = Arrays.asList("window", "document", "console",
             "clearInterval", "clearTimeout", "event", "frames", "history",
             "Image", "location", "name", "navigator", "Option", "parent", "screen", "setInterval", "setTimeout",
-            "XMLHttpRequest"); //NOI18N
+            "XMLHttpRequest", "JSON",  //NOI18N
+            Type.ARRAY, Type.OBJECT, Type.BOOLEAN, Type.NULL, Type.NUMBER, Type.REGEXP, Type.STRING, Type.UNDEFINED, Type.UNRESOLVED);
     
     @Override
     void computeHints(JsRuleContext context, List<Hint> hints, HintsProvider.HintsManager manager) {

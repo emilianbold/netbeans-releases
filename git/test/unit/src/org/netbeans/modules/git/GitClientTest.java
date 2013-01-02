@@ -58,12 +58,17 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import org.netbeans.junit.MockServices;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor.DefaultProgressMonitor;
 import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.util.IndexingBridge;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -83,6 +88,8 @@ public class GitClientTest extends AbstractGitTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        MockServices.setServices(new Class[] {
+            GitVCS.class});
         IndexingBridge bridge = IndexingBridge.getInstance();
         Field f = IndexingBridge.class.getDeclaredField("LOG");
         f.setAccessible(true);
@@ -688,7 +695,42 @@ public class GitClientTest extends AbstractGitTestCase {
         assertNull(exs[1]);
     }
 
-    public void testPallalelizableCommands () throws Exception {
+    public void testDisableIBInFSEvents () throws Exception {
+        File file = new File(repositoryLocation, "aaa");
+        file.createNewFile();
+        final GitClient client = Git.getInstance().getClient(repositoryLocation);
+        client.add(new File[] { file }, GitUtils.NULL_PROGRESS_MONITOR);
+        client.commit(new File[] { file }, "msg", null, null, GitUtils.NULL_PROGRESS_MONITOR);
+
+        FileObject fo = FileUtil.toFileObject(file);
+        invocationHandlerLogger.setLevel(Level.ALL);
+        LogHandler handler = new LogHandler();
+        invocationHandlerLogger.addHandler(handler);
+
+        assertTrue(client.getStatus(new File[] { file }, GitUtils.NULL_PROGRESS_MONITOR).get(file).getStatusHeadIndex() == GitStatus.Status.STATUS_NORMAL);
+        fo.delete();
+        assertTrue(client.getStatus(new File[] { file }, GitUtils.NULL_PROGRESS_MONITOR).get(file).getStatusHeadIndex() == GitStatus.Status.STATUS_REMOVED);
+        assertFalse(handler.indexingBridgeCalled);
+
+        fo.getParent().createData(file.getName());
+        assertTrue(client.getStatus(new File[] { file }, GitUtils.NULL_PROGRESS_MONITOR).get(file).getStatusHeadIndex() == GitStatus.Status.STATUS_NORMAL);
+        assertFalse(handler.indexingBridgeCalled);
+
+        File copy = new File(repositoryLocation, "copy");
+        fo.copy(fo.getParent(), copy.getName(), "");
+        assertTrue(client.getStatus(new File[] { copy }, GitUtils.NULL_PROGRESS_MONITOR).get(copy).getStatusHeadIndex() == GitStatus.Status.STATUS_ADDED);
+        assertFalse(handler.indexingBridgeCalled);
+
+        File renamed = new File(repositoryLocation, "renamed");
+        FileLock lock = fo.lock();
+        fo.move(lock, fo.getParent(), renamed.getName(), "");
+        lock.releaseLock();
+        assertTrue(client.getStatus(new File[] { file }, GitUtils.NULL_PROGRESS_MONITOR).get(file).getStatusHeadIndex() == GitStatus.Status.STATUS_REMOVED);
+        assertTrue(client.getStatus(new File[] { renamed }, GitUtils.NULL_PROGRESS_MONITOR).get(renamed).getStatusHeadIndex() == GitStatus.Status.STATUS_ADDED);
+        assertFalse(handler.indexingBridgeCalled);
+    }
+
+    public void testParallellizableCommands () throws Exception {
         final File file = new File(repositoryLocation, "aaa");
         file.createNewFile();
         final GitClient client = Git.getInstance().getClient(repositoryLocation);

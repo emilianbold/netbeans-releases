@@ -83,6 +83,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     protected static final String GET_INFO_FROM_WORKING_COPY = "getInfoFromWorkingCopy"; // NOI18N
     protected static final String CANCEL_OPERATION = "cancel"; //NOI18N
     private static final String DISPOSE_METHOD = "dispose"; //NOI18N
+    private static final String DISABLE_IB_METHOD = "setIndexingBridgeDisabled"; //NOI18N
     private static final HashSet<String> PARALLELIZABLE_METHODS = new HashSet<String>(Arrays.asList(new String[] {
         "setConfigDirectory",                                           //NOI18N
         "getSvnUrl",                                                    //NOI18N
@@ -90,6 +91,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         "getIgnoredPatterns",                                           //NOI18N
         "getStatus",                                                    //NOI18N
         "removeNotifyListener",                                         //NOI18N
+        DISABLE_IB_METHOD,
         DISPOSE_METHOD
     }));
     
@@ -103,6 +105,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
     private static boolean metricsAlreadyLogged = false;
     private final ConnectionType connectionType;
     private volatile boolean disposed;
+    private final ThreadLocal<Boolean> indexingBridgeDisabled;
     
     public SvnClientInvocationHandler (ISVNClientAdapter adapter, SvnClientDescriptor desc, SvnProgressSupport support, int handledExceptions, SvnClientFactory.ConnectionType connType) {
         
@@ -126,6 +129,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             }
         };
         this.connectionType = connType;
+        this.indexingBridgeDisabled = new ThreadLocal<Boolean>();
     }
 
     private static String print(Object[] args) {
@@ -177,7 +181,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             if (DISPOSE_METHOD.equals(method.getName())) {
                 disposed = true;
             }
-            if (fsReadOnlyAction) {
+            if (fsReadOnlyAction || Boolean.TRUE.equals(indexingBridgeDisabled.get())) {
                 return c.call();
             } else {
                 List<File> files = getFileParameters(args);
@@ -351,6 +355,16 @@ public class SvnClientInvocationHandler implements InvocationHandler {
         }
 
         if( ISVNClientAdapter.class.isAssignableFrom(declaringClass) ) {
+            if (DISABLE_IB_METHOD.equals(proxyMethod.getName())) {
+                if (args != null && args.length == 1 && args[0] instanceof Boolean) {
+                    if (Boolean.TRUE.equals(args[0])) {
+                        indexingBridgeDisabled.set(Boolean.TRUE);
+                    } else {
+                        indexingBridgeDisabled.remove();
+                    }
+                    return null;
+                }
+            }
             // Cliet Adapter
             if(support != null) {
                 support.setCancellableDelegate(cancellable);

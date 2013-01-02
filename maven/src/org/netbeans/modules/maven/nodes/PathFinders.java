@@ -141,7 +141,7 @@ class PathFinders {
                     if (ar != null) {
                         final File arFile = ar.getFile();
                         if (arFile != null) {
-                            final URL arURL = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(arFile));
+                            final URL arURL = FileUtil.urlForArchiveOrDir(arFile);
                             if (arURL != null) {
                                 binRoot = URLMapper.findFileObject(arURL);
                             }
