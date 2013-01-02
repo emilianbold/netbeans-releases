@@ -46,13 +46,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Logger;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.gsp.lexer.GspLexerLanguage;
 import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -63,22 +62,15 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
 /**
  *
  * @author Petr Hejl
+ * @author Martin Janicek
  */
 public class GroovyEmbeddingProvider extends EmbeddingProvider {
 
-    private static final Logger LOG = Logger.getLogger(GroovyEmbeddingProvider.class.getName());
-    
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
         if (GspTokenId.MIME_TYPE.equals(snapshot.getMimeType())) {
-            List<Embedding> embeddings = translate(snapshot);
-            if(embeddings.isEmpty()) {
-                return Collections.<Embedding>emptyList();
-            } else {
-                return Collections.singletonList(Embedding.create(embeddings));
-            }
+            return Collections.singletonList(Embedding.create(translate(snapshot)));
         } else {
-            LOG.warning("Unexpected snapshot type: '" + snapshot.getMimeType() + "'; expecting '" + GspTokenId.MIME_TYPE + "'"); //NOI18N
             return Collections.<Embedding>emptyList();
         }
     }
@@ -93,124 +85,114 @@ public class GroovyEmbeddingProvider extends EmbeddingProvider {
         // FIXME parsing API
     }
 
-    private static TokenSequence<? extends TokenId> getTokenSequence(Snapshot snapshot) {
-        Language<? extends TokenId> l = Language.find(snapshot.getMimeType());
-        if (l != null) {
-            return TokenHierarchy.create(snapshot.getText(), l).tokenSequence();
-        } else {
-            return null;
-        }
-    }
-
     private List<Embedding> translate(Snapshot snapshot) {
-        TokenSequence<? extends TokenId> tokenSequence = getTokenSequence(snapshot);
-        if (tokenSequence == null) {
+        final Language<GspTokenId> gspLanguage = GspLexerLanguage.getLanguage();
+        final TokenHierarchy<CharSequence> tokenHierarchy = TokenHierarchy.create(snapshot.getText(), gspLanguage);
+        final TokenSequence<GspTokenId> tokenSequence = tokenHierarchy.tokenSequence(gspLanguage);
+
+        if (tokenSequence != null) {
+            return translate(snapshot, tokenSequence);
+        } else {
             return Collections.emptyList();
         }
-        
-        List<Embedding> embeddings = new ArrayList<Embedding>();
-
-        @SuppressWarnings("unchecked")
-        TokenSequence<? extends GspTokenId> gspTokenSequence = (TokenSequence<? extends GspTokenId>) tokenSequence;
-        translate(snapshot, gspTokenSequence, embeddings);
-
-        return embeddings;
     }
-    /** 
+
+    /**
      * Perform groovy translation.
-     * 
+     *
      * @param outputBuffer The buffer to emit the translation to
      * @param tokenHierarchy The token hierarchy for the RHTML code
      * @param tokenSequence  The token sequence for the RHTML code
      */
-    private void translate(Snapshot snapshot, TokenSequence<? extends GspTokenId> tokenSequence, List<Embedding> embeddings) {
+    private List<Embedding> translate(Snapshot snapshot, TokenSequence<GspTokenId> tokenSequence) {
+        final List<Embedding> embeddings = new ArrayList<Embedding>();
         embeddings.add(snapshot.create("def _buf ='';", GroovyTokenId.GROOVY_MIME_TYPE));
 
         boolean skipNewline = false;
-        while(tokenSequence.moveNext()) {
-            Token<? extends GspTokenId> token = tokenSequence.token();
+        while (tokenSequence.moveNext()) {
+            Token<GspTokenId> token = tokenSequence.token();
 
-            if (token.id() == GspTokenId.HTML){
-                int sourceStart = tokenSequence.offset(); //token.offset(tokenHierarchy);
-                int sourceEnd = sourceStart + token.length();
+            int sourceStart = tokenSequence.offset();
+            int sourceEnd = sourceStart + token.length();
+            String text = token.text().toString();
 
-                CharSequence charSequence = token.text();
-                String text = charSequence == null ? "" : charSequence.toString();
-
-                // If there is leading whitespace in this token followed by a newline,
-                // emit it directly first, then insert my buffer append. Otherwise,
-                // insert a semicolon if we're on the same line as the previous output.
-                boolean found = false;
-                int i = 0;
-                for (; i < text.length(); i++) {
-                    char c = text.charAt(i);
-                    if (c == '\n') {
-                        i++; // include it
-                        found = true;
-                        break;
-                    } else if (!Character.isWhitespace(c)) {
-                        break;
+            switch (token.id()) {
+                case HTML:
+                    // If there is leading whitespace in this token followed by a newline,
+                    // emit it directly first, then insert my buffer append. Otherwise,
+                    // insert a semicolon if we're on the same line as the previous output.
+                    boolean found = false;
+                    int i = 0;
+                    for (; i < text.length(); i++) {
+                        char c = text.charAt(i);
+                        if (c == '\n') {
+                            i++; // include it
+                            found = true;
+                            break;
+                        } else if (!Character.isWhitespace(c)) {
+                            break;
+                        }
                     }
-                }
 
-                if (found) {
-                    embeddings.add(snapshot.create(sourceStart, i, GroovyTokenId.GROOVY_MIME_TYPE));
-                    text = text.substring(i);
-                }
-
-                embeddings.add(snapshot.create("_buf += \"\"\"", GroovyTokenId.GROOVY_MIME_TYPE));
-                if (skipNewline && text.startsWith("\n")) { // NOI18N
-                    text = text.substring(1);
-                    sourceEnd--;
-                }
-                // FIXME what to do with this ?
-                // FIXME this does not seem to be correct
-                embeddings.add(snapshot.create(text.replace("\"", "\\\""), GroovyTokenId.GROOVY_MIME_TYPE));
-                embeddings.add(snapshot.create("\"\"\";", GroovyTokenId.GROOVY_MIME_TYPE));
-
-                skipNewline = false;
-            } else if (token.id() == GspTokenId.GROOVY){
-                int sourceStart = tokenSequence.offset();//token.offset(tokenHierarchy);
-
-                String text = token.text().toString();
-                // handle <%-- foo --%> and %{-- bar --%} comments
-                String trimmedText = text.trim();
-                if (trimmedText.startsWith("--") && trimmedText.endsWith("--")) { // NOI18N
-                    int first = text.indexOf("--");
-                    int last = text.lastIndexOf("--");
-                    if (first != last && (last - 2) > 0) {
-                        embeddings.add(snapshot.create("/*", GroovyTokenId.GROOVY_MIME_TYPE));
-                        embeddings.add(snapshot.create(sourceStart + first + 2, last - 2, GroovyTokenId.GROOVY_MIME_TYPE));
-                        embeddings.add(snapshot.create("*/", GroovyTokenId.GROOVY_MIME_TYPE));
+                    if (found) {
+                        embeddings.add(snapshot.create(sourceStart, i, GroovyTokenId.GROOVY_MIME_TYPE));
+                        text = text.substring(i);
                     }
-                } else {
+
+                    embeddings.add(snapshot.create("_buf += \"\"\"", GroovyTokenId.GROOVY_MIME_TYPE));
+                    if (skipNewline && text.startsWith("\n")) { // NOI18N
+                        text = text.substring(1);
+                        sourceEnd--;
+                    }
+                    embeddings.add(snapshot.create(text.replace("\"", "\\\""), GroovyTokenId.GROOVY_MIME_TYPE));
+                    embeddings.add(snapshot.create("\"\"\";", GroovyTokenId.GROOVY_MIME_TYPE));
+
+                    skipNewline = false;
+                    break;
+                case COMMENT_HTML_STYLE_CONTENT:
+                case COMMENT_GSP_STYLE_CONTENT:
+                case COMMENT_JSP_STYLE_CONTENT:
+                    translateComment(snapshot, embeddings, sourceStart, text);
+                    break;
+                case GSTRING_CONTENT:
+                case SCRIPTLET_CONTENT:
                     embeddings.add(snapshot.create(sourceStart, text.length(), GroovyTokenId.GROOVY_MIME_TYPE));
                     embeddings.add(snapshot.create(";", GroovyTokenId.GROOVY_MIME_TYPE));
-                }
-                skipNewline = false;
-            } else if (token.id() == GspTokenId.GROOVY_EXPR) {
-                embeddings.add(snapshot.create("_buf += (", GroovyTokenId.GROOVY_MIME_TYPE));
-                int sourceStart = tokenSequence.offset();//token.offset(tokenHierarchy);
 
-                String text = token.text().toString();
-                skipNewline = false;
-                embeddings.add(snapshot.create(sourceStart, text.length(), GroovyTokenId.GROOVY_MIME_TYPE));
-                embeddings.add(snapshot.create(";)", GroovyTokenId.GROOVY_MIME_TYPE));
+                    skipNewline = false;
+                    break;
+                case SCRIPTLET_OUTPUT_VALUE_CONTENT:
+                    embeddings.add(snapshot.create("_buf += (", GroovyTokenId.GROOVY_MIME_TYPE));
+                    embeddings.add(snapshot.create(sourceStart, text.length(), GroovyTokenId.GROOVY_MIME_TYPE));
+                    embeddings.add(snapshot.create(";)", GroovyTokenId.GROOVY_MIME_TYPE));
+
+                    skipNewline = false;
+                    break;
+                default:
+                    break;
             }
         }
+        return embeddings;
+    }
 
+    private void translateComment(Snapshot snapshot, List<Embedding> embeddings, int sourceStart, String text) {
+        embeddings.add(snapshot.create("/*", GroovyTokenId.GROOVY_MIME_TYPE));
+        embeddings.add(snapshot.create(sourceStart, text.length(), GroovyTokenId.GROOVY_MIME_TYPE));
+        embeddings.add(snapshot.create("*/", GroovyTokenId.GROOVY_MIME_TYPE));
     }
 
     public static final class Factory extends TaskFactory {
+
         public Factory() {
         }
 
-        public @Override Collection<? extends SchedulerTask> create(Snapshot snapshot) {
-            if (!GspTokenId.MIME_TYPE.equals(snapshot.getMimeType())) {
+        @Override
+        public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+            if (GspTokenId.MIME_TYPE.equals(snapshot.getMimeType())) {
+                return Collections.singleton(new GroovyEmbeddingProvider());
+            } else {
                 return Collections.<SchedulerTask>emptyList();
             }
-
-            return Collections.singleton(new GroovyEmbeddingProvider());
         }
     }
 }

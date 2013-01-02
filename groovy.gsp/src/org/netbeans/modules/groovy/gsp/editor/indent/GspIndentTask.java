@@ -42,78 +42,44 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.gsp;
+package org.netbeans.modules.groovy.gsp.editor.indent;
 
-import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.csl.api.SemanticAnalyzer;
-import org.netbeans.modules.csl.api.StructureScanner;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.csl.spi.LanguageRegistration;
-import org.netbeans.modules.groovy.editor.api.GroovyUtils;
-import org.netbeans.modules.groovy.gsp.lexer.GspLexerLanguage;
-import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
-import org.netbeans.modules.parsing.spi.Parser;
+import javax.swing.text.BadLocationException;
+import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.editor.indent.spi.ExtraLock;
+import org.netbeans.modules.editor.indent.spi.IndentTask;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+
+/**
+ * Indent task for GSP.
+ *
+ * @author Martin Janicek
+ */
+public class GspIndentTask implements IndentTask, Lookup.Provider {
+
+    private final GspIndenter indenter;
+    private final Lookup lookup;
 
 
-@LanguageRegistration(
-    mimeType = GspTokenId.MIME_TYPE,
-    useCustomEditorKit = true,
-    useMultiview = true
-)
-public class GspLanguage extends DefaultLanguageConfig {
+    GspIndentTask(Context context) {
+        indenter = new GspIndenter(context);
+        lookup = Lookups.singleton(indenter.createFormattingContext());
+    }
 
-    public GspLanguage() {
-        super();
+
+    @Override
+    public void reindent() throws BadLocationException {
+        indenter.reindent();
     }
 
     @Override
-    public String getLineCommentPrefix() {
-        return GroovyUtils.getLineCommentPrefix();
+    public Lookup getLookup() {
+        return lookup;
     }
 
     @Override
-    public boolean isIdentifierChar(char c) {
-        return GroovyUtils.isIdentifierChar(c);
-    }
-
-    @Override
-    public Language getLexerLanguage() {
-        return GspLexerLanguage.getLanguage();
-    }
-
-    @Override
-    public String getDisplayName() {
-        return "GSP";
-    }
-
-    @Override
-    public String getPreferredExtension() {
-        return "gsp"; // NOI18N
-    }
-
-    @Override
-    public boolean isUsingCustomEditorKit() {
-        return true;
-    }
-
-    @Override
-    public Parser getParser() {
-        return new GspParser();
-    }
-
-    @Override
-    public SemanticAnalyzer getSemanticAnalyzer() {
+    public ExtraLock indentLock() {
         return null;
     }
-
-    @Override
-    public boolean hasStructureScanner() {
-        return true;
-    }
-    
-    @Override
-    public StructureScanner getStructureScanner() {
-        return new GspStructureScanner();
-    }
-
 }

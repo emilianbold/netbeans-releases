@@ -44,40 +44,69 @@
 
 package org.netbeans.modules.groovy.gsp.lexer;
 
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.Map;
-import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.LanguagePath;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
-import org.netbeans.spi.lexer.LanguageEmbedding;
-import org.netbeans.spi.lexer.LanguageHierarchy;
-import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
- * Token Ids for Embedded Groovy (GSP).
+ * Enum containing of the GSP lexer tokens. Possible tags in GSP that are processing
+ * by the Lexer are:
+ * 1) Opening tags:
+ *      ${     or  %{    or  \${    or &lt%
+ *      &lt%-- or  &lt%@  or  &lt%=
  *
- * @todo Worry about trim mode - See section 22.1 of Agile Web Development With Rails
+ * 2) Closing tags:
+ *         }   or  }%  or  %>   or  />  or  --%>
  *
- * @author Marek Fukala
- * @author Tor Norbye
- * @author Martin Adamek
+ * @author Martin Janicek
  */
-
 public enum GspTokenId implements TokenId {
 
     HTML("html"),
-    GROOVYCOMMENT("comment"),
-    GROOVY_EXPR("groovy"),
-    GROOVY("groovy"),
-    DELIMITER("groovy-delimiter"), // Note - referenced in LexUtilities
-    GTAG("gtag"), // <g: and </g:
-    ERROR("gsp_error");
+    WHITESPACE("whitespace"),
+
+    // GTags tokens
+    GTAG_OPENING_START("gtag"),                      // <g:    ...
+    GTAG_OPENING_NAME("gtag"),                       // <g:if  ...
+    GTAG_OPENING_END("gtag"),                        // <g:  ... >
+    GTAG_ATTRIBUTE_NAME("attribute-name"),           // <g: someAttribute=
+    GTAG_ATTRIBUTE_VALUE("attribute-value"),         // <g: someAttribute="value"
+    GTAG_INDEPENDENT_END("gtag"),                    // <g:    ... />
+    GTAG_CLOSING_START("gtag"),                      // </g:   ...
+    GTAG_CLOSING_NAME("gtag"),                       // </g:if ...
+    GTAG_CLOSING_END("gtag"),                        // </g:   ... >
+
+    // Comments allowed in GSP files
+    COMMENT_JSP_STYLE_START("comment"),              // <%--
+    COMMENT_JSP_STYLE_CONTENT("comment"),            // <%-- ...
+    COMMENT_JSP_STYLE_END("comment"),                // <%-- ... --%>
+
+    COMMENT_HTML_STYLE_START("comment"),             // <!--
+    COMMENT_HTML_STYLE_CONTENT("comment"),           // <!-- ...
+    COMMENT_HTML_STYLE_END("comment"),               // <!-- ... --!>
+
+    COMMENT_GSP_STYLE_START("comment"),              // %{--
+    COMMENT_GSP_STYLE_CONTENT("comment"),            // %{-- ...
+    COMMENT_GSP_STYLE_END("comment"),                // %{-- ... --}%
+
+    // Page directive
+    PAGE_DIRECTIVE_START("start-delimiter"),         // <%@  ...
+    PAGE_DIRECTIVE_CONTENT("directive"),             // <%@page import ... %> or <%@page contentType ... %>
+    PAGE_DIRECTIVE_END("end-delimiter"),             // <%@  ... %>
+
+    // Scriptlet output value
+    SCRIPTLET_OUTPUT_VALUE_START("start-delimiter"), // <%=  ...
+    SCRIPTLET_OUTPUT_VALUE_CONTENT("groovy"),        // <%=  "something"
+    SCRIPTLET_OUTPUT_VALUE_END("end-delimiter"),     // <%=  ... %>
+
+    // Scriptlets
+    SCRIPTLET_START("start-delimiter"),              // <%  ...
+    SCRIPTLET_CONTENT("groovy"),                     // <%  "something"
+    SCRIPTLET_END("end-delimiter"),                  // <%  ... %>
+
+    // GStrings
+    GSTRING_START("start-delimiter"),                // ${  ...  or   \${  ...
+    GSTRING_CONTENT("groovy"),                       // ${  "something"
+    GSTRING_END("end-delimiter");                    // ${  ...  }
+
 
     public static final String MIME_TYPE = "text/x-gsp"; // NOI18N
     private final String primaryCategory;
@@ -87,53 +116,31 @@ public enum GspTokenId implements TokenId {
         this.primaryCategory = primaryCategory;
     }
 
-    public static boolean isGroovy(TokenId id) {
-        return id == GROOVY || id == GROOVY_EXPR || id == GROOVYCOMMENT;
-    }
-
     @Override
     public String primaryCategory() {
         return primaryCategory;
     }
 
-    private static final Language<GspTokenId> LANGUAGE = new LanguageHierarchy<GspTokenId>() {
-        @Override
-        protected Collection<GspTokenId> createTokenIds() {
-            return EnumSet.allOf(GspTokenId.class);
-        }
+    public boolean isComment() {
+        return checkPrimaryCategory("comment"); // NOI18N
+    }
 
-        @Override
-        protected Map<String, Collection<GspTokenId>> createTokenCategories() {
-            return null;
-        }
+    public boolean isDelimiter() {
+        return isStartDelimiter() || isEndDelimiter();
+    }
 
-        @Override
-        public Lexer<GspTokenId> createLexer(LexerRestartInfo<GspTokenId> info) {
-            return new GspLexer(info);
-        }
+    public boolean isStartDelimiter() {
+        return checkPrimaryCategory("start-delimiter"); // NOI18N
+    }
 
-        @Override
-        protected LanguageEmbedding<? extends TokenId> embedding(Token<GspTokenId> token,
-                                  LanguagePath languagePath, InputAttributes inputAttributes) {
-            switch(token.id()) {
-                case HTML:
-                case GTAG:
-                    return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, true);
-                case GROOVY_EXPR:
-                case GROOVY:
-                    return LanguageEmbedding.create(GroovyTokenId.language(), 0, 0, false);
-                default:
-                    return null;
-            }
-        }
+    public boolean isEndDelimiter() {
+        return checkPrimaryCategory("end-delimiter"); // NOI18N
+    }
 
-        @Override
-        public String mimeType() {
-            return GspTokenId.MIME_TYPE;
+    private boolean checkPrimaryCategory(String category) {
+        if (category.equals(primaryCategory)) { // NOI18N
+            return true;
         }
-    }.language();
-
-    public static Language<GspTokenId> language() {
-        return LANGUAGE;
+        return false;
     }
 }

@@ -42,18 +42,24 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.gsp;
+package org.netbeans.modules.groovy.gsp.editor.indent;
 
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
+import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
 
 /**
- * Indent task factory for GSP files
  *
- * @author Tor Norbye
+ * @author Martin Janicek
  */
+@MimeRegistration(
+    mimeType = GspTokenId.MIME_TYPE,
+    service = IndentTask.Factory.class
+)
 public class GspIndentTaskFactory implements IndentTask.Factory {
 
+    @Override
     public IndentTask createTask(Context context) {
         return new GspIndentTask(context);
     }

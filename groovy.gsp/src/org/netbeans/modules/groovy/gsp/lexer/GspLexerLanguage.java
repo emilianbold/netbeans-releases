@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,80 +34,82 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.gsp;
+package org.netbeans.modules.groovy.gsp.lexer;
 
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.Map;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.csl.api.SemanticAnalyzer;
-import org.netbeans.modules.csl.api.StructureScanner;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.csl.spi.LanguageRegistration;
-import org.netbeans.modules.groovy.editor.api.GroovyUtils;
-import org.netbeans.modules.groovy.gsp.lexer.GspLexerLanguage;
-import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
-import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
+import org.netbeans.spi.lexer.LanguageEmbedding;
+import org.netbeans.spi.lexer.LanguageHierarchy;
+import org.netbeans.spi.lexer.Lexer;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 
+/**
+ *
+ * @author Martin Janicek
+ */
+public final class GspLexerLanguage extends LanguageHierarchy<GspTokenId> {
 
-@LanguageRegistration(
-    mimeType = GspTokenId.MIME_TYPE,
-    useCustomEditorKit = true,
-    useMultiview = true
-)
-public class GspLanguage extends DefaultLanguageConfig {
+    private static Language<GspTokenId> language;
 
-    public GspLanguage() {
-        super();
+    private GspLexerLanguage() {
+    }
+
+    public static Language<GspTokenId> getLanguage() {
+        if (language == null) {
+            language = new GspLexerLanguage().language();
+        }
+        return language;
     }
 
     @Override
-    public String getLineCommentPrefix() {
-        return GroovyUtils.getLineCommentPrefix();
+    protected Collection<GspTokenId> createTokenIds() {
+        return EnumSet.allOf(GspTokenId.class);
     }
 
     @Override
-    public boolean isIdentifierChar(char c) {
-        return GroovyUtils.isIdentifierChar(c);
+    protected Lexer<GspTokenId> createLexer(LexerRestartInfo<GspTokenId> info) {
+        return new GspLexer(info);
     }
 
     @Override
-    public Language getLexerLanguage() {
-        return GspLexerLanguage.getLanguage();
+    protected String mimeType() {
+        return GspTokenId.MIME_TYPE;
     }
 
     @Override
-    public String getDisplayName() {
-        return "GSP";
-    }
-
-    @Override
-    public String getPreferredExtension() {
-        return "gsp"; // NOI18N
-    }
-
-    @Override
-    public boolean isUsingCustomEditorKit() {
-        return true;
-    }
-
-    @Override
-    public Parser getParser() {
-        return new GspParser();
-    }
-
-    @Override
-    public SemanticAnalyzer getSemanticAnalyzer() {
+    protected Map<String, Collection<GspTokenId>> createTokenCategories() {
         return null;
     }
 
     @Override
-    public boolean hasStructureScanner() {
-        return true;
-    }
-    
-    @Override
-    public StructureScanner getStructureScanner() {
-        return new GspStructureScanner();
-    }
+    protected LanguageEmbedding<? extends TokenId> embedding(Token<GspTokenId> token,
+                              LanguagePath languagePath, InputAttributes inputAttributes) {
+        switch(token.id()) {
+            case HTML:
+            case PAGE_DIRECTIVE_CONTENT:
+                return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, true);
 
+            case GSTRING_CONTENT:
+            case SCRIPTLET_CONTENT:
+            case SCRIPTLET_OUTPUT_VALUE_CONTENT:
+                return LanguageEmbedding.create(GroovyTokenId.language(), 0, 0, false);
+
+            default:
+                return null;
+        }
+    }
 }
