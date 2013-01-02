@@ -60,9 +60,10 @@ public final class ProjectFoldersValidator {
         return result;
     }
 
-    public ProjectFoldersValidator validate(File projectDirectory, File siteRootFolder, File testFolder) {
+    public ProjectFoldersValidator validate(File projectDirectory, File siteRootFolder, File testFolder, File configFolder) {
         validateSiteRootFolder(siteRootFolder);
         validateTestFolder(projectDirectory, testFolder);
+        validateConfigFolder(projectDirectory, configFolder);
         return this;
     }
 
@@ -79,16 +80,30 @@ public final class ProjectFoldersValidator {
         "ProjectFoldersValidator.error.test.notUnderProjectDir=Unit Tests must be underneath project directory."
     })
     private void validateTestFolder(File projectDirectory, File testFolder) {
-        if (testFolder == null) {
+        validateProjectFolder(projectDirectory, testFolder,
+                Bundle.ProjectFoldersValidator_error_test_invalid(), Bundle.ProjectFoldersValidator_error_test_notUnderProjectDir());
+    }
+
+    @NbBundle.Messages({
+        "ProjectFoldersValidator.error.config.invalid=Config must be a valid directory.",
+        "ProjectFoldersValidator.error.config.notUnderProjectDir=Config must be underneath project directory."
+    })
+    private void validateConfigFolder(File projectDirectory, File configFolder) {
+        validateProjectFolder(projectDirectory, configFolder,
+                Bundle.ProjectFoldersValidator_error_config_invalid(), Bundle.ProjectFoldersValidator_error_config_notUnderProjectDir());
+    }
+
+    private void validateProjectFolder(File projectDirectory, File folder, String invalidFolderMessage, String notInProjectMessage) {
+        if (folder == null) {
             // can be empty
             return;
         }
-        if (!testFolder.isDirectory()) {
-            result.addError(new ValidationResult.Message(TEST_FOLDER, Bundle.ProjectFoldersValidator_error_test_invalid()));
+        if (!folder.isDirectory()) {
+            result.addError(new ValidationResult.Message(TEST_FOLDER, invalidFolderMessage));
             return;
         }
-        if (!FileUtil.isParentOf(FileUtil.toFileObject(projectDirectory), FileUtil.toFileObject(testFolder))) {
-            result.addError(new ValidationResult.Message(TEST_FOLDER, Bundle.ProjectFoldersValidator_error_test_notUnderProjectDir()));
+        if (!FileUtil.isParentOf(FileUtil.toFileObject(projectDirectory), FileUtil.toFileObject(folder))) {
+            result.addError(new ValidationResult.Message(TEST_FOLDER, notInProjectMessage));
         }
     }
 
