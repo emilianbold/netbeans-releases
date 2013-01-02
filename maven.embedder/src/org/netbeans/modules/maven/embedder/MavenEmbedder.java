@@ -45,6 +45,7 @@ package org.netbeans.modules.maven.embedder;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -120,6 +121,7 @@ import org.sonatype.aether.util.repository.DefaultProxySelector;
 
 /**
  * Handle for the embedded Maven system, used to parse POMs and more.
+ * Since 2.36, all File instances in Artifacts, MavenProjects or Models should be pre-emptively normalized.
  */
 public final class MavenEmbedder {
 
@@ -256,6 +258,7 @@ public final class MavenEmbedder {
             //the error logs with msgs
             return result.addException(ex);
         }
+        normalizePaths(result.getProject());
         return result;
     }
 
@@ -309,6 +312,7 @@ public final class MavenEmbedder {
         req.setArtifact(sources);
         req.setOffline(isOffline());
         ArtifactResolutionResult result = repositorySystem.resolve(req);
+        normalizePath(sources);
         // XXX check result for exceptions and throw them now?
         for (Exception ex : result.getExceptions()) {
             LOG.log(Level.FINE, null, ex);
@@ -323,7 +327,9 @@ public final class MavenEmbedder {
         MavenExecutionRequest request = createMavenExecutionRequest();
         req.setProcessPlugins(false);
         req.setRepositorySession(maven.newRepositorySession(request));
-        return projectBuilder.build(art, req);
+        ProjectBuildingResult res = projectBuilder.build(art, req);
+        normalizePaths(res.getProject());
+        return res;
     }
 
     public MavenExecutionResult execute(MavenExecutionRequest req) {
@@ -346,6 +352,7 @@ public final class MavenEmbedder {
 
         for (String id : res.getModelIds()) {
             Model m = res.getRawModel(id);
+            normalizePath(m);
             toRet.add(m);
         }
 //        for (ModelProblem p : res.getProblems()) {
@@ -492,7 +499,63 @@ public final class MavenEmbedder {
     public static @CheckForNull List<ModelDescription> getModelDescriptors(MavenProject mp) {
         return NBModelBuilder.getModelDescriptors(mp.getModel());
     }
+
+    /**
+     * normalize all File references in the object tree.
+     * @param project 
+     * @since 2.36
+     */
+    public static void normalizePaths(MavenProject project) {
+        if (project == null) {
+            return;
+        }
+        File f = project.getFile();
+        if (f != null) {
+            project.setFile(FileUtil.normalizeFile(f));
+        }
+        normalizePath(project.getArtifact());
+        normalizePaths(project.getAttachedArtifacts());
+        f = project.getParentFile();
+        if (f != null) {
+            project.setParentFile(FileUtil.normalizeFile(f));
+        }
+        normalizePath(project.getParentArtifact());
+        
+        normalizePaths(project.getArtifacts());
+        normalizePaths(project.getDependencyArtifacts());
+        normalizePaths(project.getExtensionArtifacts());
+        normalizePaths(project.getPluginArtifacts());
+        
+        normalizePath(project.getModel());
+        normalizePath(project.getOriginalModel());
+    }
     
+    static void normalizePath(Model model) {
+        if (model != null) {
+            File f = model.getPomFile();
+            if (f != null) {
+                model.setPomFile(FileUtil.normalizeFile(f));
+            }
+        }
+    }
+
+    static void normalizePaths(Collection<Artifact> arts) {
+        if (arts != null) {
+            for (Artifact aa : arts) {
+                normalizePath(aa);
+            }
+        }
+    }
+    
+    static void normalizePath(Artifact a) {
+        if (a != null) {
+            File f = a.getFile();
+            if (f != null) {
+                a.setFile(FileUtil.normalizeFile(f));
+            }
+        }
+    }
+
     /**
      * descriptor containing some base information about the models collected while building
      * effective model. 
@@ -525,7 +588,7 @@ public final class MavenEmbedder {
         String getName();
         /**
          * location of the model pom file.
-         * @return 
+         * @return normalized path
          */
         File getLocation();
         /**
