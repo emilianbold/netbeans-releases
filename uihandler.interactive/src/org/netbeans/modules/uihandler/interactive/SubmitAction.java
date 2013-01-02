@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.uihandler.interactive;
 
-import org.netbeans.modules.uihandler.*;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Component;
@@ -72,23 +71,28 @@ import org.openide.util.actions.CallableSystemAction;
 
 public final class SubmitAction extends CallableSystemAction {
     
+    @Override
     public void performAction() {
         Controller.getDefault().submit();
     }
     
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(SubmitAction.class, "CTL_SubmitAction");
     }
     
+    @Override
     protected String iconResource() {
         return "org/netbeans/modules/uihandler/tachometer.png";
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -119,10 +123,12 @@ public final class SubmitAction extends CallableSystemAction {
             setToolTipText(NbBundle.getMessage(SubmitAction.class, "CTL_SubmitAction"));
         }
     
+        @Override
         public void propertyChange(PropertyChangeEvent arg0) {
             SwingUtilities.invokeLater(this);
         }
         
+        @Override
         public void run() {
             setIcon(tachoOk);
             setEnabled(true);
@@ -140,6 +146,7 @@ public final class SubmitAction extends CallableSystemAction {
             });
         }
     
+        @Override
         public void actionPerformed(ActionEvent arg0) {
             setIcon(tacho);
             timer.stop();
