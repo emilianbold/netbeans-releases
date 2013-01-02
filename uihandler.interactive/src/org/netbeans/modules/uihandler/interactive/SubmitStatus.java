@@ -30,7 +30,6 @@
  */
 package org.netbeans.modules.uihandler.interactive;
 
-import org.netbeans.modules.uihandler.*;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Component;
@@ -57,7 +56,6 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusLineElementProvider;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -70,6 +68,7 @@ public class SubmitStatus implements StatusLineElementProvider {
     public SubmitStatus() {
     }
 
+    @Override
     public Component getStatusLineElement() {
         return new NrLabel(SubmitAction.get(SubmitAction.class));
     }
@@ -102,16 +101,19 @@ public class SubmitStatus implements StatusLineElementProvider {
             adjustSize();
         }
     
+        @Override
         public void addNotify() {
             adjustSize();
             super.addNotify();
             adjustSize();
         }
         
+        @Override
         public void propertyChange(PropertyChangeEvent arg0) {
             SwingUtilities.invokeLater(this);
         }
         
+        @Override
         public void run() {
             setIcon(tachoOk);
             timer.restart();
@@ -119,6 +121,7 @@ public class SubmitStatus implements StatusLineElementProvider {
             adjustSize();
         }
     
+        @Override
         public void actionPerformed(ActionEvent arg0) {
             setIcon(tacho);
             timer.stop();
@@ -138,6 +141,7 @@ public class SubmitStatus implements StatusLineElementProvider {
         
         @SuppressWarnings("deprecated")
         @Deprecated
+        @Override
         public void resize(int w, int h) {
             boolean ignore = Boolean.getBoolean("netbeans.full.hack"); // NOI18N
             if (ignore) {
@@ -207,6 +211,7 @@ public class SubmitStatus implements StatusLineElementProvider {
             adjustSize();
         }
 
+        @Override
         public void mouseClicked(MouseEvent e) {
             URL hint = Controller.getDefault().getHintsURL();
             if (hint == null || e.isPopupTrigger()) {
@@ -216,15 +221,19 @@ public class SubmitStatus implements StatusLineElementProvider {
             }
         }
 
+        @Override
         public void mousePressed(MouseEvent e) {
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
         }
 
+        @Override
         public void mouseEntered(MouseEvent e) {
         }
 
+        @Override
         public void mouseExited(MouseEvent e) {
         }
     } // end of NrButton
