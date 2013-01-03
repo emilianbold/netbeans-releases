@@ -82,7 +82,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
     private static final Logger LOGGER = Logger.getLogger(TwigCompletionHandler.class.getName());
     private static final DocumentationDecorator DOCUMENTATION_DECORATOR = DocumentationDecorator.getInstance();
     private static final Collection<Character> AUTOPOPUP_STOP_CHARS = new TreeSet<Character>(
-            Arrays.asList('=', ';', '+', '-', '*', '/', '%', '(', ')', '[', ']', '{', '}', '?', ' ', '\t'));
+            Arrays.asList('=', ';', '+', '-', '*', '/', '%', '(', ')', '[', ']', '{', '}', '?', ' ', '\t', '\n'));
 
     private static final Set<TwigElement> TAGS = new HashSet<TwigElement>();
     static {
