@@ -76,26 +76,6 @@ public class GspLexerTest extends TestCase {
         checkNext(sequence, GspTokenId.HTML, "</html>");
     }
 
-    public void testOnlyHTMLWithCustomTags() {
-        String text = "<tr>"
-                        + "<td colspan=\"4\">"
-                            + "<richui:portletView id=\"1\" slotStyle=\"width: 66%; height: 100%;\" playerStyle=\"width: 66%; height: 100%;\" >"
-                                + "<h1>Tree View Here</h1>"
-                            + "</richui:portletView>"
-                        + "</td>"
-                    + "</tr>";
-        TokenSequence<?> sequence = createTokenSequence(text);
-
-        checkNext(sequence, GspTokenId.HTML, "<tr>");
-        checkNext(sequence, GspTokenId.HTML, "<td colspan=\"4\">");
-        checkNext(sequence, GspTokenId.HTML, "<richui:portletView id=\"1\" slotStyle=\"width: 66%; height: 100%;\" playerStyle=\"width: 66%; height: 100%;\" >");
-        checkNext(sequence, GspTokenId.HTML, "<h1>");
-        checkNext(sequence, GspTokenId.HTML, "Tree View Here</h1>");
-        checkNext(sequence, GspTokenId.HTML, "</richui:portletView>");
-        checkNext(sequence, GspTokenId.HTML, "</td>");
-        checkNext(sequence, GspTokenId.HTML, "</tr>");
-    }
-
     public void testPairGTag() {
         String text = "<g:if>"
                     + "</g:if>";
@@ -236,15 +216,12 @@ public class GspLexerTest extends TestCase {
 
     public void testGspDirective() {
         String text =
-                "<%@ page import=\"org.grails.bookmarks.*\" %>"
-                + "<style type=\"text/css\">.searchbar {width:97%;}</style>";
+                "<%@ page import=\"org.grails.bookmarks.*\" %>";
         TokenSequence<?> sequence = createTokenSequence(text);
 
         checkNext(sequence, GspTokenId.PAGE_DIRECTIVE_START, "<%@");
         checkNext(sequence, GspTokenId.PAGE_DIRECTIVE_CONTENT, " page import=\"org.grails.bookmarks.*\" ");
         checkNext(sequence, GspTokenId.PAGE_DIRECTIVE_END, "%>");
-        checkNext(sequence, GspTokenId.HTML, "<style type=\"text/css\">");
-        checkNext(sequence, GspTokenId.HTML, ".searchbar {width:97%;}</style>");
     }
 
     public void testCommentHTMLstyle() {
@@ -304,14 +281,6 @@ public class GspLexerTest extends TestCase {
         checkNext(sequence, GspTokenId.HTML, "<body>");
         checkNext(sequence, GspTokenId.HTML, "</body>");
         checkNext(sequence, GspTokenId.HTML, "</html>");
-    }
-
-    public void testExclamation() {
-        String text = "<p>a!</p>";
-        TokenSequence<?> sequence = createTokenSequence(text);
-
-        checkNext(sequence, GspTokenId.HTML, "<p>");
-        checkNext(sequence, GspTokenId.HTML, "a!</p>");
     }
 
     private TokenSequence createTokenSequence(String text) {
