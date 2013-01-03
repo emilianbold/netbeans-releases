@@ -73,7 +73,6 @@ public class PHPHintsProvider implements HintsProvider {
 
     @Override
     public void computeHints(HintsManager mgr, RuleContext context, List<Hint> hints) {
-        ParserResult info = context.parserResult;
         Map<?, List<? extends Rule.AstRule>> allHints = mgr.getHints(false, context);
         List<? extends AstRule> modelHints = allHints.get(DEFAULT_HINTS);
         if (modelHints != null) {
