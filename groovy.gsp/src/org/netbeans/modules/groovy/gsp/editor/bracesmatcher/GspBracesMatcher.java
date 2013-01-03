@@ -152,6 +152,7 @@ public class GspBracesMatcher implements BracesMatcher {
                     return true;
                 case GTAG_OPENING_END:
                 case GTAG_CLOSING_END:
+                case WHITESPACE:
                     return false;
                 default:
                     if (!tokenSequence.moveNext()) {
