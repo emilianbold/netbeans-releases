@@ -978,6 +978,31 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings("6:33-6:41:verifier:Possibly Dereferencing null");
     }
     
+    public void test224028() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import java.io.*;\n" +
+                       "import java.util.*;\n" +
+                       "class Test {\n" +
+                       "    private void doSomething(Properties props) {\n" +
+                       "        if (props == null) {\n" +
+                       "            props = new Properties();\n" +
+                       "        }\n" +
+                       "        props.clear();\n" +
+                       "        try {\n" +
+                       "            canThrow();\n" +
+                       "        } catch (EmptyStackException | IOException ex) {\n" +
+                       "        }\n" +
+                       "        props.clear();\n" +
+                       "    }\n" +
+                       "    private void canThrow() throws EmptyStackException, IOException {\n" +
+                       "    }\n" +
+                       "}")
+                .sourceLevel("1.7")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)

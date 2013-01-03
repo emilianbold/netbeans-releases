@@ -185,9 +185,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
         Iterator<String> it = strings.iterator();
         while (it.hasNext()) {
             String str = it.next();
-            File fil = new File(str);
-            fil = FileUtil.normalizeFile(fil);
-            fos[index] = FileUtil.toFileObject(fil);
+            fos[index] = FileUtilities.convertStringToFileObject(str);
             index++;
         }
         return fos;

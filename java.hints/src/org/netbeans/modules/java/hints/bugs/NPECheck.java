@@ -52,6 +52,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.UnionType;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -785,12 +786,21 @@ public class NPECheck {
 
                 if (ct.getParameter() != null) {
                     TypeMirror caught = info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), ct.getParameter()));
+                    List<TypeMirror> caughtExceptions = new ArrayList<TypeMirror>();
 
                     if (caught != null && caught.getKind() != TypeKind.ERROR) {
+                        if (caught.getKind() == TypeKind.UNION) {
+                            caughtExceptions.addAll(((UnionType) caught).getAlternatives());
+                        } else {
+                            caughtExceptions.add(caught);
+                        }
+                    }
+                    
+                    for (TypeMirror caughtException : caughtExceptions) {
                         for (Iterator<Entry<TypeMirror, Collection<Map<VariableElement, State>>>> it = resumeOnExceptionHandler.entrySet().iterator(); it.hasNext();) {
                             Entry<TypeMirror, Collection<Map<VariableElement, State>>> e = it.next();
 
-                            if (info.getTypes().isSubtype(e.getKey(), caught)) {
+                            if (info.getTypes().isSubtype(e.getKey(), caughtException)) {
                                 for (Map<VariableElement, State> s : e.getValue()) {
                                     mergeIntoVariable2State(s);
                                 }

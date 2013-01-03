@@ -220,7 +220,6 @@ translation_unit:
  */
 statement
 @init                                                                           {if(state.backtracking == 0){action.statement(input.LT(1));}}
-@after                                                                          {if(state.backtracking == 0){action.end_statement(input.LT(0));}}
     :
         labeled_statement
     |
@@ -236,6 +235,7 @@ statement
     |
         try_block
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_statement(input.LT(0));}}
 
 labeled_statement
     :                                                                           {action.labeled_statement(input.LT(1));}
@@ -270,10 +270,10 @@ expression_or_declaration_statement
 
 compound_statement
 @init                                                                           {if(state.backtracking == 0){action.compound_statement(input.LT(1));}}
-@after                                                                          {if(state.backtracking == 0){action.end_compound_statement(input.LT(0));}}
     :
         LCURLY statement* RCURLY
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_compound_statement(input.LT(0));}}
 
 selection_statement
     :                                                                           {action.selection_statement(input.LT(1));}
@@ -313,19 +313,19 @@ scope Declaration;
 
 condition_declaration
 @init                                                                           {if(state.backtracking == 0){action.condition_declaration(input.LT(1));}}
-@after                                                                          {if(state.backtracking == 0){action.end_condition_declaration(input.LT(0));}}
     :
         type_specifier+ declarator 
         EQUAL                                                                   {action.condition(action.CONDITION__EQUAL, input.LT(0));}
         assignment_expression
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_condition_declaration(input.LT(0));}}
 
 condition_expression
 @init                                                                           {if(state.backtracking == 0){action.condition_expression(input.LT(1));}}
-@after                                                                          {if(state.backtracking == 0){action.end_condition_expression(input.LT(0));}}
     :
         expression
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_condition_expression(input.LT(0));}}
 
 iteration_statement
     :                                                                           {action.iteration_statement(input.LT(1));}
@@ -416,12 +416,12 @@ jump_statement
  */
 declaration_statement
 @init                                                                           {if(state.backtracking == 0){action.declaration_statement(input.LT(1));}}
-@after                                                                          {if(state.backtracking == 0){action.end_declaration_statement(input.LT(0));}}
     :
         simple_declaration[blockscope_decl]
     |
         block_declaration
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_declaration_statement(input.LT(0));}}
 
 //[gram.dcl] 
 /*
@@ -544,7 +544,7 @@ nested_name_specifier returns [ name_specifier_t namequal ]
     ;
 
 lookup_nested_name_specifier:
-        IDENT SCOPE
+        simple_template_id_or_IDENT SCOPE
 //        (
 //            IDENT SCOPE
 //        |
@@ -576,7 +576,6 @@ simle_declaration
 simple_declaration [decl_kind kind]
 scope Declaration;
 @init                                                                           {if(state.backtracking == 0){action.simple_declaration(input.LT(1));}}
-@after                                                                          {if(state.backtracking == 0){action.end_simple_declaration(input.LT(0));}}
     :
                                                                                 {action.decl_specifiers(input.LT(1));}
         decl_specifier*                                                         {action.end_decl_specifiers(input.LT(0));}
@@ -596,6 +595,7 @@ scope Declaration;
             SEMICOLON                                                           {action.simple_declaration(action.SIMPLE_DECLARATION__SEMICOLON, input.LT(0));}
         )
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_simple_declaration(input.LT(0));}}
 
 
 
@@ -614,8 +614,7 @@ scope Declaration;
  */
 simple_declaration_or_function_definition [decl_kind kind]
 scope Declaration;
-@init {if(state.backtracking == 0){action.simple_declaration(input.LT(1));}}
-@after {if(state.backtracking == 0){action.end_simple_declaration(input.LT(0));}}
+@init                                                                           {if(state.backtracking == 0){action.simple_declaration(input.LT(1));}}
     :
                                                                                 {action.decl_specifiers(input.LT(1));}
         decl_specifier*                                                         {action.end_decl_specifiers(input.LT(0));}
@@ -652,6 +651,7 @@ scope Declaration;
             )
         )
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_simple_declaration(input.LT(0));}}
 
 static_assert_declaration:
     LITERAL_static_assert LPAREN constant_expression COMMA STRING_LITERAL RPAREN SEMICOLON
@@ -724,7 +724,6 @@ type_specifier:
 
 type_specifier returns [type_specifier_t ts]
 @init                                                                           {if(state.backtracking == 0){action.type_specifier(input.LT(1));}}
-@after                                                                          {if(state.backtracking == 0){action.end_type_specifier(input.LT(0));}}
     :
         // LITERAL_class SCOPE does not cover all the elaborated_type_specifier cases even with LITERAL_class
         (LITERAL_class SCOPE)=>
@@ -740,10 +739,10 @@ type_specifier returns [type_specifier_t ts]
     |
         trailing_type_specifier
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_type_specifier(input.LT(0));}}
 
 trailing_type_specifier
-@init {action.trailing_type_specifier(input.LT(1));}
-@after {action.end_trailing_type_specifier(input.LT(0));}
+@init                                                                           {action.trailing_type_specifier(input.LT(1));}
     :   
         simple_type_specifier
     |
@@ -753,11 +752,11 @@ trailing_type_specifier
     |
         cv_qualifier
     ;
+finally                                                                         {action.end_trailing_type_specifier(input.LT(0));}
 
 simple_type_specifier returns [type_specifier_t ts_val]
 scope QualName;
-@init {if(state.backtracking == 0){action.simple_type_specifier(input.LT(1));}}
-@after {if(state.backtracking == 0){action.end_simple_type_specifier(input.LT(0));}}
+@init                                                                           {if(state.backtracking == 0){action.simple_type_specifier(input.LT(1));}}
     :
         LITERAL_char                                                            {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__CHAR, input.LT(0));}
     |
@@ -809,6 +808,7 @@ scope QualName;
                 simple_template_id_or_IDENT                                     //{action.simple_type_specifier(input.LT(0));}
             )
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_simple_type_specifier(input.LT(0));}}
 
 lookup_type_name:
         IDENT { action.identifier_is(IDT_CLASS_NAME|IDT_ENUM_NAME|IDT_TYPEDEF_NAME, $IDENT) }?
@@ -844,8 +844,7 @@ decltype_specifier
     ;
 
 elaborated_type_specifier
-@init {if(state.backtracking == 0){action.elaborated_type_specifier(input.LT(1));}}
-@after {if(state.backtracking == 0){action.end_elaborated_type_specifier(input.LT(0));}}
+@init                                                                           {if(state.backtracking == 0){action.elaborated_type_specifier(input.LT(1));}}
     :                                                                           //{action.elaborated_type_specifier(input.LT(1));}
     (
         class_key SCOPE?         
@@ -871,14 +870,15 @@ elaborated_type_specifier
         )
     )                                                                           //{action.end_elaborated_type_specifier(input.LT(0));}
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_elaborated_type_specifier(input.LT(0));}}
 
 // In C++0x this is factored out already
 typename_specifier
 @init                                                                           {if(state.backtracking == 0){action.typename_specifier(input.LT(1));}}
-@after                                                                          {if(state.backtracking == 0){action.end_typename_specifier(input.LT(0));}}
     :
         LITERAL_typename SCOPE? nested_name_specifier ( simple_template_id_or_IDENT  | LITERAL_template simple_template_id_nocheck )
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_typename_specifier(input.LT(0));}}
 
 /*
  * original rule (not needed now):
@@ -1417,7 +1417,6 @@ function_definition:
  */
 function_definition_after_declarator
 @init                                                                           {if(state.backtracking == 0){action.function_definition_after_declarator(input.LT(1));}}
-@after                                                                          {if(state.backtracking == 0){action.end_function_definition_after_declarator(input.LT(0));}}
     :
         ctor_initializer? function_body
     |
@@ -1431,6 +1430,7 @@ function_definition_after_declarator
         ) 
         SEMICOLON
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_function_definition_after_declarator(input.LT(0));}}
 
 /*
  * We have a baaad conflict caused by declaration w/o decl_specifier,
@@ -1459,10 +1459,10 @@ function_definition [decl_kind kind]
 
 function_body
 @init                                                                           {if(state.backtracking == 0){action.function_body(input.LT(1));}}
-@after                                                                          {if(state.backtracking == 0){action.end_function_body(input.LT(0));}}
     :
         compound_statement 
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_function_body(input.LT(0));}}
 
 initializer
     :                                                                           {action.initializer(input.LT(1));}
@@ -1519,13 +1519,13 @@ class_name
 
 class_specifier
 @init                                                                           {if(state.backtracking == 0){action.class_declaration(input.LT(1));}}
-@after                                                                          {if(state.backtracking == 0){action.end_class_declaration(input.LT(0));}}
     :
         class_head 
         LCURLY                  {action.class_body($LCURLY);}
         member_specification? 
         RCURLY                  {action.end_class_body($RCURLY);}
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_class_declaration(input.LT(0));}}
 
 /*
  * Original rule:
@@ -1572,7 +1572,6 @@ class_key:
 
 member_specification 
 @init                                                                           {if(state.backtracking == 0){action.member_specification(input.LT(1));}}
-@after                                                                          {if(state.backtracking == 0){action.end_member_specification(input.LT(0));}}
     :
         member_declaration[field_decl] member_specification?
     |
@@ -1580,6 +1579,7 @@ member_specification
         COLON                                                                   {action.member_specification(action.MEMBER_SPECIFICATION__COLON, input.LT(0));}
         member_specification?
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_member_specification(input.LT(0));}}
 
 
 /*
@@ -1611,7 +1611,6 @@ member_declarator:
  */
 member_declaration [decl_kind kind]
 @init                                                                           {if(state.backtracking == 0){action.member_declaration(input.LT(1));}}
-@after                                                                          {if(state.backtracking == 0){action.end_member_declaration(input.LT(0));}}
     :
         simple_member_declaration_or_function_definition[kind]
     |
@@ -1628,10 +1627,10 @@ member_declaration [decl_kind kind]
     |
         alias_declaration
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_member_declaration(input.LT(0));}}
 
 simple_member_declaration_or_function_definition[decl_kind kind]
 @init                                                                           {if(state.backtracking == 0){action.simple_member_declaration(input.LT(1));}}
-@after                                                                          {if(state.backtracking == 0){action.end_simple_member_declaration(input.LT(0));}}
     :
                                                                                 {action.decl_specifiers(input.LT(1));}
         decl_specifier*                                                         {action.end_decl_specifiers(input.LT(0));}
@@ -1669,6 +1668,7 @@ simple_member_declaration_or_function_definition[decl_kind kind]
             SEMICOLON
         )
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_simple_member_declaration(input.LT(0));}}
 
 member_bitfield_declarator
     :
@@ -2492,7 +2492,6 @@ assignment_expression:
  */
 assignment_expression
 @init                                                                           {if(state.backtracking == 0){action.assignment_expression(input.LT(1));}}
-@after                                                                          {if(state.backtracking == 0){action.end_assignment_expression(input.LT(0));}}
     :
         // this is taken from conditional_expression
         QUESTIONMARK expression COLON assignment_expression
@@ -2506,6 +2505,7 @@ assignment_expression
     |
         throw_expression
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_assignment_expression(input.LT(0));}}
 
 assignment_operator:
         ASSIGNEQUAL | TIMESEQUAL | DIVIDEEQUAL | MODEQUAL | PLUSEQUAL | MINUSEQUAL | SHIFTRIGHTEQUAL | SHIFTLEFTEQUAL |
@@ -2514,17 +2514,17 @@ assignment_operator:
 
 expression
 @init                                                                           {if(state.backtracking == 0){action.expression(input.LT(1));}}
-@after                                                                          {if(state.backtracking == 0){action.end_expression(input.LT(0));}}
     :
         assignment_expression ( COMMA assignment_expression )*
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_expression(input.LT(0));}}
 
 constant_expression returns [ expression_t expr ]
 @init                                                                           {if(state.backtracking == 0){action.constant_expression(input.LT(1));}}
-@after                                                                          {if(state.backtracking == 0){action.end_constant_expression(input.LT(0));}}
     :
         conditional_expression
     ;
+finally                                                                         {if(state.backtracking == 0){action.end_constant_expression(input.LT(0));}}
 
 // [gram.lex]
 

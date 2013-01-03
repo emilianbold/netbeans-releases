@@ -404,7 +404,7 @@ public class RootSelectorTree extends JPanel {
         tree.setModel(DEFAULTMODEL);
         context = Lookup.EMPTY;
         sCont = null;
-        searchPanel.reset();
+        if (searchPanel != null) searchPanel.reset();
         synchronized(currentSelectionSet) {
             currentSelectionSet.clear();
         }
@@ -437,39 +437,41 @@ public class RootSelectorTree extends JPanel {
         
         JScrollPane scrollPane = new JScrollPane(tree, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         add(scrollPane, BorderLayout.CENTER);
-
-        searchPanel = new SearchPanel(tree) {
-
-            @Override
-            protected void performFind() {
-                tree.requestFocus();
-                findNode(getSearchText());
-            }
-
-            @Override
-            protected void performNext() {
-                tree.requestFocus();
-                find(false);
-            }
-
-            @Override
-            protected void performPrevious() {
-                tree.requestFocus();
-                find(true);
-            }
-
-            @Override
-            protected void onCancel() {
-                tree.requestFocus();
-            }
-
-            @Override
-            protected void onClose() {
-                searchPanel.setPermanent(false);
-            }
-        };
         
-        add(searchPanel, BorderLayout.SOUTH);
+        if (!Boolean.getBoolean("profiler.roots.hide.libraries")) { // NOI18N
+            searchPanel = new SearchPanel(tree) {
+
+                @Override
+                protected void performFind() {
+                    tree.requestFocus();
+                    findNode(getSearchText());
+                }
+
+                @Override
+                protected void performNext() {
+                    tree.requestFocus();
+                    find(false);
+                }
+
+                @Override
+                protected void performPrevious() {
+                    tree.requestFocus();
+                    find(true);
+                }
+
+                @Override
+                protected void onCancel() {
+                    tree.requestFocus();
+                }
+
+                @Override
+                protected void onClose() {
+                    searchPanel.setPermanent(false);
+                }
+            };
+        
+            add(searchPanel, BorderLayout.SOUTH);
+        }
         
         scrollPane.setPreferredSize(tree.getPreferredSize());
         

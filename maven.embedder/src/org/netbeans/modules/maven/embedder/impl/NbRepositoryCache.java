@@ -58,6 +58,9 @@ public class NbRepositoryCache extends DefaultRepositoryCache {
     private static Object dependencies;
     
     //as in DataPool class..
+    //TODO mkleint: the constants have wrong values, the caching is not taking effect,
+    //interestingly both the Dependency and Artifact instances are bigger in live IDE when correct value is used..
+    
     private static final String ARTIFACT_POOL = "org.sonatype.aether.impl.internal.DataPool$Artifact";
     private static final String DEPENDENCY_POOL = "org.sonatype.aether.impl.internal.DataPool$Dependency";    
 

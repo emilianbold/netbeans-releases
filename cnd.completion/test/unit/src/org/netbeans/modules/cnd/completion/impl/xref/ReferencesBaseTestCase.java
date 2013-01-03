@@ -69,10 +69,15 @@ public class ReferencesBaseTestCase extends ProjectBasedTestCase {
     protected final void performTest(String source) throws Exception {
         File testSourceFile = getDataFile(source);
         CsmFile csmFile = getCsmFile(testSourceFile);
-        BaseDocument doc = getBaseDocument(testSourceFile);
+        final BaseDocument doc = getBaseDocument(testSourceFile);
         log("creating list of references:");
-        MyTP tp = new MyTP(csmFile, doc);
-        CndTokenUtilities.processTokens(tp, doc, 0, doc.getLength());
+        final MyTP tp = new MyTP(csmFile, doc);
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                CndTokenUtilities.processTokens(tp, doc, 0, doc.getLength());
+            }
+        });
         log("end of references list");
         log("start resolving referenced objects");
         for (ReferenceImpl ref : tp.references) {

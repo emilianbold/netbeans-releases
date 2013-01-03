@@ -246,7 +246,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     }
 
     // for testing purposes only
-    public ProjectBase addProject(ProjectBase prj) {
+    public ProjectBase testAddProject(ProjectBase prj) {
         synchronized (lock) {
             Object id = prj.getPlatformProject();
             assert id != null : "It is expected that prj.getPlatformProject() is not NULL here"; // NOI18N
@@ -292,7 +292,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                     _closeProject2(csmProject, platformProjectKey, cleanRepository);
                 }
             };
-            this.enqueueModelTask(task, "Closing Project "); // NOI18N
+            this.enqueueModelTask(task, "Closing Project " + csmProject.getDisplayName()); // NOI18N
         } else {
             _closeProject2(csmProject, platformProjectKey, cleanRepository);
         }
@@ -512,6 +512,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 
         ParserThreadManager.instance().startup(CndUtils.isStandalone());
         RepositoryUtils.startup();
+        ReferencesIndex.startup();
     //if( ! isStandalone() ) {
     //    for( NativeProject nativeProject : ModelSupport.instance().getNativeProjects() ) {
     //    	addProject(nativeProject, nativeProject.getProjectDisplayName());

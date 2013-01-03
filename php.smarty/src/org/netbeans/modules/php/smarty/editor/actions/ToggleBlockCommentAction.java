@@ -95,7 +95,8 @@ public class ToggleBlockCommentAction extends BaseAction {
                     try {
                         ts.move(Utilities.getRowStart(doc, caretOffset) + tplMetaData.getCloseDelimiter().length() + 1);
                         ts.moveNext();
-                        if (ts.token().id() == TplTopTokenId.T_COMMENT && Utilities.getRowEnd(doc, caretOffset) == caretOffset) {
+                        if (ts.token() != null && ts.token().id() == TplTopTokenId.T_COMMENT
+                                && Utilities.getRowEnd(doc, caretOffset) == caretOffset) {
                             commentIt.set(false);
                         }
                     } catch (BadLocationException ex) {

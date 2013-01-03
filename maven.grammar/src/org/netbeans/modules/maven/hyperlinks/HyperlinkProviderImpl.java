@@ -66,6 +66,7 @@ import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.grammar.POMDataObject;
@@ -323,7 +324,7 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
     public static void openAtSource(InputLocation location) {
         InputSource source = location.getSource();
         if (source != null && source.getLocation() != null) {
-            FileObject fobj = FileUtil.toFileObject(FileUtil.normalizeFile(new File(source.getLocation())));
+            FileObject fobj = FileUtilities.convertStringToFileObject(source.getLocation());
             if (fobj != null) {
                 try {
                     DataObject dobj = DataObject.find(fobj);

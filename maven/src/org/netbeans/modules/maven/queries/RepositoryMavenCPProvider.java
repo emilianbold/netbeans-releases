@@ -180,8 +180,7 @@ public class RepositoryMavenCPProvider implements ClassPathProvider {
         if (project != null) {
             for (Artifact s : project.getCompileArtifacts()) {
                 if (s.getFile() == null) continue;
-                File f = FileUtil.normalizeFile(s.getFile());
-                items.add(ClassPathSupport.createResource(FileUtil.urlForArchiveOrDir(f)));
+                items.add(ClassPathSupport.createResource(FileUtil.urlForArchiveOrDir(s.getFile())));
             }
         }
         return ClassPathSupport.createClassPathImplementation(items);
@@ -193,8 +192,7 @@ public class RepositoryMavenCPProvider implements ClassPathProvider {
         if (project != null) {
             for (Artifact s : project.getRuntimeArtifacts()) {
                 if (s.getFile() == null) continue;
-                File f = FileUtil.normalizeFile(s.getFile());
-                items.add(ClassPathSupport.createResource(FileUtil.urlForArchiveOrDir(f)));
+                items.add(ClassPathSupport.createResource(FileUtil.urlForArchiveOrDir(s.getFile())));
             }
         }
         return ClassPathSupport.createClassPathImplementation(items);

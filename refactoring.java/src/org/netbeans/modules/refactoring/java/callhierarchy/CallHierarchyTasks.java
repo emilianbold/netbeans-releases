@@ -224,7 +224,7 @@ final class CallHierarchyTasks {
             
             while (tpath != null) {
                 Kind kind = tpath.getLeaf().getKind();
-                if (kind == Kind.METHOD || kind == Kind.METHOD_INVOCATION || kind == Kind.MEMBER_SELECT) {
+                if (kind == Kind.METHOD || kind == Kind.METHOD_INVOCATION || kind == Kind.MEMBER_SELECT || kind == Kind.NEW_CLASS) {
                     method = ScanUtils.checkElement(javac, javac.getTrees().getElement(tpath));
                     if (method != null && (method.getKind() == ElementKind.METHOD || method.getKind() == ElementKind.CONSTRUCTOR)) {
                         break;

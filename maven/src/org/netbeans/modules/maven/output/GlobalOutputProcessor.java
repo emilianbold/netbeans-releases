@@ -50,6 +50,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
@@ -171,7 +172,7 @@ public class GlobalOutputProcessor implements OutputProcessor {
             if (loc == null) {
                 pom = new File(config.getExecutionDirectory(), "pom.xml");
             } else {
-                pom = FileUtil.normalizeFile(new File(loc));
+                pom = FileUtilities.convertStringToFile(loc);
             }
             FileObject pomFO = FileUtil.toFileObject(pom);
             if (pomFO == null) {

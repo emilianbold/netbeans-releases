@@ -126,6 +126,11 @@ import org.openide.util.Utilities;
             }
         }
     }
+    
+    @Override
+    public void interrupt() throws IOException {
+        interrupt(pid);
+    }
 
     public void interruptGroup() throws IOException {
 	try {
