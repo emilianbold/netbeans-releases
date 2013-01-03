@@ -102,14 +102,6 @@
                     <attr name="beaninfo" boolvalue="false"/>
                 </file>
             
-                <folder name="CodeTemplates">
-                    <folder name="Defaults">
-                        <file name="codetemplates.xml" url="codetemplates.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.gsp.resources.Bundle"/>
-                        </file>
-                    </folder>
-                </folder>
-
                 <folder name="Keybindings">
                     <folder name="NetBeans">
                         <folder name="Defaults">
