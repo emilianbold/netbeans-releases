@@ -243,7 +243,8 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         if (panel.getKenai()==null)
             return;
 
-        RequestProcessor.getDefault().post(new Runnable() {
+        Utilities.getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 Collection<KenaiLicense> licenses = null;
                 try {

@@ -71,6 +71,7 @@ import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.ui.KenaiPopupActionsProvider;
 import org.netbeans.modules.kenai.ui.ProjectHandleImpl;
+import org.netbeans.modules.kenai.ui.Utilities;
 import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
@@ -78,7 +79,6 @@ import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor.IssueHandle;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -261,7 +261,7 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
                             final ProjectHandleImpl pHandle = new ProjectHandleImpl(instProj);
                             final DefaultDashboard<KenaiServer, KenaiProject> dashboard = KenaiServer.getDashboard(pHandle);
                             dashboard.addProject(pHandle, false, false);
-                            RequestProcessor.getDefault().post(new Runnable() {
+                            Utilities.getRequestProcessor().post(new Runnable() {
 
                                 public void run() {
                                     ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupActionsProvider.class, "CONTACTING_ISSUE_TRACKER"));
@@ -280,7 +280,7 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
                                     final ProjectHandleImpl pHandle = new ProjectHandleImpl(instProj);
                                     final DefaultDashboard<KenaiServer, KenaiProject> dashboard = KenaiServer.getDashboard(pHandle);                                    
                                     dashboard.addProject(pHandle, false, false);
-                                    RequestProcessor.getDefault().post(new Runnable() {
+                                    Utilities.getRequestProcessor().post(new Runnable() {
 
                                         public void run() {
                                             ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupActionsProvider.class, "CONTACTING_ISSUE_TRACKER"));

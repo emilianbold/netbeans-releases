@@ -129,7 +129,7 @@ public final class GetSourcesFromKenaiAction extends AbstractAction {
                 if (KenaiService.Names.SUBVERSION.equals(feature.getService())) {
                     if (Subversion.isClientAvailable(true)) {
                         KenaiUIUtils.logKenaiUsage("KENAI_SVN_CHECKOUT"); // NOI18N
-                        RequestProcessor.getDefault().post(new Runnable() {
+                        Utilities.getRequestProcessor().post(new Runnable() {
                             @Override
                             public void run() {
                                 try {
@@ -157,7 +157,7 @@ public final class GetSourcesFromKenaiAction extends AbstractAction {
                     }
                 } else if (KenaiService.Names.MERCURIAL.equals(feature.getService())) {
                     KenaiUIUtils.logKenaiUsage("KENAI_HG_CLONE"); // NOI18N
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    Utilities.getRequestProcessor().post(new Runnable() {
                         @Override
                         public void run() {
                             try {
