@@ -1862,6 +1862,10 @@ public class OutlineView extends JScrollPane {
             }
             int r2 = rowAtPoint(new Point(0, visibleRect.y + visibleRect.height));
             if (r2 < 0) r2 = getRowCount() - 1;
+            if (r2 >= rowWidths.length) {
+                // some rows were added, but not rendered yet, thus their width is unknown.
+                r2 = rowWidths.length - 1;
+            }
             int width = 0;
             for (int r = r1; r <= r2; r++) {
                 if (rowWidths[r] > width) {

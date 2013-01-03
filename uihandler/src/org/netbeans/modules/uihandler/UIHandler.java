@@ -196,6 +196,7 @@ implements ActionListener, Runnable, Callable<JButton> {
     }
     
     static void waitFlushed() {
+        assert !SwingUtilities.isEventDispatchThread() : "Must not wait in AWT here"; // NOI18N
         try {
             lastRecord.waitFinished(0);
         } catch (InterruptedException ex) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,29 +37,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.hints.pom.spi;
+package org.netbeans.modules.uihandler.interactive;
 
-import java.util.List;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.maven.model.pom.POMModel;
-import org.netbeans.spi.editor.hints.ErrorDescription;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.uihandler.api.Controller;
+import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author mkleint
+ * @author Martin Entlicher
  */
-public interface SelectionPOMFixProvider extends POMErrorFixBase {
-
+final class LRUtil {
+    
+    private static RequestProcessor logRecordsCountRP = new RequestProcessor("Log Records Count", 1); // NOI18N
+    
     /**
-     * 
-     * @param model
-     * @param prj can be null
-     * @param selectionStart
-     * @param selectionEnd
-     * @return 
+     * Invokes the provided runnable in AWT thread with the log records count passed as an argument.
+     * @param runnable 
      */
-    List<ErrorDescription> getErrorsForDocument(POMModel model, Project prj,
-            int selectionStart, int selectionEnd);
+    static void invokeWithLogRecordsCount(final LRRun runnable) {
+        logRecordsCountRP.post(new Runnable() {
+            @Override
+            public void run() {
+                final int logRecordsCount = Controller.getDefault().getLogRecordsCount();
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        runnable.run(logRecordsCount);
+                    }
+                });
+            }
+        });
+    }
+    
+    static interface LRRun {
+        public void run(int logRecordsCount);
+    }
+    
 }
