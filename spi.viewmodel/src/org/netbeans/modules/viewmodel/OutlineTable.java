@@ -47,7 +47,6 @@ package org.netbeans.modules.viewmodel;
 import java.awt.BorderLayout;
 import java.awt.Rectangle;
 import java.awt.datatransfer.Transferable;
-import java.awt.dnd.DnDConstants;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -110,7 +109,7 @@ import org.openide.windows.TopComponent;
 public class OutlineTable extends JPanel implements
 ExplorerManager.Provider, PropertyChangeListener {
 
-    private final Logger logger = Logger.getLogger(OutlineTable.class.getName());
+    private static final Logger logger = Logger.getLogger(OutlineTable.class.getName());
     
     private ExplorerManager     explorerManager;
     final MyTreeTable           treeTable; // Accessed from tests
@@ -149,6 +148,7 @@ ExplorerManager.Provider, PropertyChangeListener {
             //   No impact on order property
             //   Change visibility map
 
+            @Override
             public void columnAdded(TableColumnModelEvent e) {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("columnAdded("+e+") to = "+e.getToIndex());
@@ -173,7 +173,9 @@ ExplorerManager.Provider, PropertyChangeListener {
                             }
                         }
                     }
-                    logger.fine("  to index = "+visibleIndex+", column index = "+columnIndex);
+                    if (logger.isLoggable(Level.FINE)) {
+                        logger.fine("  to index = "+visibleIndex+", column index = "+columnIndex);
+                    }
                     if (columnIndex != -1) {
                         int prefferedVisibleIndex = columnVisibleMap[columnIndex];
                         // check if there's a visible column with the same visible index and lower order
@@ -187,7 +189,9 @@ ExplorerManager.Provider, PropertyChangeListener {
                                 }
                             }
                         }
-                        logger.fine("  to index = "+visibleIndex+", column = "+columns[columnIndex].getDisplayName()+", columnVisibleIndex = "+columnVisibleIndex+", prefferedVisibleIndex = "+prefferedVisibleIndex);
+                        if (logger.isLoggable(Level.FINE)) {
+                            logger.fine("  to index = "+visibleIndex+", column = "+columns[columnIndex].getDisplayName()+", columnVisibleIndex = "+columnVisibleIndex+", prefferedVisibleIndex = "+prefferedVisibleIndex);
+                        }
                         columns[columnIndex].setHidden(false);
                         columnVisibleMap[columnIndex] = prefferedVisibleIndex;
                         for (int i = 0; i < columnVisibleMap.length; i++) {
@@ -201,7 +205,9 @@ ExplorerManager.Provider, PropertyChangeListener {
                             dumpColumnVisibleMap();
                         }
                         if (prefferedVisibleIndex >= 0 && prefferedVisibleIndex != visibleIndex) {
-                            logger.fine("moveColumn("+visibleIndex+", "+prefferedVisibleIndex+")");
+                            if (logger.isLoggable(Level.FINE)) {
+                                logger.fine("moveColumn("+visibleIndex+", "+prefferedVisibleIndex+")");
+                            }
                             ignoreMove = true;
                             try {
                                 treeTable.getTable().getColumnModel().moveColumn(visibleIndex, prefferedVisibleIndex);
@@ -217,6 +223,7 @@ ExplorerManager.Provider, PropertyChangeListener {
                 }
             }
 
+            @Override
             public void columnRemoved(TableColumnModelEvent e) {
                 if (logger.isLoggable(Level.FINE)) {
                     logger.fine("columnRemoved("+e+") from = "+e.getFromIndex());
@@ -225,7 +232,7 @@ ExplorerManager.Provider, PropertyChangeListener {
                 }
                 if (tableColumns != null && e.getFromIndex() >= 0) {
                     int visibleIndex = e.getFromIndex();
-                    logger.fine("  from index = "+visibleIndex);
+                    logger.log(Level.FINE, "  from index = {0}", visibleIndex);
                     int columnIndex = getColumnIndex(visibleIndex);
                     if (columnIndex != -1) {
                         columns[columnIndex].setHidden(true);
@@ -242,8 +249,11 @@ ExplorerManager.Provider, PropertyChangeListener {
                 }
             }
 
+            @Override
             public void columnMoved(TableColumnModelEvent e) {
-                if (tableColumns == null || ignoreMove) return ;
+                if (tableColumns == null || ignoreMove) {
+                    return ;
+                }
                 int from = e.getFromIndex();
                 int to = e.getToIndex();
                 if (from == to) {
@@ -275,7 +285,9 @@ ExplorerManager.Provider, PropertyChangeListener {
                 }
             }
             
+            @Override
             public void columnMarginChanged(ChangeEvent e) {}
+            @Override
             public void columnSelectionChanged(ListSelectionEvent e) {}
         });
         ActionMap map = getActionMap();
@@ -346,8 +358,9 @@ ExplorerManager.Provider, PropertyChangeListener {
         //this.model = model;
         
         // 1) destroy old model
-        if (currentTreeModelRoot != null) 
+        if (currentTreeModelRoot != null) {
             currentTreeModelRoot.destroy ();
+        }
         
         // 3) no model => set empty root node & return
         if (model == null) {
@@ -450,8 +463,9 @@ ExplorerManager.Provider, PropertyChangeListener {
         //this.model = model;
 
         // 1) destroy old model
-        if (currentTreeModelRoot != null)
+        if (currentTreeModelRoot != null) {
             currentTreeModelRoot.destroy ();
+        }
 
         // 3) no model => set empty root node & return
         if (model == null) {
@@ -494,6 +508,7 @@ ExplorerManager.Provider, PropertyChangeListener {
          */
     }
 
+    @Override
     public ExplorerManager getExplorerManager () {
         if (explorerManager == null) {
             explorerManager = new ExplorerManager ();
@@ -501,11 +516,14 @@ ExplorerManager.Provider, PropertyChangeListener {
         return explorerManager;
     }
     
+    @Override
     public void propertyChange (PropertyChangeEvent evt) {
         String propertyName = evt.getPropertyName ();
         TopComponent tc = (TopComponent) SwingUtilities.
             getAncestorOfClass (TopComponent.class, this);
-        if (tc == null) return;
+        if (tc == null) {
+            return;
+        }
         if (propertyName.equals (TopComponent.Registry.PROP_CURRENT_NODES)) {
             ExplorerUtils.activateActions(getExplorerManager(), equalNodes());
         } else
@@ -517,12 +535,21 @@ ExplorerManager.Provider, PropertyChangeListener {
     private boolean equalNodes () {
         Node[] ns1 = TopComponent.getRegistry ().getCurrentNodes ();
         Node[] ns2 = getExplorerManager ().getSelectedNodes ();
-        if (ns1 == ns2) return true;
-        if ( (ns1 == null) || (ns2 == null) ) return false;
-        if (ns1.length != ns2.length) return false;
+        if (ns1 == ns2) {
+            return true;
+        }
+        if ( (ns1 == null) || (ns2 == null) ) {
+            return false;
+        }
+        if (ns1.length != ns2.length) {
+            return false;
+        }
         int i, k = ns1.length;
-        for (i = 0; i < k; i++)
-            if (!ns1 [i].equals (ns2 [i])) return false;
+        for (i = 0; i < k; i++) {
+            if (!ns1 [i].equals (ns2 [i])) {
+                return false;
+            }
+        }
         return true;
     }
     
@@ -707,9 +734,13 @@ ExplorerManager.Provider, PropertyChangeListener {
                                 continue;
                             }
                         }
-                        if (j <= i) duplicates[orders[j]]--;
+                        if (j <= i) {
+                            duplicates[orders[j]]--;
+                        }
                         orders[j]++;
-                        if (j <= i) duplicates[orders[j]]++;
+                        if (j <= i) {
+                            duplicates[orders[j]]++;
+                        }
                     }
                 }
             }
@@ -735,7 +766,9 @@ ExplorerManager.Provider, PropertyChangeListener {
         int ci = 0;
         int tci = 0;//d;
         TableColumn[] tableColumns = new TableColumn[columns.length];
-        if (defaultColumnIndex > 0) tci++;
+        if (defaultColumnIndex > 0) {
+            tci++;
+        }
         for (int i = 0; i < columns.length; i++) {
             if (ci < columnsToSet.length && columns[i] == columnsToSet[ci] && i != defaultColumnIndex) {
                 if (tci >= tcm.getColumnCount()) {
@@ -798,10 +831,12 @@ ExplorerManager.Provider, PropertyChangeListener {
         //int[] shift = new int[columns.length];
         int defaultColumnVisibleIndex = 0;
         for (int i = 0; i < defaultColumnIndex; i++) {
-            if (!columns[i].isHidden()) defaultColumnVisibleIndex++;
+            if (!columns[i].isHidden()) {
+                defaultColumnVisibleIndex++;
+            }
         }
         if (defaultColumnVisibleIndex != 0 && defaultColumnVisibleIndex < tcm.getColumnCount()) {
-            logger.fine(" move default column("+0+", "+defaultColumnVisibleIndex+")");
+            logger.log(Level.FINE, " move default column({0}, {1})", new Object[]{0, defaultColumnVisibleIndex});
             tcm.moveColumn(0, defaultColumnVisibleIndex);
         }
 
@@ -809,10 +844,14 @@ ExplorerManager.Provider, PropertyChangeListener {
         int[] order = new int[n];
         int ci = 0;
         for (int i = 0; i < n; i++, ci++) {
-            while (ci < columns.length && columns[ci].isHidden()) ci++;
-            if (ci >= columns.length) break;
+            while (ci < columns.length && columns[ci].isHidden()) {
+                ci++;
+            }
+            if (ci >= columns.length) {
+                break;
+            }
             order[i] = columnVisibleMap[ci];
-            logger.fine("    order["+i+"] = "+order[i]);
+            logger.log(Level.FINE, "    order[{0}] = {1}", new Object[]{i, order[i]});
         }
         for (int i = 0; i < n; i++) {
             int j = 0;
@@ -825,13 +864,13 @@ ExplorerManager.Provider, PropertyChangeListener {
                 // No "j" for order[j] == i.
                 continue;
             }
-            logger.fine("  order["+j+"] = "+i);
+            logger.log(Level.FINE, "  order[{0}] = {1}", new Object[]{j, i});
             if (j != i) {
                 for (int k = j; k > i; k--) {
                     order[k] = order[k-1];
                 }
                 order[i] = i;
-                logger.fine(" move column("+j+", "+i+")");
+                logger.log(Level.FINE, " move column({0}, {1})", new Object[]{j, i});
                 tcm.moveColumn(j, i);
             }
         }
@@ -859,7 +898,7 @@ ExplorerManager.Provider, PropertyChangeListener {
                 continue;
             }
             int visibleOrder = columnVisibleMap[i];
-            logger.fine("  visibleOrder["+i+"] = "+visibleOrder+", ");
+            logger.log(Level.FINE, "  visibleOrder[{0}] = {1}, ", new Object[]{i, visibleOrder});
             ETableColumn tc;
             try {
                 tc = (ETableColumn) tcm.getColumn (visibleOrder);
@@ -871,10 +910,14 @@ ExplorerManager.Provider, PropertyChangeListener {
                         aioobex);
                 continue ;
             }
-            logger.fine("  GUI column = "+tc.getHeaderValue());
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("  GUI column = "+tc.getHeaderValue());
+            }
             if (columns[i] instanceof Column) {
                 Column c = (Column) columns[i];
-                logger.fine("    Retrieved width "+c.getColumnWidth()+" from "+columns[i].getDisplayName()+"["+i+"] for "+tc.getHeaderValue());
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.fine("    Retrieved width "+c.getColumnWidth()+" from "+columns[i].getDisplayName()+"["+i+"] for "+tc.getHeaderValue());
+                }
                 tc.setPreferredWidth(c.getColumnWidth());
                 if (c.isSorted()) {
                     ecm.setColumnSorted(tc, !c.isSortedDescending(), 1);
@@ -884,9 +927,13 @@ ExplorerManager.Provider, PropertyChangeListener {
     }
 
     private void saveWidths () {
-        if (columns == null) return;
+        if (columns == null) {
+            return;
+        }
         int i, k = columns.length;
-        if (k == 0) return ;
+        if (k == 0) {
+            return ;
+        }
         TableColumnModel tcm = treeTable.getTable().getColumnModel();
         ETableColumnModel ecm = (ETableColumnModel) tcm;
         Enumeration<TableColumn> etc = tcm.getColumns();
@@ -908,7 +955,7 @@ ExplorerManager.Provider, PropertyChangeListener {
                 continue;
             }
             int visibleOrder = columnVisibleMap[i];
-            logger.fine("  visibleOrder["+i+"] = "+visibleOrder+", ");
+            logger.log(Level.FINE, "  visibleOrder[{0}] = {1}, ", new Object[]{i, visibleOrder});
             TableColumn tc;
             try {
                 tc = tcm.getColumn (visibleOrder);
@@ -920,18 +967,26 @@ ExplorerManager.Provider, PropertyChangeListener {
                         aioobex);
                 continue ;
             }
-            logger.fine("  GUI column = "+tc.getHeaderValue());
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "  GUI column = {0}", tc.getHeaderValue());
+            }
             if (columns[i] instanceof Column) {
-                logger.fine("    Setting width "+tc.getWidth()+" from "+tc.getHeaderValue()+" to "+columns[i].getDisplayName()+"["+i+"]");
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.fine("    Setting width "+tc.getWidth()+" from "+tc.getHeaderValue()+" to "+columns[i].getDisplayName()+"["+i+"]");
+                }
                 ((Column) columns[i]).setColumnWidth(tc.getWidth());
             }
         }
     }
     
     private void saveSortedState () {
-        if (columns == null) return;
+        if (columns == null) {
+            return;
+        }
         int i, k = columns.length;
-        if (k == 0) return ;
+        if (k == 0) {
+            return ;
+        }
         TableColumnModel tcm = treeTable.getTable().getColumnModel();
         ETableColumnModel ecm = (ETableColumnModel) tcm;
         Enumeration<TableColumn> etc = tcm.getColumns();
@@ -953,9 +1008,13 @@ ExplorerManager.Provider, PropertyChangeListener {
                         aioobex);
                 continue ;
             }
-            logger.fine("  GUI column = "+tc.getHeaderValue());
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("  GUI column = "+tc.getHeaderValue());
+            }
             if (columns[i] instanceof Column) {
-                logger.fine("    Setting sorted "+tc.isSorted()+" descending "+(!tc.isAscending())+" to "+columns[i].getDisplayName()+"["+i+"]");
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.fine("    Setting sorted "+tc.isSorted()+" descending "+(!tc.isAscending())+" to "+columns[i].getDisplayName()+"["+i+"]");
+                }
                 ((Column) columns[i]).setSorted(tc.isSorted());
                 ((Column) columns[i]).setSortedDescending(!tc.isAscending());
             }
@@ -987,7 +1046,9 @@ ExplorerManager.Provider, PropertyChangeListener {
     
     public boolean isExpanded (Object node) {
         Node[] ns = currentTreeModelRoot.findNode (node);
-        if (ns.length == 0) return false; // Something what does not exist is not expanded ;-)
+        if (ns.length == 0) {
+            return false; // Something what does not exist is not expanded ;-)
+        }
         return treeTable.isExpanded (ns[0]);
     }
 
