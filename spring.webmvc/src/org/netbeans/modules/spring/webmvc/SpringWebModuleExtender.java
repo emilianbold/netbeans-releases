@@ -212,9 +212,14 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
         FileObject webInf = webModule.getWebInf();
         if (webInf == null) {
             try {
-                webInf = FileUtil.createFolder(webModule.getDocumentBase(), "WEB-INF"); //NOI18N
+                FileObject documentBase = webModule.getDocumentBase();
+                if (documentBase == null) {
+                    LOGGER.log(Level.INFO, "WebModule does not have valid documentBase");
+                    return Collections.<FileObject>emptySet();
+                }
+                webInf = FileUtil.createFolder(documentBase, "WEB-INF"); //NOI18N
             } catch (IOException ex) {
-                   LOGGER.log(Level.WARNING, "Exception during creating WEB-INF directory", ex); //NOI18N
+                LOGGER.log(Level.WARNING, "Exception during creating WEB-INF directory", ex);
             }
         }
         if (webInf != null) {
