@@ -55,7 +55,7 @@ public class JsGlobalIsNotDeclaredTest extends HintTestBase {
         super(testName);
     }
     
-    private static class GlobalIsNotDefinedHintTest extends GlobalIsNotDefined {
+    private static class GlobalIsNotDefinedHint extends GlobalIsNotDefined {
         @Override
         public HintSeverity getDefaultSeverity() {
             return HintSeverity.WARNING;
@@ -64,7 +64,7 @@ public class JsGlobalIsNotDeclaredTest extends HintTestBase {
     }
     
     private Rule createRule() {
-        GlobalIsNotDefined gind = new GlobalIsNotDefinedHintTest();
+        GlobalIsNotDefined gind = new GlobalIsNotDefinedHint();
         return gind;
     }
     
