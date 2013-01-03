@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven.hyperlinks;
 
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
@@ -74,12 +73,12 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.util.NbBundle.Messages;
 import static org.netbeans.modules.maven.hyperlinks.Bundle.*;
+import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 
 /**
  * adds hyperlinking support to pom.xml files..
@@ -201,16 +200,7 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
                 }
                 if (getPath(fo, text) != null) {
                     FileObject file = getPath(fo, text);
-                    DataObject dobj;
-                    try {
-                        dobj = DataObject.find(file);
-                        EditCookie edit = dobj.getLookup().lookup(EditCookie.class);
-                        if (edit != null) {
-                            edit.edit();
-                        }
-                    } catch (DataObjectNotFoundException ex) {
-                        LOG.log(Level.FINE, "Cannot find dataobject", ex);
-                    }
+                    NodeUtils.openPomFile(file);
                 }
             }
             // urls get opened..
@@ -327,7 +317,7 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
             FileObject fobj = FileUtilities.convertStringToFileObject(source.getLocation());
             if (fobj != null) {
                 try {
-                    DataObject dobj = DataObject.find(fobj);
+                    DataObject dobj = DataObject.find(NodeUtils.readOnlyLocalRepositoryFile(fobj));
                     EditCookie edit = dobj.getLookup().lookup(EditCookie.class);
                     if (edit != null) {
                         edit.edit();

@@ -621,6 +621,7 @@ private void manageResources(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
 
 private void resolveOldBuildScript(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resolveOldBuildScript
     jwsProps.jnlpImplOldOrModified = false;
+    jwsProps.updateJnlpImpl();
     resolvePanel.setVisible(false);
     setEnabledAllComponents(true);
 }//GEN-LAST:event_resolveOldBuildScript
