@@ -141,6 +141,20 @@ public class JsDocParserTest extends JsTestBase {
         assertEquals(44, namedParameter.getParamName().getOffset());
     }
 
+    public void testIssue224265() throws Exception {
+        Source source = getTestSource(getTestFile("testfiles/jsdoc/parser/issue224265.js"));
+        List<? extends JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();
+        assertEquals(JsDocElementType.PARAM, tags.get(0).getType());
+        assertTrue(tags.get(0) instanceof NamedParameterElement);
+        NamedParameterElement namedParameter = (NamedParameterElement) tags.get(0);
+        assertEquals(1, namedParameter.getParamTypes().size());
+        assertEquals("uri:user", namedParameter.getParamTypes().get(0).getType());
+        assertEquals(15, namedParameter.getParamTypes().get(0).getOffset());
+        assertEquals("user", namedParameter.getParamName().getName());
+        assertEquals(25, namedParameter.getParamName().getOffset());
+        assertEquals("the user", namedParameter.getParamDescription());
+    }
+
     private void checkElementTypes(String filePath) {
         Source source = getTestSource(getTestFile(filePath));
         List<? extends JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();
