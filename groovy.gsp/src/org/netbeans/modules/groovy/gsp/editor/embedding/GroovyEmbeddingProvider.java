@@ -51,6 +51,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.gsp.GspLanguage;
 import org.netbeans.modules.groovy.gsp.lexer.GspLexerLanguage;
 import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
 import org.netbeans.modules.parsing.api.Embedding;
@@ -68,7 +69,7 @@ public class GroovyEmbeddingProvider extends EmbeddingProvider {
 
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
-        if (GspTokenId.MIME_TYPE.equals(snapshot.getMimeType())) {
+        if (GspLanguage.GSP_MIME_TYPE.equals(snapshot.getMimeType())) {
             return Collections.singletonList(Embedding.create(translate(snapshot)));
         } else {
             return Collections.<Embedding>emptyList();
@@ -188,7 +189,7 @@ public class GroovyEmbeddingProvider extends EmbeddingProvider {
 
         @Override
         public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
-            if (GspTokenId.MIME_TYPE.equals(snapshot.getMimeType())) {
+            if (GspLanguage.GSP_MIME_TYPE.equals(snapshot.getMimeType())) {
                 return Collections.singleton(new GroovyEmbeddingProvider());
             } else {
                 return Collections.<SchedulerTask>emptyList();

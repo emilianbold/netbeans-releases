@@ -108,7 +108,6 @@ public enum GspTokenId implements TokenId {
     GSTRING_END("end-delimiter");                    // ${  ...  }
 
 
-    public static final String MIME_TYPE = "text/x-gsp"; // NOI18N
     private final String primaryCategory;
 
 

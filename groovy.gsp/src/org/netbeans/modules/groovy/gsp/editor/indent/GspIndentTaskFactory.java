@@ -47,14 +47,14 @@ package org.netbeans.modules.groovy.gsp.editor.indent;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
-import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
+import org.netbeans.modules.groovy.gsp.GspLanguage;
 
 /**
  *
  * @author Martin Janicek
  */
 @MimeRegistration(
-    mimeType = GspTokenId.MIME_TYPE,
+    mimeType = GspLanguage.GSP_MIME_TYPE,
     service = IndentTask.Factory.class
 )
 public class GspIndentTaskFactory implements IndentTask.Factory {

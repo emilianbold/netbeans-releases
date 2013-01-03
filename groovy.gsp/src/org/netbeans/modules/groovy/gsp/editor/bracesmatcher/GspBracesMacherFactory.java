@@ -43,7 +43,7 @@
 package org.netbeans.modules.groovy.gsp.editor.bracesmatcher;
 
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
+import org.netbeans.modules.groovy.gsp.GspLanguage;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;
@@ -53,7 +53,7 @@ import org.netbeans.spi.editor.bracesmatching.MatcherContext;
  * @author Martin Janicek
  */
 @MimeRegistration(
-    mimeType = GspTokenId.MIME_TYPE,
+    mimeType = GspLanguage.GSP_MIME_TYPE,
     service = BracesMatcherFactory.class,
     position = 0
 )

@@ -52,6 +52,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.gsp.GspLanguage;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
@@ -87,7 +88,7 @@ public final class GspLexerLanguage extends LanguageHierarchy<GspTokenId> {
 
     @Override
     protected String mimeType() {
-        return GspTokenId.MIME_TYPE;
+        return GspLanguage.GSP_MIME_TYPE;
     }
 
     @Override

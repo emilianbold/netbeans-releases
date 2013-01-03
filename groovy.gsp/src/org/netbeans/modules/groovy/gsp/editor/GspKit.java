@@ -46,7 +46,6 @@ package org.netbeans.modules.groovy.gsp.editor;
 
 import java.awt.event.ActionEvent;
 import javax.swing.Action;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -55,9 +54,6 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.lib.editor.util.CharSequenceUtilities;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.modules.csl.api.DeleteToNextCamelCasePosition;
 import org.netbeans.modules.csl.api.DeleteToPreviousCamelCasePosition;
@@ -67,9 +63,8 @@ import org.netbeans.modules.csl.api.PreviousCamelCasePosition;
 import org.netbeans.modules.csl.api.SelectCodeElementAction;
 import org.netbeans.modules.csl.api.SelectNextCamelCasePosition;
 import org.netbeans.modules.csl.api.SelectPreviousCamelCasePosition;
+import org.netbeans.modules.groovy.gsp.GspLanguage;
 import org.netbeans.modules.html.editor.api.HtmlKit;
-import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
-import org.openide.util.Exceptions;
 
 /**
  * Editor kit implementation for GSP content type
@@ -90,12 +85,12 @@ public class GspKit extends HtmlKit {
     static final long serialVersionUID =-1381945567613910297L;
         
     public GspKit(){
-        super(GspTokenId.MIME_TYPE);
+        super(GspLanguage.GSP_MIME_TYPE);
     }
     
     @Override
     public String getContentType() {
-        return GspTokenId.MIME_TYPE;
+        return GspLanguage.GSP_MIME_TYPE;
     }
     
     @Override
