@@ -110,7 +110,8 @@ public class FormatVisitor extends NodeVisitor {
     @Override
     public Node enter(Block block) {
         if ((block instanceof FunctionNode || isScript(block)
-                || block.getStart() < block.getFinish())) {
+                || (block.getStart() < block.getFinish()
+                    && jdk.nashorn.internal.parser.Token.descType(block.getToken()) == TokenType.LBRACE))) {
 
             if (caseNodes.contains(block)) {
                 // if the block is real block it is reused down the ast tree
@@ -125,7 +126,8 @@ public class FormatVisitor extends NodeVisitor {
         }
 
         if (block instanceof FunctionNode || isScript(block)
-                || block.getStart() != block.getFinish()) {
+                || (block.getStart() < block.getFinish()
+                    && jdk.nashorn.internal.parser.Token.descType(block.getToken()) == TokenType.LBRACE)) {
             return null;
         } else {
             return super.enter(block);
