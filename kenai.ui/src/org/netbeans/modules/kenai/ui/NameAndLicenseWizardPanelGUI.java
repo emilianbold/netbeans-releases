@@ -157,7 +157,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
                         @Override
                         public void run() {
                             new AddInstanceAction(TeamServerProviderImpl.getDefault(), CTL_AddInstance()).actionPerformed(e);
-                            panel.setKenai(((Kenai) kenaiCombo.getSelectedItem()));
+                            panel.setKenai(((KenaiServer) kenaiCombo.getSelectedItem()).getKenai());
                             refreshUsername();
                             updatePrjNamePreview();
                         }
