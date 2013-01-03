@@ -52,7 +52,6 @@ import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject.Registration;
-import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.UniFileLoader;
 import org.openide.util.NbBundle;
@@ -68,35 +67,36 @@ import org.openide.util.NbBundle;
     @ActionReference(id = @ActionID(category = "System", id = "org.openide.actions.RenameAction"), path = ACTIONS, position = 800, separatorAfter = 900),
     @ActionReference(id = @ActionID(category = "System", id = "org.openide.actions.SaveAsTemplateAction"), path = ACTIONS, position = 1000, separatorAfter = 1100),
     @ActionReference(id = @ActionID(category = "System", id = "org.openide.actions.ToolsAction"), path = ACTIONS, position = 1200),
-    @ActionReference(id = @ActionID(category = "System", id = "org.openide.actions.PropertiesAction"), path = ACTIONS, position = 1300)})
+    @ActionReference(id = @ActionID(category = "System", id = "org.openide.actions.PropertiesAction"), path = ACTIONS, position = 1300)
+})
 
 public class GspDataLoader extends UniFileLoader {
-    
+
     private static final long serialVersionUID = 1L;
-    protected static final String ACTIONS = "Loaders/"+GspTokenId.MIME_TYPE+"/Actions";
-    
+    protected static final String ACTIONS = "Loaders/" + GspTokenId.MIME_TYPE + "/Actions";
+
     public GspDataLoader() {
         super("org.netbeans.modules.groovy.gsp.loaders.GspDataObject");
     }
-    
+
     @Override
     protected String defaultDisplayName() {
         return NbBundle.getMessage(GspDataLoader.class, "LBL_Gsp_loader_name");
     }
-    
+
     @Override
     protected void initialize() {
         super.initialize();
         getExtensions().addMimeType(GspTokenId.MIME_TYPE);
     }
-    
-    protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
+
+    @Override
+    protected MultiDataObject createMultiObject(FileObject primaryFile) throws IOException {
         return new GspDataObject(primaryFile, this);
     }
-    
+
     @Override
     protected String actionsContext() {
         return ACTIONS;
     }
-    
 }

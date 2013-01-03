@@ -50,31 +50,30 @@ import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
-import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
 @MIMEResolver.ExtensionRegistration(
-    displayName="#GspResolver",
-    extension="gsp",
-    mimeType=GspTokenId.MIME_TYPE,
-    position=255
+    displayName = "#GspResolver",
+    extension = "gsp",
+    mimeType = GspTokenId.MIME_TYPE,
+    position = 255
 )
-public class GspDataObject extends MultiDataObject
-        implements Lookup.Provider {
-    
-    public GspDataObject(FileObject pf, GspDataLoader loader) throws DataObjectExistsException, IOException {
+public class GspDataObject extends MultiDataObject implements Lookup.Provider {
+
+    public GspDataObject(FileObject pf, GspDataLoader loader) throws IOException {
         super(pf, loader);
         registerEditor(GspTokenId.MIME_TYPE, true);
     }
+
     
     @Override
     protected Node createNodeDelegate() {
         return new GspDataNode(this, getLookup());
     }
-    
+
     @Override
     protected int associateLookup() {
         return 1;
