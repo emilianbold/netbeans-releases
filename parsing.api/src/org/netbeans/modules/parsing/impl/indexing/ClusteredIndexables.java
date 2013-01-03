@@ -303,6 +303,7 @@ public final class ClusteredIndexables {
             }
             detachDeleteStackTrace = detachIndexStackTrace = Pair.<Long,StackTraceElement[]>of(
                 System.nanoTime(),Thread.currentThread().getStackTrace());
+            clear();
             this.deleteIndexables = null;
             this.indexIndexables = null;
         }
@@ -583,17 +584,21 @@ public final class ClusteredIndexables {
                         index = deleteFromDeleted.nextSetBit(index+1);
                         if (index >=0) {
                             if (deleteIndexables == null) {
-                                throw new IllegalStateException(
-                                    MessageFormat.format(
-                                        "Attached at: {0} by: {1}, Detached at: {2} by: {3}",   //NOI18N
-                                        attachDeleteStackTrace == null ? null : attachDeleteStackTrace.first,
-                                        attachDeleteStackTrace == null ? null : Arrays.asList(attachDeleteStackTrace.second),
-                                        detachDeleteStackTrace == null ? null : detachDeleteStackTrace.first,
-                                        detachDeleteStackTrace == null ? null : Arrays.asList(detachDeleteStackTrace.second)));
+                                throwIllegalState(
+                                    "No deleteIndexables",  //NOI18N
+                                    attachDeleteStackTrace,
+                                    detachDeleteStackTrace);
                             }
-                            final Indexable file = deleteIndexables.get(index);
-                            current = file.getRelativePath();
-                            return true;
+                            try {
+                                final Indexable file = deleteIndexables.get(index);
+                                current = file.getRelativePath();
+                                return true;
+                            } catch (IndexOutOfBoundsException e) {
+                                throwIllegalState(
+                                    "Wrong deleteIndexables",  //NOI18N
+                                    attachDeleteStackTrace,
+                                    detachDeleteStackTrace);
+                            }
                         } else {
                             index = -1;
                             state = 2;
@@ -602,17 +607,21 @@ public final class ClusteredIndexables {
                         index = deleteFromIndex.nextSetBit(index+1);
                         if (index >= 0) {
                             if (indexIndexables == null) {
-                                throw new IllegalStateException(
-                                    MessageFormat.format(
-                                        "Attached at: {0} by: {1}, Detached at: {2} by: {3}",   //NOI18N
-                                        attachIndexStackTrace == null ? null : attachIndexStackTrace.first,
-                                        attachIndexStackTrace == null ? null : Arrays.asList(attachIndexStackTrace.second),
-                                        detachIndexStackTrace == null ? null : detachIndexStackTrace.first,
-                                        detachIndexStackTrace == null ? null : Arrays.asList(detachIndexStackTrace.second)));
+                                throwIllegalState(
+                                    "No indexIndexables",   //NOI18N
+                                    attachIndexStackTrace,
+                                    detachIndexStackTrace);
                             }
-                            final Indexable file = indexIndexables.get(index);
-                            current = file.getRelativePath();
-                            return true;
+                            try {
+                                final Indexable file = indexIndexables.get(index);
+                                current = file.getRelativePath();
+                                return true;
+                            } catch (IndexOutOfBoundsException e) {
+                                throwIllegalState(
+                                    "Wrong indexIndexables",   //NOI18N
+                                    attachIndexStackTrace,
+                                    detachIndexStackTrace);
+                            }
                         } else {
                             index = -1;
                             state = 3;
@@ -636,6 +645,20 @@ public final class ClusteredIndexables {
             @Override
             public void remove() {
                 throw new UnsupportedOperationException("Immutable collection");    //NOI18N
+            }
+
+            private static void throwIllegalState(
+                @NonNull final String reason,
+                @NullAllowed final Pair<Long,StackTraceElement[]> attach,
+                @NullAllowed final Pair<Long,StackTraceElement[]> detach) {
+                throw new IllegalStateException(
+                    MessageFormat.format(
+                        "{0} : Attached at: {1} by: {2}, Detached at: {3} by: {4}",   //NOI18N
+                        reason,
+                        attach == null ? null : attach.first,
+                        attach == null ? null : Arrays.asList(attach.second),
+                        detach == null ? null : detach.first,
+                        detach == null ? null : Arrays.asList(detach.second)));
             }
             
         }
