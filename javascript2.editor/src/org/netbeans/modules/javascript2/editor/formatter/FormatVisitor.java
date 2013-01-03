@@ -41,31 +41,31 @@
  */
 package org.netbeans.modules.javascript2.editor.formatter;
 
-import com.oracle.nashorn.ir.AccessNode;
-import com.oracle.nashorn.ir.BinaryNode;
-import com.oracle.nashorn.ir.Block;
-import com.oracle.nashorn.ir.CallNode;
-import com.oracle.nashorn.ir.CaseNode;
-import com.oracle.nashorn.ir.CatchNode;
-import com.oracle.nashorn.ir.DoWhileNode;
-import com.oracle.nashorn.ir.ForNode;
-import com.oracle.nashorn.ir.FunctionNode;
-import com.oracle.nashorn.ir.IdentNode;
-import com.oracle.nashorn.ir.IfNode;
-import com.oracle.nashorn.ir.LiteralNode;
-import com.oracle.nashorn.ir.Node;
-import com.oracle.nashorn.ir.ObjectNode;
-import com.oracle.nashorn.ir.PropertyNode;
-import com.oracle.nashorn.ir.ReferenceNode;
-import com.oracle.nashorn.ir.SwitchNode;
-import com.oracle.nashorn.ir.TernaryNode;
-import com.oracle.nashorn.ir.TryNode;
-import com.oracle.nashorn.ir.UnaryNode;
-import com.oracle.nashorn.ir.VarNode;
-import com.oracle.nashorn.ir.WhileNode;
-import com.oracle.nashorn.ir.WithNode;
-import com.oracle.nashorn.ir.visitor.NodeVisitor;
-import com.oracle.nashorn.parser.TokenType;
+import jdk.nashorn.internal.ir.AccessNode;
+import jdk.nashorn.internal.ir.BinaryNode;
+import jdk.nashorn.internal.ir.Block;
+import jdk.nashorn.internal.ir.CallNode;
+import jdk.nashorn.internal.ir.CaseNode;
+import jdk.nashorn.internal.ir.CatchNode;
+import jdk.nashorn.internal.ir.DoWhileNode;
+import jdk.nashorn.internal.ir.ForNode;
+import jdk.nashorn.internal.ir.FunctionNode;
+import jdk.nashorn.internal.ir.IdentNode;
+import jdk.nashorn.internal.ir.IfNode;
+import jdk.nashorn.internal.ir.LiteralNode;
+import jdk.nashorn.internal.ir.Node;
+import jdk.nashorn.internal.ir.ObjectNode;
+import jdk.nashorn.internal.ir.PropertyNode;
+import jdk.nashorn.internal.ir.ReferenceNode;
+import jdk.nashorn.internal.ir.SwitchNode;
+import jdk.nashorn.internal.ir.TernaryNode;
+import jdk.nashorn.internal.ir.TryNode;
+import jdk.nashorn.internal.ir.UnaryNode;
+import jdk.nashorn.internal.ir.VarNode;
+import jdk.nashorn.internal.ir.WhileNode;
+import jdk.nashorn.internal.ir.WithNode;
+import jdk.nashorn.internal.ir.visitor.NodeVisitor;
+import jdk.nashorn.internal.parser.TokenType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -1199,7 +1199,7 @@ public class FormatVisitor extends NodeVisitor {
         // in case it is string literal.
         int start = node.getStart();
         long firstToken = node.getToken();
-        TokenType type = com.oracle.nashorn.parser.Token.descType(firstToken);
+        TokenType type = jdk.nashorn.internal.parser.Token.descType(firstToken);
         if (type.equals(TokenType.STRING) || type.equals(TokenType.ESCSTRING)) {
             start--;
         }
@@ -1212,7 +1212,7 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     private static int getFunctionStart(FunctionNode node) {
-        return com.oracle.nashorn.parser.Token.descPosition(node.getFirstToken());
+        return jdk.nashorn.internal.parser.Token.descPosition(node.getFirstToken());
     }
 
     private int getFinish(Node node) {
@@ -1222,10 +1222,10 @@ public class FormatVisitor extends NodeVisitor {
             FunctionNode function = (FunctionNode) node;
             if (node.getStart() == node.getFinish()) {
                 long lastToken = function.getLastToken();
-                int finish = node.getStart() + com.oracle.nashorn.parser.Token.descPosition(lastToken)
-                        + com.oracle.nashorn.parser.Token.descLength(lastToken);
+                int finish = node.getStart() + jdk.nashorn.internal.parser.Token.descPosition(lastToken)
+                        + jdk.nashorn.internal.parser.Token.descLength(lastToken);
                 // check if it is a string
-                if (com.oracle.nashorn.parser.Token.descType(lastToken).equals(TokenType.STRING)) {
+                if (jdk.nashorn.internal.parser.Token.descType(lastToken).equals(TokenType.STRING)) {
                     finish++;
                 }
                 return finish;

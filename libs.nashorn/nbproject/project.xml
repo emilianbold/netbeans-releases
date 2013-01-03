@@ -6,7 +6,7 @@
             <code-name-base>org.netbeans.libs.nashorn</code-name-base>
             <module-dependencies/>
             <public-packages>
-                <subpackages>com.oracle.nashorn</subpackages>
+                <subpackages>jdk.nashorn</subpackages>
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/nashorn.jar</runtime-relative-path>
