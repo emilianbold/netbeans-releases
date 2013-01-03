@@ -127,7 +127,7 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
     //GuardedBy(AWT)
     private       Collection<? extends AnalyzerFactory> analyzers;
     //GuardedBy(AWT)
-    private       Map<? extends AnalyzerFactory, Iterable<? extends WarningDescription>> analyzer2Warnings;
+    private       FutureWarnings analyzer2Warnings;
     private final Lookup.Result<AnalyzerFactory> analyzersResult;
     private final Map<String, AnalyzerAndWarning> warningId2Description = new HashMap<String, AnalyzerAndWarning>();
     private final JButton runAnalysis;
@@ -308,7 +308,6 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
     @Messages({"LBL_Predefined=Predefined", "LBL_Custom=Custom", "LBL_PleaseWait=Computing..."})
     public void updateConfigurations(final DialogState state) {
         analyzers = analyzersResult.allInstances();
-        analyzer2Warnings = Collections.emptyMap();
         
         Object selectedConfiguration = null;
         DefaultComboBoxModel configurationModel = new DefaultComboBoxModel();
@@ -351,6 +350,7 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
         final Collection<? extends AnalyzerFactory> analyzersCopy = new ArrayList<AnalyzerFactory>(analyzers);
         
         inspectionsReady = false;
+        analyzer2Warnings = new FutureWarnings();
         
         WORKER.post(new Runnable() {
             @Override public void run() {
@@ -366,8 +366,11 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
                     analyzer2Warnings.put(a, warnings);
                 }
                 
+                final Map<AnalyzerFactory, Map<String, WarningDescription>> analyzer2Id2DescriptionVal = computeAnalyzerId2Description(analyzer2Warnings);
+                
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override public void run() {
+                        RunAnalysisPanel.this.analyzer2Warnings.set(analyzer2Id2DescriptionVal);
                         fillInspectionCombo(state, analyzer2Warnings);
                         inspectionsReady = true;
                         updatePlugins();
@@ -378,8 +381,6 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
     }
     
     private void fillInspectionCombo(DialogState state, Map<? extends AnalyzerFactory, Iterable<? extends WarningDescription>> analyzer2Warnings) {
-        this.analyzer2Warnings = analyzer2Warnings;
-        
         DefaultComboBoxModel inspectionModel = new DefaultComboBoxModel();
         AnalyzerAndWarning firstInspection = null;
         AnalyzerAndWarning preselectInspection = null;
@@ -719,7 +720,11 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
                                selectedInspection instanceof AnalyzerAndWarning ? SPIAccessor.ACCESSOR.getWarningId(((AnalyzerAndWarning) selectedInspection).wd) : null);
     }
 
-    Map<AnalyzerFactory, Map<String, WarningDescription>> getAnalyzerId2Description() {
+    FutureWarnings getAnalyzerId2Description() {
+        return analyzer2Warnings;
+    }
+    
+    private static Map<AnalyzerFactory, Map<String, WarningDescription>> computeAnalyzerId2Description(Map<? extends AnalyzerFactory, Iterable<? extends WarningDescription>> analyzer2Warnings) {
         Map<AnalyzerFactory, Map<String, WarningDescription>> result = new HashMap<AnalyzerFactory, Map<String, WarningDescription>>();
         
         for (Entry<? extends AnalyzerFactory, Iterable<? extends WarningDescription>> e : analyzer2Warnings.entrySet()) {
@@ -1002,6 +1007,28 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
         
         public static DialogState from(WarningDescription wd) {
             return new DialogState(false, null, null, SPIAccessor.ACCESSOR.getWarningId(wd));
+        }
+    }
+    
+    public static class FutureWarnings {
+        private Map<AnalyzerFactory, Map<String, WarningDescription>> result;
+        public synchronized boolean isDone() {
+            return result != null;
+        }
+        public synchronized Map<AnalyzerFactory, Map<String, WarningDescription>> get() {
+            while (result == null) {
+                try {
+                    wait();
+                } catch (InterruptedException ex) {
+                    //Should not be happening, hopefully:
+                    Logger.getLogger(RunAnalysisPanel.class.getName()).log(Level.FINE, null, ex);
+                }
+            }
+            return result;
+        }
+        synchronized void set(Map<AnalyzerFactory, Map<String, WarningDescription>> value) {
+            result = value;
+            notifyAll();
         }
     }
 }

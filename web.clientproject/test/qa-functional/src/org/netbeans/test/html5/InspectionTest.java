@@ -39,44 +39,59 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.hint;
+package org.netbeans.test.html5;
 
-import org.netbeans.modules.csl.api.HintSeverity;
-import org.netbeans.modules.csl.api.Rule;
-import org.netbeans.modules.javascript2.editor.hints.GlobalIsNotDefined;
+import java.util.logging.Logger;
+import junit.framework.Test;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
- * @author Petr Pisl
+ * @author Vladimir Riha
  */
-public class JsGlobalIsNotDeclaredTest extends HintTestBase {
+public class InspectionTest extends GeneralHTMLProject {
 
-    public JsGlobalIsNotDeclaredTest(String testName) {
-        super(testName);
+    private static final Logger LOGGER = Logger.getLogger(InspectionTest.class.getName());
+
+    public InspectionTest(String args) {
+        super(args);
     }
-    
-    private class GlobalIsNotDefinedHintTest extends GlobalIsNotDefined {
-        @Override
-        public HintSeverity getDefaultSeverity() {
-            return HintSeverity.WARNING;
-        }
-        
+
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(InspectionTest.class).addTest(
+                "testOpenProject",
+                "testMultipleSelect").enableModules(".*").clusters(".*").honorAutoloadEager(true));
     }
-    
-    private Rule createRule() {
-        GlobalIsNotDefined gind = new GlobalIsNotDefinedHintTest();
-        return gind;
+
+    public void testOpenProject() throws Exception {
+        startTest();
+        InspectionTest.current_project = "simpleProject";
+        openProject("simpleProject");
+        setRunConfiguration("Embedded WebKit Browser", true, true);
+        endTest();
     }
-    
-    public void testSimple01() throws Exception {
-        checkHints(this, createRule(), "testfiles/hints/globalIsNotDeclared.js", null);
-    }
-    
-    public void testIssue224040() throws Exception {
-        checkHints(this, createRule(), "testfiles/hints/issue224040.js", null);
-    }
-    
-    public void testIssue224041() throws Exception {
-        checkHints(this, createRule(), "testfiles/hints/issue224041.js", null);
+
+    /**
+     * Case: Run file, turn inspection on, select one element, add another
+     * element to selection, check that 2 elements are selected
+     *
+     * @throws Exception
+     */
+    public void testMultipleSelect() throws Exception {
+        startTest();
+        runFile("simpleProject", "index.html");
+        EmbeddedBrowserOperator eb = new EmbeddedBrowserOperator("Web Browser");
+        eb.checkInspectModeButton(true);
+        EditorOperator eo = new EditorOperator("index.html");
+        eo.setCaretPositionToLine(18);
+        type(eo, "window.setTimeout(function() {document.getElementById(\"el1\").setAttribute(\":netbeans_selected\", \"set\")}, 3000);\n"
+                + "window.setTimeout(function() {document.getElementById(\"el2\").setAttribute(\":netbeans_selected\", \"add\")}, 5000);");
+        eo.save();
+        waitElementsSelected(2);
+        HTMLElement[] el = getSelectedElements();
+        assertEquals("Unexpected number of selected elements: was " + el.length + " should be 2", 2, el.length);
+        endTest();
     }
 }
