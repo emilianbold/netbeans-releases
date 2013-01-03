@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,29 +37,23 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.hints.pom.spi;
+package org.netbeans.modules.uihandler;
 
-import java.util.List;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.maven.model.pom.POMModel;
-import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.openide.modules.OnStop;
 
 /**
- *
- * @author mkleint
+ * Wait with the shutdown till logs are flushed.
+ * 
+ * @author Martin Entlicher
  */
-public interface SelectionPOMFixProvider extends POMErrorFixBase {
+@OnStop()
+public class UIHandlerClosing implements Runnable {
 
-    /**
-     * 
-     * @param model
-     * @param prj can be null
-     * @param selectionStart
-     * @param selectionEnd
-     * @return 
-     */
-    List<ErrorDescription> getErrorsForDocument(POMModel model, Project prj,
-            int selectionStart, int selectionEnd);
+    @Override
+    public void run() {
+        UIHandler.waitFlushed();
+    }
+    
 }

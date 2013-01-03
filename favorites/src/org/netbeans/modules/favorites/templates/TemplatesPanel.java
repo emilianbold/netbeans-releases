@@ -210,7 +210,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                 deleteButton.setEnabled (nodes != null && nodes.length > 0);
                 renameButton.setEnabled (nodes != null && nodes.length == 1);
                 addButton.setEnabled (nodes != null && nodes.length == 1);
-                duplicateButton.setEnabled (nodes != null && nodes.length == 1 && nodes [0].isLeaf ());
+                duplicateButton.setEnabled (isDuplicateEnabled(nodes));
                 SwingUtilities.invokeLater (new Runnable () {
                     @Override public void run() {
                         moveUpButton.setEnabled (isMoveUpEnabled (nodes));
@@ -218,6 +218,20 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                     }
                 });
             }
+        }
+    }
+    
+    private static boolean isDuplicateEnabled(Node[] nodes) {
+        // It has not much sense to duplicate non-editable templates.
+        // Thus using the same condition:
+        if (nodes != null && nodes.length == 1 && nodes [0].isLeaf ()) {
+            Node n = nodes[0];
+            DataObject dobj = n.getLookup().lookup(DataObject.class);
+            assert dobj != null : "DataObject for node " + n;
+            FileObject fo = dobj.getPrimaryFile ();
+            return fo.canRevert() || fo.getSize () > 0;
+        } else {
+            return false;
         }
     }
     

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,59 +37,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.uihandler.interactive;
 
-package org.netbeans.modules.kenai.ui.project;
-
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.ProjectAccessorImpl;
-import org.netbeans.modules.kenai.ui.Utilities;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.uihandler.api.Controller;
 import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author tester
+ * @author Martin Entlicher
  */
-public class DetailsAction {
-
-    static RequestProcessor.Task t = null;
-
-    public static synchronized AbstractAction forProject(final ProjectHandle<KenaiProject> proj) {
-
-        return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_EditProject")) { //NOI18N
-
-            public void actionPerformed(ActionEvent e) {
-                if (t != null && !t.isFinished()) {
-                    t.cancel();
-                }
-                final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_OpenKenaiProjectAction")); //NOI18N
-                handle.setInitialDelay(0);
-                handle.start();
-                t = Utilities.getRequestProcessor().post(new Runnable() {
-
+final class LRUtil {
+    
+    private static RequestProcessor logRecordsCountRP = new RequestProcessor("Log Records Count", 1); // NOI18N
+    
+    /**
+     * Invokes the provided runnable in AWT thread with the log records count passed as an argument.
+     * @param runnable 
+     */
+    static void invokeWithLogRecordsCount(final LRRun runnable) {
+        logRecordsCountRP.post(new Runnable() {
+            @Override
+            public void run() {
+                final int logRecordsCount = Controller.getDefault().getLogRecordsCount();
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
-                        final KenaiProject kenaiProj = proj.getTeamProject();
-                        SwingUtilities.invokeLater(new Runnable() {
-
-                            public void run() {
-                                kenaiProjectTopComponent tc = kenaiProjectTopComponent.getInstance(kenaiProj);
-                                tc.open();
-                                tc.requestActive();
-                            }
-                        });
-                        handle.finish();
+                        runnable.run(logRecordsCount);
                     }
                 });
             }
-        };
+        });
     }
-
+    
+    static interface LRRun {
+        public void run(int logRecordsCount);
+    }
+    
 }

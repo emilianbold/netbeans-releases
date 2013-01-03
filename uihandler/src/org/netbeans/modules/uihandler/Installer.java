@@ -969,7 +969,6 @@ public class Installer extends ModuleInstall implements Runnable {
 
     @Override
     public boolean closing() {
-        UIHandler.waitFlushed();
         return true;
     }
 
