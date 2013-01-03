@@ -98,44 +98,43 @@ public class PhpStructureScannerTest extends ParserTestBase{
 
     }
     public void testScan() throws Exception {
-        performTest("interface_001");
-
+        performTest("structure/interface_001");
     }
 
     public void test133484() throws Exception {
-        performTest("referenceParameter_001");
+        performTest("structure/referenceParameter_001");
     }
 
     public void testClass() throws Exception {
-        performTest("class005");
+        performTest("structure/class005");
     }
 
     public void testIssue142644() throws Exception {
-        performTest("issue142644");
+        performTest("structure/issue142644");
     }
 
     public void testIssue148558() throws Exception {
-        performTest("issue148558");
+        performTest("structure/issue148558");
     }
 
     public void testPHPDocTagProperty() throws Exception {
-        performTest("propertyTag");
+        performTest("structure/propertyTag");
     }
 
     public void testIssue205886_01() throws Exception {
-        performTest("issue205886_01");
+        performTest("structure/issue205886_01");
     }
 
     public void testTraits_01() throws Exception {
-        performTest("traitsStructure_01");
+        performTest("structure/traitsStructure_01");
     }
 
     public void testTraits_02() throws Exception {
-        performTest("traitsStructure_02");
+        performTest("structure/traitsStructure_02");
     }
 
     public void testIssue170712() throws Exception {
-        performTest("issue170712");
+        performTest("structure/issue170712");
     }
 
     public void testFoldingMethod() throws Exception {
