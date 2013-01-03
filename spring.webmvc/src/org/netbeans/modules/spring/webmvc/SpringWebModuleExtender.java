@@ -228,7 +228,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
                 fs.runAtomicAction(createSpringConfig);
             } catch (IOException e) {
                 Logger.getLogger("global").log(Level.INFO, null, e);
-                return null;
+                return Collections.<FileObject>emptySet();
             }
         }
         return createSpringConfig.getFilesToOpen();
