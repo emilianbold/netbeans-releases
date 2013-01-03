@@ -80,6 +80,9 @@ public final class CGSGenerator implements CodeGenerator {
     protected static final String START_OF_SETTER = "set";    //NOI18N
 
     private static final String NEW_LINE = System.getProperty("line.separator");    //NOI18N
+    private static final String FUNCTION_MODIFIER = "${FUNCTION_MODIFIER}"; //NOI18N
+    private static final String UNDERSCORED_METHOD_NAME = "${UNDERSCORED_METHOD_NAME}"; //NOI18N
+    private static final String ACCESSOR = "${ACCESSOR}"; //NOI18N
     private static final String PROPERTY = "${PROPERTY}";                           //NOI18N
     private static final String CURSOR = "${cursor}";                           //NOI18N
     private static final String PARAM_NAME = "${PARAM_NAME}"; //NOI18N
@@ -180,7 +183,10 @@ public final class CGSGenerator implements CodeGenerator {
                         final String methodName = getUnusedMethodName(new ArrayList<String>(), changedName);
                         getters.append(
                                 getGetterTemplate(cgsInfo)
-                                .replace(PROPERTY, name)
+                                .replace(FUNCTION_MODIFIER, property.getFunctionModifier())
+                                .replace(UNDERSCORED_METHOD_NAME, name)
+                                .replace(ACCESSOR, property.getAccessor())
+                                .replace(PROPERTY, property.getAccessedName())
                                 .replace(UP_FIRST_LETTER_PROPERTY, methodName)
                                 .replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName));
                         getters.append(NEW_LINE);
@@ -219,6 +225,7 @@ public final class CGSGenerator implements CodeGenerator {
             @Override
             public String getTemplateText(final CGSInfo cgsInfo, final JTextComponent textComponent) {
                 StringBuilder setters = new StringBuilder();
+                FluentSetterCreator fluentSetterCreator = new FluentSetterCreator(cgsInfo.isFluentSetter());
                 for (Property property : cgsInfo.getPossibleSetters()) {
                     if (property.isSelected()) {
                         final String name = property.getName();
@@ -228,7 +235,14 @@ public final class CGSGenerator implements CodeGenerator {
                         String changedName = cgsInfo.getHowToGenerate() == GenWay.WITHOUT_UNDERSCORE
                                 ? upFirstLetterWithoutUnderscore(name) : upFirstLetter(name);
                         final String methodName = getUnusedMethodName(new ArrayList<String>(), changedName);
-                        setters.append(getSetterTemplate(cgsInfo).replace(PROPERTY, name).replace(PARAM_NAME, paramName)
+                        setters.append(
+                                getSetterTemplate(cgsInfo)
+                                .replace(FUNCTION_MODIFIER, property.getFunctionModifier())
+                                .replace(UNDERSCORED_METHOD_NAME, name)
+                                .replace(ACCESSOR, property.getAccessor())
+                                .replace(PROPERTY, property.getAccessedName())
+                                .replace(FLUENT_SETTER, fluentSetterCreator.create(property))
+                                .replace(PARAM_NAME, paramName)
                                 .replace(UP_FIRST_LETTER_PROPERTY, methodName)
                                 .replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName)
                                 .replace(PARAM_TYPE, type.isEmpty() ? type : property.getTypeForTemplate()));
@@ -269,6 +283,7 @@ public final class CGSGenerator implements CodeGenerator {
             @Override
             public String getTemplateText(final CGSInfo cgsInfo, final JTextComponent textComponent) {
                 final StringBuilder gettersAndSetters = new StringBuilder();
+                FluentSetterCreator fluentSetterCreator = new FluentSetterCreator(cgsInfo.isFluentSetter());
                 for (Property property : cgsInfo.getPossibleSetters()) {
                     if (property.isSelected()) {
                         final String name = property.getName();
@@ -279,12 +294,22 @@ public final class CGSGenerator implements CodeGenerator {
                                 ? withoutUnderscore(name) : name;
                         gettersAndSetters.append(
                                 getGetterTemplate(cgsInfo)
-                                .replace(PROPERTY, name)
+                                .replace(FUNCTION_MODIFIER, property.getFunctionModifier())
+                                .replace(UNDERSCORED_METHOD_NAME, name)
+                                .replace(ACCESSOR, property.getAccessor())
+                                .replace(PROPERTY, property.getAccessedName())
                                 .replace(UP_FIRST_LETTER_PROPERTY, upFirstLetter(methodName))
                                 .replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName));
                         gettersAndSetters.append(NEW_LINE);
                         final String type = property.getType();
-                        gettersAndSetters.append(getSetterTemplate(cgsInfo).replace(PROPERTY, name).replace(PARAM_NAME, paramName)
+                        gettersAndSetters.append(
+                                getSetterTemplate(cgsInfo)
+                                .replace(FUNCTION_MODIFIER, property.getFunctionModifier())
+                                .replace(UNDERSCORED_METHOD_NAME, name)
+                                .replace(ACCESSOR, property.getAccessor())
+                                .replace(PROPERTY, property.getAccessedName())
+                                .replace(FLUENT_SETTER, fluentSetterCreator.create(property))
+                                .replace(PARAM_NAME, paramName)
                                 .replace(UP_FIRST_LETTER_PROPERTY, upFirstLetter(methodName))
                                 .replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName)
                                 .replace(PARAM_TYPE, type.isEmpty() ? type : property.getTypeForTemplate()));
@@ -369,10 +394,7 @@ public final class CGSGenerator implements CodeGenerator {
         }
 
         String getSetterTemplate(final CGSInfo cgsInfo) {
-            final String preparedSetterTemplate = SETTER_TEMPLATE.replace(TEMPLATE_NAME, cgsInfo.getHowToGenerate().getSetterTemplate());
-            return cgsInfo.isFluentSetter()
-                    ? preparedSetterTemplate.replace(FLUENT_SETTER, "return $this;" + NEW_LINE)
-                    : preparedSetterTemplate.replace(FLUENT_SETTER, ""); //NOI18N
+            return SETTER_TEMPLATE.replace(TEMPLATE_NAME, cgsInfo.getHowToGenerate().getSetterTemplate());
         }
 
         private enum PanelStrategy {
@@ -409,6 +431,20 @@ public final class CGSGenerator implements CodeGenerator {
             abstract boolean isFluentSetterVisible();
         }
 
+        private static final class FluentSetterCreator {
+            private final boolean isStatic;
+
+            public FluentSetterCreator(boolean isStatic) {
+                this.isStatic = isStatic;
+            }
+
+            public String create(Property property) {
+                assert property != null;
+                return isStatic ? "return " + property.getFluentReturnAccessor() + ";" + NEW_LINE : ""; //NOI18N
+            }
+
+        }
+
     }
 
     public enum GenWay {
@@ -420,8 +456,8 @@ public final class CGSGenerator implements CodeGenerator {
         WITH_UNDERSCORE(
                 NbBundle.getMessage(CGSGenerator.class, "ADD_UNDERSCORE"),
                 "__construct($" + PROPERTY + ")",
-                START_OF_GETTER + "_" + PROPERTY,
-                START_OF_SETTER + "_" + PROPERTY), //NOI18N
+                START_OF_GETTER + "_" + UNDERSCORED_METHOD_NAME,
+                START_OF_SETTER + "_" + UNDERSCORED_METHOD_NAME), //NOI18N
         WITHOUT_UNDERSCORE(
                 NbBundle.getMessage(CGSGenerator.class, "REMOVE_UNDERSCORE"),
                 "__construct($" + PROPERTY_WITHOUT_UNDERSCORE + ")",
@@ -476,6 +512,9 @@ public final class CGSGenerator implements CodeGenerator {
             if (template.contains(PROPERTY)) {
                 example = example.replace(PROPERTY, property);
             }
+            if (template.contains(UNDERSCORED_METHOD_NAME)) {
+                example = example.replace(UNDERSCORED_METHOD_NAME, property);
+            }
             if (template.contains(UP_FIRST_LETTER_PROPERTY)) {
                 example = example.replace(UP_FIRST_LETTER_PROPERTY, upFirstLetter(property));
             }
@@ -494,11 +533,13 @@ public final class CGSGenerator implements CodeGenerator {
     private static final String ASSIGNMENTS = "${ASSIGNMENT}";                       //NOI18N
     private static final String TEMPLATE_NAME = "${TEMPLATE_NAME}";                 //NOI18N
     private static final String CONSTRUCTOR_TEMPLATE = "function __construct(" + PARAMS + ") {" + ASSIGNMENTS  + CURSOR + NEW_LINE + "}" + NEW_LINE;    //NOI18N
-    private static final String ASSIGNMENT_TEMPLATE = NEW_LINE + "$this->" + PROPERTY + " = $" + PARAM_NAME + ";";          //NOI18N
+    private static final String ASSIGNMENT_TEMPLATE = NEW_LINE + ACCESSOR + PROPERTY + " = $" + PARAM_NAME + ";";          //NOI18N
     private static final String GETTER_TEMPLATE
-            = "public function " + TEMPLATE_NAME + "() {" + NEW_LINE + "return $$this->" + PROPERTY + ";" + NEW_LINE + "}" + NEW_LINE;    //NOI18N
+            = "public " + FUNCTION_MODIFIER + " function " + TEMPLATE_NAME + "() {"
+            + NEW_LINE + "return " + ACCESSOR + PROPERTY + ";" + NEW_LINE + "}" + NEW_LINE;    //NOI18N
     private static final String SETTER_TEMPLATE
-            = "public function " + TEMPLATE_NAME + "(" + PARAM_TYPE + "$$" + PARAM_NAME + ") {" + ASSIGNMENT_TEMPLATE + NEW_LINE + FLUENT_SETTER + "}" + NEW_LINE; //NOI18N
+            = "public " + FUNCTION_MODIFIER + " function " + TEMPLATE_NAME + "(" + PARAM_TYPE + "$$" + PARAM_NAME + ") {"
+            + ASSIGNMENT_TEMPLATE + NEW_LINE + FLUENT_SETTER + "}" + NEW_LINE; //NOI18N
     private final GenType genType;
     private final CGSInfo cgsInfo;
     private final JTextComponent component;
