@@ -261,7 +261,8 @@ public final class ClusteredIndexables {
 
         private volatile Pair<Long,StackTraceElement[]> attachDeleteStackTrace;
         private volatile Pair<Long,StackTraceElement[]> attachIndexStackTrace;
-        private volatile Pair<Long,StackTraceElement[]> detachStackTrace;
+        private volatile Pair<Long,StackTraceElement[]> detachDeleteStackTrace;
+        private volatile Pair<Long,StackTraceElement[]> detachIndexStackTrace;
 
         private DocumentIndexCacheImpl() {}
 
@@ -280,7 +281,7 @@ public final class ClusteredIndexables {
                     this.deleteIndexables = ci;
                     attachDeleteStackTrace = Pair.<Long,StackTraceElement[]>of(
                             System.nanoTime(),Thread.currentThread().getStackTrace());
-                    detachStackTrace = null;
+                    detachDeleteStackTrace = null;
                 }
             } else if (INDEX.equals(mode)) {
                 ensureNotReBound(this.indexIndexables, ci);
@@ -288,7 +289,7 @@ public final class ClusteredIndexables {
                     this.indexIndexables = ci;
                     attachIndexStackTrace = Pair.<Long,StackTraceElement[]>of(
                             System.nanoTime(),Thread.currentThread().getStackTrace());
-                    detachStackTrace = null;
+                    detachIndexStackTrace = null;
                 }
             } else {
                 throw new IllegalArgumentException(mode);
@@ -300,7 +301,7 @@ public final class ClusteredIndexables {
             if (TransientUpdateSupport.isTransientUpdate()) {
                 return;
             }
-            detachStackTrace = Pair.<Long,StackTraceElement[]>of(
+            detachDeleteStackTrace = detachIndexStackTrace = Pair.<Long,StackTraceElement[]>of(
                 System.nanoTime(),Thread.currentThread().getStackTrace());
             this.deleteIndexables = null;
             this.indexIndexables = null;
@@ -349,7 +350,8 @@ public final class ClusteredIndexables {
                     deleteFromIndex,
                     attachDeleteStackTrace,
                     attachIndexStackTrace,
-                    detachStackTrace) :
+                    detachDeleteStackTrace,
+                    detachIndexStackTrace) :
                 Collections.<String>emptySet();
         }
 
@@ -474,7 +476,8 @@ public final class ClusteredIndexables {
 
         private final Pair<Long,StackTraceElement[]> attachDeleteStackTrace;
         private final Pair<Long,StackTraceElement[]> attachIndexStackTrace;
-        private final Pair<Long, StackTraceElement[]> detachStackTrace;
+        private final Pair<Long, StackTraceElement[]> detachDeleteStackTrace;
+        private final Pair<Long, StackTraceElement[]> detachIndexStackTrace;
         
         RemovedCollection(
             @NonNull final List<? extends String> outOfOrder,
@@ -484,7 +487,8 @@ public final class ClusteredIndexables {
             @NonNull final BitSet deleteFromIndex,
             @NullAllowed final Pair<Long,StackTraceElement[]> attachDeleteStackTrace,
             @NullAllowed final Pair<Long, StackTraceElement[]> attachIndexStackTrace,
-            @NullAllowed final Pair<Long, StackTraceElement[]> detachStackTrace) {
+            @NullAllowed final Pair<Long, StackTraceElement[]> detachDeleteStackTrace,
+            @NullAllowed final Pair<Long, StackTraceElement[]> detachIndexStackTrace) {
             assert outOfOrder != null;
             assert deleteFromDeleted != null;
             assert deleteFromIndex != null;
@@ -495,7 +499,8 @@ public final class ClusteredIndexables {
             this.deleteFromIndex = deleteFromIndex;
             this.attachDeleteStackTrace = attachDeleteStackTrace;
             this.attachIndexStackTrace = attachIndexStackTrace;
-            this.detachStackTrace = detachStackTrace;
+            this.detachDeleteStackTrace = detachDeleteStackTrace;
+            this.detachIndexStackTrace = detachIndexStackTrace;
         }
 
         @Override
@@ -508,7 +513,8 @@ public final class ClusteredIndexables {
                 deleteFromIndex,
                 attachDeleteStackTrace,
                 attachIndexStackTrace,
-                detachStackTrace);
+                detachDeleteStackTrace,
+                detachIndexStackTrace);
         }
 
         @Override
@@ -535,7 +541,8 @@ public final class ClusteredIndexables {
 
             private final Pair<Long,StackTraceElement[]> attachDeleteStackTrace;
             private final Pair<Long,StackTraceElement[]> attachIndexStackTrace;
-            private final Pair<Long, StackTraceElement[]> detachStackTrace;
+            private final Pair<Long, StackTraceElement[]> detachDeleteStackTrace;
+            private final Pair<Long, StackTraceElement[]> detachIndexStackTrace;
 
             It(
                 @NonNull final Iterator<? extends String> outOfOrderIt,
@@ -545,7 +552,8 @@ public final class ClusteredIndexables {
                 @NonNull final BitSet deleteFromIndex,
                 @NullAllowed final Pair<Long,StackTraceElement[]> attachDeleteStackTrace,
                 @NullAllowed final Pair<Long, StackTraceElement[]> attachIndexStackTrace,
-                @NullAllowed final Pair<Long, StackTraceElement[]> detachStackTrace) {
+                @NullAllowed final Pair<Long, StackTraceElement[]> detachDeleteStackTrace,
+                @NullAllowed final Pair<Long, StackTraceElement[]> detachIndexStackTrace) {
                 this.outOfOrderIt = outOfOrderIt;
                 this.deleteIndexables = deleteIndexables;
                 this.deleteFromDeleted = deleteFromDeleted;
@@ -553,7 +561,8 @@ public final class ClusteredIndexables {
                 this.deleteFromIndex = deleteFromIndex;
                 this.attachDeleteStackTrace = attachDeleteStackTrace;
                 this.attachIndexStackTrace = attachIndexStackTrace;
-                this.detachStackTrace = detachStackTrace;
+                this.detachDeleteStackTrace = detachDeleteStackTrace;
+                this.detachIndexStackTrace = detachIndexStackTrace;
             }
 
             @Override
@@ -579,8 +588,8 @@ public final class ClusteredIndexables {
                                         "Attached at: {0} by: {1}, Detached at: {2} by: {3}",   //NOI18N
                                         attachDeleteStackTrace == null ? null : attachDeleteStackTrace.first,
                                         attachDeleteStackTrace == null ? null : Arrays.asList(attachDeleteStackTrace.second),
-                                        detachStackTrace == null ? null : detachStackTrace.first,
-                                        detachStackTrace == null ? null : Arrays.asList(detachStackTrace.second)));
+                                        detachDeleteStackTrace == null ? null : detachDeleteStackTrace.first,
+                                        detachDeleteStackTrace == null ? null : Arrays.asList(detachDeleteStackTrace.second)));
                             }
                             final Indexable file = deleteIndexables.get(index);
                             current = file.getRelativePath();
@@ -598,8 +607,8 @@ public final class ClusteredIndexables {
                                         "Attached at: {0} by: {1}, Detached at: {2} by: {3}",   //NOI18N
                                         attachIndexStackTrace == null ? null : attachIndexStackTrace.first,
                                         attachIndexStackTrace == null ? null : Arrays.asList(attachIndexStackTrace.second),
-                                        detachStackTrace == null ? null : detachStackTrace.first,
-                                        detachStackTrace == null ? null : Arrays.asList(detachStackTrace.second)));
+                                        detachIndexStackTrace == null ? null : detachIndexStackTrace.first,
+                                        detachIndexStackTrace == null ? null : Arrays.asList(detachIndexStackTrace.second)));
                             }
                             final Indexable file = indexIndexables.get(index);
                             current = file.getRelativePath();
