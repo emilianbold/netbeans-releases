@@ -77,8 +77,8 @@ public final class GspLexer implements Lexer<GspTokenId> {
         LT_G,                            // after '<g'           expecting :
         GSTART_TAG,                      // after '<g:   ...'    expecting > or tag name
         GSTART_TAG_WITH_NAME,            // after '<g:if ...'    expecting /, > or some attribute name with = at the end
-        GSTART_TAG_WITH_NAME_ATTR,       // after '<g:if ...'    expecting \ or $
-        GSTART_TAG_WITH_NAME_ATTR_VALUE, // after '<g:if ...'    expecting \ or $
+        GSTART_TAG_WITH_NAME_ATTR,       // after '<g:if attr='  expecting /, >, ", space or some attribute value
+        GSTART_TAG_WITH_NAME_ATTR_VALUE, // after '<g:if attr="' expecting ", /, $ or \
         GSTART_TAG_EXPR,                 // after '<g:if ... $'  expecting {
         GSTART_TAG_EXPR_PC,              // after '<g:if ... ${' expecting }
         GSTART_TAG_BACKSLASH,            // after '<g:if ... \'  expecting $
