@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.javascript2.editor.hints.JsHintsProvider.JsRuleContext;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
@@ -118,6 +119,16 @@ public class GlobalIsNotDefined extends JsAstRule {
     @Override
     public String getDisplayName() {
         return Bundle.JsGlobalIsNotDefinedDN();
+    }
+
+    @Override
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.CURRENT_LINE_WARNING;
+    }
+   
+    @Override
+    public boolean getDefaultEnabled() {
+        return true;
     }
     
 }
