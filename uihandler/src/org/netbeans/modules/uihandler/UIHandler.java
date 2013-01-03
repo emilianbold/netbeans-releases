@@ -182,7 +182,7 @@ implements ActionListener, Runnable, Callable<JButton> {
         lastRecord = FLUSH.post(wo);
         
         if (flushOnRecord || recordsToWriteOut.get() > MAX_RECORDS_TO_WRITE_OUT) {
-            waitFlushed();
+            waitFlushed(true);
         }
     }
 
@@ -196,6 +196,13 @@ implements ActionListener, Runnable, Callable<JButton> {
     }
     
     static void waitFlushed() {
+        waitFlushed(false);
+    }
+    
+    private static void waitFlushed(boolean forced) {
+        if (!forced) {
+            assert !SwingUtilities.isEventDispatchThread() : "Must not wait in AWT here"; // NOI18N
+        }
         try {
             lastRecord.waitFinished(0);
         } catch (InterruptedException ex) {

@@ -50,8 +50,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
@@ -79,10 +77,9 @@ import org.netbeans.modules.php.twig.editor.parsing.TwigParserResult;
 import org.openide.util.NbBundle;
 
 public class TwigCompletionHandler implements CodeCompletionHandler {
-    private static final Logger LOGGER = Logger.getLogger(TwigCompletionHandler.class.getName());
     private static final DocumentationDecorator DOCUMENTATION_DECORATOR = DocumentationDecorator.getInstance();
     private static final Collection<Character> AUTOPOPUP_STOP_CHARS = new TreeSet<Character>(
-            Arrays.asList('=', ';', '+', '-', '*', '/', '%', '(', ')', '[', ']', '{', '}', '?', ' ', '\t'));
+            Arrays.asList('=', ';', '+', '-', '*', '/', '%', '(', ')', '[', ']', '{', '}', '?', ' ', '\t', '\n'));
 
     private static final Set<TwigElement> TAGS = new HashSet<TwigElement>();
     static {
@@ -225,10 +222,6 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
             request.context = TwigCompletionContextFinder.find(request.parserResult, caretOffset);
             doCompletion(completionProposals, request);
         }
-        LOGGER.log(
-                Level.INFO,
-                "TWIG complete():codeCompletionContext.getQueryType():{0}|><|threadName:{1}",
-                new Object[] {codeCompletionContext.getQueryType(), Thread.currentThread().getName()});
         return new DefaultCompletionResult(completionProposals, false);
     }
 
@@ -342,10 +335,6 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
                 }
             }
         }
-        LOGGER.log(
-                Level.INFO,
-                "TWIG getAutoQuery():typedText:{0}|><|queryType:{1}|><|threadName:{2}",
-                new Object[] {typedText, result, Thread.currentThread().getName()});
         return result;
     }
 
