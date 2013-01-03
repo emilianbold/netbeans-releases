@@ -147,7 +147,7 @@ public class JsDocElementUtils {
 
             // get name value (mandatory part)
             if (parts.length > process && elementType.getCategory() == JsDocElement.Category.NAMED_PARAMETER) {
-                nameOffset = descStartOffset + elementText.indexOf(parts[process]);
+                nameOffset = descStartOffset + elementText.indexOf(parts[process], types.length());
                 name.append(parts[process].trim());
                 process++;
                 if (name.toString().contains("\"") || name.toString().contains("'")) { //NOI18N
