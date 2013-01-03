@@ -47,6 +47,7 @@ import java.lang.ref.SoftReference;
 import java.text.MessageFormat;
 import java.util.AbstractCollection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
@@ -577,9 +578,9 @@ public final class ClusteredIndexables {
                                     MessageFormat.format(
                                         "Attached at: {0} by: {1}, Detached at: {2} by: {3}",   //NOI18N
                                         attachDeleteStackTrace == null ? null : attachDeleteStackTrace.first,
-                                        attachDeleteStackTrace == null ? null : attachDeleteStackTrace.second,
+                                        attachDeleteStackTrace == null ? null : Arrays.asList(attachDeleteStackTrace.second),
                                         detachStackTrace == null ? null : detachStackTrace.first,
-                                        detachStackTrace == null ? null : detachStackTrace.second));
+                                        detachStackTrace == null ? null : Arrays.asList(detachStackTrace.second)));
                             }
                             final Indexable file = deleteIndexables.get(index);
                             current = file.getRelativePath();
@@ -596,9 +597,9 @@ public final class ClusteredIndexables {
                                     MessageFormat.format(
                                         "Attached at: {0} by: {1}, Detached at: {2} by: {3}",   //NOI18N
                                         attachIndexStackTrace == null ? null : attachIndexStackTrace.first,
-                                        attachIndexStackTrace == null ? null : attachIndexStackTrace.second,
+                                        attachIndexStackTrace == null ? null : Arrays.asList(attachIndexStackTrace.second),
                                         detachStackTrace == null ? null : detachStackTrace.first,
-                                        detachStackTrace == null ? null : detachStackTrace.second));
+                                        detachStackTrace == null ? null : Arrays.asList(detachStackTrace.second)));
                             }
                             final Indexable file = indexIndexables.get(index);
                             current = file.getRelativePath();

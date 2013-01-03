@@ -108,6 +108,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+         <change id="SourceUtils-getDependentRoots">
+             <api name="general"/>
+             <summary>Added overloaded method <code>SourceUtils.getDependentRoots</code>.</summary>
+             <version major="0" minor="110"/>
+             <date day="31" month="12" year="2012"/>
+             <author login="ralphbenjamin"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added a new overloaded method <code>getDependentRoots</code> to class <code>SourceUtils</code>,
+                 that adds an option to filter non opened projects.
+             </description>
+             <class package="org.netbeans.api.java.source" name="SourceUtils"/>
+             <issue number="223917"/>
+        </change>
         <change id="WorkingCopy-resolveRewriteTarget">
              <api name="general"/>
              <summary>Added <code>WorkingCopy.resolveRewriteTarget</code>.</summary>

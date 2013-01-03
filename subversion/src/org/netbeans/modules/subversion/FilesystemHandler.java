@@ -539,6 +539,10 @@ class FilesystemHandler extends VCSInterceptor {
     @Override
     public void afterCreate(final File file) {
         Subversion.LOG.log(Level.FINE, "afterCreate {0}", file);
+        if (SvnUtils.isPartOfSubversionMetadata(file)) {
+            // not interested in .svn events
+            return;
+        }
         Utils.post(new Runnable() {
             @Override
             public void run() {
