@@ -187,13 +187,12 @@ public final class GspLexer implements Lexer<GspTokenId> {
                 case DL: // after $
                     switch (actChar) {
                         case '{':
-                            if (input.readLength() == 2) {
-                                state = LexerState.GEXPRESSION;
-                                return GspTokenId.GSTRING_START;
-                            } else {
-                                input.backup(2);
+                            if (isContentRead(2)) {
                                 state = LexerState.INIT;
                                 return GspTokenId.HTML;
+                            } else {
+                                state = LexerState.GEXPRESSION;
+                                return GspTokenId.GSTRING_START;
                             }
                         default:
                             state = LexerState.INIT;
@@ -263,13 +262,12 @@ public final class GspLexer implements Lexer<GspTokenId> {
                 case PC_CB_QUADRUPLE_DASH_CB: // after %{-- ... --}
                     switch (actChar) {
                         case '%':
-                            if (input.readLength() == 4) {
-                                state = LexerState.INIT;
-                                return GspTokenId.COMMENT_GSP_STYLE_END;
-                            } else {
-                                input.backup(4);
+                            if (isContentRead(4)) {
                                 state = LexerState.PC_CB_DOUBLE_DASH;
                                 return GspTokenId.COMMENT_GSP_STYLE_CONTENT;
+                            } else {
+                                state = LexerState.INIT;
+                                return GspTokenId.COMMENT_GSP_STYLE_END;
                             }
                         default:
                             state = LexerState.PC_CB_DOUBLE_DASH;
@@ -336,13 +334,12 @@ public final class GspLexer implements Lexer<GspTokenId> {
                 case LT_PC_QUADRUPLE_DASH_PC: // after <%-- ... --%
                     switch (actChar) {
                         case '>':
-                            if (input.readLength() == 4) {
-                                state = LexerState.INIT;
-                                return GspTokenId.COMMENT_JSP_STYLE_END;
-                            } else {
-                                input.backup(4);
+                            if (isContentRead(4)) {
                                 state = LexerState.LT_PC_DOUBLE_DASH;
                                 return GspTokenId.COMMENT_JSP_STYLE_CONTENT;
+                            } else {
+                                state = LexerState.INIT;
+                                return GspTokenId.COMMENT_JSP_STYLE_END;
                             }
                         default:
                             state = LexerState.LT_PC_DOUBLE_DASH;
@@ -352,13 +349,12 @@ public final class GspLexer implements Lexer<GspTokenId> {
                 case LT_G: // after <g
                     switch (actChar) {
                         case ':':
-                            if (input.readLength() == 3) {
-                                state = LexerState.GSTART_TAG;
-                                return GspTokenId.GTAG_OPENING_START;
-                            } else {
-                                input.backup(3); //backup <g:
+                            if (isContentRead(3)) {
                                 state = LexerState.INIT;
                                 return GspTokenId.HTML;
+                            } else {
+                                state = LexerState.GSTART_TAG;
+                                return GspTokenId.GTAG_OPENING_START;
                             }
                         default:
                             state = LexerState.INIT;
@@ -409,13 +405,12 @@ public final class GspLexer implements Lexer<GspTokenId> {
                 case LT_EM_QUADRUPLE_DASH: // after <!-- ... --
                     switch (actChar) {
                         case '>':
-                            if (input.readLength() == 3) {
-                                state = LexerState.INIT;
-                                return GspTokenId.COMMENT_HTML_STYLE_END;
-                            } else {
-                                input.backup(3);
+                            if (isContentRead(3)) {
                                 state = LexerState.LT_EM_DOUBLE_DASH;
                                 return GspTokenId.COMMENT_HTML_STYLE_CONTENT;
+                            } else {
+                                state = LexerState.INIT;
+                                return GspTokenId.COMMENT_HTML_STYLE_END;
                             }
                         default:
                             // Anything else means we are still in comment
@@ -435,13 +430,12 @@ public final class GspLexer implements Lexer<GspTokenId> {
                 case LT_BS_G: // after </g
                     switch (actChar) {
                         case ':':
-                            if (input.readLength() == 4) {
-                                state = LexerState.GEND_TAG;
-                                return GspTokenId.GTAG_CLOSING_START;
-                            } else {
-                                input.backup(4); // return back </g:
+                            if (isContentRead(4)) {
                                 state = LexerState.INIT;
                                 return GspTokenId.HTML;
+                            } else {
+                                state = LexerState.GEND_TAG;
+                                return GspTokenId.GTAG_CLOSING_START;
                             }
                         default:
                             state = LexerState.INIT;
@@ -450,16 +444,12 @@ public final class GspLexer implements Lexer<GspTokenId> {
                 case GEXPRESSION: // after ${
                     switch (actChar) {
                         case '}':
-                            if (input.readLength() == 1) {
-                                //just the '}' symbol read
-                                state = LexerState.INIT;
-                                return GspTokenId.GSTRING_END;
-                            } else {
-                                // There is more characters in the buffer. Backup '}'
-                                // (we will read it again) and return groovy expression
-                                input.backup(1);
+                            if (isContentRead(1)) {
                                 state = LexerState.GEXPRESSION;
                                 return GspTokenId.GSTRING_CONTENT;
+                            } else {
+                                state = LexerState.INIT;
+                                return GspTokenId.GSTRING_END;
                             }
                         default:
                             // If anything else then '}' wait in the GEXPR
@@ -479,15 +469,12 @@ public final class GspLexer implements Lexer<GspTokenId> {
                 case JEXPR_PC:
                     switch (actChar) {
                         case '>':
-                            if (input.readLength() == 2) {
-                                //just the '%>' symbol read
-                                state = LexerState.INIT;
-                                return GspTokenId.SCRIPTLET_OUTPUT_VALUE_END;
-                            } else {
-                                //return the scriptlet content
-                                input.backup(2); // backup '%>' we will read JUST them again
+                            if (isContentRead(2)) {
                                 state = LexerState.JEXPR;
                                 return GspTokenId.SCRIPTLET_OUTPUT_VALUE_CONTENT;
+                            } else {
+                                state = LexerState.INIT;
+                                return GspTokenId.SCRIPTLET_OUTPUT_VALUE_END;
                             }
                         default:
                             state = LexerState.JEXPR;
@@ -506,15 +493,12 @@ public final class GspLexer implements Lexer<GspTokenId> {
                 case JSCRIPT_PC:
                     switch (actChar) {
                         case '>':
-                            if (input.readLength() == 2) {
-                                //just the '%>' symbol read
-                                state = LexerState.INIT;
-                                return GspTokenId.SCRIPTLET_END;
-                            } else {
-                                //return the scriptlet content
-                                input.backup(2); // backup '%>' we will read JUST them again
+                            if (isContentRead(2)) {
                                 state = LexerState.JSCRIPT;
                                 return GspTokenId.SCRIPTLET_CONTENT;
+                            } else {
+                                state = LexerState.INIT;
+                                return GspTokenId.SCRIPTLET_END;
                             }
                         default:
                             state = LexerState.JSCRIPT;
@@ -533,15 +517,12 @@ public final class GspLexer implements Lexer<GspTokenId> {
                 case PAGE_DIRECTIVE_PC:
                     switch (actChar) {
                         case '>':
-                            if (input.readLength() == 2) {
-                                //just the '%>' symbol read
-                                state = LexerState.INIT;
-                                return GspTokenId.PAGE_DIRECTIVE_END;
-                            } else {
-                                //return the scriptlet content
-                                input.backup(2); // backup '%>' we will read JUST them again
+                            if (isContentRead(2)) {
                                 state = LexerState.PAGE_DIRECTIVE;
                                 return GspTokenId.PAGE_DIRECTIVE_CONTENT;
+                            } else {
+                                state = LexerState.INIT;
+                                return GspTokenId.PAGE_DIRECTIVE_END;
                             }
                         default:
                             state = LexerState.PAGE_DIRECTIVE;
@@ -555,15 +536,12 @@ public final class GspLexer implements Lexer<GspTokenId> {
                             input.backup(1);
                             return GspTokenId.GTAG_OPENING_NAME;
                         case '>':
-                            // If there is more than one character in buffer then backup '>',
-                            // return Gtag content and resolve '>' once again returning GTAG_OPENING_END
-                            if (input.readLength() == 1) {
-                                state = LexerState.INIT;
-                                return GspTokenId.GTAG_OPENING_END;
-                            } else {
-                                input.backup(1);
+                            if (isContentRead(1)) {
                                 state = LexerState.GSTART_TAG;
                                 return GspTokenId.GTAG_OPENING_NAME;
+                            } else {
+                                state = LexerState.INIT;
+                                return GspTokenId.GTAG_OPENING_END;
                             }
                         case '/':
                             state = LexerState.GINDEPENDENT_TAG;
@@ -595,13 +573,12 @@ public final class GspLexer implements Lexer<GspTokenId> {
                             state = LexerState.GSTART_TAG_WITH_NAME_ATTR_VALUE;
                             break;
                         case '>':
-                            if (input.readLength() == 1) {
-                                state = LexerState.INIT;
-                                return GspTokenId.GTAG_OPENING_END;
-                            } else {
-                                input.backup(1);
+                            if (isContentRead(1)) {
                                 state = LexerState.GSTART_TAG_WITH_NAME;
                                 return GspTokenId.GTAG_ATTRIBUTE_VALUE;
+                            } else {
+                                state = LexerState.INIT;
+                                return GspTokenId.GTAG_OPENING_END;
                             }
                         case ' ':
                             state = LexerState.GSTART_TAG_WITH_NAME;
@@ -636,15 +613,12 @@ public final class GspLexer implements Lexer<GspTokenId> {
                             state = LexerState.GEND_TAG_WITH_NAME;
                             return GspTokenId.GTAG_CLOSING_NAME;
                         case '>':
-                            // If there is more than one character in buffer then backup '>',
-                            // return Gtag content and resolve '>' once again returning GTAG_OPENING_END
-                            if (input.readLength() == 1) {
-                                state = LexerState.INIT;
-                                return GspTokenId.GTAG_CLOSING_END;
-                            } else {
-                                input.backup(1);
+                            if (isContentRead(1)) {
                                 state = LexerState.GEND_TAG;
                                 return GspTokenId.GTAG_CLOSING_NAME;
+                            } else {
+                                state = LexerState.INIT;
+                                return GspTokenId.GTAG_CLOSING_END;
                             }
                         default:
                             state = LexerState.GEND_TAG;
@@ -664,13 +638,12 @@ public final class GspLexer implements Lexer<GspTokenId> {
                 case GINDEPENDENT_TAG: // after <g: ... /
                     switch (actChar) {
                         case '>':
-                            if (input.readLength() == 2) {
-                                state = LexerState.INIT;
-                                return GspTokenId.GTAG_INDEPENDENT_END;
-                            } else {
-                                input.backup(2);
+                            if (isContentRead(2)) {
                                 state = LexerState.GSTART_TAG;
                                 return GspTokenId.GTAG_OPENING_NAME;
+                            } else {
+                                state = LexerState.INIT;
+                                return GspTokenId.GTAG_INDEPENDENT_END;
                             }
                         default:
                             state = LexerState.GSTART_TAG;
@@ -700,13 +673,12 @@ public final class GspLexer implements Lexer<GspTokenId> {
                 case GSTART_TAG_BACKSLASH_EXPR: // after <g: ...\$
                     switch (actChar) {
                         case '{':
-                            if (input.readLength() == 3) {
-                                state = LexerState.GSTART_TAG_EXPR_PC;
-                                return GspTokenId.GSTRING_START;
-                            } else {
-                                input.backup(3);
+                            if (isContentRead(3)) {
                                 state = LexerState.GSTART_TAG_WITH_NAME_ATTR_VALUE;
                                 return GspTokenId.GTAG_ATTRIBUTE_VALUE;
+                            } else {
+                                state = LexerState.GSTART_TAG_EXPR_PC;
+                                return GspTokenId.GSTRING_START;
                             }
                         default:
                             break;
@@ -715,13 +687,12 @@ public final class GspLexer implements Lexer<GspTokenId> {
                 case GSTART_TAG_EXPR: // after <g: ... $
                     switch (actChar) {
                         case '{':
-                            if (input.readLength() == 2) {
-                                state = LexerState.GSTART_TAG_EXPR_PC;
-                                return GspTokenId.GSTRING_START;
-                            } else {
-                                input.backup(2);
+                            if (isContentRead(2)) {
                                 state = LexerState.GSTART_TAG_WITH_NAME_ATTR_VALUE;
                                 return GspTokenId.GTAG_ATTRIBUTE_VALUE;
+                            } else {
+                                state = LexerState.GSTART_TAG_EXPR_PC;
+                                return GspTokenId.GSTRING_START;
                             }
                         default:
                             state = LexerState.GSTART_TAG_WITH_NAME_ATTR_VALUE;
@@ -731,15 +702,13 @@ public final class GspLexer implements Lexer<GspTokenId> {
                 case GSTART_TAG_EXPR_PC: // after <g: ... ${ or <g: .../${
                     switch (actChar) {
                         case '}':
-                            if (input.readLength() == 1) {
-                                state = LexerState.GSTART_TAG_WITH_NAME_ATTR_VALUE;
-                                return GspTokenId.GSTRING_END;
-                            } else {
-                                input.backup(1);
+                            if (isContentRead(1)) {
                                 state = LexerState.GSTART_TAG_EXPR_PC;
                                 return GspTokenId.GSTRING_CONTENT;
+                            } else {
+                                state = LexerState.GSTART_TAG_WITH_NAME_ATTR_VALUE;
+                                return GspTokenId.GSTRING_END;
                             }
-
                         // --> issue 220938
                         case '>':
                             state = LexerState.INIT;
@@ -781,24 +750,15 @@ public final class GspLexer implements Lexer<GspTokenId> {
      * and read the last two chars again so we will get GspTokenId.GTAG_INDEPENDENT_END
      * as well.
      *
-     * @param numberOfChars
-     * @param newState
+     * @param endTokenLength length of the end token (for example 2 for "/>")
+     * @return true if this is a content read, else otherwise (typically end token read)
      */
-    private GspTokenId cleanBufferAndReturnTokenID(
-            final int numberOfChars,
-            final LexerState newState1,
-            final LexerState newState2,
-            final GspTokenId gspToken1,
-            final GspTokenId gspToken2) {
-        
-        if (input.readLength() == numberOfChars) {
-            state = newState1;
-            return gspToken1;
-        } else {
-            input.backup(numberOfChars);
-            state = newState2;
-            return gspToken2;
+    private boolean isContentRead(int endTokenLength) {
+        if (input.readLength() > endTokenLength) {
+            input.backup(endTokenLength);
+            return true;
         }
+        return false;
     }
 
     @Override
