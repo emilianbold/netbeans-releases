@@ -52,6 +52,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.logging.Level;
@@ -758,10 +760,8 @@ ExplorerManager.Provider, PropertyChangeListener {
 
     private void updateTableColumns(Property[] columnsToSet, TableColumn[] newTColumns) {
         TableColumnModel tcm = treeTable.getTable().getColumnModel();
-        int tableModelColumnCount = tcm.getColumnCount();
-        int modelColumnCount = treeTable.getTable().getModel().getColumnCount();
-        boolean hiddenRemoved = tableModelColumnCount < modelColumnCount;
         ETableColumnModel ecm = (ETableColumnModel) tcm;
+        List<TableColumn> allColumns = getAllColumns(ecm);
         //int d = (isDefaultColumnAdded) ? 1 : 0;
         int ci = 0;
         int tci = 0;//d;
@@ -771,40 +771,41 @@ ExplorerManager.Provider, PropertyChangeListener {
         }
         for (int i = 0; i < columns.length; i++) {
             if (ci < columnsToSet.length && columns[i] == columnsToSet[ci] && i != defaultColumnIndex) {
-                if (tci >= tcm.getColumnCount()) {
-                    ci++;
-                    continue;
-                }
-                TableColumn tc = tcm.getColumn(tci);
-                if (hiddenRemoved && !columns[i].getDisplayName().equals(tc.getHeaderValue())) {
-                    ci++;
-                    continue;
-                }
+                TableColumn tc = allColumns.get(tci); //tcm.getColumn(tci);
                 tableColumns[i] = tc;
-                if (columns[i] instanceof Column) {
-                    tableColumns[i].setCellEditor(new DelegatingCellEditor(
-                            ((Column) columns[i]).getName(),
+                if (columns[i] instanceof Column && tci < tcm.getColumnCount()) {
+                    Column c = (Column) columns[i];
+                    tc.setCellEditor(new DelegatingCellEditor(
+                            c.getName(),
                             treeTable.getTable().getCellEditor(0, tci)));
-                    tableColumns[i].setCellRenderer(new DelegatingCellRenderer(
-                            ((Column) columns[i]).getName(),
+                    tc.setCellRenderer(new DelegatingCellRenderer(
+                            c.getName(),
                             treeTable.getTable().getCellRenderer(0, tci)));
+                    tc.setPreferredWidth(c.getColumnWidth());
                 }
                 if (columns[i].isHidden()) {
                     ecm.setColumnHidden(tc, true);
                 } else {
-                    tci++;
+                    if (columns[i] instanceof Column) {
+                        Column c = (Column) columns[i];
+                        tc.setPreferredWidth(c.getColumnWidth());
+                    }
                 }
+                tci++;
                 ci++;
             } else {
-                tableColumns[i] = tcm.getColumn(0);
+                TableColumn tc = allColumns.get(0); //tcm.getColumn(0);
+                tableColumns[i] = tc;
                 if (columns[i] instanceof Column) {
-                    tableColumns[i].setCellEditor(((Column)columns[i]).getTableCellEditor());
+                    Column c = (Column) columns[i];
+                    tc.setCellEditor(c.getTableCellEditor());
+                    tc.setPreferredWidth(c.getColumnWidth());
                 }
-                String name = tableColumns[i].getHeaderValue().toString();
-                tableColumns[i].setCellEditor(new DelegatingCellEditor(
+                String name = tc.getHeaderValue().toString();
+                tc.setCellEditor(new DelegatingCellEditor(
                         name,
                         treeTable.getTable().getCellEditor(0, 0)));
-                tableColumns[i].setCellRenderer(new DelegatingCellRenderer(
+                tc.setCellRenderer(new DelegatingCellRenderer(
                         name,
                         treeTable.getTable().getCellRenderer(0, 0)));
                 tci++;
@@ -817,11 +818,27 @@ ExplorerManager.Provider, PropertyChangeListener {
             }
         }
         setColumnsOrder();
-        if (newTColumns != null) {
-            this.tableColumns = newTColumns;
-        } else {
-            this.tableColumns = tableColumns;
+        this.tableColumns = tableColumns;
+    }
+    
+    private List<TableColumn> getAllColumns(ETableColumnModel etcm) {
+        try {
+            Method getAllColumnsMethod = ETableColumnModel.class.getDeclaredMethod("getAllColumns");
+            getAllColumnsMethod.setAccessible(true);
+            Object allColumns = getAllColumnsMethod.invoke(etcm);
+            return (List<TableColumn>) allColumns;
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (NoSuchMethodException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
         }
+        return Collections.EMPTY_LIST;
     }
 
     // Re-order the UI columns according to the defined order
