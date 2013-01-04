@@ -71,7 +71,7 @@ public class ToggleBlockCommentAction extends BaseAction {
     }
 
     @Override
-    public void actionPerformed(ActionEvent evt, final JTextComponent target) {
+    public void actionPerformed(final ActionEvent evt, final JTextComponent target) {
         if (target != null) {
             if (!target.isEditable() || !target.isEnabled() || !(target.getDocument() instanceof BaseDocument)) {
                 target.getToolkit().beep();
@@ -80,99 +80,91 @@ public class ToggleBlockCommentAction extends BaseAction {
 
             final int caretOffset = Utilities.isSelectionShowing(target) ? target.getSelectionStart() : target.getCaretPosition();
             final BaseDocument doc = (BaseDocument) target.getDocument();
-            final AtomicBoolean commentIt = new AtomicBoolean(true);
-            final TokenSequence<TplTopTokenId> ts = (TokenSequence<TplTopTokenId>) LexerUtils.getTplTopTokenSequence(doc, caretOffset);
-            final TplMetaData tplMetaData = TplUtils.getProjectPropertiesForFileObject(Source.create(doc).getFileObject());
+            doc.runAtomic(new Runnable() {
+                @Override
+                public void run() {
+                    final AtomicBoolean commentIt = new AtomicBoolean(true);
+                    final TokenSequence<TplTopTokenId> ts = (TokenSequence<TplTopTokenId>) LexerUtils.getTplTopTokenSequence(doc, caretOffset);
+                    final TplMetaData tplMetaData = TplUtils.getProjectPropertiesForFileObject(Source.create(doc).getFileObject());
 
-            // XXX - clean up needed
-            if (ts != null && SmartyOptions.getInstance().getToggleCommentOption() == SmartyFramework.ToggleCommentOption.SMARTY) {
-                ts.move(caretOffset);
-                ts.moveNext();
-
-                if (ts.token().id() == TplTopTokenId.T_COMMENT) {
-                    commentIt.set(false);
-                } else {
-                    try {
-                        ts.move(Utilities.getRowStart(doc, caretOffset) + tplMetaData.getCloseDelimiter().length() + 1);
+                    // XXX - clean up needed
+                    if (ts != null && SmartyOptions.getInstance().getToggleCommentOption() == SmartyFramework.ToggleCommentOption.SMARTY) {
+                        ts.move(caretOffset);
                         ts.moveNext();
-                        if (ts.token() != null && ts.token().id() == TplTopTokenId.T_COMMENT
-                                && Utilities.getRowEnd(doc, caretOffset) == caretOffset) {
-                            commentIt.set(false);
-                        }
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
 
-                doc.runAtomic(
-                        new Runnable() {
-                            public @Override
-                            void run() {
+                        if (ts.token().id() == TplTopTokenId.T_COMMENT) {
+                            commentIt.set(false);
+                        } else {
+                            try {
+                                ts.move(Utilities.getRowStart(doc, caretOffset) + tplMetaData.getCloseDelimiter().length() + 1);
+                                ts.moveNext();
+                                if (ts.token() != null && ts.token().id() == TplTopTokenId.T_COMMENT
+                                        && Utilities.getRowEnd(doc, caretOffset) == caretOffset) {
+                                    commentIt.set(false);
+                                }
+                            } catch (BadLocationException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                        try {
+                            // get insert, remove positions
+                            int[] positions = getPositions(ts, commentIt.get(), caretOffset, target, tplMetaData);
+                            String startComment = tplMetaData.getOpenDelimiter() + "*"; //NOI18N
+
+                            if (commentIt.get()) {
+                                doc.insertString(positions[0], startComment, null);
+                                doc.insertString(positions[1] + startComment.length(), "*" + tplMetaData.getCloseDelimiter(), null); //NOI18N
+                            } else {
+                                doc.remove(positions[0], startComment.length());
+                                doc.remove(positions[1], tplMetaData.getCloseDelimiter().length() + 1);
+                            }
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    } else {
+                        boolean applied = false;
+                        if (ts != null) {
+                            // comment just the actual TPL tag
+                            ts.move(caretOffset);
+                            ts.moveNext();
+                            commentIt.set(!uncommentIt(ts));
+
+                            // reset the tokenSequence state
+                            ts.move(caretOffset);
+                            ts.moveNext();
+                            if (ts.token().id() == TplTopTokenId.T_COMMENT || ts.token().id() == TplTopTokenId.T_SMARTY
+                                    || ts.token().id() == TplTopTokenId.T_SMARTY_CLOSE_DELIMITER) {
+                                applied = true;
                                 try {
                                     // get insert, remove positions
-                                    int[] positions = getPositions(ts, commentIt.get(), caretOffset, target, tplMetaData);
-                                    String startComment = tplMetaData.getOpenDelimiter() + "*"; //NOI18N
+                                    int[] positions = getDelimiterPositions(ts, tplMetaData);
 
                                     if (commentIt.get()) {
-                                        doc.insertString(positions[0], startComment, null);
-                                        doc.insertString(positions[1] + startComment.length(), "*" + tplMetaData.getCloseDelimiter(), null); //NOI18N
+                                        doc.insertString(positions[0], "*", null); //NOI18N
+                                        doc.insertString(positions[1] + tplMetaData.getCloseDelimiter().length() + 2, "*", null); //NOI18N
                                     } else {
-                                        doc.remove(positions[0], startComment.length());
-                                        doc.remove(positions[1], tplMetaData.getCloseDelimiter().length() + 1);
+                                        doc.remove(positions[0], 1);
+                                        doc.remove(positions[1], 1);
                                     }
                                 } catch (BadLocationException ex) {
                                     Exceptions.printStackTrace(ex);
                                 }
                             }
-                        });
-            } else {
-                boolean applied = false;
-                if (ts != null) {
-                    // comment just the actual TPL tag
-                    ts.move(caretOffset);
-                    ts.moveNext();
-                    commentIt.set(!uncommentIt(ts));
-
-                    // reset the tokenSequence state
-                    ts.move(caretOffset);
-                    ts.moveNext();
-                    if (ts.token().id() == TplTopTokenId.T_COMMENT || ts.token().id() == TplTopTokenId.T_SMARTY
-                            || ts.token().id() == TplTopTokenId.T_SMARTY_CLOSE_DELIMITER) {
-                        applied = true;
-                        doc.runAtomic(
-                                new Runnable() {
-                                    public @Override
-                                    void run() {
-                                        try {
-                                            // get insert, remove positions
-                                            int[] positions = getDelimiterPositions(ts, tplMetaData);
-
-                                            if (commentIt.get()) {
-                                                doc.insertString(positions[0], "*", null); //NOI18N
-                                                doc.insertString(positions[1] + tplMetaData.getCloseDelimiter().length() + 2, "*", null); //NOI18N
-                                            } else {
-                                                doc.remove(positions[0], 1);
-                                                doc.remove(positions[1], 1);
-                                            }
-                                        } catch (BadLocationException ex) {
-                                            Exceptions.printStackTrace(ex);
-                                        }
-                                    }
-                                });
+                        }
+                        if (!applied) {
+                            // another languages processing
+                            BaseAction action = (BaseAction) CslActions.createToggleBlockCommentAction();
+                            if (getValue(FORCE_COMMENT) != null) {
+                                action.putValue(FORCE_COMMENT, getValue(FORCE_COMMENT));
+                            }
+                            if (getValue(FORCE_UNCOMMENT) != null) {
+                                action.putValue(FORCE_UNCOMMENT, getValue(FORCE_UNCOMMENT));
+                            }
+                            action.actionPerformed(evt, target);
+                        }
                     }
                 }
-                if (!applied) {
-                    // another languages processing
-                    BaseAction action = (BaseAction) CslActions.createToggleBlockCommentAction();
-                    if (getValue(FORCE_COMMENT) != null) {
-                        action.putValue(FORCE_COMMENT, getValue(FORCE_COMMENT));
-                    }
-                    if (getValue(FORCE_UNCOMMENT) != null) {
-                        action.putValue(FORCE_UNCOMMENT, getValue(FORCE_UNCOMMENT));
-                    }
-                    action.actionPerformed(evt, target);
-                }
-            }
+            });
         }
     }
 
