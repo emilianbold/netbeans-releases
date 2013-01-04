@@ -180,7 +180,7 @@ public class FormatVisitor extends NodeVisitor {
         // within parens spaces
         int leftStart;
         Block body = doWhileNode.getBody();
-        if (body.getStart() == body.getFinish()) {
+        if (isVirtual(body)) {
             // unfortunately due to condition at the end of do-while
             // we have to care about virtual block
             List<Node> statements = body.getStatements();
@@ -194,7 +194,7 @@ public class FormatVisitor extends NodeVisitor {
         // mark space before left brace
         markSpacesBeforeBrace(doWhileNode.getBody(), FormatToken.Kind.BEFORE_DO_BRACE);
 
-        FormatToken whileToken = getPreviousToken(doWhileNode.getFinish(), JsTokenId.KEYWORD_WHILE);
+        FormatToken whileToken = getPreviousToken(getFinish(doWhileNode), JsTokenId.KEYWORD_WHILE);
         if (whileToken != null) {
             FormatToken beforeWhile = whileToken.previous();
             if (beforeWhile != null) {
