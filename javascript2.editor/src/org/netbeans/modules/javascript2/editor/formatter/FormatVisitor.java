@@ -109,14 +109,15 @@ public class FormatVisitor extends NodeVisitor {
 
     @Override
     public Node enter(Block block) {
-        if ((block instanceof FunctionNode || isScript(block)
-                || (block.getStart() < block.getFinish()
-                    && jdk.nashorn.internal.parser.Token.descType(block.getToken()) == TokenType.LBRACE))) {
+        boolean isCaseNode = false;
+        if (block instanceof FunctionNode || isScript(block)
+                || caseNodes.contains(block) || !isVirtual(block)) {
 
             if (caseNodes.contains(block)) {
                 // if the block is real block it is reused down the ast tree
                 // so we need to remove it to be handled normally later
                 caseNodes.remove(block);
+                isCaseNode = true;
                 handleCaseBlock(block);
             } else if (isScript(block)) {
                 handleBlockContent(block);
@@ -126,8 +127,7 @@ public class FormatVisitor extends NodeVisitor {
         }
 
         if (block instanceof FunctionNode || isScript(block)
-                || (block.getStart() < block.getFinish()
-                    && jdk.nashorn.internal.parser.Token.descType(block.getToken()) == TokenType.LBRACE)) {
+                || isCaseNode || !isVirtual(block)) {
             return null;
         } else {
             return super.enter(block);
@@ -137,7 +137,7 @@ public class FormatVisitor extends NodeVisitor {
     @Override
     public Node leave(Block block) {
         if (block instanceof FunctionNode || isScript(block)
-                || block.getStart() != block.getFinish()) {
+                || !isVirtual(block)) {
             return null;
         } else {
             return super.leave(block);
@@ -268,7 +268,7 @@ public class FormatVisitor extends NodeVisitor {
         // mark space before left brace
         markSpacesBeforeBrace(body, FormatToken.Kind.BEFORE_IF_BRACE);
 
-        if (body.getStart() == body.getFinish()) {
+        if (isVirtual(body)) {
             handleVirtualBlock(body, FormatToken.Kind.AFTER_IF_START);
         } else {
             enter(body);
@@ -280,7 +280,7 @@ public class FormatVisitor extends NodeVisitor {
             // mark space before left brace
             markSpacesBeforeBrace(body, FormatToken.Kind.BEFORE_ELSE_BRACE);
 
-            if (body.getStart() == body.getFinish()) {
+            if (isVirtual(body)) {
                 // do the standard block related things
                 List<Node> statements = body.getStatements();
                 // there might be no statements when code is broken
@@ -315,7 +315,7 @@ public class FormatVisitor extends NodeVisitor {
         // mark space before left brace
         markSpacesBeforeBrace(body, FormatToken.Kind.BEFORE_WITH_BRACE);
 
-        if (body.getStart() == body.getFinish()) {
+        if (isVirtual(body)) {
             handleVirtualBlock(body, FormatToken.Kind.AFTER_WITH_START);
             return null;
         }
@@ -763,7 +763,7 @@ public class FormatVisitor extends NodeVisitor {
 
     private boolean handleWhile(WhileNode whileNode, FormatToken.Kind afterStart) {
         Block body = whileNode.getBody();
-        if (body.getStart() == body.getFinish()) {
+        if (isVirtual(body)) {
             handleVirtualBlock(body, afterStart);
             return true;
         }
@@ -812,7 +812,7 @@ public class FormatVisitor extends NodeVisitor {
     private void handleVirtualBlock(Block block, FormatToken.Kind indentationInc,
             FormatToken.Kind indentationDec, FormatToken.Kind afterBlock) {
 
-        assert block.getStart() == block.getFinish();
+        assert isVirtual(block) : block;
 
         boolean assertsEnabled = false;
         assert assertsEnabled = true;
@@ -922,12 +922,7 @@ public class FormatVisitor extends NodeVisitor {
                     skipped.accept(this);
                 }
 
-                Token token = getNextNonEmptyToken(getFinish(lastVarNode) - 1);
-                if (token != null && JsTokenId.OPERATOR_SEMICOLON == token.id()) {
-                    finish = ts.offset() + 1;
-                } else {
-                    finish = getFinish(lastVarNode);
-                }
+                finish = getFinish(lastVarNode);
             }
 
             // empty statement has start == finish
@@ -1234,8 +1229,19 @@ public class FormatVisitor extends NodeVisitor {
             } else {
                 return node.getFinish();
             }
+        } else if (node instanceof VarNode) {
+            Token token = getNextNonEmptyToken(getFinishFixed(node) - 1);
+            if (token != null && JsTokenId.OPERATOR_SEMICOLON == token.id()) {
+                return ts.offset() + 1;
+            } else {
+                return getFinishFixed(node);
+            }
         }
 
+        return getFinishFixed(node);
+    }
+
+    private int getFinishFixed(Node node) {
         // All this magic is because nashorn nodes and tokens don't contain the
         // quotes for string. Due to this we call this method to add 1 to finish
         // in case it is string literal.
@@ -1252,9 +1258,15 @@ public class FormatVisitor extends NodeVisitor {
         return finish;
     }
 
-    private boolean isScript(Node node) {
+    private static boolean isScript(Node node) {
         return (node instanceof FunctionNode)
                 && ((FunctionNode) node).getKind() == FunctionNode.Kind.SCRIPT;
+    }
+
+    private boolean isVirtual(Block block) {
+        return block.getStart() == block.getFinish()
+                    || jdk.nashorn.internal.parser.Token.descType(block.getToken()) != TokenType.LBRACE
+                    || block.isCatchBlock();
     }
 
     @CheckForNull
