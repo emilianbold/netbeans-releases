@@ -82,7 +82,7 @@ public final class Parser {
                     case '/': case '.': case '?': case '+': //NOI18N
                     case '%': case '_': case '~': case '=': //NOI18N
                     case '\\':case '&': case '$': case '-': //NOI18N
-                    case '#': case ',': case ':'://NOI18N
+                    case '#': case ',': case ':': case ';': //NOI18N
                         continue OUTER;
                 }
 
