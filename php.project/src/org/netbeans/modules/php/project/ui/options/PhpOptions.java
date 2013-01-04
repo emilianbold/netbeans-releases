@@ -300,8 +300,9 @@ public final class PhpOptions {
             return;
         }
         phpGlobalIncludePathEnsured = true;
-        if (PropertyUtils.getGlobalProperties().getProperty(PhpProjectProperties.GLOBAL_INCLUDE_PATH) == null) {
-            setPhpGlobalIncludePath(getPhpGlobalIncludePath());
+        String phpGlobalIncludePath = getPhpGlobalIncludePath();
+        if (!phpGlobalIncludePath.equals(PropertyUtils.getGlobalProperties().getProperty(PhpProjectProperties.GLOBAL_INCLUDE_PATH))) {
+            setPhpGlobalIncludePath(phpGlobalIncludePath);
         }
     }
 
