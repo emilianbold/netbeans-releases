@@ -37,10 +37,10 @@ FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=47, text=(}
 FormattingToken{kind=TEXT, offset=48, text=)}
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
-FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=49, text=;}
 FormattingToken{kind=AFTER_SEMICOLON, offset=-1, text=null}
 FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
+FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=50, text=
 }
 FormattingToken{kind=WHITESPACE, offset=51, text=  }
