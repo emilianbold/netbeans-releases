@@ -98,7 +98,7 @@ public final class CGSInfo {
     // cotain the class consructor?
     private boolean hasConstructor;
     private final List<Property> properties;
-    private final ArrayList<Property> instanceProperties;
+    private final List<Property> instanceProperties;
     private final List<Property> possibleGetters;
     private final List<Property> possibleSetters;
     private final List<Property> possibleGettersSetters;
