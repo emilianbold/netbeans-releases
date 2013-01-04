@@ -4,7 +4,7 @@ Copyright &copy; 2009, 2012 Oracle and/or its affiliates. All rights reserved.
  -->
 <html>
   <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" type="text/css">
     <meta name="generator" content="Helen">
     <title>Overview of C/C++ Remote Development</title>
@@ -15,6 +15,9 @@ Copyright &copy; 2009, 2012 Oracle and/or its affiliates. All rights reserved.
     </h2>
     <p>
        <small><a href="#seealso">See Also</a>&nbsp;</small>
+    </p>
+    <p>
+       &nbsp;
     </p>
     <p>
        Remote development enables you to run the IDE locally in your familiar desktop environment,
@@ -29,10 +32,23 @@ Copyright &copy; 2009, 2012 Oracle and/or its affiliates. All rights reserved.
       enable fast parallel processing of your builds.
     </p>
     <p>
-       When you use a remote build host, the local and remote hosts both need to access the project files. This can be accomplished through file sharing or securely copying the files.  Before the IDE can use file sharing between the local and remote systems, the shared file system or folder must be set up and accessible to both systems. Remote files are accessed through SFTP or another file sharing mechanism available in the operating system the host is running, for example, Network File System (NFS), Samba, or WebDAV.
+       When you use a remote build host, the local and remote hosts both need to access the project
+      files. This can be accomplished through file sharing or securely copying the files. Before
+      the IDE can use file sharing between the local and remote systems, the shared file system or
+      folder must be set up and accessible to both systems. Remote files are accessed through SFTP
+      or another file sharing mechanism available in the operating system the host is running, for
+      example, Network File System (NFS), Samba, or WebDAV.
     </p>
     <p>
-      If file sharing is not possible, you can use Automatic Copying option to copy the files to the server using SSH.  The IDE manages the project files in both locations, so you do not need to transfer any files yourself. If a remotely built project generates files that are dependencies for the project, the IDE prompts you to download the generated files to the local system.
+       If file sharing is not possible, you can use Automatic Copying option to copy the files to
+      the server using SSH. The IDE manages the project files in both locations, so you do not need
+      to transfer any files yourself. If a remotely built project generates files that are
+      dependencies for the project, the IDE prompts you to download the generated files to the
+      local system.
+    </p>
+    <p>
+       See <a href="RemoteModes.html">C/C++ Remote Development Modes</a> for more information about
+      ways to do remote development.
     </p>
     <p>
        To use remote hosts for developing C, C++, or Fortran projects, you should perform the
@@ -55,12 +71,15 @@ Copyright &copy; 2009, 2012 Oracle and/or its affiliates. All rights reserved.
         properties.</a>
       </li>
     </ol>
-    <ul class="note"> 
-    <li>The tool bar has shortcuts to make it easy to <a href="RemoteDevelopmentToolbar.html">Work with projects on remote hosts</a>.</li>
-  </ul>
-    <table cellpadding="2" cellspacing="2">
+    <ul class="note">
+      <li>
+        The tool bar has shortcuts to make it easy to <a href="RemoteDevelopmentToolbar.html">Work
+        with projects on remote hosts</a>.
+      </li>
+    </ul>
+    <table cellspacing="2" cellpadding="2">
       <tr>
-        <th align="left" colspan="2">
+        <th colspan="2" align="left">
           <a name="seealso">See also</a> 
         </th>
       </tr>
@@ -83,7 +102,7 @@ Copyright &copy; 2009, 2012 Oracle and/or its affiliates. All rights reserved.
     </table>
     <hr>
     <p>
-       <small><a href="../credits.html">Legal Notices</a></small>
+       <a href="../credits.html"><small>Legal Notices</small></a>
     </p>
     <table border="0" cellpadding="20">
       <tr>
