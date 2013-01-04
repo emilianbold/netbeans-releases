@@ -452,7 +452,7 @@ public class MarkOccurrenceTest extends JsTestBase {
     }
     
     public void testIssue221228_05() throws Exception {
-        checkOccurrences("testfiles/markoccurences/issue221228.js", "Greetings.prototype.say^Ahoj() = function () {", true);
+        checkOccurrences("testfiles/markoccurences/issue221228.js", "Greetings.prototype.say^Ahoj = function () {", true);
     }
     
     public void testIssue221228_06() throws Exception {
