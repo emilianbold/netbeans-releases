@@ -71,7 +71,6 @@ import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
-import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
@@ -296,13 +295,11 @@ public final class CGSInfo {
         @Override
         public void visit(FieldsDeclaration node) {
             List<SingleFieldDeclaration> fields = node.getFields();
-            if (!BodyDeclaration.Modifier.isStatic(node.getModifier())) {
-                for (SingleFieldDeclaration singleFieldDeclaration : fields) {
-                    Variable variable = singleFieldDeclaration.getName();
-                    if (variable != null && variable.getName() instanceof Identifier) {
-                        String name = ((Identifier) variable.getName()).getName();
-                        getProperties().add(new Property(name, node.getModifier(), getPropertyType(singleFieldDeclaration)));
-                    }
+            for (SingleFieldDeclaration singleFieldDeclaration : fields) {
+                Variable variable = singleFieldDeclaration.getName();
+                if (variable != null && variable.getName() instanceof Identifier) {
+                    String name = ((Identifier) variable.getName()).getName();
+                    getProperties().add(new Property(name, node.getModifier(), getPropertyType(singleFieldDeclaration)));
                 }
             }
         }
