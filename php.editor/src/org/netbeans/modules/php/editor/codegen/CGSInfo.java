@@ -71,6 +71,7 @@ import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
+import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
@@ -97,6 +98,7 @@ public final class CGSInfo {
     // cotain the class consructor?
     private boolean hasConstructor;
     private final List<Property> properties;
+    private final ArrayList<Property> instanceProperties;
     private final List<Property> possibleGetters;
     private final List<Property> possibleSetters;
     private final List<Property> possibleGettersSetters;
@@ -111,6 +113,7 @@ public final class CGSInfo {
 
     private CGSInfo(JTextComponent textComp) {
         properties = new ArrayList<Property>();
+        instanceProperties = new ArrayList<Property>();
         possibleGetters = new ArrayList<Property>();
         possibleSetters = new ArrayList<Property>();
         possibleGettersSetters = new ArrayList<Property>();
@@ -131,6 +134,10 @@ public final class CGSInfo {
 
     public List<Property> getProperties() {
         return properties;
+    }
+
+    public List<Property> getInstanceProperties() {
+        return instanceProperties;
     }
 
     public List<MethodProperty> getPossibleMethods() {
@@ -299,7 +306,11 @@ public final class CGSInfo {
                 Variable variable = singleFieldDeclaration.getName();
                 if (variable != null && variable.getName() instanceof Identifier) {
                     String name = ((Identifier) variable.getName()).getName();
-                    getProperties().add(new Property(name, node.getModifier(), getPropertyType(singleFieldDeclaration)));
+                    Property property = new Property(name, node.getModifier(), getPropertyType(singleFieldDeclaration));
+                    if (!BodyDeclaration.Modifier.isStatic(node.getModifier())) {
+                        getInstanceProperties().add(property);
+                    }
+                    getProperties().add(property);
                 }
             }
         }
