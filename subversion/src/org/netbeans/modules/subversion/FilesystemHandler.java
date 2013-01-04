@@ -826,15 +826,23 @@ class FilesystemHandler extends VCSInterceptor {
                             // 2. file is ADDED and COPIED (by invoking svn copy) and target equals the original from the first copy
                             // otherwise svn move should be invoked
 
+                            File temp = from;
+                            if (Utilities.isWindows() && from.equals(to) || Utilities.isMac() && from.getPath().equalsIgnoreCase(to.getPath())) {
+                                Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround for filename case change {0} -> {1}", new Object[] { from, to }); //NOI18N
+                                temp = FileUtils.generateTemporaryFile(from.getParentFile(), from.getName());
+                                Subversion.LOG.log(Level.FINE, "svnMoveImplementation: magic workaround, step 1: {0} -> {1}", new Object[] { from, temp }); //NOI18N
+                                client.move(from, temp, force);
+                            }
+                            
                             // check if the file wasn't just deleted in this session
                             revertDeleted(client, toStatus, to, true);
 
-                            moved = from.renameTo(to);
+                            moved = temp.renameTo(to);
                             if (moved) {
-                                if (status.getTextStatus().equals(SVNStatusKind.ADDED)) {
-                                    client.revert(from, true);
+                                if (status.getTextStatus().equals(SVNStatusKind.ADDED) || status.getTextStatus().equals(SVNStatusKind.REPLACED)) {
+                                    client.revert(temp, true);
                                 } else {
-                                    client.remove(new File[] { from }, true);
+                                    client.remove(new File[] { temp }, true);
                                 }
                             }
                         } else if (status != null && (status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)

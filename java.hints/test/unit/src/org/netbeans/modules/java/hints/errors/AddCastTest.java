@@ -145,6 +145,12 @@ public class AddCastTest extends ErrorHintsTestBase {
                        "[AddCastFix:...new Object(...):B]",
                        "package test; public class Test { static void C(B data) { C((B) new Object()); } class A<T> { public void method(T data) {} } class B extends A<Test> {} }");
     }
+    
+    public void test223022() throws Exception {
+        //#223022: position set manually intentionally (to check that a NPE is not thrown):
+        performAnalysisTest("test/Test.java",
+                            "package test; public class Test { static int C() { retur|n ; } }");
+    }
 
     @Override
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
