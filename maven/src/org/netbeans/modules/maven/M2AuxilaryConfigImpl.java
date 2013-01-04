@@ -51,11 +51,14 @@ import java.io.StringReader;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.api.annotations.common.NonNull;
 import static org.netbeans.modules.maven.Bundle.*;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -70,6 +73,8 @@ import org.openide.xml.XMLUtil;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -172,20 +177,30 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
     }
     @Messages({
         "TXT_Problem_Broken_Config=Broken nb-configuration.xml file.",
-        "# {0} - parser error message", "DESC_Problem_Broken_Config=The $project_basedir/nb-configuration.xml file cannot be parsed. "
+        "# {0} - parser error message", 
+        "DESC_Problem_Broken_Config=The $project_basedir/nb-configuration.xml file cannot be parsed. "
             + "The information contained in the file will be ignored until fixed. "
             + "This affects several features in the IDE that will not work properly as a result.\n\n "
-            + "The parsing exception follows:\n{0}"
+            + "The parsing exception follows:\n{0}",
+        "TXT_Problem_Broken_Config2=Duplicate entries found in nb-configuration.xml file.",
+        "DESC_Problem_Broken_Config2=The $project_basedir/nb-configuration.xml file contains some elements multiple times. "
+            + "That can happen when concurrent changes get merged by version control for example. The IDE however cannot decide which one to use. "
+            + "So until the problem is resolved manually, the affected configuration will be ignored."
     })
     private synchronized Element doGetConfigurationFragment(final String elementName, final String namespace, boolean shared) {
         if (shared) {
             //first check the document schedule for persistence
             if (scheduledDocument != null) {
-                Element el = XMLUtil.findElement(scheduledDocument.getDocumentElement(), elementName, namespace);
-                if (el != null) {
-                    el = (Element) el.cloneNode(true);
+                try {
+                    Element el = XMLUtil.findElement(scheduledDocument.getDocumentElement(), elementName, namespace);
+                    if (el != null) {
+                        el = (Element) el.cloneNode(true);
+                    }
+                    return el;
+                } catch (IllegalArgumentException iae) {
+                    //thrown from XmlUtil.findElement when more than 1 equal elements are present.
+                    LOG.log(Level.INFO, iae.getMessage(), iae);
                 }
-                return el;
             }
             final FileObject config = projectDirectory.getFileObject(CONFIG_FILE_NAME);
             if (config != null) {
@@ -196,6 +211,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                         cachedDoc = doc;
                         if (pp != null) {
                             pp.setProblem(null);
+                            findDuplicateElements(doc.getDocumentElement(), pp, config);
                         }
                         return XMLUtil.findElement(doc.getDocumentElement(), elementName, namespace);
                     } catch (SAXException ex) {
@@ -210,6 +226,9 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                     } catch (IOException ex) {
                         LOG.log(Level.INFO, "IO Error while loading " + config.getPath(), ex);
                         cachedDoc = null;
+                    } catch (IllegalArgumentException iae) {
+                        //thrown from XmlUtil.findElement when more than 1 equal elements are present.
+                        LOG.log(Level.INFO, iae.getMessage(), iae);
                     } finally {
                         timeStamp = config.lastModified();
                     }
@@ -217,7 +236,12 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 } else {
                     //reuse cached value if available;
                     if (cachedDoc != null) {
-                        return XMLUtil.findElement(cachedDoc.getDocumentElement(), elementName, namespace);
+                        try {
+                            return XMLUtil.findElement(cachedDoc.getDocumentElement(), elementName, namespace);
+                        } catch (IllegalArgumentException iae) {
+                            //thrown from XmlUtil.findElement when more than 1 equal elements are present.
+                            LOG.log(Level.INFO, iae.getMessage(), iae);
+                        }
                     }
                 }
             } else {
@@ -381,6 +405,27 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                 "Without this configuration present, some functionality in the IDE may be limited or fail altogether.\n"));
         return doc;
     }
+    
+    static void findDuplicateElements(@NonNull Element parent, @NonNull ProblemProvider pp, FileObject config) {
+        NodeList l = parent.getChildNodes();
+        int nodeCount = l.getLength();
+        Set<String> known = new HashSet<String>();
+        for (int i = 0; i < nodeCount; i++) {
+            if (l.item(i).getNodeType() == Node.ELEMENT_NODE) {
+                Node node = l.item(i);
+                String localName = node.getLocalName();
+                localName = localName == null ? node.getNodeName() : localName;
+                String id = localName + "|" + node.getNamespaceURI();
+                if (!known.add(id)) {
+                    //we have a duplicate;
+                    pp.setProblem(ProjectProblem.createWarning(
+                                    TXT_Problem_Broken_Config2(), 
+                                    DESC_Problem_Broken_Config2(), 
+                                    new ProblemReporterImpl.MavenProblemResolver(ProblemReporterImpl.createOpenFileAction(config), BROKEN_NBCONFIG)));
+                }
+            }
+        }
+    }    
     
     private class ProblemProvider implements ProjectProblemsProvider {
 
