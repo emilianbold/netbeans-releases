@@ -656,7 +656,11 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
 
     private Project getCurrentProject() {
         if (inspectedFileObject != null) {
-            return FileOwnerQuery.getOwner(lastInspectedFileObject=inspectedFileObject);
+            final Project owner = FileOwnerQuery.getOwner(inspectedFileObject);
+            if (owner!=null) {
+                lastInspectedFileObject=inspectedFileObject;
+                return owner;
+            }
         }
         if (getRootNode()!=null && getRootNode().getFileObject()!=null) {
                 return FileOwnerQuery.getOwner(lastInspectedFileObject=getRootNode().getFileObject());

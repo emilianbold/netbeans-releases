@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.html.navigator;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -50,7 +49,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.util.Lookup;
 
 /**
  * An utility class for merging children descriptions.
@@ -139,10 +137,6 @@ public class Diff {
         return result;
     }
 
-    public static boolean equals(Description d1, Description d2, boolean forceIdAttrEquality) {
-        return equals(d1, d2, true, forceIdAttrEquality);
-    }
-
     /**
      * Does equality check for two descriptions. 
      * 
@@ -152,7 +146,7 @@ public class Diff {
      * @param forceIdAttrEquality if true two descriptions are same if they have same id attribute, regardless the rest of the attributes.
      * @return 
      */
-    private static boolean equals(Description d1, Description d2, boolean checkIndexInParent, boolean forceIdAttrEquality) {
+    public static boolean equals(Description d1, Description d2, boolean forceIdAttrEquality) {
         //if name differs, then it's simple
         if (!d1.getName().equals(d2.getName())) {
             return false;
@@ -173,6 +167,7 @@ public class Diff {
                 return true;
             }
         }
+        
 
         //now lets compare by the other attributes
         Map<String, String> d1Attrs = d1.getAttributes();
@@ -190,13 +185,7 @@ public class Diff {
             return false;
         }
 
-        //ok, now we have same name, same attributes w/o id
-        //what next?=>compute the "index in similar nodes"
-        if (checkIndexInParent && getIndexInParent(d1, forceIdAttrEquality) != getIndexInParent(d2, forceIdAttrEquality)) {
-            return false;
-        }
-
-        return true;
+        return d1.getElementPath().equals(d2.getElementPath());
     }
 
     /**
@@ -235,35 +224,8 @@ public class Diff {
             }
         }
 
-        hash = 37 * hash + getIndexInParent(d, forceIdAttrEquality);
+        hash = 37 * hash + d.getElementPath().hashCode();
 
         return hash;
-    }
-
-    /**
-     * Tries to find index of the description in SIMILAR descriptions, eg.descriptions which equals.
-     * 
-     */
-    static int getIndexInParent(Description d, boolean forceIdAttrEquality) {
-        int index = 0;
-        Description parent = d.getParent();
-        if (parent == null) {
-            //nothing to do w/o parent
-            //should possibly return something like Integer.MIN_VALUE, but 
-            //return 0 in this case to overcome the problem with different parent's of
-            //dom node (html has no parent) and the source node (has the root node as parent)
-            return index;
-        }
-        for (Description ch : parent.getChildren()) {
-            if (ch == d) {
-                //we found THE "D" element, break
-                break;
-            }
-            if (equals(ch, d, false, forceIdAttrEquality)) {
-                //we found equal element, but not THE "D" element, increase index
-                index++;
-            }
-        }
-        return index;
     }
 }
