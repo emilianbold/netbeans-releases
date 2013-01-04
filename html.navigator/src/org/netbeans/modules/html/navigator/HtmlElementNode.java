@@ -362,16 +362,12 @@ public class HtmlElementNode extends AbstractNode {
             b.append(" [");
             if(getSourceDescription() != null) {
                 b.append("SOURCE:");
-                b.append("idx:");
-                b.append(Diff.getIndexInParent(getSourceDescription(), false));
                 b.append("hc:");
                 b.append(Diff.hashCode(getSourceDescription(), false));
             }
             b.append(' ');
             if(getDOMDescription() != null) {
                 b.append("DOM:");
-                b.append("idx:");
-                b.append(Diff.getIndexInParent(getDOMDescription(), false));
                 b.append("hc:");
                 b.append(Diff.hashCode(getDOMDescription(), false));
             }
