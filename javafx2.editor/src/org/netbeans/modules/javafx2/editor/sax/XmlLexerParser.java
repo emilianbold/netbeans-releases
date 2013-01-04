@@ -919,7 +919,7 @@ public class XmlLexerParser implements ContentLocator {
         int end;
         
         t = nextToken();
-        while (t.id() == XMLTokenId.VALUE || t.id() == XMLTokenId.CHARACTER) {
+        while (t != null && (t.id() == XMLTokenId.VALUE || t.id() == XMLTokenId.CHARACTER)) {
             valEnd = seq.offset() + t.length();
             if (sb == null) {
                 sb = new StringBuilder();
@@ -938,8 +938,12 @@ public class XmlLexerParser implements ContentLocator {
                 s = s.subSequence(1, s.length() - 1);
                 valStart++;
                 valEnd--;
-            } 
-        }
+            } else if (t == null || t.id() == XMLTokenId.ERROR) {
+                // strip at least 1st quote in case of an error
+                s = s.subSequence(1, s.length());
+                valStart++;
+            }
+        } 
         if (!ignore) {
             attrs.put(argName, s.toString());
             int[] offsets = attrOffsets.get(argName);
