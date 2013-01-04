@@ -1,0 +1,14 @@
+
+.test {
+    color: red;
+}
+.test{
+   font-style: italic;
+}
+@media (max-width: 1767px) {
+
+    #nic{
+        font-size: 10px;
+        width: 100%;
+    }
+}

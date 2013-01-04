@@ -683,6 +683,18 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue223952.js","function UserToConnectio^ns(ahoj) {", true);
     }
     
+    public void testIssue224215_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue224215.js","    var A^ = 1;", true);
+    }
+    
+    public void testIssue224215_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue224215.js","    window.A = A^;", true);
+    }
+    
+    public void testIssue224215_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue224215.js","    window.A^ = A;", true);
+    }
+    
     private String getTestPath() {
         return getTestFolderPath() + "/" + getTestName() + ".js";//NOI18N
     }
