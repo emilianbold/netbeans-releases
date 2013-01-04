@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.doc.spi;
 
-import com.oracle.nashorn.ir.Node;
+import jdk.nashorn.internal.ir.Node;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
