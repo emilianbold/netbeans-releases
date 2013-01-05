@@ -48,6 +48,8 @@ import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -154,6 +156,12 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
     
     private AbstractDocument lastDocument;
     
+    /**
+     * This is different from lastDocument, which can be cleared after rebuild(false).
+     * This reference exactly tracks the parent document of the root fold.
+     */
+    private Reference<Document> lastRootDocument;
+    
     private PriorityMutex mutex;
     
     private final EventListenerList listenerList;
@@ -216,7 +224,23 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
 
         this.hierarchy = ApiPackageAccessor.get().createFoldHierarchy(this);
         
-        Document doc = component.getDocument();
+        updateRootFold(component.getDocument());
+        
+        foldingEnabled = getFoldingEnabledSetting();
+
+        // Start listening on component changes
+        startComponentChangesListening();
+
+        this.initTask = RP.post(this);
+    }
+    
+    private void updateRootFold(Document doc) {
+        if (lastRootDocument != null) {
+            Document d = lastRootDocument.get();
+            if (d == doc) {
+                return;
+            }
+        }
         try {
             rootFold = ApiPackageAccessor.get().createFold(
                 new FoldOperationImpl(this, null, Integer.MAX_VALUE),
@@ -228,16 +252,10 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
                 0, 0,
                 null
             );
+            lastRootDocument = new WeakReference(doc);
         } catch (BadLocationException e) {
             ErrorManager.getDefault().notify(e);
         }
-        
-        foldingEnabled = getFoldingEnabledSetting();
-
-        // Start listening on component changes
-        startComponentChangesListening();
-
-        this.initTask = RP.post(this);
     }
     
     /* testing only */
@@ -622,15 +640,6 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
     
     public void rebuild(boolean doRelease) {
         Document doc = getComponent().getDocument();
-        /*
-         * Hotfix: Temporarily disabled because of issue #224192
-        if (lastDocument != null && doc != lastDocument) {
-            Throwable offending = (Throwable)doc.getProperty("Issue-222763-debug");
-            LOG.log(Level.INFO, "Document changed, possible inconsistencies in root fold possible." +
-                    " lastDocument = " + lastDocument + ", newDocument = " + doc, offending);
-        }
-         */
-
         // Stop listening on the original document
         if (lastDocument != null) {
             // Remove document listener with specific priority
@@ -657,6 +666,8 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
         if (adoc != null) {
             adoc.readLock();
             
+            updateRootFold(doc);
+
             // Start listening for changes
             if (!releaseOnly) {
                 lastDocument = adoc;

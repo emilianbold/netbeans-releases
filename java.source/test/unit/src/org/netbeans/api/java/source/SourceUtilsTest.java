@@ -268,20 +268,20 @@ public class SourceUtilsTest extends ClassIndexTestCase {
         deps.put (url4,deps2);
         deps.put (url5,deps3);
         
-        Set<URL> result = SourceUtils.getDependentRootsImpl(url5, deps, Collections.<URL, List<URL>>emptyMap());
+        Set<URL> result = SourceUtils.getDependentRootsImpl(url5, deps, Collections.<URL, List<URL>>emptyMap(), true);
         assertEquals (1, result.size());
         assertEquals (url5,result.iterator().next());
         
-        result = SourceUtils.getDependentRootsImpl(url4, deps, Collections.<URL, List<URL>>emptyMap());
+        result = SourceUtils.getDependentRootsImpl(url4, deps, Collections.<URL, List<URL>>emptyMap(), true);
         assertEquals (new URL[] {url4, url5}, result);
         
-        result = SourceUtils.getDependentRootsImpl(url3, deps, Collections.<URL, List<URL>>emptyMap());
+        result = SourceUtils.getDependentRootsImpl(url3, deps, Collections.<URL, List<URL>>emptyMap(), true);
         assertEquals (new URL[] {url3, url5}, result);
         
-        result = SourceUtils.getDependentRootsImpl(url2, deps, Collections.<URL, List<URL>>emptyMap());
+        result = SourceUtils.getDependentRootsImpl(url2, deps, Collections.<URL, List<URL>>emptyMap(), true);
         assertEquals (new URL[] {url2, url3, url4, url5}, result);
         
-        result = SourceUtils.getDependentRootsImpl(url1, deps, Collections.<URL, List<URL>>emptyMap());
+        result = SourceUtils.getDependentRootsImpl(url1, deps, Collections.<URL, List<URL>>emptyMap(), true);
         assertEquals (new URL[] {url1, url3, url5}, result);
     }
     

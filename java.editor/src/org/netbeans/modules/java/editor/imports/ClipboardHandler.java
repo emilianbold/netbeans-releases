@@ -166,7 +166,7 @@ public class ClipboardHandler {
                             } else {
                                 CompilationUnitTree cut = (CompilationUnitTree) copy.resolveRewriteTarget(copy.getCompilationUnit());
                                 if (e.getModifiers().contains(Modifier.STATIC) && copy.getTreeUtilities().isAccessible(scope, e, e.getEnclosingElement().asType())
-                                        && copy.getElementUtilities().outermostTypeElement(e) != copy.getElementUtilities().outermostTypeElement(scope.getEnclosingClass())) {
+                                        && (scope.getEnclosingClass() == null || copy.getElementUtilities().outermostTypeElement(e) != copy.getElementUtilities().outermostTypeElement(scope.getEnclosingClass()))) {
                                     copy.rewrite(copy.getCompilationUnit(), GeneratorUtilities.get(copy).addImports(cut, Collections.singleton(e)));
                                 }
                                 handled = e.getSimpleName().toString();
@@ -272,7 +272,7 @@ public class ClipboardHandler {
                         if (el.equals(elm)) continue;
                     } else {
                         if (!cc.getTreeUtilities().isAccessible(context, el, el.getEnclosingElement().asType())
-                                || cc.getElementUtilities().outermostTypeElement(el) == cc.getElementUtilities().outermostTypeElement(context.getEnclosingClass())) continue;
+                                || (context.getEnclosingClass() != null && cc.getElementUtilities().outermostTypeElement(el) == cc.getElementUtilities().outermostTypeElement(context.getEnclosingClass()))) continue;
                         for (ImportTree importTree : cc.getCompilationUnit().getImports()) {
                             if (importTree.isStatic() && importTree.getQualifiedIdentifier().getKind() == Tree.Kind.MEMBER_SELECT) {
                                 MemberSelectTree mst = (MemberSelectTree) importTree.getQualifiedIdentifier();

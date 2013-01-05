@@ -78,6 +78,7 @@ import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.modules.form.project.ClassPathUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.WeakSet;
 
 /**
  * Form editor.
@@ -130,7 +131,11 @@ public class FormEditor {
     
     /** List of floating windows - must be closed when the form is closed. */
     private List<java.awt.Window> floatingWindows;
-    
+
+    /** Set of nodes for which a standalone Properties window was opened.
+     * The windows must be closed when the form is closed. */
+    private Set<FormNode> nodesWithPropertiesWindows;
+
     /** The DataObject of the form */
     private FormDataObject formDataObject;
     private PropertyChangeListener dataObjectListener;
@@ -747,6 +752,13 @@ public class FormEditor {
                 }
                 floatingWindows = null;
             }
+
+            // close standalone properties window invoked explicitly on selected nodes via the Properties action
+            if (nodesWithPropertiesWindows != null) {
+                for (FormNode n : nodesWithPropertiesWindows) {
+                    n.fireNodeDestroyedHelper();
+                }
+            }
         }
         ClassPathUtils.releaseFormClassLoader(formDataObject.getPrimaryFile());
         ClassPathUtils.releaseFormClassLoader(formDataObject.getFormFile());
@@ -1217,6 +1229,13 @@ public class FormEditor {
     public void unregisterFloatingWindow(java.awt.Window window) {
         if (floatingWindows != null)
             floatingWindows.remove(window);
+    }
+
+    void registerNodeWithPropertiesWindow(FormNode node) {
+        if (nodesWithPropertiesWindows == null) {
+            nodesWithPropertiesWindows = new WeakSet<FormNode>();
+        }
+        nodesWithPropertiesWindows.add(node);
     }
 
     public void registerDefaultComponentAction(Action action) {

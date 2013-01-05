@@ -101,7 +101,7 @@ public class JsHintsProvider implements HintsProvider {
         }
 
         List<? extends Rule.AstRule> otherHints = allHints.get(WeirdAssignment.JS_OTHER_HINTS);
-        if (otherHints != null) {
+        if (otherHints != null && !cancel) {
             for (Rule.AstRule astRule : otherHints) {
                 if (manager.isEnabled(astRule)) {
                     JsAstRule rule = (JsAstRule)astRule;

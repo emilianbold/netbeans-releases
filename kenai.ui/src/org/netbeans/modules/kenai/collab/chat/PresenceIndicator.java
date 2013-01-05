@@ -72,7 +72,6 @@ import org.openide.awt.Actions;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 
 /**
@@ -213,7 +212,7 @@ public class PresenceIndicator {
                         logoutItem.addActionListener(new ActionListener() {
 
                             public void actionPerformed(ActionEvent e) {
-                                RequestProcessor.getDefault().post(new Runnable() {
+                                Utilities.getRequestProcessor().post(new Runnable() {
 
                                     @Override
                                     public void run() {
@@ -228,7 +227,7 @@ public class PresenceIndicator {
                     onlineCheckBox.addActionListener(new ActionListener() {
 
                         public void actionPerformed(ActionEvent e) {
-                            RequestProcessor.getDefault().post(new Runnable() {
+                            Utilities.getRequestProcessor().post(new Runnable() {
 
                                 public void run() {
                                     try {
