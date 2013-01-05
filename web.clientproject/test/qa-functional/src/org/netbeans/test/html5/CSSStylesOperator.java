@@ -350,7 +350,7 @@ public class CSSStylesOperator extends TopComponentOperator {
     public String[] getFocusedProperty() {
         JTableOperator _tabTreeTable = new JTableOperator(sppPseudoClasses(), 1);
         TableModel tm = _tabTreeTable.getModel();
-        RuleEditorNode.DeclarationProperty t = (RuleEditorNode.DeclarationProperty) tm.getValueAt(_tabTreeTable.getSelectedRow() - 1, 0);
+        RuleEditorNode.DeclarationProperty t = (RuleEditorNode.DeclarationProperty) tm.getValueAt(_tabTreeTable.getSelectedRow(), 0);
         return new String[]{t.getDisplayName(), t.getValue().toString()};
     }
 
@@ -530,11 +530,15 @@ public class CSSStylesOperator extends TopComponentOperator {
      *
      * @param propertyName name of CSS property to be changed
      * @param buttonPresses how many times should the arrow key be pressed
-     * @param mode if -1, then down arrow key will be pressed, if 1 then up
-     * arrow key
+     * @param up if false, then down arrow key will be pressed, if true then up
+     * @param clickToEdit if true, double click on cell is done to switch to
+     * edit mode
+     * @param confirmValue if true, Enter is pressed at the end so cell is not
+     * editable arrow key
      * @throws NullPointerException in case property is not found
      */
-    public void changeNumberedProperty(String propertyName, int buttonPresses, int mode) throws NullPointerException {
+    public void editNumberedProperty(String propertyName, int buttonPresses, boolean up, boolean clickToEdit, boolean confirmValue) throws NullPointerException {
+
         JTableOperator _tabTreeTable = new JTableOperator(sppPseudoClasses(), 1);
         TableModel tm = _tabTreeTable.getModel();
         RuleEditorNode.DeclarationProperty t;
@@ -543,10 +547,10 @@ public class CSSStylesOperator extends TopComponentOperator {
             if (tm.getValueAt(i, 0) instanceof RuleEditorNode.DeclarationProperty) {
                 t = (RuleEditorNode.DeclarationProperty) tm.getValueAt(i, 0);
                 if (t.getDisplayName().equalsIgnoreCase(propertyName)) {
-
-                    _tabTreeTable.clickOnCell(i, 1);
-
-                    if (mode < 0) {
+                    if (clickToEdit) {
+                        _tabTreeTable.clickOnCell(i, 1);
+                    }
+                    if (!up) {
                         for (int j = 0; j < buttonPresses; j++) {
                             _tabTreeTable.pressKey(KeyEvent.VK_DOWN);
                         }
@@ -555,14 +559,38 @@ public class CSSStylesOperator extends TopComponentOperator {
                             _tabTreeTable.pressKey(KeyEvent.VK_UP);
                         }
                     }
-
-                    _tabTreeTable.pressKey(KeyEvent.VK_ENTER);
+                    if (confirmValue) {
+                        _tabTreeTable.pressKey(KeyEvent.VK_ENTER);
+                    }
                     return;
                 }
             }
         }
 
         throw new NullPointerException("Property \"" + propertyName + "\" not found");
+    }
+    
+    /**
+     * Simply presses up/down buttons given times
+     *
+     * @param buttonPresses how many times up/down button should be pressed
+     * @param up if true, up button is pressed, otherwise down button
+     * @param confirm if true, Enter is press at the end
+     */
+    public void pressUpDownButtons(int buttonPresses, boolean up, boolean confirm) {
+        JTableOperator _tabTreeTable = new JTableOperator(sppPseudoClasses(), 1);
+        if (!up) {
+            for (int j = 0; j < buttonPresses; j++) {
+                _tabTreeTable.pressKey(KeyEvent.VK_DOWN);
+            }
+        } else {
+            for (int j = 0; j < buttonPresses; j++) {
+                _tabTreeTable.pressKey(KeyEvent.VK_UP);
+            }
+        }
+        if (confirm) {
+            _tabTreeTable.pressKey(KeyEvent.VK_ENTER);
+        }
     }
 }
 
