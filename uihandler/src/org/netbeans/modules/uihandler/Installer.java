@@ -60,6 +60,7 @@ import java.net.*;
 import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Handler;
@@ -1447,39 +1448,49 @@ public class Installer extends ModuleInstall implements Runnable {
         }
     }
 
-    static void copyWithEncoding(InputStream inputStream, OutputStream os) throws IOException {
+    static void copyWithEncoding(InputStream inputStream, OutputStream os,
+                                 Map<String, String> replacements) throws IOException {
         byte[] arr = new byte[4096];
 
-        String text = null;
-        String enc = "utf-8";
-        for (;;) {
-            int len = inputStream.read(arr);
-            if (len == -1) {
-                break;
-            }
-            boolean first = text == null;
-            text = new String(arr, 0, len, enc);
-            if (first) {
-                Matcher m = ENCODING.matcher(text);
-                if (m.find()) {
-                    enc = m.group(1);
-                    text = new String(arr, 0, len, enc);
-                    OUTER: for (;;) {
-                        Matcher replace = ENCODING.matcher(text);
-                        do {
-                            if (!replace.find()) {
-                                break OUTER;
-                            }
-                        } while ("UTF-8".equals(replace.group(1)));
-                        text = text.substring(0, replace.start(1)) + "UTF-8" + text.substring(replace.end(1));
+        final String encUTF8 = "utf-8";
+        PushbackInputStream pin = new PushbackInputStream(inputStream, 4096);
+        int l = pin.read(arr);
+        pin.unread(arr, 0, l);
+        String enc = findEncoding(arr, l);
+        boolean replaceEnc = !enc.equalsIgnoreCase(encUTF8);
+        BufferedReader br = new BufferedReader(new InputStreamReader(pin, enc));
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os, encUTF8));
+        String text;
+        while ((text = br.readLine()) != null) {
+            if (replaceEnc) {
+                Matcher replace = ENCODING.matcher(text);
+                while (replace.find()) {
+                    if (!encUTF8.equalsIgnoreCase(replace.group(1))) {
+                        text = text.substring(0, replace.start(1)) + encUTF8 + text.substring(replace.end(1));
+                        replace = ENCODING.matcher(text);
                     }
-                    LOG.log(Level.FINE, "Downloaded with encoding ''{0}'':\n{1}", new Object[]{enc, text});
-                } else {
-                    LOG.log(Level.FINE, "Downloaded with utf-8:\n{0}", text);
                 }
             }
-            os.write(text.getBytes("UTF-8"));
+            for (Entry<String, String> re : replacements.entrySet()) {
+                text = text.replace(re.getKey(), re.getValue());
+            }
+            bw.write(text);
+            bw.newLine();
         }
+        bw.flush();
+    }
+    
+    private static String findEncoding(byte[] arr, int len) throws UnsupportedEncodingException {
+        String enc = "utf-8";
+        String text = new String(arr, 0, len, enc);
+        Matcher m = ENCODING.matcher(text);
+        if (m.find()) {
+            enc = m.group(1);
+            LOG.log(Level.FINE, "Downloaded with encoding ''{0}'':\n{1}", new Object[]{enc, text});
+        } else {
+            LOG.log(Level.FINE, "Downloaded with utf-8:\n{0}", text);
+        }
+        return enc;
     }
 
     private static abstract class Submit implements ActionListener, Runnable {
@@ -1500,6 +1511,8 @@ public class Installer extends ModuleInstall implements Runnable {
         private DialogState dialogState = DialogState.NON_CREATED;
         private boolean checkingResult, refresh = false;
         protected boolean errorPage = false;
+        protected String errorURL = null;
+        protected String errorMessage = null;
         protected DataType dataType = DataType.DATA_UIGESTURE;
         final protected List<LogRecord> recs;
         protected boolean isOOM = false;
@@ -1596,33 +1609,41 @@ public class Installer extends ModuleInstall implements Runnable {
 
             LOG.log(Level.FINE, "doShow, dialog has been created"); // NOI18N
             boolean firstRound = true;
-            StringBuilder sb = new StringBuilder(1024);
+            //StringBuilder sb = new StringBuilder(1024);
             for (;;) {
+                String connURL = defaultURI;
                 try {
                     if (url == null) {
                         url = new URL(defaultURI); // NOI18N
                     }
 
                     LOG.log(Level.FINE, "doShow, reading from = {0}", url);
-                    sb.append("doShow reading from: ").append(url).append("\n");
+                    //sb.append("doShow reading from: ").append(url).append("\n");
                     URLConnection conn = url.openConnection();
                     conn.setRequestProperty("User-Agent", "NetBeans");
                     conn.setConnectTimeout(5000);
                     File tmp = File.createTempFile("uigesture", ".html");
                     tmp.deleteOnExit();
                     FileOutputStream os = new FileOutputStream(tmp);
-                    copyWithEncoding(conn.getInputStream(), os);
+                    connURL = conn.getURL().toExternalForm();
+                    Map<String, String> replacements = new HashMap<String, String>();
+                    String errURL = (errorURL == null) ? "" : errorURL;
+                    replacements.put("{org.netbeans.modules.uihandler.LoadURL}", errURL);
+                    String errMsg = (errorMessage == null) ? "" : errorMessage;
+                    replacements.put("{org.netbeans.modules.uihandler.LoadError}", errMsg);
+                    copyWithEncoding(conn.getInputStream(), os, replacements);
+                    connURL = conn.getURL().toExternalForm(); // URL could change by redirect
                     os.close();
                     conn.getInputStream().close();
-                    LOG.log(Level.FINE, "doShow, all read from = {0}", url); // NOI18N
-                    //Temporary logging to investigate #141497
+                    LOG.log(Level.FINE, "doShow, all read from = {0}", connURL); // NOI18N
+                    /* //Temporary logging to investigate #141497
                     InputStream is = new FileInputStream(tmp);
                     byte [] arr = new byte [is.available()];
                     is.read(arr);
                     sb.append("Content:\n").append(new String(arr)).append("\nEnd of Content");
                     is.close();
-                    //End
-                    is = new FileInputStream(tmp);
+                    *///End
+                    InputStream is = new FileInputStream(tmp);
                     DialogDescriptor dd = findDD();
                     parseButtons(is, exitMsg, dd);
                     LOG.log(Level.FINE, "doShow, parsing buttons: {0}", Arrays.toString(dd.getOptions())); // NOI18N
@@ -1636,8 +1657,9 @@ public class Installer extends ModuleInstall implements Runnable {
                 } catch (ParserConfigurationException ex) {
                     LOG.log(Level.WARNING, null, ex);
                 } catch (SAXException ex) {
-                    LOG.log(Level.INFO, sb.toString());
-                    LOG.log(Level.WARNING, url.toExternalForm(), ex);
+                    catchParsingProblem(ex, connURL);
+                    //LOG.log(Level.INFO, sb.toString());
+                    continue;
                 } catch (IllegalStateException ex){
                     catchConnectionProblem(ex);
                     continue;
@@ -1693,6 +1715,8 @@ public class Installer extends ModuleInstall implements Runnable {
 
         private void catchConnectionProblem(Exception exception){
             LOG.log(Level.INFO, url.toExternalForm(), exception);
+            errorURL = url.toExternalForm();
+            errorMessage = exception.getLocalizedMessage();
             url = getUnknownHostExceptionURL();
             jpb.setVisible(false);
             errorPage = true;
@@ -1707,7 +1731,26 @@ public class Installer extends ModuleInstall implements Runnable {
             }
             return getClass().getResource("UnknownHostException.html"); // NOI18N
         }
+        
+        private void catchParsingProblem(Exception exception, String connectionURL) {
+            LOG.log(Level.INFO, connectionURL, exception);
+            errorURL = connectionURL;
+            errorMessage = exception.getLocalizedMessage();
+            url = getParsingProblemURL();
+            jpb.setVisible(false);
+            errorPage = true;
+        }
 
+        private URL getParsingProblemURL() {
+            try {
+                URL resource = new URL("nbresloc:/org/netbeans/modules/uihandler/SAXException.html"); // NOI18N
+                return resource;
+            } catch (MalformedURLException ex) {
+                LOG.log(Level.SEVERE, ex.getMessage(), ex);
+            }
+            return getClass().getResource("SAXException.html"); // NOI18N
+        }
+        
         @Override
         public void run() {
             DialogState newState = DialogState.CREATED;
@@ -1852,6 +1895,8 @@ public class Installer extends ModuleInstall implements Runnable {
             if (Button.REFRESH.isCommand(e.getActionCommand())){
                 refresh = true;
                 errorPage = false;
+                errorURL = null;
+                errorMessage = null;
                 synchronized(this){
                     notifyAll();
                 }
