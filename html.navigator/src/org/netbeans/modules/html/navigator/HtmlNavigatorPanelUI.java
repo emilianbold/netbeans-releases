@@ -361,9 +361,10 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                 refreshDOM();
             }
         };
-        domDescription.addChangeListener(WeakListeners.change(changeListener, domDescription));
-        if (((root.getFileObject() == null && inspectedFileObject == null)) || 
-                (inspectedFileObject!=null && inspectedFileObject.equals(root.getFileObject()))) {
+        if (domDescription !=null)
+            domDescription.addChangeListener(WeakListeners.change(changeListener, domDescription));
+        if (root !=null && domDescription != null && (((root.getFileObject() == null && inspectedFileObject == null)) || 
+                (inspectedFileObject!=null && inspectedFileObject.equals(root.getFileObject())))) {
             root.setDescription(domDescription);
         } else {
             root.setDescription(WebKitNodeDescription.empty(WebKitNodeDescription.DOM));
@@ -655,7 +656,11 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
 
     private Project getCurrentProject() {
         if (inspectedFileObject != null) {
-            return FileOwnerQuery.getOwner(lastInspectedFileObject=inspectedFileObject);
+            final Project owner = FileOwnerQuery.getOwner(inspectedFileObject);
+            if (owner!=null) {
+                lastInspectedFileObject=inspectedFileObject;
+                return owner;
+            }
         }
         if (getRootNode()!=null && getRootNode().getFileObject()!=null) {
                 return FileOwnerQuery.getOwner(lastInspectedFileObject=getRootNode().getFileObject());

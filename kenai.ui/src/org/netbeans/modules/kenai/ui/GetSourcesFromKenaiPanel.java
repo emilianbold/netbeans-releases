@@ -92,7 +92,6 @@ import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.common.AddInstanceAction;
 import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.netbeans.modules.subversion.api.Subversion;
-import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -101,7 +100,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
-import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import static org.netbeans.modules.kenai.ui.Bundle.*;
 import org.netbeans.modules.kenai.ui.api.KenaiServer;
@@ -533,7 +531,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         }
 
         private void addOpenedProjects() {
-            RequestProcessor.getDefault().post(new Runnable() {
+            Utilities.getRequestProcessor().post(new Runnable() {
                 public void run() {
                     ProjectHandle[] openedProjects = getOpenProjects();
                         for (ProjectHandle<KenaiProject> prjHandle : openedProjects) {

@@ -257,7 +257,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                     continue;
                 }
                 String methodName = enclosed.getSimpleName().toString();
-                String propertyName = RefactoringUtil.getPropertyName(methodName, true);
+                String propertyName = RefactoringUtil.getPropertyName(methodName, enclosed.getReturnType(), true);
                 if (!prefix.matches(propertyName)) {
                     continue;
                 }

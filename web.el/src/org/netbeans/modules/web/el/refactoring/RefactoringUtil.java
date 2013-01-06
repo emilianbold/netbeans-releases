@@ -44,9 +44,12 @@
 package org.netbeans.modules.web.el.refactoring;
 
 import com.sun.el.parser.Node;
+import com.sun.source.tree.Tree;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.swing.text.Position.Bias;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -143,12 +146,31 @@ public final class RefactoringUtil {
      * <code>property</code>.
      */
     public static String getPropertyName(String accessor) {
-        //XXX: leaving out 'set' for refactoring, need more clever AST analysis to be able to
-        // tell apart getters and setters in EL
-        return getPropertyName(accessor, false);
+        return getPropertyName(accessor, null, false);
     }
 
-    public static String getPropertyName(String accessor, boolean includeSetter) {
+    /**
+     * Gets the name of the property associated with the given accessor and return type. Use this method in cases that
+     * the accessor represents a methodName.
+     *
+     * @param accessor the name of the accessor method of the property. Must follow the JavaBeans
+     * naming conventions, i.e. start with 'get/set/is' followed by an uppercase letter,
+     * otherwise it is assumed that the name of the property directly matches with
+     * the getter. Must not be null or empty.
+     * @param returnType {@code TypeMirror} of the return type if the accessor represents a method,
+     * {@code null} otherwise
+     *
+     * @return the property name resolved from the given <code>getter</code>, i.e.
+     * if the given arg was <code>getProperty</code>, this method will return
+     * <code>property</code>.
+     */
+    public static String getPropertyName(String accessor, TypeMirror returnType) {
+        //XXX: leaving out 'set' for refactoring, need more clever AST analysis to be able to
+        // tell apart getters and setters in EL
+        return getPropertyName(accessor, returnType, false);
+    }
+
+    public static String getPropertyName(String accessor, TypeMirror returnType, boolean includeSetter) {
         Parameters.notEmpty("accessor", accessor); //NO18N
         int prefixLength = getPrefixLength(accessor, includeSetter);
         String withoutPrefix = accessor.substring(prefixLength);
@@ -161,6 +183,11 @@ public final class RefactoringUtil {
             return accessor;
         }
 
+        //method property which is prefixed by 'is' but doesn't return boolean
+        if (returnType != null && accessor.startsWith("is") && returnType.getKind() != TypeKind.BOOLEAN) { //NOI18N
+            return accessor;
+        }
+
         //check the second char, if its also uppercase, the property name must be preserved
         if(withoutPrefix.length() > 1 && Character.isUpperCase(withoutPrefix.charAt(1))) {
             return withoutPrefix;
@@ -169,8 +196,8 @@ public final class RefactoringUtil {
         return Character.toLowerCase(firstChar) + withoutPrefix.substring(1);
     }
     
-    public static boolean isPropertyAccessor(String accessor) {
-        return !getPropertyName(accessor).equals(accessor);
+    public static boolean isPropertyAccessor(String accessor, TypeMirror returnType) {
+        return !getPropertyName(accessor, returnType).equals(accessor);
     }
     
     private static int getPrefixLength(String accessor, boolean includeSetter) {

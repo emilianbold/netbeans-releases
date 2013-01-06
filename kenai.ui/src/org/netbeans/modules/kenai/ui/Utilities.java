@@ -42,20 +42,17 @@
 
 package org.netbeans.modules.kenai.ui;
 
-import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.prefs.Preferences;
-import javax.swing.filechooser.FileSystemView;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiService;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -64,6 +61,7 @@ import org.openide.util.NbPreferences;
 public class Utilities {
 
     private static HashMap<String, Boolean> chatSupported = new HashMap();
+    private static RequestProcessor RP;
 
     public static boolean isChatSupported(Kenai kenai, boolean forceCheck) {
         String kenaiHost = kenai.getUrl().getHost();
@@ -140,4 +138,10 @@ public class Utilities {
         prefs.put("dashboard.last.selected.kenai", k.getUrl().toString()); //NOI18N
     }
 
+    public static RequestProcessor getRequestProcessor () {
+        if (RP == null) {
+            RP = new RequestProcessor(Utilities.class.getName(), 5);
+        }
+        return RP;
+    }
 }
