@@ -42,10 +42,18 @@
 
 package org.netbeans.modules.web.el.refactoring;
 
+import java.io.IOException;
+import javax.lang.model.type.TypeKind;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.csl.api.OffsetRange;
 
 /**
@@ -96,6 +104,26 @@ public class RefactoringUtilTest {
 
         assertEquals("gettyFoo", RefactoringUtil.getPropertyName("gettyFoo"));
         assertEquals("issyFoo", RefactoringUtil.getPropertyName("issyFoo"));
+    }
+
+    @Test
+    public void testGetPropertyNameIsPrefix() throws IOException {
+        ClassPath bootCP = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
+        JavaSource js = JavaSource.create(ClasspathInfo.create(bootCP, bootCP, bootCP));
+        assertNotNull(js);
+        js.runUserActionTask(new Task<CompilationController>() {
+            @Override
+            public void run(CompilationController info) throws Exception {
+                assertEquals("isFoo", RefactoringUtil.getPropertyName("isFoo",
+                        info.getElements().getTypeElement("java.lang.Boolean").asType()));
+                assertEquals("foo", RefactoringUtil.getPropertyName("isFoo",
+                        info.getTypes().getPrimitiveType(TypeKind.BOOLEAN)));
+                assertEquals("isFoo", RefactoringUtil.getPropertyName("isFoo",
+                        info.getElements().getTypeElement("java.lang.String").asType()));
+                assertEquals("isFoo", RefactoringUtil.getPropertyName("isFoo",
+                        info.getTypes().getPrimitiveType(TypeKind.INT)));
+            }
+        }, true);
     }
 
 }

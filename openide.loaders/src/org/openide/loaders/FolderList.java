@@ -721,7 +721,7 @@ implements FileChangeListener, DataObject.Container {
                     map.put(fo, ref);
                 }
                 catch (DataObjectNotFoundException ex) {
-                    Logger.getLogger(FolderList.class.getName()).log(Level.WARNING, null, ex);
+                    err.log(Level.INFO, null, ex);
                 }
             }
             // add if accepted

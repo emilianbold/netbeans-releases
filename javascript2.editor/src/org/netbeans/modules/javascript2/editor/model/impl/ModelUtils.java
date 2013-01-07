@@ -217,7 +217,7 @@ public class ModelUtils {
         return result;
     }
     
-    private static DeclarationScope getDeclarationScope(DeclarationScope scope, int offset) {
+    public static DeclarationScope getDeclarationScope(DeclarationScope scope, int offset) {
         DeclarationScopeImpl dScope = (DeclarationScopeImpl)scope;
         DeclarationScope result = null;
         DeclarationScope function = null;

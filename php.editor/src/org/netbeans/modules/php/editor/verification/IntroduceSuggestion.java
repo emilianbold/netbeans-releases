@@ -199,7 +199,7 @@ public class IntroduceSuggestion extends AbstractSuggestion {
         public void visit(MethodInvocation methodInvocation) {
             if (isInside(methodInvocation.getStartOffset(), lineBegin, lineEnd)) {
                 String methName = CodeUtils.extractFunctionName(methodInvocation.getMethod());
-                if (methName != null && StringUtils.hasText(methName)) {
+                if (StringUtils.hasText(methName)) {
                     Collection<? extends TypeScope> allTypes = ModelUtils.resolveType(model, methodInvocation);
                     if (allTypes.size() == 1) {
                         TypeScope type = ModelUtils.getFirst(allTypes);

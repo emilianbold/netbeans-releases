@@ -3516,6 +3516,7 @@ public class Reformatter implements ReformatTask {
                 int lastWSOffset = -1;
                 int identStart = -1;
                 int lastNLOffset = -1;
+                int lastAddedNLOffset = -1;
                 boolean afterText = false;
                 boolean insideTag = false;
                 int nestedParenCnt = 0;
@@ -3585,7 +3586,8 @@ public class Reformatter implements ReformatTask {
                                     if (currWSOffset >= 0 && (toAdd == null || toAdd.first < currWSOffset)) {
                                         marks.add(Pair.of(currWSOffset, 1));
                                     }
-                                    marks.add(Pair.of(javadocTokens.offset() + javadocTokens.token().length() - offset, 1));
+                                    lastAddedNLOffset = javadocTokens.offset() + javadocTokens.token().length() - offset;
+                                    marks.add(Pair.of(lastAddedNLOffset, 1));
                                     afterText = false;
                                 } else if (PRE_TAG.equalsIgnoreCase(tokenText)
                                         || CODE_TAG.equalsIgnoreCase(tokenText)) {
@@ -3597,7 +3599,8 @@ public class Reformatter implements ReformatTask {
                                         || CODE_END_TAG.equalsIgnoreCase(tokenText)) {
                                     marks.add(Pair.of(currWSOffset >= 0 ? currWSOffset : javadocTokens.offset() - offset, 6));
                                 } else {
-                                    if (currWSOffset >= 0 && lastNLOffset >= currWSOffset && (toAdd == null || toAdd.first < currWSOffset)) {
+                                    if (currWSOffset >= 0 && lastNLOffset >= currWSOffset
+                                            && lastAddedNLOffset < currWSOffset && (toAdd == null || toAdd.first < currWSOffset)) {
                                         marks.add(Pair.of(currWSOffset, 1));
                                     }
                                     nlAdd = Pair.of(javadocTokens.offset() + javadocTokens.token().length() - offset, 1);

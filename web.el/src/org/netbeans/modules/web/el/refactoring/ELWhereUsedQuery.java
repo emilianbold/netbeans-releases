@@ -137,14 +137,14 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
             ELIndex index = ELIndex.get(handle.getFileObject());
             Collection<? extends IndexResult> result = index.findIdentifierReferences(beanName);
             for (ELElement elem : getMatchingElements(result)) {
-                addElements(elem, findMatchingIdentifierNodes(elem.getNode(), beanName), refactoringElementsBag);
+                addElements(info, elem, findMatchingIdentifierNodes(elem.getNode(), beanName), refactoringElementsBag);
             }
         }
         return null;
     }
 
     protected Problem handleProperty(CompilationContext info, RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, ExecutableElement targetType) {
-        String propertyName = RefactoringUtil.getPropertyName(targetType.getSimpleName().toString());
+        String propertyName = RefactoringUtil.getPropertyName(targetType.getSimpleName().toString(), targetType.getReturnType());
         ELIndex index = ELIndex.get(handle.getFileObject());
         final Set<IndexResult> result = new HashSet<IndexResult>();
         // search for property nodes only if the method has no params (or accepts one vararg)
@@ -168,14 +168,14 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
                     each.getSnapshot().getSource().getFileObject(),
                     variables);            
             
-            addElements(each, matchingNodes, refactoringElementsBag);
+            addElements(info, each, matchingNodes, refactoringElementsBag);
             
         }
         
         return null;
     }
 
-    protected void addElements(ELElement elem, List<Node> matchingNodes, RefactoringElementsBag refactoringElementsBag) {
+    protected void addElements(CompilationContext info, ELElement elem, List<Node> matchingNodes, RefactoringElementsBag refactoringElementsBag) {
         for (Node property : matchingNodes) {
             WhereUsedQueryElement wuqe =
                     new WhereUsedQueryElement(elem.getSnapshot().getSource().getFileObject(), property.getImage(), elem, property, getParserResult(elem.getSnapshot().getSource().getFileObject()));
@@ -313,7 +313,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
                 if (ELTypeUtilities.isSameMethod(info, property, methodElem)) {
                     return ELTypeUtilities.getReturnType(info, methodElem);
 
-                } else if (RefactoringUtil.getPropertyName(methodName).equals(name) || methodName.equals(name)) {
+                } else if (RefactoringUtil.getPropertyName(methodName, methodElem.getReturnType()).equals(name) || methodName.equals(name)) {
                     return ELTypeUtilities.getReturnType(info, methodElem);
                 }
             }

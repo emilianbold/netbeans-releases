@@ -135,7 +135,7 @@ public abstract class AbstractApplyHintsRefactoringPlugin extends ProgressProvid
         BatchResult candidates = BatchSearch.findOccurrences(pattern, scope, w);
         Collection<RefactoringElementImplementation> fileChanges = new ArrayList<RefactoringElementImplementation>();
         Collection<MessageImpl> problems = new LinkedList<MessageImpl>(candidates.problems);
-        Map<JavaFix, ModificationResult> changesPerFix = new HashMap<JavaFix, ModificationResult>();
+        Map<JavaFix, ModificationResult> changesPerFix = new IdentityHashMap<JavaFix, ModificationResult>();
         Collection<? extends ModificationResult> res = BatchUtilities.applyFixes(candidates, w, cancel, fileChanges, changesPerFix, problems);
         Set<ModificationResult> enabled = Collections.newSetFromMap(new IdentityHashMap<ModificationResult, Boolean>());
         Map<FileObject, Map<JavaFix, ModificationResult>> file2Fixes2Changes = new HashMap<FileObject, Map<JavaFix, ModificationResult>>();
@@ -157,7 +157,7 @@ public abstract class AbstractApplyHintsRefactoringPlugin extends ProgressProvid
                 Map<JavaFix, ModificationResult> perFile = file2Fixes2Changes.get(file);
                 
                 if (perFile == null) {
-                    file2Fixes2Changes.put(file, perFile = new HashMap<JavaFix, ModificationResult>());
+                    file2Fixes2Changes.put(file, perFile = new IdentityHashMap<JavaFix, ModificationResult>());
                 }
                 
                 perFile.put(changesPerFixEntry.getKey(), changesPerFixEntry.getValue());
