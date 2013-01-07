@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,76 +37,68 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.javascript2.editor.model.impl;
 
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.csl.api.ElementHandle;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsFunction;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 
 /**
  *
  * @author Petr Pisl
  */
-public interface JsElement extends ElementHandle {
+public class CatchBlockImpl extends DeclarationScopeImpl implements JsFunction {
 
-    public enum Kind {
-
-        FUNCTION(1),
-        METHOD(2),
-        CONSTRUCTOR(3),
-        OBJECT(4),
-        PROPERTY(5),
-        VARIABLE(6),
-        FIELD(7),
-        FILE(8),
-        PARAMETER(9),
-        ANONYMOUS_OBJECT(10),
-        PROPERTY_GETTER(11),
-        PROPERTY_SETTER(12),
-        OBJECT_LITERAL(13),
-        CATCH_BLOCK(14);
-        
-        private final int id;
-        private static Map<Integer, Kind> lookup = new HashMap<Integer, Kind>();
-        
-        static {
-            for (Kind kind : EnumSet.allOf(Kind.class)) {
-                lookup.put(kind.getId(), kind);
-            }
-        }
-        
-        private Kind(int id) {
-            this.id = id;
-        }
-        
-        public int getId() {
-            return this.id;
-        }
-        
-        public static  Kind fromId(int id) {
-            return lookup.get(id);
-        }
-        
-        public boolean isFunction() {
-            return this == FUNCTION || this == METHOD || this == CONSTRUCTOR
-                    || this == PROPERTY_GETTER || this == PROPERTY_SETTER;
-        }
-        
-        public boolean isPropertyGetterSetter() {
-            return this == PROPERTY_GETTER || this == PROPERTY_SETTER;
-        }
-        
+    final private List<JsObject> parameters;
+    
+    public CatchBlockImpl(DeclarationScope inFunction, Identifier exception, OffsetRange range) {
+        super(inFunction, (JsObject)inFunction, new IdentifierImpl(getBlockName((JsObject)inFunction), OffsetRange.NONE), range); //NOI18N
+        this.parameters = new ArrayList<JsObject>();
+        ParameterObject param = new ParameterObject(this, exception);
+        this.parameters.add(param);
+        ((JsObjectImpl)inFunction).addProperty(this.getName(), this);
+        param.addOccurrence(exception.getOffsetRange());
     }
 
-    int getOffset();
-
-    OffsetRange getOffsetRange();
-
-    Kind getJSKind();
+    private static String getBlockName(JsObject parent) {
+        int index = 1;
+        while (parent.getProperty("catch_" + index) != null) {
+            index++;
+        }
+        return "catch_" + index;
+    }
     
-    boolean isDeclared();
+    @Override
+    public Collection<? extends JsObject> getParameters() {
+        return new ArrayList(this.parameters);
+    }
+
+    @Override
+    public JsObject getParameter(String name) {
+        for (JsObject param : parameters) {
+            if(name.equals(param.getName())) {
+                return param;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Collection<? extends TypeUsage> getReturnTypes() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public Kind getJSKind() {
+        return Kind.CATCH_BLOCK;
+    }
 }

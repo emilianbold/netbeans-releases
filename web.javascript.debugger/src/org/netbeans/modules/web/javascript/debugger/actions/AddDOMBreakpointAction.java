@@ -220,11 +220,22 @@ public class AddDOMBreakpointAction extends NodeAction {
             //List<DOMNode.NodeId> path = createNodePath(node);
             DOMNode nodeDom = DOMNode.create(node);
             List<? extends NodeId> nodePath = nodeDom.getPath();
-            String name = node.getName();
-            for (DOMBreakpoint db : domBreakpoints) {
-                DOMNode dom = db.getNode();
-                if (name.equals(dom.getNodeName()) && listEquals(nodePath, dom.getPath())) {
-                    return db;
+            if (nodePath != null) {
+                String name = node.getName();
+                for (DOMBreakpoint db : domBreakpoints) {
+                    DOMNode dom = db.getNode();
+                    List<? extends NodeId> path = dom.getPath();
+                    if (path != null && name.equals(dom.getNodeName()) && listEquals(nodePath, path)) {
+                        return db;
+                    }
+                }
+            } else {
+                String id = nodeDom.getID();
+                for (DOMBreakpoint db : domBreakpoints) {
+                    DOMNode dom = db.getNode();
+                    if (id.equals(dom.getID())) {
+                        return db;
+                    }
                 }
             }
         }

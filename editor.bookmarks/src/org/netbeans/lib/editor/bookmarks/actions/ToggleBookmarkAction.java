@@ -137,9 +137,9 @@ public final class ToggleBookmarkAction extends AbstractAction implements Contex
         } else {
             if (EditorRegistry.lastFocusedComponent() == null) {
                 return false;
+            } else {
+                return true;
             }
-
-            return Utilities.actionsGlobalContext().lookup(EditorCookie.class) != null;
         }
     }
 

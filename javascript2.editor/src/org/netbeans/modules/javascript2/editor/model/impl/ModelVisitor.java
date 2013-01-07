@@ -376,14 +376,33 @@ public class ModelVisitor extends PathNodeVisitor {
     }
 
     @Override
+    public Node enter(CatchNode catchNode) {
+        Identifier exception = ModelElementFactory.create(parserResult, catchNode.getException());
+        DeclarationScopeImpl inScope = modelBuilder.getCurrentDeclarationScope();
+        CatchBlockImpl catchBlock  = new CatchBlockImpl(inScope, exception,
+                ModelUtils.documentOffsetRange(parserResult, catchNode.getStart(), catchNode.getFinish()));
+        inScope.addDeclaredScope(catchBlock);
+        modelBuilder.setCurrentObject(catchBlock);
+        return super.enter(catchNode);
+    }
+
+    @Override
+    public Node leave(CatchNode catchNode) {
+        modelBuilder.reset();
+        return super.leave(catchNode);
+    }
+
+    
+    @Override
     public Node enter(IdentNode identNode) {
         Node previousVisited = getPath().get(getPath().size() - 1);
         if(!(previousVisited instanceof AccessNode
                 || previousVisited instanceof VarNode
                 || previousVisited instanceof BinaryNode
-                || previousVisited instanceof PropertyNode)) {
-            boolean declared = previousVisited instanceof CatchNode;
-            addOccurence(identNode, declared);
+                || previousVisited instanceof PropertyNode
+                || previousVisited instanceof CatchNode)) {
+            //boolean declared = previousVisited instanceof CatchNode;
+            addOccurence(identNode, false);
         }
         return super.enter(identNode);
     }
@@ -886,8 +905,11 @@ public class ModelVisitor extends PathNodeVisitor {
 
     @Override
     public Node enter(VarNode varNode) {
-        if (!(varNode.getInit() instanceof ObjectNode || varNode.getInit() instanceof ReferenceNode)) {
+         if (!(varNode.getInit() instanceof ObjectNode || varNode.getInit() instanceof ReferenceNode)) {
             JsObject parent = modelBuilder.getCurrentObject();
+            if (parent instanceof CatchBlockImpl) {
+                parent = parent.getParent();
+            } 
             JsObjectImpl variable = (JsObjectImpl)parent.getProperty(varNode.getName().getName());
             Identifier name = ModelElementFactory.create(parserResult, varNode.getName());
             if (name != null) {
