@@ -98,6 +98,7 @@ public final class CGSInfo {
     // cotain the class consructor?
     private boolean hasConstructor;
     private final List<Property> properties;
+    private final List<Property> instanceProperties;
     private final List<Property> possibleGetters;
     private final List<Property> possibleSetters;
     private final List<Property> possibleGettersSetters;
@@ -112,6 +113,7 @@ public final class CGSInfo {
 
     private CGSInfo(JTextComponent textComp) {
         properties = new ArrayList<Property>();
+        instanceProperties = new ArrayList<Property>();
         possibleGetters = new ArrayList<Property>();
         possibleSetters = new ArrayList<Property>();
         possibleGettersSetters = new ArrayList<Property>();
@@ -132,6 +134,10 @@ public final class CGSInfo {
 
     public List<Property> getProperties() {
         return properties;
+    }
+
+    public List<Property> getInstanceProperties() {
+        return instanceProperties;
     }
 
     public List<MethodProperty> getPossibleMethods() {
@@ -296,13 +302,15 @@ public final class CGSInfo {
         @Override
         public void visit(FieldsDeclaration node) {
             List<SingleFieldDeclaration> fields = node.getFields();
-            if (!BodyDeclaration.Modifier.isStatic(node.getModifier())) {
-                for (SingleFieldDeclaration singleFieldDeclaration : fields) {
-                    Variable variable = singleFieldDeclaration.getName();
-                    if (variable != null && variable.getName() instanceof Identifier) {
-                        String name = ((Identifier) variable.getName()).getName();
-                        getProperties().add(new Property(name, node.getModifier(), getPropertyType(singleFieldDeclaration)));
+            for (SingleFieldDeclaration singleFieldDeclaration : fields) {
+                Variable variable = singleFieldDeclaration.getName();
+                if (variable != null && variable.getName() instanceof Identifier) {
+                    String name = ((Identifier) variable.getName()).getName();
+                    Property property = new Property(name, node.getModifier(), getPropertyType(singleFieldDeclaration));
+                    if (!BodyDeclaration.Modifier.isStatic(node.getModifier())) {
+                        getInstanceProperties().add(property);
                     }
+                    getProperties().add(property);
                 }
             }
         }
