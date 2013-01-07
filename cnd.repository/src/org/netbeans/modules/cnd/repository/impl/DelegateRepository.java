@@ -71,7 +71,7 @@ import org.openide.util.lookup.ServiceProviders;
  */
 @ServiceProviders({
 @ServiceProvider(service = org.netbeans.modules.cnd.repository.api.Repository.class),
-@ServiceProvider(path = RelocationSupportProvider.PATH, service = RelocationSupportProvider.class, position = 1000),
+@ServiceProvider(path = RelocationSupportProvider.PATH, service = RelocationSupportProvider.class, position = 1000)
 })
 public final class DelegateRepository implements Repository, RelocationSupportProvider {    
 
