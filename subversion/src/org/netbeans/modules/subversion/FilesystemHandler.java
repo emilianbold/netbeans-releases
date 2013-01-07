@@ -839,7 +839,8 @@ class FilesystemHandler extends VCSInterceptor {
 
                             moved = temp.renameTo(to);
                             if (moved) {
-                                if (status.getTextStatus().equals(SVNStatusKind.ADDED) || status.getTextStatus().equals(SVNStatusKind.REPLACED)) {
+                                // indeed just ADDED, not REPLACED
+                                if (status.getTextStatus().equals(SVNStatusKind.ADDED)) {
                                     client.revert(temp, true);
                                 } else {
                                     client.remove(new File[] { temp }, true);
