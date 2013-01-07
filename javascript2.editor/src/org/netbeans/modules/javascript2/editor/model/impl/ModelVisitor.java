@@ -905,7 +905,7 @@ public class ModelVisitor extends PathNodeVisitor {
 
     @Override
     public Node enter(VarNode varNode) {
-        if (!(varNode.getInit() instanceof ObjectNode || varNode.getInit() instanceof ReferenceNode)) {
+         if (!(varNode.getInit() instanceof ObjectNode || varNode.getInit() instanceof ReferenceNode)) {
             JsObject parent = modelBuilder.getCurrentObject();
             if (parent instanceof CatchBlockImpl) {
                 parent = parent.getParent();
