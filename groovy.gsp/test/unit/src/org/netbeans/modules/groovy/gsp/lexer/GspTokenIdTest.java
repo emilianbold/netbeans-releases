@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,28 +34,41 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.groovy.gsp;
 
-import org.netbeans.editor.Acceptor;
+package org.netbeans.modules.groovy.gsp.lexer;
 
+import junit.framework.TestCase;
 
 /**
- * The classes in here no one should ever implement, as I would think all this
- * information could be defined in a more declarative way: either via a simple interface
- * implementation where returning specific flags enables a set of settings
- * or a table or some external xml-like file.
- * Maybe that is all there already in NetBeans but I could not find it.
- * This is called from the ModuleInstall class and it's key for the editor to work.
+ *
+ * @author Martin Janicek
  */
-public final class GspEditorSettings {
-    private final static Acceptor defaultAbbrevResetAcceptor = new Acceptor() {
-          public final boolean accept(char ch) {
-              return !Character.isJavaIdentifierPart(ch) && ch != ':'; //NOI18N
-          }
-    };
-    
-    public static Acceptor getAbbrevResetAcceptor() {
-        return defaultAbbrevResetAcceptor;
+public class GspTokenIdTest extends TestCase {
+
+    public GspTokenIdTest(String testName) {
+        super(testName);
+    }
+
+    public void testIsCommentMethod() {
+        for (GspTokenId gspTokenId : GspTokenId.values()) {
+            if (gspTokenId == GspTokenId.COMMENT_GSP_STYLE_START
+                    || gspTokenId == GspTokenId.COMMENT_GSP_STYLE_CONTENT
+                    || gspTokenId == GspTokenId.COMMENT_GSP_STYLE_END
+                    || gspTokenId == GspTokenId.COMMENT_JSP_STYLE_START
+                    || gspTokenId == GspTokenId.COMMENT_JSP_STYLE_CONTENT
+                    || gspTokenId == GspTokenId.COMMENT_JSP_STYLE_END
+                    || gspTokenId == GspTokenId.COMMENT_HTML_STYLE_START
+                    || gspTokenId == GspTokenId.COMMENT_HTML_STYLE_CONTENT
+                    || gspTokenId == GspTokenId.COMMENT_HTML_STYLE_END) {
+                assertTrue(gspTokenId.isComment());
+            } else {
+                assertFalse(gspTokenId.isComment());
+            }
+        }
     }
 }

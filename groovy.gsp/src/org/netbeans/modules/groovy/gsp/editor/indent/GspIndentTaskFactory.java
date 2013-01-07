@@ -42,36 +42,25 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.gsp.loaders;
+package org.netbeans.modules.groovy.gsp.editor.indent;
 
-import java.awt.Image;
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.SimpleBeanInfo;
-import org.openide.loaders.UniFileLoader;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.editor.indent.spi.IndentTask;
+import org.netbeans.modules.groovy.gsp.GspLanguage;
 
-public class GspDataLoaderBeanInfo extends SimpleBeanInfo {
-    
+/**
+ *
+ * @author Martin Janicek
+ */
+@MimeRegistration(
+    mimeType = GspLanguage.GSP_MIME_TYPE,
+    service = IndentTask.Factory.class
+)
+public class GspIndentTaskFactory implements IndentTask.Factory {
+
     @Override
-    public BeanInfo[] getAdditionalBeanInfo() {
-        try {
-            return new BeanInfo[] {Introspector.getBeanInfo(UniFileLoader.class)};
-        } catch (IntrospectionException e) {
-            throw new AssertionError(e);
-        }
+    public IndentTask createTask(Context context) {
+        return new GspIndentTask(context);
     }
-    
-    @Override
-    public Image getIcon(int type) {
-        if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
-            return ImageUtilities.loadImage(GspDataNode.IMAGE_ICON_BASE);
-        } else {
-            return null;
-        }
-        
-    }
-    
 }

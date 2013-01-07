@@ -42,35 +42,44 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.gsp.loaders;
+package org.netbeans.modules.groovy.gsp.editor.indent;
 
-import org.openide.loaders.DataNode;
-import org.openide.nodes.Children;
+import javax.swing.text.BadLocationException;
+import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.editor.indent.spi.ExtraLock;
+import org.netbeans.modules.editor.indent.spi.IndentTask;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
-public class GspDataNode extends DataNode {
-    
-    public static final String IMAGE_ICON_BASE = "org/netbeans/modules/groovy/gsp/resources/GspFile16x16.png";
-    
-    public GspDataNode(GspDataObject obj) {
-        super(obj, Children.LEAF);
-        setIconBaseWithExtension(IMAGE_ICON_BASE);
+/**
+ * Indent task for GSP.
+ *
+ * @author Martin Janicek
+ */
+public class GspIndentTask implements IndentTask, Lookup.Provider {
+
+    private final GspIndenter indenter;
+    private final Lookup lookup;
+
+
+    GspIndentTask(Context context) {
+        indenter = new GspIndenter(context);
+        lookup = Lookups.singleton(indenter.createFormattingContext());
     }
-    GspDataNode(GspDataObject obj, Lookup lookup) {
-        super(obj, Children.LEAF, lookup);
-        setIconBaseWithExtension(IMAGE_ICON_BASE);
+
+
+    @Override
+    public void reindent() throws BadLocationException {
+        indenter.reindent();
     }
-    
-    //    /** Creates a property sheet. */
-    //    protected Sheet createSheet() {
-    //        Sheet s = super.createSheet();
-    //        Sheet.Set ss = s.get(Sheet.PROPERTIES);
-    //        if (ss == null) {
-    //            ss = Sheet.createPropertiesSet();
-    //            s.put(ss);
-    //        }
-    //        // TODO add some relevant properties: ss.put(...)
-    //        return s;
-    //    }
-    
+
+    @Override
+    public Lookup getLookup() {
+        return lookup;
+    }
+
+    @Override
+    public ExtraLock indentLock() {
+        return null;
+    }
 }
