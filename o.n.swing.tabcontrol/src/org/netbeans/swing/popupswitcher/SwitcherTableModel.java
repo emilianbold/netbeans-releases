@@ -90,9 +90,11 @@ class SwitcherTableModel extends AbstractTableModel {
     private void computeRowsAndCols(int rowHeight, int tableHeight) {
         // Default algorithm - use whole screen for SwitcherTable
         int nOfItems = items.length;
-        if (nOfItems > 0) { // avoid div by 0
+        int maxRowsPerCol = 0;
+        if( rowHeight > 0 )
+            maxRowsPerCol = tableHeight / rowHeight;
+        if (nOfItems > 0 && maxRowsPerCol > 0) { // avoid div by 0
             // Compute number of rows in one column
-            int maxRowsPerCol = tableHeight / rowHeight;
             int nOfColumns = (nOfItems / maxRowsPerCol);
             if (nOfItems % maxRowsPerCol > 0) {
                 nOfColumns++;
