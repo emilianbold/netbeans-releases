@@ -695,6 +695,26 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue224215.js","    window.A^ = A;", true);
     }
     
+    public void testIssue224462_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue224462.js","    formatter.print(err224^462);", true);
+    }
+    
+    public void testIssue224462_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue224462.js","        formatter.println(err22^4462);", true);
+    }
+    
+    public void testIssue224462_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue224462.js","        formatter.say(err2^24462);", true);
+    }
+    
+    public void testIssue224462_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue224462.js","        formatter.println(prom22^4462);", true);
+    }
+    
+    public void testIssue224462_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue224462.js","        formatter.println(prom^224462_1);", true);
+    }
+    
     private String getTestPath() {
         return getTestFolderPath() + "/" + getTestName() + ".js";//NOI18N
     }
