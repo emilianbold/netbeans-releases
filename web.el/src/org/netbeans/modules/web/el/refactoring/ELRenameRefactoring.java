@@ -99,6 +99,16 @@ public class ELRenameRefactoring extends ELWhereUsedQuery {
                     // uses default name, can be refactored
                     return super.handleClass(info, refactoringElementsBag, handle, targetType);
                 }
+                if ("javax.inject.Named".contentEquals(annFqn)) { //NOI18N
+                    for (ExecutableElement annElem : ann.getElementValues().keySet()) { 
+                        if ("value".contentEquals(annElem.getSimpleName())) { //NOI18N
+                            // name explicitly specified, so don't refactor
+                            return null;
+                        }
+                    }
+                    // uses default name, can be refactored
+                    return super.handleClass(info, refactoringElementsBag, handle, targetType);
+                }
             }
         }
         return null;
