@@ -666,11 +666,23 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
     }
 
     /**
-     * Wait until dialog with title <code>dialogTitle</code> is closed
+     * Wait at most 120 seconds until dialog with title
+     * <code>dialogTitle</code> is closed
      *
      * @param dialogTitle title of the dialog to be closed
      */
     protected void waitDialogClosed(String dialogTitle) {
+        waitDialogClosed(dialogTitle, 120000);
+    }
+
+    /**
+     * Wait until dialog with title
+     * <code>dialogTitle</code> is closed
+     *
+     * @param dialogTitle title of the dialog to be closed
+     * @param timeout timeout in miliseconds
+     */
+    protected void waitDialogClosed(String dialogTitle, int timeout) {
         NbDialogOperator dialogOper;
         try {
             dialogOper = new NbDialogOperator(dialogTitle);
@@ -678,8 +690,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
             // ignore when progress dialog was closed before we started to wait for it
             return;
         }
-        // wait at most 120 second until progress dialog dismiss
-        dialogOper.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000); //NOI18N
+        dialogOper.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", timeout); //NOI18N
         dialogOper.waitClosed();
     }
 
