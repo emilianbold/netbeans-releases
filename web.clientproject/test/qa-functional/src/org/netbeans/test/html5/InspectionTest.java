@@ -62,11 +62,13 @@ public class InspectionTest extends GeneralHTMLProject {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(InspectionTest.class).addTest(
                 "testOpenProject",
-                "testBasicInspection",
-                "testMultipleSelect",
-                "testEditNumberedProperty",
-                "testMatchedHighlighted"
-                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
+                //                "testBasicInspection",
+                //                "testMultipleSelect",
+                //                "testEditNumberedProperty",
+                //                "testCSSStylesAfterSave",
+                "testHighlightedElements",
+                //                "testInspectionFromNavigator",
+                "testMatchedHighlighted").enableModules(".*").clusters(".*").honorAutoloadEager(true));
     }
 
     public void testOpenProject() throws Exception {
@@ -198,6 +200,119 @@ public class InspectionTest extends GeneralHTMLProject {
         assertEquals("Unexpected element is selected", "[html, body, div]div#el2.test", elements[0].getNavigatorString());
         assertEquals("Unexpected element is selected", "[html, body, div]div.test", elements[1].getNavigatorString());
 
+        eo.deleteLine(19);
+        eb.closeWindow();
+        eo.save();
+        endTest();
+    }
+
+    /**
+     * Case: Runs file, place cursor somewhere in editor, types something, saves
+     * file and checks if CSS Styles contains proper data. Then waits 3secs and
+     * check CSS Styles window again
+     */
+    public void testStylesAfterSave() {
+        startTest();
+        runFile("simpleProject", "index.html");
+        EditorOperator eo = new EditorOperator("index.html");
+        eo.setCaretPosition("Test", false);
+        CSSStylesOperator co = new CSSStylesOperator("index.html");
+        evt.waitNoEvent(500);
+        assertEquals("Unexpected element in CSS Styles", "div .test", co.getSelectedHTMLElementName());
+        type(eo, " modification");
+        eo.save();
+        evt.waitNoEvent(500);
+        assertEquals("Unexpected element in CSS Styles", "div .test", co.getSelectedHTMLElementName());
+        evt.waitNoEvent(3000); // waits a while and checks CSS styles again
+        assertEquals("Unexpected element in CSS Styles", "div .test", co.getSelectedHTMLElementName());
+        new EmbeddedBrowserOperator("Web Browser").closeWindow();
+        endTest();
+    }
+
+    /**
+     * Case: Runs file, turn inspection mode on, selects some element in
+     * browser, place cursor somewhere in editor (different then selected),
+     * types something, saves file and checks if CSS Styles contains proper
+     * data. Then waits 3secs and check CSS Styles window again
+     */
+    public void testStylesAfterSaveWithInsp() {
+        startTest();
+        runFile("simpleProject", "index.html");
+
+        EmbeddedBrowserOperator eb = new EmbeddedBrowserOperator("Web Browser");
+        eb.checkInspectModeButton(true);
+        EditorOperator eo = new EditorOperator("index.html");
+        eo.setCaretPositionToLine(19);
+        type(eo, "window.setTimeout(function() {document.getElementById(\"el2\").setAttribute(\":netbeans_selected\", \"set\")}, 1000);");
+        eo.save();
+        waitElementsSelected(1, 2000);
+
+
+        eo.setCaretPosition("Test", false);
+        CSSStylesOperator co = new CSSStylesOperator("index.html");
+        evt.waitNoEvent(500);
+        assertEquals("Unexpected element in CSS Styles", "div .test", co.getSelectedHTMLElementName());
+        type(eo, " modification");
+        eo.save();
+        evt.waitNoEvent(500);
+        assertEquals("Unexpected element in CSS Styles", "div .test", co.getSelectedHTMLElementName());
+        evt.waitNoEvent(3000); // waits a while and checks CSS styles again
+        assertEquals("Unexpected element in CSS Styles", "div .test", co.getSelectedHTMLElementName());
+        new EmbeddedBrowserOperator("Web Browser").closeWindow();
+        endTest();
+    }
+
+    /**
+     * Case: Runs file, turn inspection mode on, clicks on some item in
+     * Navigator and checks CSS Styles and selected elements. Then waits 2secs
+     * and check it again
+     */
+    public void testInspectionFromNavigator() {
+        startTest();
+        runFile("simpleProject", "index.html");
+
+        EmbeddedBrowserOperator eb = new EmbeddedBrowserOperator("Web Browser");
+        eb.checkInspectModeButton(true);
+
+        HTMLNavigatorOperator no = new HTMLNavigatorOperator("Navigator");
+        no.focusElement("html|body|div", "0|0|0");
+        waitElementsSelected(1, 0);
+
+        HTMLElement[] el = getSelectedElements();
+        CSSStylesOperator co = new CSSStylesOperator("index.html");
+        AppliedRule[] rules = co.getAppliedRules();
+        assertEquals("Unexpected number of applied rules", 3, rules.length);
+        assertEquals("Unexpected At-rule", "(max-width: 2000px)", rules[0].atRule);
+        assertEquals("Unexpected list of applied rules", "#el2.test.test", rules[0].selector + rules[1].selector + rules[2].selector);
+        assertEquals("Unexpected source css file", "style.css:9", rules[0].source);
+        assertEquals("Unexpected path", "div#el2.test", rules[1].path);
+        assertEquals("Unexpected number of selected elements: was " + el.length + " should be 1", 1, el.length);
+        assertEquals("Unexpected element in Navigator", "[html, body, div]div#el2.test", no.getFocusedElement());
+        assertEquals("Unexpected element is selected", "[html, body, div]div#el2.test", el[0].getNavigatorString());
+        assertEquals("Unexpected element in CSS Styles", "div #el2.test", co.getSelectedHTMLElementName());
+        eb.closeWindow();
+
+        endTest();
+    }
+
+    /**
+     * Case: Runs page, turns inspection on, highlights element and checks it is
+     * propagated to IDE
+     */
+    public void testHighlightedElements() {
+        startTest();
+        runFile("simpleProject", "index.html");
+        HTMLNavigatorOperator no = new HTMLNavigatorOperator("Navigator");
+        EmbeddedBrowserOperator eb = new EmbeddedBrowserOperator("Web Browser");
+        eb.checkInspectModeButton(true);
+        EditorOperator eo = new EditorOperator("index.html");
+
+        eo.setCaretPositionToLine(19);
+        type(eo, "window.setTimeout(function() {document.getElementById(\"el2\").setAttribute(\":netbeans_highlighted\", \"set\")}, 500);");
+        eo.save();
+        waitElementsHighlighted(1, 1000);
+        HTMLElement[] el = getHighlightedElements();
+        assertEquals("Unexpected element is highlighted", "[html, body, div]div#el2.test", el[0].getNavigatorString());
         eo.deleteLine(19);
         eb.closeWindow();
         eo.save();
