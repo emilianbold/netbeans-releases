@@ -124,12 +124,6 @@ public class JPDAStart extends Task implements Runnable {
     private static final String SOCKET_CONNECTOR = "com.sun.jdi.SocketListen"; // NOI18N
     private static final String SHMEM_CONNECTOR = "com.sun.jdi.SharedMemoryListen"; // NOI18N
 
-    private static final Pattern[] BOOT_CLASSPATH_WARNING_FILTER = new Pattern[] {
-        Pattern.compile(".*jre.lib..*\\.jar$"),
-        Pattern.compile(".*jre.classes$"),
-        Pattern.compile(".*jdk\\.boot\\.jar$"),
-    };
-
     /** Name of the property to which the JPDA address will be set.
      * Target VM should use this address and connect to it
      */
@@ -663,7 +657,7 @@ public class JPDAStart extends Task implements Runnable {
         if (sourcepath != null && isSourcePathExclusive) {
             return convertToClassPath (project, sourcepath);
         }
-        ClassPath cp = convertToSourcePath (project, classpath, null);
+        ClassPath cp = convertToSourcePath (project, classpath, true);
         ClassPath sp = convertToClassPath (project, sourcepath);
 
         ClassPath sourcePath = ClassPathSupport.createProxyClassPath (
@@ -685,7 +679,7 @@ public class JPDAStart extends Task implements Runnable {
                 return ClassPathSupport.createClassPath(java.util.Collections.EMPTY_LIST);
             }
         } else {
-            return convertToSourcePath (project, bootclasspath, BOOT_CLASSPATH_WARNING_FILTER);
+            return convertToSourcePath (project, bootclasspath, false);
         }
     }
 
@@ -697,7 +691,7 @@ public class JPDAStart extends Task implements Runnable {
             String pathName = project.replaceProperties(paths[i]);
             File f = FileUtil.normalizeFile (project.resolveFile (pathName));
             if (!isValid (f, project)) continue;
-            URL url = fileToURL (f, project, null, false);
+            URL url = fileToURL (f, project, true, false);
             if (url == null) continue;
             l.add (url);
         }
@@ -711,7 +705,7 @@ public class JPDAStart extends Task implements Runnable {
      * the sources were not found are omitted.
      *
      */
-    private static ClassPath convertToSourcePath (Project project, Path path, Pattern[] warningFilters) {
+    private static ClassPath convertToSourcePath (Project project, Path path, boolean reportNonExistingFiles) {
         String[] paths = path == null ? new String [0] : path.list ();
         List l = new ArrayList ();
         Set exist = new HashSet ();
@@ -721,7 +715,7 @@ public class JPDAStart extends Task implements Runnable {
             File file = FileUtil.normalizeFile
                 (project.resolveFile (pathName));
             if (!isValid (file, project)) continue;
-            URL url = fileToURL (file, project, warningFilters, true);
+            URL url = fileToURL (file, project, reportNonExistingFiles, true);
             if (url == null) continue;
             logger.fine("convertToSourcePath - class: " + url); // NOI18N
             try {
@@ -763,21 +757,12 @@ public class JPDAStart extends Task implements Runnable {
     }
 
 
-    private static URL fileToURL (File file, Project project, Pattern[] warningFilters, boolean withSlash) {
+    private static URL fileToURL (File file, Project project, boolean reportNonExistingFiles, boolean withSlash) {
         try {
             FileObject fileObject = FileUtil.toFileObject (file);
             if (fileObject == null) {
-                String path = file.getAbsolutePath();
-                boolean filtered = false;
-                if (warningFilters != null) {
-                    for (Pattern p : warningFilters) {
-                        if (p.matcher(path).matches()) {
-                            filtered = true;
-                            break;
-                        }
-                    }
-                }
-                if (!filtered) {
+                if (reportNonExistingFiles) {
+                    String path = file.getAbsolutePath();
                     project.log("Have no file for "+path, Project.MSG_WARN);
                 }
                 return null;
