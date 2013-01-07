@@ -55,6 +55,8 @@ import org.openide.util.RequestProcessor;
  * @author Ian Formanek, Jesse Glick, et al.
  */
 public class SystemExit extends CallableSystemAction implements Runnable {
+    
+    private static final RequestProcessor RP = new RequestProcessor(SystemExit.class.getName(), 3);
 
     /** generated Serialized Version UID */
     private static final long serialVersionUID = 5198683109749927396L;
@@ -81,7 +83,7 @@ public class SystemExit extends CallableSystemAction implements Runnable {
 
     public void performAction() {
         // Do not run in AWT.
-        RequestProcessor.getDefault().post(this);
+        RP.post(this);
     }
 
     /* Performs the exit (by calling LifecycleManager).*/
