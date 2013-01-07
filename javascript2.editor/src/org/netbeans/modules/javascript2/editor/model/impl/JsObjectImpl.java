@@ -359,13 +359,17 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                         if (typeHere.getOffset() > 0) {
                             JsObject jsObject = ModelUtils.findJsObjectByName(global, typeHere.getType());
                             if (jsObject == null && typeHere.getType().indexOf('.') == -1) {
-                                JsObject decParent = (
-                                        this.parent.getJSKind() != JsElement.Kind.ANONYMOUS_OBJECT
-                                        && this.parent.getJSKind() != JsElement.Kind.OBJECT_LITERAL) 
-                                        ? this.parent : this.parent.getParent();
-                                while (jsObject == null && decParent != null) {
-                                    jsObject = decParent.getProperty(typeHere.getType());
-                                    decParent = decParent.getParent();
+                                DeclarationScope declarationScope = ModelUtils.getDeclarationScope((DeclarationScope)global, typeHere.getOffset());
+                                jsObject = ModelUtils.getJsObjectByName(declarationScope, typeHere.getType());
+                                if (jsObject == null) {
+                                    JsObject decParent = (
+                                            this.parent.getJSKind() != JsElement.Kind.ANONYMOUS_OBJECT
+                                            && this.parent.getJSKind() != JsElement.Kind.OBJECT_LITERAL) 
+                                            ? this.parent : this.parent.getParent();
+                                    while (jsObject == null && decParent != null) {
+                                        jsObject = decParent.getProperty(typeHere.getType());
+                                        decParent = decParent.getParent();
+                                    }
                                 }
                             }
                             if (jsObject != null) {

@@ -56,6 +56,7 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -138,6 +139,8 @@ public class BatchUtilities {
                 overlay = ElementOverlay.getOrCreateOverlay();
             }
             public boolean spansVerified(CompilationController wc, Resource r, Collection<? extends ErrorDescription> hints) throws Exception {
+                if (hints.isEmpty()) return true;
+                
                 Constructor<WorkingCopy> wcConstr = WorkingCopy.class.getDeclaredConstructor(CompilationInfoImpl.class, ElementOverlay.class);
                 wcConstr.setAccessible(true);
 
@@ -250,7 +253,7 @@ public class BatchUtilities {
     }
     
     public static boolean applyFixes(WorkingCopy copy, Map<Project, Set<String>> processedDependencyChanges, Collection<? extends ErrorDescription> hints, Map<FileObject, byte[]> resourceContentChanges, Collection<? super RefactoringElementImplementation> fileChanges, Map<JavaFix, ModificationResult> changesPerFix, Collection<? super MessageImpl> problems) throws IllegalStateException, Exception {
-        List<JavaFix> fixes = new ArrayList<JavaFix>();
+        Set<JavaFix> fixes = new LinkedHashSet<JavaFix>();
         for (ErrorDescription ed : hints) {
             if (!ed.getFixes().isComputed()) {
                 throw new IllegalStateException();//TODO: should be problem
@@ -453,7 +456,7 @@ public class BatchUtilities {
 
     public static final String ENSURE_DEPENDENCY = "ensure-dependency";
 
-    public static boolean fixDependencies(FileObject file, List<JavaFix> toProcess, Map<Project, Set<String>> alreadyProcessed) {
+    public static boolean fixDependencies(FileObject file, Iterable<? extends JavaFix> toProcess, Map<Project, Set<String>> alreadyProcessed) {
         boolean modified = false;
 //        for (FileObject file : toProcess.keySet()) {
             for (JavaFix fix : toProcess) {

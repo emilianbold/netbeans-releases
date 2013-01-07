@@ -309,7 +309,9 @@ class NbIO implements InputOutput, Lookup.Provider {
 
         void reuse() {
              pristine = true;
-             inputClosed = false;
+             synchronized (lock) {
+                inputClosed = false;
+             }
         }
 
         private StringBuffer buffer() {

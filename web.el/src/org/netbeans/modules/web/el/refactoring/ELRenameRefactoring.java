@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.el.refactoring;
 
 import com.sun.el.parser.Node;
+import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -49,6 +50,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TypeUtilities.TypeNameOptions;
 import org.netbeans.modules.csl.spi.support.ModificationResult;
@@ -103,16 +105,25 @@ public class ELRenameRefactoring extends ELWhereUsedQuery {
     }
 
     @Override
-    protected void addElements(ELElement elem, List<Node> matchingNodes, RefactoringElementsBag refactoringElementsBag) {
+    protected void addElements(CompilationContext info, ELElement elem, List<Node> matchingNodes, RefactoringElementsBag refactoringElementsBag) {
         FileObject file = elem.getSnapshot().getSource().getFileObject();
         ModificationResult modificationResult = new ModificationResult();
         List<Difference> differences = new ArrayList<Difference>();
 
+        TypeMirror returnType = null;
+        TreePathHandle treePathHandle = rename.getRefactoringSource().lookup(TreePathHandle.class);
+        if (treePathHandle != null && treePathHandle.getKind() == Tree.Kind.METHOD) {
+            ExecutableElement methodElement = (ExecutableElement) treePathHandle.resolveElement(info.info());
+            returnType = methodElement.getReturnType();
+        }
+
         for (Node targetNode : matchingNodes) {
             PositionRef[] position = RefactoringUtil.getPostionRefs(elem, targetNode);
+            String newName = RefactoringUtil.isPropertyAccessor(rename.getNewName(), returnType)
+                    ? RefactoringUtil.getPropertyName(rename.getNewName(), returnType)
+                    : rename.getNewName() + "()"; //NOI18N
             differences.add(new Difference(Difference.Kind.CHANGE, 
-                    position[0], position[1], targetNode.getImage(),
-                    RefactoringUtil.getPropertyName(rename.getNewName()),
+                    position[0], position[1], targetNode.getImage(),newName,
                     NbBundle.getMessage(ELRenameRefactoring.class, "LBL_Update", targetNode.getImage())));
         }
         modificationResult.addDifferences(file, differences);

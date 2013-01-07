@@ -89,7 +89,6 @@ import org.openide.WizardValidationException;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -222,7 +221,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
 
     private void setupServicesListModels(final boolean isEmptyKenaiProject) {
 
-        RequestProcessor.getDefault().post(new Runnable() {
+        Utilities.getRequestProcessor().post(new Runnable() {
             public void run() {
                 Collection<KenaiService> services = null;
                 try {

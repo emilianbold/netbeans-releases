@@ -49,7 +49,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.ProjectAccessorImpl;
-import org.netbeans.modules.kenai.ui.api.KenaiServer;
+import org.netbeans.modules.kenai.ui.Utilities;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -73,7 +73,7 @@ public class DetailsAction {
                 final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_OpenKenaiProjectAction")); //NOI18N
                 handle.setInitialDelay(0);
                 handle.start();
-                t = RequestProcessor.getDefault().post(new Runnable() {
+                t = Utilities.getRequestProcessor().post(new Runnable() {
 
                     public void run() {
                         final KenaiProject kenaiProj = proj.getTeamProject();

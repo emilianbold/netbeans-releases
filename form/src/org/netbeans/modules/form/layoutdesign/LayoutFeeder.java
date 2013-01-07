@@ -1211,7 +1211,7 @@ class LayoutFeeder implements LayoutConstants {
         // avoid unnecessary parallel group nesting
         operations.mergeParallelGroups(LayoutInterval.getRoot(selectedComponentIntervals[dimension][0]));
 
-        // optimize repeated gaps at the edges of parallel parent group
+        // optimize repeating gaps at the edges of parallel parent group
         LayoutInterval parent = null;
         do {
             interval = getAddedIntervals().get(0); // get again, groups might have changed
@@ -1230,7 +1230,11 @@ class LayoutFeeder implements LayoutConstants {
     }
 
     private List<LayoutInterval> getAddedIntervals() {
-        return getIntervalsInCommonParent(selectedComponentIntervals[dimension]);
+        List<LayoutInterval> added = getIntervalsInCommonParent(selectedComponentIntervals[dimension]);
+        if (added.isEmpty()) {
+            added = Collections.singletonList(selectedComponentIntervals[dimension][0]);
+        }
+        return added;
     }
 
     private LayoutInterval getAlignRep(List<LayoutInterval> added, int alignment) {

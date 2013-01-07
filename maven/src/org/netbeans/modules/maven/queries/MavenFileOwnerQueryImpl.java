@@ -59,6 +59,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Parent;
 import org.apache.maven.model.io.ModelReader;
@@ -458,6 +459,10 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
 
         public String getArtifactId() {
             return artifactId;
+        }
+        
+        public boolean matches(Artifact art) {
+            return groupId.equals(art.getGroupId()) && artifactId.equals(art.getArtifactId()) && version.equals(art.getVersion());
         }
         
     }

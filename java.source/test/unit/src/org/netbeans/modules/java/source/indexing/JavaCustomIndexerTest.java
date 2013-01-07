@@ -137,6 +137,28 @@ public class JavaCustomIndexerTest extends NbTestCase {
         assertFalse(new File(classFolder, "test/Bar$Inner." + FileObjects.SIG).canRead());
     }
 
+    public void test199293() throws Exception {
+        createSrcFile("test/A.java",
+                      "package test;\n" +
+                      "public class A implements I {\n" +
+                      "}\n");
+        createSrcFile("test/I.java",
+                      "package test;\n" +
+                      "public interface I {\n" +
+                      "    public void t();\n" +
+                      "}\n");
+        SourceUtilsTestUtil.compileRecursively(src);
+        assertTrue(ErrorsCache.isInError(src, true));
+        Thread.sleep(1000);
+        createSrcFile("test/I.java",
+                      "package test;\n" +
+                      "public interface I {\n" +
+                      "}\n");
+        IndexingManager.getDefault().refreshAllIndices(false, true, src);
+        SourceUtils.waitScanFinished();
+        assertFalse(ErrorsCache.getAllFilesInError(src.toURL()).toString(), ErrorsCache.isInError(src, true));
+    }
+    
     @Override
     protected void setUp() throws Exception {
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
