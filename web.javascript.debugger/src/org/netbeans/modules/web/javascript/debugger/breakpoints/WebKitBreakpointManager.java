@@ -173,6 +173,12 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                     br.addPropertyChangeListener(this);
                     long brLine = br.getLineNumber();
                     if (brLine >= 0) {
+                        ignoreLineUpdate.set(Boolean.TRUE);
+                        try {
+                            lb.setLine((int) brLine);
+                        } finally {
+                            ignoreLineUpdate.remove();
+                        }
                         lb.setValid(Bundle.MSG_BRKP_Resolved());
                     } else {
                         lb.setInvalid(Bundle.MSG_BRKP_Unresolved());
