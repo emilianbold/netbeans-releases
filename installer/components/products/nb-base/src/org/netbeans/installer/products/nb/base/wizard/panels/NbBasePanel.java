@@ -51,18 +51,20 @@ import javax.swing.ComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.HyperlinkListener;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.BrowserUtils;
 import org.netbeans.installer.utils.FileUtils;
-import org.netbeans.installer.utils.helper.swing.NbiButton;
-import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.helper.Text;
 import org.netbeans.installer.utils.helper.Version;
+import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiComboBox;
 import org.netbeans.installer.utils.helper.swing.NbiDirectoryChooser;
+import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiTextField;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 import org.netbeans.installer.wizard.components.panels.ApplicationLocationPanel.LocationValidator;
@@ -71,9 +73,9 @@ import org.netbeans.installer.wizard.components.panels.ApplicationLocationPanel.
 import org.netbeans.installer.wizard.components.panels.DestinationPanel;
 import org.netbeans.installer.wizard.components.panels.DestinationPanel.DestinationPanelUi;
 import org.netbeans.installer.wizard.components.panels.JdkLocationPanel;
+import org.netbeans.installer.wizard.containers.SwingContainer;
 import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.ui.WizardUi;
-import org.netbeans.installer.wizard.containers.SwingContainer;
 
 /**
  *
@@ -103,6 +105,8 @@ public class NbBasePanel extends DestinationPanel {
                 DEFAULT_BROWSE_BUTTON_TEXT);
         setProperty(WARNING_INSTALL_INTO_USERDIR_PROPERTY,
                 DEFAULT_WARNING_INSTALL_INTO_USERDIR);
+        setProperty(WARNING_JDK_NOT_RECOMMENDED_VERSION,
+                DEFAULT_WARNING_JDK_NOT_RECOMMENDED_VERSION);
     }
     
     @Override
@@ -229,6 +233,7 @@ public class NbBasePanel extends DestinationPanel {
             this.panel = panel;
         }
         
+        @Override
         public SwingUi getSwingUi(SwingContainer container) {
             if (swingUi == null) {
                 swingUi = new NbBaseDestinationPanelSwingUi(panel, container);
@@ -250,6 +255,9 @@ public class NbBasePanel extends DestinationPanel {
         
         private NbiDirectoryChooser fileChooser;
         
+        private Text jdkWarningMessage = null;
+        private HyperlinkListener hyperlinkListener = null;
+        
         public NbBaseDestinationPanelSwingUi(
                 final NbBasePanel panel,
                 final SwingContainer container) {
@@ -268,7 +276,7 @@ public class NbBasePanel extends DestinationPanel {
             
             final JdkLocationPanel jdkLocationPanel = panel.getJdkLocationPanel();
             
-            if (jdkLocationPanel.getLocations().size() == 0) {
+            if (jdkLocationPanel.getLocations().isEmpty()) {
                 final Version minVersion = Version.getVersion(jdkLocationPanel.getProperty(
                         JdkLocationPanel.MINIMUM_JDK_VERSION_PROPERTY));
                 final Version maxVersion = Version.getVersion(jdkLocationPanel.getProperty(
@@ -281,7 +289,7 @@ public class NbBasePanel extends DestinationPanel {
                         maxVersion.toJdkStyle(),
                         jdkLocationPanel.getProperty(JdkLocationPanel.JAVA_DOWNLOAD_PAGE_PROPERTY)));
 
-                statusLabel.addHyperlinkListener(BrowserUtils.createHyperlinkListener());
+                statusLabel.addHyperlinkListener(getHyperlinkListener());
             } else {
                 statusLabel.clearText();
                 statusLabel.setVisible(false);
@@ -356,14 +364,17 @@ public class NbBasePanel extends DestinationPanel {
             jdkLocationField = new NbiTextField();
             jdkLocationField.getDocument().addDocumentListener(
                     new DocumentListener() {
+                        @Override
                 public void insertUpdate(DocumentEvent e) {
                     updateErrorMessage();
                 }
                 
+                        @Override
                 public void removeUpdate(DocumentEvent e) {
                  //   updateErrorMessage();  
                 }
                 
+                        @Override
                 public void changedUpdate(DocumentEvent e) {
                     updateErrorMessage();
                 }
@@ -371,8 +382,20 @@ public class NbBasePanel extends DestinationPanel {
             
             // jdkLocationComboBox //////////////////////////////////////////////////
             final LocationValidator validator = new LocationValidator() {
+                @Override
                 public void validate(String location) {
                     jdkLocationField.setText(location);
+                    
+                    if (!panel.jdkLocationPanel.isJdkVersionRecommended(location)) {
+                        statusLabel.setText(getJdkWarningMessage());
+                        if (statusLabel.getHyperlinkListeners().length == 0) {
+                            statusLabel.addHyperlinkListener(getHyperlinkListener());
+                        }                        
+                        statusLabel.setVisible(true);
+                    } else {
+                        statusLabel.clearText();
+                        statusLabel.setVisible(false);
+                    }
                 }
             };
             
@@ -380,6 +403,7 @@ public class NbBasePanel extends DestinationPanel {
             jdkLocationComboBox.setEditable(true);
             jdkLocationComboBox.setEditor(new LocationsComboBoxEditor(validator));
             jdkLocationComboBox.addItemListener(new ItemListener() {
+                @Override
                 public void itemStateChanged(ItemEvent event) {
                     final ComboBoxModel model = jdkLocationComboBox.getModel();
                     
@@ -397,6 +421,7 @@ public class NbBasePanel extends DestinationPanel {
             // browseButton /////////////////////////////////////////////////////////
             browseButton = new NbiButton();
             browseButton.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent event) {
                     browseButtonPressed();
                 }
@@ -443,6 +468,25 @@ public class NbBasePanel extends DestinationPanel {
                     0, 0));                           // padx, pady - ???
         }
         
+        private Text getJdkWarningMessage() {
+            if (jdkWarningMessage == null) {
+                String messageContent = StringUtils.format(
+                        panel.getProperty(WARNING_JDK_NOT_RECOMMENDED_VERSION), 
+                        panel.jdkLocationPanel.getProperty(JdkLocationPanel.JAVA_DOWNLOAD_PAGE_PROPERTY));                
+                jdkWarningMessage = new Text(messageContent, Text.ContentType.HTML);
+            } 
+            
+            return jdkWarningMessage;
+        }
+        
+        private HyperlinkListener getHyperlinkListener() {
+            if (hyperlinkListener == null) {
+                hyperlinkListener = BrowserUtils.createHyperlinkListener();
+            }
+            
+            return hyperlinkListener;
+        }
+        
         private void browseButtonPressed() {
             fileChooser.setSelectedFile(new File(jdkLocationField.getText().trim()));
             
@@ -461,6 +505,8 @@ public class NbBasePanel extends DestinationPanel {
             "browse.button.text"; // NOI18N
     public static final String WARNING_INSTALL_INTO_USERDIR_PROPERTY =
             "install.into.userdir.storage";
+    public static final String WARNING_JDK_NOT_RECOMMENDED_VERSION =
+            "jdk.not.recommended.version";
     
     public static final String DEFAULT_TITLE =
             ResourceUtils.getString(NbBasePanel.class,
@@ -492,4 +538,7 @@ public class NbBasePanel extends DestinationPanel {
     public static final String DEFAULT_WARNING_INSTALL_INTO_USERDIR =
             ResourceUtils.getString(NbBasePanel.class,
             "NBP.warning.install.into.userdir"); // NOI18N
+    public static final String DEFAULT_WARNING_JDK_NOT_RECOMMENDED_VERSION =
+            ResourceUtils.getString(NbBasePanel.class,
+            "NBP.warning.jdk.not.recommended.version"); // NOI18N
 }

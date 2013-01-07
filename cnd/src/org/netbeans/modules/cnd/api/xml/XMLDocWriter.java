@@ -61,10 +61,15 @@ abstract public class XMLDocWriter implements XMLEncoder {
     private String lineSeparator = System.getProperty("line.separator"); // NOI18N
 
     private XMLEncoderStream encoderStream;
+    private String comment = null;
 
     public XMLDocWriter() {
     }
 
+    protected void setMasterComment(String comment) {
+        this.comment = comment;
+    }
+    
     /**
      * Set number of spaces to be used for each indent level.
      */
@@ -120,6 +125,9 @@ abstract public class XMLDocWriter implements XMLEncoder {
 	String version = "1.0";		// NOI18N
 	encoderStream.println
 	("<?xml version=\"" + version + "\" encoding=\"" + encoding() + "\"?>"); // NOI18N
+        if (comment != null) {
+            encoderStream.println("<!--" + comment + "-->"); // NOI18N
+        }
     } 
 
     /**

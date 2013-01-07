@@ -42,13 +42,13 @@
 package org.netbeans.modules.nativeexecution.api.execution;
 
 import java.awt.event.ActionEvent;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.util.EnumSet;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -74,10 +74,12 @@ import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.modules.terminal.api.IOTerm;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
+import org.openide.util.Mutex.Action;
 import org.openide.util.WeakListeners;
 import org.openide.windows.IOSelect;
 import org.openide.windows.IOSelect.AdditionalOperation;
+import org.openide.windows.OutputWriter;
 
 /**
  * This is a wrapper over an <tt>Executionservice</tt> that handles running
@@ -192,31 +194,6 @@ public final class NativeExecutionService {
 
                     final NativeProcess process = processBuilder.call();
 
-                    if (descriptor.frontWindow) {
-                        SwingUtilities.invokeLater(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                IOSelect.select(descriptor.inputOutput,
-                                        EnumSet.<AdditionalOperation>of(
-                                        AdditionalOperation.OPEN,
-                                        AdditionalOperation.REQUEST_ACTIVE,
-                                        AdditionalOperation.REQUEST_VISIBLE));
-
-                                // Still terminal (if any) doesn't get focus in
-                                // this case - so try to request it implicitly
-                                Term term = IOTerm.term(descriptor.inputOutput);
-
-                                if (term != null) {
-                                    JComponent screen = term.getScreen();
-                                    if (screen != null) {
-                                        screen.requestFocusInWindow();
-                                    }
-                                }
-                            }
-                        });
-                    }
-
                     /**
                      * As IO could be re-used we need to 'unlock' it because it
                      * could be 'locked' by previous run... (It is always set to
@@ -234,17 +211,10 @@ public final class NativeExecutionService {
                      * queued after that one. So as soon as our is processed we
                      * are sure that connection is done.
                      */
-                    SwingUtilities.invokeAndWait(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            // connected
-                        }
-                    });
+                    SwingUtilities.invokeAndWait(new PreExecution());
 
                     if (process.getState() == State.ERROR) {
-                        descriptor.inputOutput.getErr().print(ProcessUtils.readProcessErrorLine(process));
-                        descriptor.inputOutput.getErr().println('\r');
+                        out(true, ProcessUtils.readProcessErrorLine(process), "\r"); // NOI18N
                         return 1;
                     }
 
@@ -254,40 +224,39 @@ public final class NativeExecutionService {
                         progressHandle.finish();
                     }
 
-                    // After we are sure that our output was read, and queued in
-                    // terminal, our runnable will be started only after
-                    // all streams will be drained (by the terminal)...
-                    // There is one thing.. If, for some reason, terminal is not
-                    // connected at this point, continuation passed to the
-                    // disconnect() method will not be executed.
-                    // So do it directly...
-
-                    final Runnable EDTContinuation = new Runnable() {
+                    final CountDownLatch latch = new CountDownLatch(1);
+                    IOTerm.disconnect(descriptor.inputOutput, new Runnable() {
 
                         @Override
                         public void run() {
-                            NativeTaskExecutorService.submit(new Runnable() {
-
-                                @Override
-                                public void run() {
-                                    try {
-                                        if (descriptor.postExecution != null) {
-                                            descriptor.postExecution.run();
-                                        }
-                                    } finally {
-                                        IOTerm.term(descriptor.inputOutput).setReadOnly(true);
-                                        descriptor.inputOutput.getOut().close();
-                                    }
-                                }
-                            }, "term process post execution"); // NOI18N
+                            latch.countDown();
                         }
-                    };
-
-                    // disconnect() calls continuation in EDT.
-                    // But we need to call postExecution in _this_ thread - 
-                    // so do it this way.
-
-                    IOTerm.disconnect(descriptor.inputOutput, EDTContinuation);
+                    });
+                    try {
+                        // The problem here is that continuation passed to the
+                        // disconnect() method could be ignored (if, for some
+                        // reasons terminal is already disconnected.
+                        // In this case we may deadlock on wait.
+                        // It is not possible to detect if continuation was not
+                        // called because of some error or because terminal is
+                        // still waiting for IO drain..
+                        // To avoid deadlocks assume that 5 seconds is enough
+                        // for drain... and assume that if runnable was not
+                        // called in 5 seconds then it makes no sense to wait
+                        // any more.
+                        // The worst situation that this approach could lead to
+                        // is that postExecution is called before all IO was
+                        // drained....
+                        latch.await(5, TimeUnit.SECONDS);
+                    } finally {
+                        try {
+                            if (descriptor.postExecution != null) {
+                                descriptor.postExecution.run();
+                            }
+                        } finally {
+                            IOTerm.term(descriptor.inputOutput).setReadOnly(true);
+                        }
+                    }
                 }
             }
         };
@@ -342,6 +311,7 @@ public final class NativeExecutionService {
         ExecutionDescriptor descr =
                 new ExecutionDescriptor().controllable(descriptor.controllable).
                 frontWindow(descriptor.frontWindow).
+                preExecution(new PreExecution()).
                 inputVisible(descriptor.inputVisible).
                 inputOutput(descriptor.inputOutput).
                 outLineBased(descriptor.outLineBased).
@@ -352,42 +322,49 @@ public final class NativeExecutionService {
                 outConvertorFactory(descriptor.outConvertorFactory).
                 charset(charset);
 
-        ExecutionService es = ExecutionService.newService(processBuilder, descr, displayName);
-        final Future<Integer> result = es.run();
+        return ExecutionService.newService(processBuilder, descr, displayName).run();
+    }
 
-        SwingUtilities.invokeLater(new Runnable() {
+    private void out(final boolean toError, final CharSequence... cs) {
+        Mutex.EVENT.writeAccess(new Action<Void>() {
 
             @Override
-            public void run() {
-                // AdditionalOperation.REQUEST_ACTIVE has effect only if
-                // isFocusTaken() is true... 
-                // force this condition ... 
-                boolean prevFocusTaken = descriptor.inputOutput.isFocusTaken();
-                descriptor.inputOutput.setFocusTaken(true);
-
-                IOSelect.select(descriptor.inputOutput,
-                        EnumSet.<AdditionalOperation>of(
-                        AdditionalOperation.OPEN,
-                        AdditionalOperation.REQUEST_ACTIVE,
-                        AdditionalOperation.REQUEST_VISIBLE));
-
-                // ... and restore it to the original state as leaving it
-                // in TRUE state is strongly discouraged  
-                descriptor.inputOutput.setFocusTaken(prevFocusTaken);
+            public Void run() {
+                OutputWriter w = toError
+                        ? descriptor.inputOutput.getErr()
+                        : descriptor.inputOutput.getOut();
+                if (w != null) {
+                    for (CharSequence c : cs) {
+                        w.append(c);
+                    }
+                }
+                return null;
             }
         });
-
-        return result;
     }
 
     private void closeIO() {
-        descriptor.inputOutput.getErr().close();
-        descriptor.inputOutput.getOut().close();
-        try {
-            descriptor.inputOutput.getIn().close();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        Mutex.EVENT.writeAccess(new Action<Void>() {
+
+            @Override
+            public Void run() {
+                final OutputWriter out = descriptor.inputOutput.getOut();
+                final OutputWriter err = descriptor.inputOutput.getErr();
+                if (err != null) {
+                    try {
+                        err.close();
+                    } catch (Throwable th) {
+                    }
+                }
+                if (out != null) {
+                    try {
+                        out.close();
+                    } catch (Throwable th) {
+                    }
+                }
+                return null;
+            }
+        });
     }
 
     private final class PostRunnable implements Runnable {
@@ -410,24 +387,19 @@ public final class NativeExecutionService {
                 if (descriptor.postMessageDisplayer != null) {
                     final long time = System.currentTimeMillis() - startTimeMillis;
                     String postMsg = descriptor.postMessageDisplayer.getPostMessage(process, time);
-
-                    PrintWriter pw = (rc == 0)
-                            ? descriptor.inputOutput.getOut()
-                            : descriptor.inputOutput.getErr();
-
-                    // use \n\r to correctly move cursor in terminals as well
-                    pw.printf("\n\r%s\n\r", postMsg); // NOI18N
-
+                    out(rc != 0, "\n\r", postMsg, "\n\r"); // NOI18N
                     StatusDisplayer.getDefault().setStatusText(descriptor.postMessageDisplayer.getPostStatusString(process));
                 }
 
-                if (descriptor.closeInputOutputOnFinish) {
-                    closeIO();
-                }
-
-                // Finally, if there was some post executable set before - call it
-                if (postExecutable != null) {
-                    postExecutable.run();
+                try {
+                    // Finally, if there was some post executable set before - call it
+                    if (postExecutable != null) {
+                        postExecutable.run();
+                    }
+                } finally {
+                    if (descriptor.closeInputOutputOnFinish) {
+                        closeIO();
+                    }
                 }
             }
         }
@@ -449,6 +421,35 @@ public final class NativeExecutionService {
                 case ERROR:
                     startTimeMillis = System.currentTimeMillis();
                     break;
+            }
+        }
+    }
+
+    private class PreExecution implements Runnable {
+
+        @Override
+        public void run() {
+            if (descriptor.frontWindow) {
+                if (IOSelect.isSupported(descriptor.inputOutput)) {
+                    IOSelect.select(descriptor.inputOutput,
+                            EnumSet.<AdditionalOperation>of(
+                            AdditionalOperation.OPEN,
+                            AdditionalOperation.REQUEST_VISIBLE));
+                } else {
+                    descriptor.inputOutput.select();
+                }
+            }
+            if (descriptor.requestFocus) {
+                Term term = IOTerm.term(descriptor.inputOutput);
+
+                if (term != null) {
+                    JComponent screen = term.getScreen();
+                    if (screen != null) {
+                        screen.requestFocusInWindow();
+                    }
+                } else {
+                    descriptor.inputOutput.setFocusTaken(true);
+                }
             }
         }
     }

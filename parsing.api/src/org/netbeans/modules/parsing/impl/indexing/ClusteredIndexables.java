@@ -44,8 +44,10 @@ package org.netbeans.modules.parsing.impl.indexing;
 
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.text.MessageFormat;
 import java.util.AbstractCollection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
@@ -257,6 +259,11 @@ public final class ClusteredIndexables {
         private List<String> toDeleteOutOfOrder;
         private Reference<List[]> dataRef;
 
+        private volatile Pair<Long,StackTraceElement[]> attachDeleteStackTrace;
+        private volatile Pair<Long,StackTraceElement[]> attachIndexStackTrace;
+        private volatile Pair<Long,StackTraceElement[]> detachDeleteStackTrace;
+        private volatile Pair<Long,StackTraceElement[]> detachIndexStackTrace;
+
         private DocumentIndexCacheImpl() {}
 
         @Override
@@ -272,11 +279,17 @@ public final class ClusteredIndexables {
                 ensureNotReBound(this.deleteIndexables, ci);
                 if (!ci.equals(this.deleteIndexables)) {
                     this.deleteIndexables = ci;
+                    attachDeleteStackTrace = Pair.<Long,StackTraceElement[]>of(
+                            System.nanoTime(),Thread.currentThread().getStackTrace());
+                    detachDeleteStackTrace = null;
                 }
             } else if (INDEX.equals(mode)) {
                 ensureNotReBound(this.indexIndexables, ci);
                 if (!ci.equals(this.indexIndexables)) {
                     this.indexIndexables = ci;
+                    attachIndexStackTrace = Pair.<Long,StackTraceElement[]>of(
+                            System.nanoTime(),Thread.currentThread().getStackTrace());
+                    detachIndexStackTrace = null;
                 }
             } else {
                 throw new IllegalArgumentException(mode);
@@ -288,6 +301,9 @@ public final class ClusteredIndexables {
             if (TransientUpdateSupport.isTransientUpdate()) {
                 return;
             }
+            detachDeleteStackTrace = detachIndexStackTrace = Pair.<Long,StackTraceElement[]>of(
+                System.nanoTime(),Thread.currentThread().getStackTrace());
+            clear();
             this.deleteIndexables = null;
             this.indexIndexables = null;
         }
@@ -332,7 +348,11 @@ public final class ClusteredIndexables {
                     deleteIndexables,
                     deleteFromDeleted,
                     indexIndexables,
-                    deleteFromIndex) :
+                    deleteFromIndex,
+                    attachDeleteStackTrace,
+                    attachIndexStackTrace,
+                    detachDeleteStackTrace,
+                    detachIndexStackTrace) :
                 Collections.<String>emptySet();
         }
 
@@ -454,13 +474,22 @@ public final class ClusteredIndexables {
         private final BitSet deleteFromDeleted;
         private final ClusteredIndexables indexIndexables;
         private final BitSet deleteFromIndex;
+
+        private final Pair<Long,StackTraceElement[]> attachDeleteStackTrace;
+        private final Pair<Long,StackTraceElement[]> attachIndexStackTrace;
+        private final Pair<Long, StackTraceElement[]> detachDeleteStackTrace;
+        private final Pair<Long, StackTraceElement[]> detachIndexStackTrace;
         
         RemovedCollection(
             @NonNull final List<? extends String> outOfOrder,
             @NullAllowed final ClusteredIndexables deleteIndexables,
             @NonNull final BitSet deleteFromDeleted,
             @NullAllowed final ClusteredIndexables indexIndexables,
-            @NonNull final BitSet deleteFromIndex) {
+            @NonNull final BitSet deleteFromIndex,
+            @NullAllowed final Pair<Long,StackTraceElement[]> attachDeleteStackTrace,
+            @NullAllowed final Pair<Long, StackTraceElement[]> attachIndexStackTrace,
+            @NullAllowed final Pair<Long, StackTraceElement[]> detachDeleteStackTrace,
+            @NullAllowed final Pair<Long, StackTraceElement[]> detachIndexStackTrace) {
             assert outOfOrder != null;
             assert deleteFromDeleted != null;
             assert deleteFromIndex != null;
@@ -469,6 +498,10 @@ public final class ClusteredIndexables {
             this.deleteFromDeleted = deleteFromDeleted;
             this.indexIndexables = indexIndexables;
             this.deleteFromIndex = deleteFromIndex;
+            this.attachDeleteStackTrace = attachDeleteStackTrace;
+            this.attachIndexStackTrace = attachIndexStackTrace;
+            this.detachDeleteStackTrace = detachDeleteStackTrace;
+            this.detachIndexStackTrace = detachIndexStackTrace;
         }
 
         @Override
@@ -478,7 +511,11 @@ public final class ClusteredIndexables {
                 deleteIndexables,
                 deleteFromDeleted,
                 indexIndexables,
-                deleteFromIndex);
+                deleteFromIndex,
+                attachDeleteStackTrace,
+                attachIndexStackTrace,
+                detachDeleteStackTrace,
+                detachIndexStackTrace);
         }
 
         @Override
@@ -503,17 +540,30 @@ public final class ClusteredIndexables {
             private int index;
             private String current;
 
+            private final Pair<Long,StackTraceElement[]> attachDeleteStackTrace;
+            private final Pair<Long,StackTraceElement[]> attachIndexStackTrace;
+            private final Pair<Long, StackTraceElement[]> detachDeleteStackTrace;
+            private final Pair<Long, StackTraceElement[]> detachIndexStackTrace;
+
             It(
                 @NonNull final Iterator<? extends String> outOfOrderIt,
                 @NullAllowed final ClusteredIndexables deleteIndexables,
                 @NonNull final BitSet deleteFromDeleted,
                 @NullAllowed final ClusteredIndexables indexIndexables,
-                @NonNull final BitSet deleteFromIndex) {
+                @NonNull final BitSet deleteFromIndex,
+                @NullAllowed final Pair<Long,StackTraceElement[]> attachDeleteStackTrace,
+                @NullAllowed final Pair<Long, StackTraceElement[]> attachIndexStackTrace,
+                @NullAllowed final Pair<Long, StackTraceElement[]> detachDeleteStackTrace,
+                @NullAllowed final Pair<Long, StackTraceElement[]> detachIndexStackTrace) {
                 this.outOfOrderIt = outOfOrderIt;
                 this.deleteIndexables = deleteIndexables;
                 this.deleteFromDeleted = deleteFromDeleted;
                 this.indexIndexables = indexIndexables;
                 this.deleteFromIndex = deleteFromIndex;
+                this.attachDeleteStackTrace = attachDeleteStackTrace;
+                this.attachIndexStackTrace = attachIndexStackTrace;
+                this.detachDeleteStackTrace = detachDeleteStackTrace;
+                this.detachIndexStackTrace = detachIndexStackTrace;
             }
 
             @Override
@@ -533,8 +583,22 @@ public final class ClusteredIndexables {
                     case 1:
                         index = deleteFromDeleted.nextSetBit(index+1);
                         if (index >=0) {
-                            current = deleteIndexables.get(index).getRelativePath();
-                            return true;
+                            if (deleteIndexables == null) {
+                                throwIllegalState(
+                                    "No deleteIndexables",  //NOI18N
+                                    attachDeleteStackTrace,
+                                    detachDeleteStackTrace);
+                            }
+                            try {
+                                final Indexable file = deleteIndexables.get(index);
+                                current = file.getRelativePath();
+                                return true;
+                            } catch (IndexOutOfBoundsException e) {
+                                throwIllegalState(
+                                    "Wrong deleteIndexables",  //NOI18N
+                                    attachDeleteStackTrace,
+                                    detachDeleteStackTrace);
+                            }
                         } else {
                             index = -1;
                             state = 2;
@@ -542,8 +606,22 @@ public final class ClusteredIndexables {
                     case 2:
                         index = deleteFromIndex.nextSetBit(index+1);
                         if (index >= 0) {
-                            current = indexIndexables.get(index).getRelativePath();
-                            return true;
+                            if (indexIndexables == null) {
+                                throwIllegalState(
+                                    "No indexIndexables",   //NOI18N
+                                    attachIndexStackTrace,
+                                    detachIndexStackTrace);
+                            }
+                            try {
+                                final Indexable file = indexIndexables.get(index);
+                                current = file.getRelativePath();
+                                return true;
+                            } catch (IndexOutOfBoundsException e) {
+                                throwIllegalState(
+                                    "Wrong indexIndexables",   //NOI18N
+                                    attachIndexStackTrace,
+                                    detachIndexStackTrace);
+                            }
                         } else {
                             index = -1;
                             state = 3;
@@ -567,6 +645,20 @@ public final class ClusteredIndexables {
             @Override
             public void remove() {
                 throw new UnsupportedOperationException("Immutable collection");    //NOI18N
+            }
+
+            private static void throwIllegalState(
+                @NonNull final String reason,
+                @NullAllowed final Pair<Long,StackTraceElement[]> attach,
+                @NullAllowed final Pair<Long,StackTraceElement[]> detach) {
+                throw new IllegalStateException(
+                    MessageFormat.format(
+                        "{0} : Attached at: {1} by: {2}, Detached at: {3} by: {4}",   //NOI18N
+                        reason,
+                        attach == null ? null : attach.first,
+                        attach == null ? null : Arrays.asList(attach.second),
+                        detach == null ? null : detach.first,
+                        detach == null ? null : Arrays.asList(detach.second)));
             }
             
         }

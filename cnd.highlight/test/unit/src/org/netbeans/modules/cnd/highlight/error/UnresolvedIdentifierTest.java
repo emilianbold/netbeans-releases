@@ -357,6 +357,21 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         // Bug 218759 - inaccuracy tests: a lot of parser errors in some files (a order of declaration specifiers)
         performStaticTest("bug218759.cpp");
     }      
+
+    public void testBug217798() throws Exception {
+        // Bug 217798 - "unexpected token: static" in valid C code (no explicit type given)
+        performStaticTest("bug217798.cpp");
+    }      
+    
+    public void testBug223298() throws Exception {
+        // Bug 223298 - Wrong recognition of function
+        performStaticTest("bug223298.cpp");
+    }            
+
+    public void testBug222883() throws Exception {
+        // Bug 222883 - goto labes ("Unable to resolve identifier G_1")
+        performStaticTest("bug222883.cpp");
+    }            
     
     /////////////////////////////////////////////////////////////////////
     // FAILS

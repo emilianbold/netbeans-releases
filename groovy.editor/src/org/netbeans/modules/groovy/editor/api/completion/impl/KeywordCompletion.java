@@ -52,10 +52,10 @@ import org.netbeans.modules.groovy.editor.api.completion.CaretLocation;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.api.completion.GroovyKeyword;
 import org.netbeans.modules.groovy.editor.api.completion.KeywordCategory;
-import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
-import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.api.completion.util.CompletionContext;
 import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
+import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 
 /**
  * Complete Groovy or Java Keywords.
@@ -116,13 +116,13 @@ class KeywordCompletion extends BaseCompletion {
     }
 
     boolean checkForPackageStatement(final CompletionRequest request) {
-        TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(request.doc, 1);
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(request.doc, 1);
 
         if (ts != null) {
             ts.move(1);
 
             while (ts.isValid() && ts.moveNext() && ts.offset() < request.doc.getLength()) {
-                Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+                Token<GroovyTokenId> t = ts.token();
 
                 if (t.id() == GroovyTokenId.LITERAL_package) {
                     return true;

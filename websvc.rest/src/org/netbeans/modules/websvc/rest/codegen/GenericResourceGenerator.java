@@ -185,19 +185,24 @@ public class GenericResourceGenerator extends AbstractGenerator {
                 copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 ClassTree tree = JavaSourceHelper.getTopLevelClassTree(copy);
                 List<ParameterInfo> params = bean.getInputParameters();
-                String body = "{";      //NOI18N
+                StringBuilder body = new StringBuilder("{");      //NOI18N
                 
                 for (ParameterInfo param : params) {
                     String name = param.getName();
-                    body += "if (" + name + " != null) {" +
-                            "this." + name + " = " + name + ";" +
-                            "}\n";    //NOI18N
+                    body.append( "if (" );                  //NOI18N
+                    body.append( name );
+                    body.append( " != null) { this.");      //NOI18N
+                    body.append(name );
+                    body.append(" = " );		    //NOI18N
+                    body.append( name );
+                    body.append("; }\n");                   //NOI18N
                 }
+		body.append("}\n");			    //NOI18N
                 
                 ClassTree modifiedTree = JavaSourceHelper.addConstructor(copy, tree,
                         Constants.PUBLIC,
                         getParamNames(params), getParamTypeNames(params),
-                        body, null);
+                        body.toString(), null);
                 
                 copy.rewrite(tree, modifiedTree);
             }
@@ -331,17 +336,22 @@ public class GenericResourceGenerator extends AbstractGenerator {
         String[][] paramAnnotations = getGetParamAnnotations(queryParams);
         Object[][] paramAnnotationAttrs = getGetParamAnnotationAttrs(queryParams);
         
-        String comment = "Retrieves representation of an instance of " + bean.getQualifiedClassName() + "\n";
+        StringBuilder comment = new StringBuilder("Retrieves representation of an instance of ");
+        comment.append( bean.getQualifiedClassName());
+        comment.append( "\n");
         for (String param : parameters) {
-            comment += "@param $PARAM$ resource URI parameter\n".replace("$PARAM$", param);
+            comment.append( "@param ");
+            comment.append(param);
+            comment.append(" resource URI parameter\n");
         }
-        comment += "@return an instance of "+type;
+        comment.append( "@return an instance of ");
+        comment.append( type);
         
         return JavaSourceHelper.addMethod(copy, tree,
                 modifiers, annotations, annotationAttrs,
                 getMethodName(HttpMethodType.GET, mime), type, parameters, paramTypes,
                 paramAnnotations, paramAnnotationAttrs,
-                bodyText, comment);      //NOI18N
+                bodyText, comment.toString());      
     }
     
     private ClassTree addPostMethod(MimeType mime, String type, WorkingCopy copy, ClassTree tree) {
@@ -367,19 +377,24 @@ public class GenericResourceGenerator extends AbstractGenerator {
         Object[] paramAnnotationAttrs = getParamAnnotationAttributes(parameters.length);
 
         GenericResourceBean subBean = getSubresourceBean();
-        String comment = "POST method for creating an instance of " +
-                (subBean == null ? bean.getName() : subBean.getName()) + "\n";
+        StringBuilder comment = new StringBuilder("POST method for creating an instance of ");
+        comment.append(subBean == null ? bean.getName() : subBean.getName());
+        comment.append( "\n");
         for (int i=0; i<parameters.length-1; i++) {
-            comment += "@param $PARAM$ resource URI parameter\n".replace("$PARAM$", parameters[i]);
+            comment.append("@param ");
+            comment.append(parameters[i]);
+            comment.append(" resource URI parameter\n");
         }
-        comment += "@param $PARAM$ representation for the new resource\n".replace("$PARAM$", parameters[parameters.length-1]);
-        comment += "@return an HTTP response with content of the created resource";
+        comment.append( "@param ");
+        comment.append( parameters[parameters.length-1]);
+        comment.append( " representation for the new resource\n");
+        comment.append( "@return an HTTP response with content of the created resource");
         
         return JavaSourceHelper.addMethod(copy, tree,
                 modifiers, annotations, annotationAttrs,
                 getMethodName(HttpMethodType.POST, mime), RestConstants.HTTP_RESPONSE,
                 parameters, paramTypes, paramAnnotations, paramAnnotationAttrs,
-                bodyText, comment);
+                bodyText, comment.toString());
     }
     
     private ClassTree addPutMethod(MimeType mime, String type, WorkingCopy copy, ClassTree tree) {
@@ -404,18 +419,24 @@ public class GenericResourceGenerator extends AbstractGenerator {
         String[] paramAnnotations = getParamAnnotations(parameters.length);
         Object[] paramAnnotationAttrs = getParamAnnotationAttributes(parameters.length);
 
-        String comment = "PUT method for updating or creating an instance of " + bean.getName() + "\n";
+        StringBuilder comment = new StringBuilder("PUT method for updating or creating an instance of ");
+        comment.append( bean.getName());
+        comment.append(  "\n");
         for (int i=0; i<parameters.length-1; i++) {
-            comment += "@param $PARAM$ resource URI parameter\n".replace("$PARAM$", parameters[i]);
+            comment.append("@param ");
+            comment.append(parameters[i]);
+            comment.append(" resource URI parameter\n");
         }
-        comment += "@param $PARAM$ representation for the resource\n".replace("$PARAM$", parameters[parameters.length-1]);
-        comment += "@return an HTTP response with content of the updated or created resource.";
+        comment.append( "@param ");
+        comment.append(parameters[parameters.length-1]);
+        comment.append(" representation for the resource\n");
+        comment.append( "@return an HTTP response with content of the updated or created resource.");
         
         return JavaSourceHelper.addMethod(copy, tree,
                 modifiers, annotations, annotationAttrs,
                 getMethodName(HttpMethodType.PUT, mime), returnType,
                 parameters, paramTypes, paramAnnotations, paramAnnotationAttrs,
-                bodyText, comment);
+                bodyText, comment.toString());
     }
     
     private ClassTree addDeleteMethod(WorkingCopy copy, ClassTree tree) {

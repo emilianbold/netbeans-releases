@@ -90,7 +90,6 @@ class CodeMarkerBuilder {
             if (canBePrepared(node, scope)) {
                 methodDeclarations.put(nodeInfo, scope);
             }
-
         }
     }
 
@@ -176,7 +175,6 @@ class CodeMarkerBuilder {
         if (currentNodeInfo == null && offset >= 0) {
             setCurrentContextInfo(offset);
         }
-
         if (currentNodeInfo != null && currentScope != null) {
             ASTNodeInfo.Kind kind = currentNodeInfo.getKind();
             currentNodeInfo = null;
@@ -198,8 +196,6 @@ class CodeMarkerBuilder {
                 default:
                     throw new IllegalStateException(kind.toString());
             }
-
-
         }
     }
 
@@ -217,22 +213,18 @@ class CodeMarkerBuilder {
                 range = new OffsetRange(returnStatement.getStartOffset(), expression.getStartOffset());
             }
         } else if (originalNode instanceof MethodDeclaration) {
-                FunctionDeclaration function = ((MethodDeclaration) originalNode).getFunction();
-                Identifier functionName = function.getFunctionName();
-                range = new OffsetRange(function.getStartOffset(), functionName.getStartOffset());
-
+            FunctionDeclaration function = ((MethodDeclaration) originalNode).getFunction();
+            Identifier functionName = function.getFunctionName();
+            range = new OffsetRange(function.getStartOffset(), functionName.getStartOffset());
         } else if (originalNode instanceof FunctionDeclaration) {
-                FunctionDeclaration function = (FunctionDeclaration) originalNode;
-                Identifier functionName = function.getFunctionName();
-                range = new OffsetRange(function.getStartOffset(), functionName.getStartOffset());
-
+            FunctionDeclaration function = (FunctionDeclaration) originalNode;
+            Identifier functionName = function.getFunctionName();
+            range = new OffsetRange(function.getStartOffset(), functionName.getStartOffset());
         }
         if (range.containsInclusive(offset)) {
             currentNodeInfo = nodeInfo;
             currentScope = scope;
-
         }
-
     }
 
 }

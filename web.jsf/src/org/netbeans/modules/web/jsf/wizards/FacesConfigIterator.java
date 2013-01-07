@@ -48,6 +48,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.j2ee.core.Profile;
@@ -75,6 +77,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * A template wizard operator for new faces-config.xml
@@ -82,12 +85,14 @@ import org.openide.util.NbBundle;
  * @author Alexey Butenko
  */
 public class FacesConfigIterator implements TemplateWizard.Iterator {
-    private int index;
+
+    private static final Logger LOG = Logger.getLogger(FacesConfigIterator.class.getName());
     private static final String defaultName = "faces-config";   //NOI18N
     private static final String FACES_CONFIG_PARAM = "javax.faces.CONFIG_FILES";    //NOI18N
     private static final String INIT_PARAM = "InitParam";  //NOI18N
     private static String RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/resources/"; //NOI18N
 
+    private int index;
     private transient WizardDescriptor.Panel[] panels;
 
     public Set<DataObject> instantiate(TemplateWizard wizard) throws IOException {
@@ -203,7 +208,7 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
             sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
         }
 
-        folderPanel = new JSFValidationPanel(
+        folderPanel = new FacesConfigValidationPanel(
                 Templates.createSimpleTargetChooser(project, sourceGroups));
 
         panels = new WizardDescriptor.Panel[] { folderPanel };
@@ -230,7 +235,12 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
             FileObject webInf = wm.getWebInf();
             if (webInf == null) {
                 try {
-                    webInf = FileUtil.createFolder(wm.getDocumentBase(), "WEB-INF"); //NOI18N
+                    FileObject documentBase = wm.getDocumentBase();
+                    if (documentBase == null) {
+                        LOG.log(Level.INFO, "WebModule does not have valid documentBase");
+                        return;
+                    }
+                    webInf = FileUtil.createFolder(documentBase, "WEB-INF"); //NOI18N
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -279,6 +289,32 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
     }
 
     public void removeChangeListener(ChangeListener l) {
+    }
+
+    private static class FacesConfigValidationPanel extends JSFValidationPanel {
+
+        public FacesConfigValidationPanel(Panel delegate) {
+            super(delegate);
+        }
+
+        @Messages({
+            "FacesConfigIterator.err.no.document.base=Project hasn't defined DocumentBase. See project properties."
+        })
+        @Override
+        public boolean isValid() {
+            if (!super.isValid()) {
+                return false;
+            }
+
+            Project project = getProject();
+            WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+            if (webModule != null && webModule.getDocumentBase() == null) {
+                getWizardDescriptor().putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, Bundle.FacesConfigIterator_err_no_document_base());
+                return true;
+            }
+            return true;
+        }
+        
     }
 
 }

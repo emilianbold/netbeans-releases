@@ -37,10 +37,30 @@
  */
 package org.netbeans.modules.search;
 
-import org.netbeans.spi.search.SearchScopeDefinition;
-import javax.swing.event.ChangeListener;
+import java.awt.EventQueue;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
+import java.nio.charset.Charset;
+import java.util.Collections;
+import java.util.ConcurrentModificationException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.api.search.SearchRoot;
+import org.netbeans.api.search.SearchScopeOptions;
+import org.netbeans.api.search.provider.SearchFilter;
 import org.netbeans.api.search.provider.SearchInfo;
+import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.search.matcher.TrivialFileMatcher;
+import org.netbeans.modules.search.ui.ResultsOutlineSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -62,78 +82,151 @@ public class ResultModelTest extends NbTestCase {
      */
     public void testObjectFoundTwice() throws Exception {
 
-        // TODO
-        
-//        FileObject root = FileUtil.createMemoryFileSystem().getRoot();
-//        final FileObject fo = root.createData("test.txt");
-//
-//        final BasicSearchCriteria criteria = new BasicSearchCriteria();
-//        final SearchScope scope = new CustomSearchScope();
-//        final List<SearchType> types = Collections.emptyList();
-//
-//        final SearchTask st = new SearchTask(scope, criteria, types);
-//        final ResultModel rm = st.getResultModel();
-//
-//        EventQueue.invokeAndWait(new Runnable() {
-//
-//            @Override
-//            public void run() {
-//                rtm = new ResultTreeModel(rm);
-//                rm.setObserver(rtm);
-//                ResultViewPanel rvm = new ResultViewPanel(st);
-//                rm.setObserver(rvm);
-//            }
-//        });
-//
-//        rm.objectFound(fo, Charset.defaultCharset());
-//        rm.objectFound(fo, Charset.defaultCharset());
-//
-//        assertEquals(1, rm.getMatchingObjects().size());
-//
-//        EventQueue.invokeAndWait(new Runnable() {
-//
-//            @Override
-//            public void run() {
-//                for (MatchingObject mo : rm.getMatchingObjects()) {
-//                    try {
-//                        mo.getFileObject().delete();
-//                    } catch (IOException ex) {
-//                        Exceptions.printStackTrace(ex);
-//                    }
-//                }
-//            }
-//        });
+        FileObject root = FileUtil.createMemoryFileSystem().getRoot();
+        final FileObject fo = root.createData("test.txt");
+
+        final ResultModel rm = new ResultModel(
+                new BasicSearchCriteria(), "test");
+
+        rm.objectFound(fo, Charset.defaultCharset(), null);
+        rm.objectFound(fo, Charset.defaultCharset(), null);
+
+        assertEquals(1, rm.getMatchingObjects().size());
+
+        final AtomicBoolean errorFound = new AtomicBoolean(false);
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                for (MatchingObject mo : rm.getMatchingObjects()) {
+                    try {
+                        mo.getFileObject().delete();
+                    } catch (IOException ex) {
+                        errorFound.set(true);
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        });
+        assertFalse(errorFound.get());
     }
 
-    private static class CustomSearchScope extends SearchScopeDefinition {
+    /**
+     * The ConcurrentModificationException in bug 223221 is not thrown always.
+     * It's better to run the test several times.
+     */
+    public void testBug223221ManyTimes() throws InterruptedException,
+            InvocationTargetException {
+        for (int i = 0; i < 5; i++) {
+            testBug223221();
+        }
+    }
 
-        @Override
-        public String getTypeId() {
-            return "TEST";
+    public void testBug223221() throws InterruptedException,
+            InvocationTargetException {
+        final BasicSearchCriteria bsc = new BasicSearchCriteria();
+        final FileObject root = FileUtil.createMemoryFileSystem().getRoot();
+        final ResultModel rm = new ResultModel(bsc, "test");
+        final BasicComposition bc = new BasicComposition(
+                new TestSearchInfo(root),
+                new TrivialFileMatcher(), bsc, "test");
+        final ResultsOutlineSupport[] rosHolder = new ResultsOutlineSupport[1];
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                rosHolder[0] = new ResultsOutlineSupport(
+                        false, true, rm, bc, Node.EMPTY);
+            }
+        });
+        final Semaphore semaphore = new Semaphore(0);
+        final Exception[] thrownException = new Exception[1];
+
+        Thread t1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < 500; i++) {
+                    if (i == 100) {
+                        semaphore.release();
+                    }
+                    try {
+                        FileObject fo = root.createData(i + ".txt");
+                        rm.objectFound(fo, Charset.defaultCharset(), null);
+                        try {
+                            EventQueue.invokeAndWait(new Runnable() {
+                                @Override
+                                public void run() {
+                                    rosHolder[0].setFlatMode();
+                                    rosHolder[0].update();
+                                    rosHolder[0].getResultsNode()
+                                            .getChildren().getNodes(true);
+                                }
+                            });
+                        } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } catch (InvocationTargetException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        });
+
+        Thread t2 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    semaphore.tryAcquire(10, TimeUnit.SECONDS);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                try {
+                    rosHolder[0].clean();
+                } catch (ConcurrentModificationException e) {
+                    thrownException[0] = e;
+                }
+            }
+        });
+
+        t1.start();
+        t2.start();
+        t1.join();
+        t2.join();
+
+        assertNull("No ConcurrentModificationException show be thrown.",
+                thrownException[0]);
+    }
+
+    private static class TestSearchInfo extends SearchInfo {
+
+        private FileObject searchRoot;
+
+        public TestSearchInfo(FileObject searchRoot) {
+            this.searchRoot = searchRoot;
         }
 
         @Override
-        public String getDisplayName() {
-            return "Test";
-        }
-
-        @Override
-        public boolean isApplicable() {
+        public boolean canSearch() {
             return true;
         }
 
         @Override
-        public SearchInfo getSearchInfo() {
-            throw new UnsupportedOperationException("Not supported yet.");
+        public List<SearchRoot> getSearchRoots() {
+            SearchRoot sr = new SearchRoot(searchRoot, (List<SearchFilter>) null);
+            return Collections.singletonList(sr);
         }
 
         @Override
-        public int getPriority() {
-            return 0;
+        protected Iterator<FileObject> createFilesToSearchIterator(
+                SearchScopeOptions options, SearchListener listener, AtomicBoolean terminated) {
+            return Collections.<FileObject>emptyList().iterator();
         }
 
         @Override
-        public void clean() {
+        protected Iterator<URI> createUrisToSearchIterator(
+                SearchScopeOptions options, SearchListener listener,
+                AtomicBoolean terminated) {
+            return null;
         }
-    }
+    };
 }

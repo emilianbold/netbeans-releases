@@ -75,7 +75,7 @@ public class MakefileUtils {
 
     public static boolean hasTestTargets(Project project) {
         FileObject makefile = getMakefile(project);
-        if(makefile != null) {
+        if(makefile != null && makefile.isValid()) {
             try {
                 DataObject dataObject = DataObject.find(makefile);
                 MakefileTargetProvider targetProvider = dataObject.getLookup().lookup(MakefileTargetProvider.class);

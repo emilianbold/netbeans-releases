@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.ide.ergonomics.fod;
 
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
@@ -50,7 +49,6 @@ import junit.framework.Test;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationSupport;
-import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
@@ -85,37 +83,36 @@ public class EnableJ2EEEnablesJavaTest extends NbTestCase {
     }
 
     public void testEnablingJ2EEEnablesJavaViaAutoUpdateManager() throws Exception {
-        FeatureInfo apisupport = null;
-        FeatureInfo persist = null;
+        FeatureInfo j2ee = null;
+        FeatureInfo java = null;
         for (FeatureInfo f : FeatureManager.features()) {
             if (f.getCodeNames().contains("org.netbeans.modules.j2ee.kit")) {
-                apisupport = f;
+                j2ee = f;
             }
-            if (f.getCodeNames().contains("org.netbeans.modules.form.kit")) {
-                persist = f;
+            if (f.getCodeNames().contains("org.netbeans.modules.java.kit")) {
+                java = f;
             }
         }
-        assertNotNull("j2ee feature found", apisupport);
-        assertNotNull("java feature found", persist);
+        assertNotNull("j2ee feature found", j2ee);
+        assertNotNull("java feature found", java);
 
         List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.FEATURE);
-        UpdateElement e = null;
+        UpdateElement j2eeUE = null;
         StringBuilder sb = new StringBuilder();
         for (UpdateUnit uu : units) {
             sb.append(uu.getCodeName()).append('\n');
             if (uu.getCodeName().equals("fod.org.netbeans.modules.j2ee.kit")) {
-                e = uu.getInstalled();
-                break;
+                j2eeUE = uu.getInstalled();
             }
         }
-        assertNotNull("J2EE found: " + sb, e);
+        assertNotNull("J2EE found: " + sb, j2eeUE);
         OperationContainer<OperationSupport> cc = OperationContainer.createForEnable();
-        OperationInfo<OperationSupport> info = cc.add(e);
+        OperationInfo<OperationSupport> info = cc.add(j2eeUE);
         cc.add(info.getRequiredElements());
         cc.getSupport().doOperation(null);
 
 
-        Set<String> expectedNames = new HashSet<String>(persist.getCodeNames());
+        Set<String> expectedNames = new HashSet<String>(java.getCodeNames());
         for (ModuleInfo mi : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
             if (mi.isEnabled()) {
                 expectedNames.remove(mi.getCodeNameBase());

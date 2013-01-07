@@ -94,6 +94,7 @@ public class WebSocketClientImpl extends SocketClient {
     public void sendMessage( String message){
         SelectionKey key = getKey();
         if ( key == null ){
+	    stop();
             return;
         }
         byte[] bytes = getHandler().createTextFrame( message);
@@ -119,6 +120,14 @@ public class WebSocketClientImpl extends SocketClient {
         }
         super.close(key);
         stop();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.netserver.SocketClient#chanelClosed(java.nio.channels.SelectionKey)
+     */
+    @Override
+    protected void chanelClosed( SelectionKey key ) {
+        getWebSocketReadHandler().closed(key);
     }
     
     protected SelectionKey getKey(){

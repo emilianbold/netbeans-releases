@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.callgraph.api.Function;
@@ -72,14 +73,24 @@ public class FunctionImpl implements Function {
     private final CsmFunction function;
     private String htmlDisplayName = ""; // NOI18N
     private String scopeName = null; // NOI18N
-    private CsmFunction cachedFunctionDefinition;
+    private final CsmFunction cachedFunctionDefinition;
+    private final CsmFunction cachedFunctionDeclaration;
+    private final boolean isVirtual;
+    private final Image icon;
 
     public FunctionImpl(CsmFunction function) {
-        super();
         this.function = function;
+        cachedFunctionDefinition = initDefinition();
+        cachedFunctionDeclaration = initDeclaration();
+        isVirtual = initVirtual();
+        icon = initIcon();
     }
 
     public CsmFunction getDeclaration() {
+        return cachedFunctionDeclaration;
+    }
+
+    private CsmFunction initDeclaration() {
         if (CsmKindUtilities.isFunctionDefinition(function)) {
             CsmFunction f = ((CsmFunctionDefinition) function).getDeclaration();
             if (f != null) {
@@ -90,20 +101,19 @@ public class FunctionImpl implements Function {
     }
 
     public CsmFunction getDefinition() {
-        if (cachedFunctionDefinition == null) {
-            if (CsmKindUtilities.isFunctionDeclaration(function)) {
-                CsmFunction f = function.getDefinition();
-                if (f != null) {
-                    cachedFunctionDefinition = f;
-                    return f;
-                }
-            }
-            cachedFunctionDefinition = function;
-            return function;
-        }
         return cachedFunctionDefinition;
     }
 
+    private CsmFunction initDefinition() {
+        if (CsmKindUtilities.isFunctionDeclaration(function)) {
+            CsmFunction f = function.getDefinition();
+            if (f != null) {
+                return f;
+            }
+        }
+        return function;
+    }
+    
     @Override
     public String getName() {
         return function.getName().toString();
@@ -122,9 +132,9 @@ public class FunctionImpl implements Function {
                     }
                 }
             } catch (AssertionError ex) {
-                ex.printStackTrace();
+                ex.printStackTrace(System.err);
             } catch (Exception ex) {
-                ex.printStackTrace();
+                ex.printStackTrace(System.err);
             }
         }
         return scopeName;
@@ -140,6 +150,10 @@ public class FunctionImpl implements Function {
 
     @Override
     public boolean isVurtual() {
+        return isVirtual;
+    }
+
+    private boolean initVirtual() {
         try {
             CsmFunction f = getDeclaration();
             if (CsmKindUtilities.isClassMember(f)) {
@@ -149,9 +163,9 @@ public class FunctionImpl implements Function {
                 }
             }
         } catch (AssertionError ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         }
         return false;
     }
@@ -182,9 +196,9 @@ public class FunctionImpl implements Function {
                 }
             }
         } catch (AssertionError ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         }
         return displayName;
     }
@@ -197,19 +211,31 @@ public class FunctionImpl implements Function {
 
     @Override
     public Image getIcon() {
+        return icon;
+    }
+
+    private Image initIcon() {
         try {
             return CsmImageLoader.getImage(getDefinition(), preferredIcons);
         } catch (AssertionError ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         }
         return null;
     }
 
     @Override
     public void open() {
-        CsmUtilities.openSource(getDefinition());
+        final String taskName = "Open declaration"; //NOI18N
+        Runnable run = new Runnable() {
+
+            @Override
+            public void run() {
+                CsmUtilities.openSource(getDefinition());
+            }
+        };
+        CsmModelAccessor.getModel().enqueue(run, taskName);
     }
 
     @Override

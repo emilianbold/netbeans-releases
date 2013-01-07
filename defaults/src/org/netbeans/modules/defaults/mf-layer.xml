@@ -718,7 +718,8 @@ made subject to such option by the copyright holder.
             <file name="F7.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance"/>
             </file>
-            <file name="D-PERIOD.shadow">
+            <!-- Deliberately using 'C' as the shortcut should be CTRL on both Mac & others -->
+            <file name="C-PERIOD.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-JumpNextAction.instance"/>
             </file>
             <file name="D-C.shadow">

@@ -72,9 +72,9 @@ public class WebSampleProjectIterator implements TemplateWizard.Iterator {
     private static final long serialVersionUID = 4L;
     
     int currentIndex;
-    PanelConfigureProject basicPanel;
+    transient PanelConfigureProject basicPanel;
     private transient WizardDescriptor wiz;
-    private FileChangeListener fcl = new NbprojectFileChangeListener();
+    private transient FileChangeListener fcl = new NbprojectFileChangeListener();
 
     static Object create() {
         return new WebSampleProjectIterator();
@@ -183,7 +183,7 @@ public class WebSampleProjectIterator implements TemplateWizard.Iterator {
         return file;
     }
 
-    private class NbprojectFileChangeListener extends FileChangeAdapter {
+    private static class NbprojectFileChangeListener extends FileChangeAdapter {
 
         @Override
         public void fileDataCreated(FileEvent fe) {

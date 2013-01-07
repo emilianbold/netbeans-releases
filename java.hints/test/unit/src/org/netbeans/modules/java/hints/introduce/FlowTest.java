@@ -840,6 +840,66 @@ public class FlowTest extends NbTestCase {
                     "false");
     }
 
+    public void testLoopExponentialExplosion() throws Exception {
+        String sourceCode = "package test;\n" +
+                            "import java.util.*;\n" +
+                            "class Test {\n" +
+                            "    private void t(List<String> args) {\n";
+        
+        for (int i = 0; i < 20; i++) {
+            sourceCode += "for (Iterator<String> it" + i + " = args.iterator(); it" + i + ".hasNext(); )";
+        }
+        
+        sourceCode += "if (ar`gs.size() == 0) System.err.println('a');\n" +
+                      "    }\n" +
+                      "}\n";
+        performTest(sourceCode,
+                    true,
+                    "List<String> args");
+    }
+    
+    public void testLoopExponentialExplosionDoWhile() throws Exception {
+        String sourceCode = "package test;\n" +
+                            "import java.util.*;\n" +
+                            "class Test {\n" +
+                            "    private void t(List<Boolean> args, boolean b) {\n" +
+                            "        |\n" +
+                            "    }\n" +
+                            "}\n";
+        
+        for (int i = 0; i < 20; i++) {
+            sourceCode = sourceCode.replace("|", "do { args.set(i, !args.get(i)); | } while (args.get(i)); ");
+        }
+        
+        sourceCode = sourceCode.replace("|", "if (ar`gs.size() == 0) System.err.println('a');\n");
+        
+        performTest(sourceCode,
+                    true,
+                    "List<Boolean> args");
+    }
+    
+    public void test224028() throws Exception {
+        performTest("package test;\n" +
+                    "import java.io.*;\n" +
+                    "import java.util.*;\n" +
+                    "public class Test {\n" +
+                    "    private void doSomething(Properties props) {\n" +
+                    "        Properties props = new Properties();\n" +
+                    "        try {\n" +
+                    "            canThrow();\n" +
+                    "        } catch (EmptyStackException | IOException ex) {\n" +
+                    "            props = null;\n" +
+                    "        }\n" +
+                    "        pro`ps.clear();\n" +
+                    "    }\n" +
+                    "    private void canThrow() throws EmptyStackException, IOException {\n" +
+                    "    }\n" +
+                    "}\n",
+                    true,
+                    "new Properties()",
+                    "null");
+    }
+    
     public void testDeadBranch207514() throws Exception {
         performDeadBranchTest("package test;\n" +
                               "public class Test {\n" +

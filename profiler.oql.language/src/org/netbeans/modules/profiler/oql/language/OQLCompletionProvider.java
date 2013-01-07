@@ -178,7 +178,7 @@ public class OQLCompletionProvider implements CompletionProvider {
                             ts.moveNext();
                         }
 
-                        int wsPosDiff = tokentext.indexOf(tokentextTrim);
+                        int wsPosDiff = tokenTrimLen==0 ? tokenLen-1 : tokentext.indexOf(tokentextTrim);
                         for(String function : functions) {
                             if (tokenTrimLen == 0 || function.startsWith(tokentextTrim)) {
                                 resultSet.addItem(new FunctionCompletionItem("00", function, ts.offset() + tokenTrimLen + wsPosDiff, tokenTrimLen)); // NOI18N
@@ -202,10 +202,10 @@ public class OQLCompletionProvider implements CompletionProvider {
                         if (tokentextTrim.isEmpty()) {
                             resultSet.addItem(new KeywordCompletionItem("01", "from", ts.offset() + tokenLen, tokenTrimLen)); // NOI18N
                         } else {
-                            StringTokenizer t = new StringTokenizer(tokentext, " ");
+                            StringTokenizer t = new StringTokenizer(tokentext, " ");  // NOI18N
                             while (t.hasMoreTokens()) {
                                 String tt = t.nextToken();
-                                if ("FROM".startsWith(tt.trim().toUpperCase())) {
+                                if ("FROM".startsWith(tt.trim().toUpperCase())) {  // NOI18N
                                     int pos = tokentext.indexOf(tt);
                                     int wsPos = tokentext.indexOf(' ', pos);
                                     int ttTrimLen = tt.trim().length();
@@ -273,7 +273,7 @@ public class OQLCompletionProvider implements CompletionProvider {
 
                         clzs = e.getHeap().getJavaClassesByRegExp(prefix).iterator();
                         while(clzs.hasNext()) {
-                            String className = (String)((JavaClass)clzs.next()).getName();
+                            String className = ((JavaClass)clzs.next()).getName();
 
                             String[] sig = splitClassName(className);
 
@@ -293,7 +293,7 @@ public class OQLCompletionProvider implements CompletionProvider {
                         if (camel != null) {
                             clzs = e.getHeap().getJavaClassesByRegExp(camel).iterator();
                             while(clzs.hasNext()) {
-                                String className = (String)((JavaClass)clzs.next()).getName();
+                                String className = ((JavaClass)clzs.next()).getName();
                                 completions.add("02 " + className); // NOI18N
                             }
                         }
@@ -325,7 +325,7 @@ public class OQLCompletionProvider implements CompletionProvider {
     }
 
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        if (typedText.endsWith(".")) return CompletionProvider.COMPLETION_QUERY_TYPE;
+        if (typedText.endsWith(".")) return CompletionProvider.COMPLETION_QUERY_TYPE;  // NOI18N
         return CompletionProvider.COMPLETION_ALL_QUERY_TYPE;
     }
 

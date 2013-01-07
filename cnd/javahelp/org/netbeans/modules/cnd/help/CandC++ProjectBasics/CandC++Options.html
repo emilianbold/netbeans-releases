@@ -38,14 +38,14 @@ Copyright &copy; 2009, 2012 Oracle and/or its affiliates. All rights reserved.
         <a href="#codeassistancetab"> Code Assistance</a>
       </li>
       <li>
-        <a href="#highlightingtab">Highlighting</a>
+        <a href="#debuggingtab">Debugging</a>
       </li>
       <li>
         <a href="#othertab">Other</a>
       </li>
     </ul>
     <h3>
-      <a name="buildtoolstab"></a>Build Tools tab
+       <a name="buildtoolstab"></a>Build Tools tab
     </h3>
     <p>
        <b>Build Host</b>. The list includes your local host and any remote hosts you have
@@ -72,26 +72,26 @@ Copyright &copy; 2009, 2012 Oracle and/or its affiliates. All rights reserved.
       </li>
       <li>
         To map shared project sources on the local host to a remote host, click Edit. In the
-        Development Host Manager dialog box, click Path Mapper. In the Edit Path's Map dialog box,
+        Build Host Manager dialog box, click Path Mapper. In the Edit Path's Map dialog box,
         select the remote host in the Host list. For each mapping, in the Local Path field, type
         the path used to access the shared project sources from the local host. In the Remote Path
         field, type the path used to access the shared project sources from the remote host.
       </li>
       <li>
-        To change IDE properties related to the remote development host, click Properties. In the
-        Host Properties dialog box, you can change the name displayed in the IDE for the host by
-        typing in the Name field. To change the way project files are shared with the remote host,
-        select the file synchronization method in the Synchronization list. If the project files
-        are in a shared folder accessible from the local host and remote host, select File System
-        Sharing. If sharing the files is not possible, select Smart Secure Copy to copy the files.
-        The files are copied to your <tt>.netbeans</tt> directory on the remote host.
+        To change IDE properties related to the remote build host, click Properties. In the Host
+        Properties dialog box, you can change the name displayed in the IDE for the host by typing
+        in the Display Name field. To change the way project files are shared with the remote host,
+        select the file access method in the Access Project Files Via list. If the project files
+        are in a shared folder accessible from the local host and remote host, select System-level
+        File Sharing. If sharing the files is not possible, select Automatic Copying&nbsp;to copy
+        the files. The files are copied to your <tt>.netbeans</tt> directory on the remote host.
       </li>
     </ul>
     <p>
        <b>Tool Collection.</b> The tool collection list displays the collections found on the
-      currently selected development host. The default collection for that selected host is listed
+      currently selected build host. The default collection for that selected host is listed
       in bold type. You can modify the tool collection list by adding or removing collections. Be
-      sure to select the Development Host before you modify any information about the tool
+      sure to select the Build Host before you modify any information about the tool
       collection.
     </p>
     <ul>
@@ -116,7 +116,7 @@ Copyright &copy; 2009, 2012 Oracle and/or its affiliates. All rights reserved.
       </li>
     </ul>
     <p>
-       <b>Base Directory.</b> The base directory for compilers for the current development host.
+       <b>Base Directory.</b> The base directory for compilers for the current build host.
       The path can be edited for the local host or remote hosts, but browsing to select a different
       path only works on the local host.
     </p>
@@ -171,7 +171,8 @@ Copyright &copy; 2009, 2012 Oracle and/or its affiliates. All rights reserved.
     </p>
     <p>
        The <b>Restore Defaults</b> button can be used to make the IDE search your environment for
-      tool collections and update the paths to all the tools.
+      tool collections and update the paths to all the tools. If you have manually added a tool
+      collection, the paths will not be changed.
     </p>
     <h3>
        <a name="projectoptionstab"></a> Project Options Tab
@@ -185,12 +186,6 @@ Copyright &copy; 2009, 2012 Oracle and/or its affiliates. All rights reserved.
         stores paths as relative to the project root. Always Absolute mode stores paths as absolute
         paths. Auto mode stores paths as relative to the project root if inside the project,
         otherwise as absolute path.
-      </li>
-      <li>
-        <b>Save All Modified Files Before Running Make.</b> If selected, saves all unsaved files in
-        the IDE before running make. It is recommended to leave this property selected because
-        modifications to files in the IDE are not recognized by make unless they are first saved to
-        disk.
       </li>
       <li>
         <b>Reuse Output Tabs from Finished Processes.</b> If selected, writes make output to a
@@ -210,19 +205,14 @@ Copyright &copy; 2009, 2012 Oracle and/or its affiliates. All rights reserved.
       <li>
         <b>Show warning dialog about missing makefiles due to mismatched platforms.</b> If
         selected, the IDE will warn you if you attempt to run a project that was created on a
-        platform that is not the same as your current development host's platform.
-      </li>
-      <li><b>Support indexing of non C/C++/Fortran files in projects (slows down parsing)</b>
-          If selected, the IDE indexes project files that are not C, C++, or Fortran source files.
-          By default, this option is not selected to speed up parsing.
+        platform that is not the same as your current build host's platform.
       </li>
       <li>
-          <b>Rebuild entire project if project properties have changed.</b> If selected,
-          the IDE rebuilds the project if you change any project properties, even ones
-          that should have no effect on build products. By default, this is not selected
-          because dependency checking should ensure most required
-          rebuilds. You might want to enable this option if you are using GNU tools
-          and changing compiler or linker options does not cause a rebuild.
+        <b>Rebuild entire project if project properties have changed.</b> If selected, the IDE
+        rebuilds the project if you change any project properties, even ones that should have no
+        effect on build products. By default, this is not selected because dependency checking
+        should ensure most required rebuilds. You might want to enable this option if you are using
+        GNU tools and changing compiler or linker options does not cause a rebuild.
       </li>
     </ul>
     <h3>
@@ -231,53 +221,29 @@ Copyright &copy; 2009, 2012 Oracle and/or its affiliates. All rights reserved.
     <p>
        Select the appropriate tool collection and compiler tab. Modify the settings for include
       files and macro definitions that are used by the built-in parser. For tool collections on
-      remote development hosts, the include files are located in your .netbeans directory
+      remote build hosts, the include files are located in your .netbeans directory
     </p>
     <h3>
-       <a name="highlightingtab"></a> Highlighting Tab
+       <a name="debuggingtab">Debugging Options Tab</a>
+    </h3>
+        For information on setting global debugging options for 
+C/C++ projects, see <a href="GlobalDebuggingOptions.html">Setting Global Debugging 
+Options</a>.
+    <h3>
+       <a name="othertab"></a> Other Tab
     </h3>
     <p>
-       Select the elements that should be visually marked in the IDE editor.
+       &nbsp;
     </p>
     <ul>
       <li>
-        <b>Mark Occurrences of Symbol Under Caret.</b> If this option is selected, then when you
-        click on a class, function, variable, or macro, all occurrences of that class, function,
-        variable, or macro in the current file are highlighted.
+        <b>Language</b> <b>File Extensions:</b> You can edit the lists of accepted file extensions
+        for C, C++, Fortran, and Assembler source files, and C and C++ header files.
       </li>
       <li>
-        <b>Keep Marks.</b> If this option is selected, highlighted classes, functions, variable,
-        and macros remain highlighted.
-      </li>
-      <li>
-        <b>Highlight Inactive Code.</b> If this option selected, inactive code is highlighted.
-      </li>
-      <li>
-        <b>Highlight Class' Fields.</b> If this option selected, class fields are highlighted.
-      </li>
-      <li>
-        <b>Highlight Function's Names.</b> If this option selected, function names are highlighted.
-      </li>
-      <li>
-        <b>Highlight Macros.</b> If this option selected, macros are highlighted.
-      </li>
-      <li>
-        <b>Highlight Typedefs.</b> If this option is selected, typedefs are highlighted.
-      </li>
-      <li>
-        <b>Highlight Unused Variables.</b> If this option is selected, unused variables are
-        highlighted.
-      </li>
-      <li>
-        <b>Highlight Syntax Errors.</b> If this option is selected, syntax errors are highlighted.
-      </li>
-      <li>
-        <b>Highlight Unresolved Include Files.</b> If this option is selected, include files that
-        cannot be resolved are highlighted.
-      </li>
-      <li>
-        <b>Highlight Unresolved Identifiers.</b> If this option is seielcted, unresolved
-        identifiers are highlighted.
+        <b>Support indexing of non C/C++/Fortran files in projects (slows down parsing)</b> If
+        selected, the IDE indexes project files that are not C, C++, or Fortran source files. By
+        default, this option is not selected to speed up parsing.
       </li>
       <li>
         <b>Reparse on File Change.</b> If this option is selected, your project is reparsed
@@ -286,22 +252,13 @@ Copyright &copy; 2009, 2012 Oracle and/or its affiliates. All rights reserved.
         can deselect this option and reparse manually. Right-click the project and select Code
         Assistance &gt; Reparse Project.
       </li>
-      <li>
-        <b>Show Overridden Annotations.</b> If this option is selected, the IDE shows popup
-        annotations in the Source Editor when your cursor is on a method that is overridden in some
-        descendant classes, or if the method overrides some parent method.
-      </li>
     </ul>
-    <h3>
-       <a name="othertab"></a> Other Tab
-    </h3>
     <p>
-       Edit the lists of accepted file extensions for for C, C++, Fortran, and Assembler source
-      files, and C and C++ header files.
+       &nbsp;
     </p>
     <table>
       <tr valign="top">
-        <th colspan="2" align="left">
+        <th align="left" colspan="2">
           <a name="seealso">See Also</a> 
         </th>
       </tr>
@@ -323,7 +280,7 @@ Copyright &copy; 2009, 2012 Oracle and/or its affiliates. All rights reserved.
     <p>
        &nbsp;
     </p>
-    <table border="0" cellpadding="20">
+    <table cellpadding="20" border="0">
       <tr>
         <td>
           &nbsp;

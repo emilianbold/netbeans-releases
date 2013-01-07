@@ -179,17 +179,18 @@ class CheckNodeListener implements MouseListener, KeyListener {
                         o = ((TreeElement) o).getUserObject();
                         if (o instanceof RefactoringElement) {
                             openDiff(node);
-                        } else if (o instanceof FileObject) {
-                            tree.expandPath(path);
-                            TreePath pathForRow = tree.getPathForRow(row+1);
-                            CheckNode lastPathComponent = (CheckNode) pathForRow.getLastPathComponent();
-                            Object userObject = lastPathComponent.getUserObject();
-                            if (userObject instanceof TreeElement) {
-                                Object refElement = ((TreeElement) userObject).getUserObject();
-                                if (refElement instanceof RefactoringElement)
-                                    openDiff(lastPathComponent);
-                            }
                         }
+//                        else if (o instanceof FileObject) {
+//                            tree.expandPath(path);
+//                            TreePath pathForRow = tree.getPathForRow(row+1);
+//                            CheckNode lastPathComponent = (CheckNode) pathForRow.getLastPathComponent();
+//                            Object userObject = lastPathComponent.getUserObject();
+//                            if (userObject instanceof TreeElement) {
+//                                Object refElement = ((TreeElement) userObject).getUserObject();
+//                                if (refElement instanceof RefactoringElement)
+//                                    openDiff(lastPathComponent);
+//                            }
+//                        }
                     }
                 }
             }
@@ -215,18 +216,19 @@ class CheckNodeListener implements MouseListener, KeyListener {
                     o = ((TreeElement) o).getUserObject();
                     if (o instanceof RefactoringElement) {
                         openDiff(node);
-                    } else if (o instanceof FileObject) {
-                        tree.expandPath(path);
-                        TreePath pathForRow = tree.getPathForRow(row + 1);
-                        CheckNode lastPathComponent = (CheckNode) pathForRow.getLastPathComponent();
-                        Object userObject = lastPathComponent.getUserObject();
-                        if (userObject instanceof TreeElement) {
-                            Object refElement = ((TreeElement) userObject).getUserObject();
-                            if (refElement instanceof RefactoringElement) {
-                                openDiff(lastPathComponent);
-                            }
-                        }
                     }
+//                    else if (o instanceof FileObject) {
+//                        tree.expandPath(path);
+//                        TreePath pathForRow = tree.getPathForRow(row + 1);
+//                        CheckNode lastPathComponent = (CheckNode) pathForRow.getLastPathComponent();
+//                        Object userObject = lastPathComponent.getUserObject();
+//                        if (userObject instanceof TreeElement) {
+//                            Object refElement = ((TreeElement) userObject).getUserObject();
+//                            if (refElement instanceof RefactoringElement) {
+//                                openDiff(lastPathComponent);
+//                            }
+//                        }
+//                    }
                 }
             }
         }

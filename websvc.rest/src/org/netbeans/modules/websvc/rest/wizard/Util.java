@@ -292,7 +292,7 @@ public class Util {
                 step = component.getName();
             }
             component.putClientProperty(WIZARD_PANEL_CONTENT_DATA, resultSteps);
-            component.putClientProperty(WIZARD_PANEL_CONTENT_SELECTED_INDEX, new Integer(i));
+            component.putClientProperty(WIZARD_PANEL_CONTENT_SELECTED_INDEX, i);
             component.getAccessibleContext().setAccessibleDescription(step);
             resultSteps[i + offset] = step;
         }
@@ -404,8 +404,6 @@ public class Util {
         return sourceGroups;
     }
 
-    private static Map<String,Class> primitiveTypes;
-    
     public static Class getType(Project project, String typeName) {    
         List<ClassPath> classPaths = SourceGroupSupport.gerClassPath(project);
         
@@ -430,35 +428,8 @@ public class Util {
         return null; 
     }
     
-    public static Class getPrimitiveType(String typeName) {
-        if (primitiveTypes == null) {
-            primitiveTypes = new HashMap<String,Class>();
-            primitiveTypes.put("int", Integer.class);
-            primitiveTypes.put("int[]", int[].class);
-            primitiveTypes.put("java.lang.Integer[]", Integer[].class);
-            primitiveTypes.put("boolean", Boolean.class);
-            primitiveTypes.put("boolean[]", boolean[].class);
-            primitiveTypes.put("java.lang.Boolean[]", Boolean[].class);
-            primitiveTypes.put("byte", Byte.class);
-            primitiveTypes.put("byte[]", byte[].class);
-            primitiveTypes.put("java.lang.Byte[]", Byte[].class);
-            primitiveTypes.put("char", Character.class);
-            primitiveTypes.put("char[]", char[].class);
-            primitiveTypes.put("java.lang.Character[]", Character[].class);
-            primitiveTypes.put("double", Double.class);
-            primitiveTypes.put("double[]", double[].class);
-            primitiveTypes.put("java.lang.Double[]", Double[].class);
-            primitiveTypes.put("float", Float.class);
-            primitiveTypes.put("float[]", float[].class);
-            primitiveTypes.put("java.lang.Float[]", Float[].class);
-            primitiveTypes.put("long", Long.class);
-            primitiveTypes.put("long[]", long[].class);
-            primitiveTypes.put("java.lang.Long[]", Long[].class);
-            primitiveTypes.put("short", Short.class);
-            primitiveTypes.put("short[]", short[].class);
-            primitiveTypes.put("java.lang.Short[]", Short[].class);
-        }
-        return primitiveTypes.get(typeName);
+    public static Class<?> getPrimitiveType(String typeName) {
+        return Lazy.primitiveTypes.get(typeName);
     }
     
     public static Class getGenericRawType(String typeName, ClassLoader loader) {
@@ -546,7 +517,6 @@ public class Util {
     public static boolean isCDIEnabled(Project project) {
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         if (wm != null) {
-            Profile profile = wm.getJ2eeProfile();
             if (  !RestUtils.isJavaEE6(project))
             {
                 return false;
@@ -999,15 +969,14 @@ public class Util {
                     if ( fqn.equals("javax.persistence.OneToMany")
                             ||fqn.equals("javax.persistence.ManyToMany"))
                     {
-                        Tree methodTree = workingCopy.getTrees().getTree(method);
-                        if ( methodTree instanceof MethodTree){
-                            MethodTree newMethod = (MethodTree)methodTree;
-                            for(AnnotationTree annTree : annotationTrees ){
-                                newMethod = genUtils.addAnnotation(
-                                    newMethod, annTree);
-                            }
-                            workingCopy.rewrite(methodTree, newMethod);
+                        MethodTree methodTree = workingCopy.getTrees().getTree(
+                                method);
+                        MethodTree newMethod = (MethodTree) methodTree;
+                        for (AnnotationTree annTree : annotationTrees) {
+                            newMethod = genUtils.addAnnotation(newMethod,
+                                    annTree);
                         }
+                        workingCopy.rewrite(methodTree, newMethod);
                     }
                 }
             }
@@ -1155,4 +1124,35 @@ public class Util {
         private boolean isIncomplete;
         private String entityFqn;
     }    
+    
+    private static class Lazy {
+        private static Map<String,Class<?>> primitiveTypes = new HashMap<String,Class<?>>();
+        
+        static {
+            primitiveTypes.put("int", Integer.class);
+            primitiveTypes.put("int[]", int[].class);
+            primitiveTypes.put("java.lang.Integer[]", Integer[].class);
+            primitiveTypes.put("boolean", Boolean.class);
+            primitiveTypes.put("boolean[]", boolean[].class);
+            primitiveTypes.put("java.lang.Boolean[]", Boolean[].class);
+            primitiveTypes.put("byte", Byte.class);
+            primitiveTypes.put("byte[]", byte[].class);
+            primitiveTypes.put("java.lang.Byte[]", Byte[].class);
+            primitiveTypes.put("char", Character.class);
+            primitiveTypes.put("char[]", char[].class);
+            primitiveTypes.put("java.lang.Character[]", Character[].class);
+            primitiveTypes.put("double", Double.class);
+            primitiveTypes.put("double[]", double[].class);
+            primitiveTypes.put("java.lang.Double[]", Double[].class);
+            primitiveTypes.put("float", Float.class);
+            primitiveTypes.put("float[]", float[].class);
+            primitiveTypes.put("java.lang.Float[]", Float[].class);
+            primitiveTypes.put("long", Long.class);
+            primitiveTypes.put("long[]", long[].class);
+            primitiveTypes.put("java.lang.Long[]", Long[].class);
+            primitiveTypes.put("short", Short.class);
+            primitiveTypes.put("short[]", short[].class);
+            primitiveTypes.put("java.lang.Short[]", Short[].class);
+        }
+    }
 }

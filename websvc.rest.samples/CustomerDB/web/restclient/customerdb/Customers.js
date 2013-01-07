@@ -107,7 +107,7 @@ Customers.prototype = {
    },
 
    initChild : function(ref, j) {
-      var uri2 = ref['@uri'];
+      var uri2 = this.uri+ref['customerId'];
       this.items[j] = new Customer(uri2);
    },
 
@@ -127,39 +127,10 @@ Customers.prototype = {
          return remote.postJson_(customer.toString());
    },
 
-   toString : function() {
-      if(!this.initialized)
-         this.init();
-      var s = '';
-      var j = 0;
-      if(this.items.length > 1)
-          s = s + '[';
-      for(j=0;j<this.items.length;j++) {
-         var c = this.items[j];
-         if(j<this.items.length-1)
-            s = s + '{"@uri":"'+c.getUri()+'", "customerId":"'+rjsSupport.findIdFromUrl(c.getUri())+'"},';
-         else
-            s = s + '{"@uri":"'+c.getUri()+'", "customerId":"'+rjsSupport.findIdFromUrl(c.getUri())+'"}';
-      }
-      if(this.items.length > 1)
-          s = s + ']';
-      var myObj = '';
-      if(s == '') {
-          myObj = '{"@uri":"'+this.getUri()+'"}';
-      } else {
-          myObj = 
-            '{'+'"@uri":"'+this.getUri()+'",'+'"customer":'+s+''+'}';
-      }
-      if(useWrapCustomers) {
-          myObj = '"customers":'+myObj;
-      }
-      return myObj;
-   }
-
 }
 
 function CustomersRemote(uri_) {
-    this.uri = uri_+'?expandLevel=0&start=0&max=50';
+    this.uri = uri_;
 }
 
 CustomersRemote.prototype = {

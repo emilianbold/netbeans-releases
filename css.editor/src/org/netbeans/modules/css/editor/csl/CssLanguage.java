@@ -96,8 +96,7 @@ public class CssLanguage extends DefaultLanguageConfig {
         /** Includes things you'd want selected as a unit when double clicking in the editor */
         return Character.isJavaIdentifierPart(c)
                 || (c == '-') || (c == '@')
-                || (c == '&') || (c == '_')
-                || (c == '#') || (c == '.');
+                || (c == '&') || (c == '_');
     }
 
     @Override

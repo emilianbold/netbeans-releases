@@ -84,7 +84,7 @@ public final class EJBListViewChildren extends Children.Keys<String> {
 
     public Node[] createNodes(String key) {
         Node n = null;
-        if (key == KEY_EJBS) {
+        if (KEY_EJBS.equals(key)) {
             EjbJar[] apiEjbJars = EjbJar.getEjbJars(project);
             n = J2eeProjectView.createEjbsView(apiEjbJars[0], project);
         }

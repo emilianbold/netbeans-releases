@@ -235,6 +235,9 @@ public class CreateRulePanel extends javax.swing.JPanel {
      * @param context file context, must not be null.
      * @param handle html source element handle, can be null.
      */
+    @NbBundle.Messages({
+        "CreateRulePanel_no_stylesheet=No stylesheet available."
+    })
     public CreateRulePanel(FileObject context, HtmlSourceElementHandle handle) {
         assert context != null;
         this.context = context;
@@ -272,7 +275,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
         };
 
         initComponents();
-
+        
         //listens on changes of the selector type list
         selectorTypeList.addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -305,7 +308,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
                         styleSheetCB.setSelectedItem(file);
 
                         //update current stylesheet model && at rules model 
-                        updateAtRulesModel(file);
+                        updateAtRules();
                         
                         //select the active at rule
                         AtRuleItem createInAtRule = activeSelectorItem.getCreateInAtRule();
@@ -416,11 +419,14 @@ public class CreateRulePanel extends javax.swing.JPanel {
             });
         }
 
-        //listens on changes to the selectors combobox
+        //listens on changes to the stylesheets combobox
         styleSheetCB.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
+                    //update at-rule
+                    updateAtRules();
+                    
                     //user changed stylesheet in the combobox
                     //update the active SelectorItem to the selected stylesheet
                     SelectorItem activeSelectorItem = getActiveSelectorItem();
@@ -450,6 +456,16 @@ public class CreateRulePanel extends javax.swing.JPanel {
         initializeActiveElement();
 
         selectorTypeList.setSelectedIndex(0); //class
+        
+        updateAtRules();
+        
+         //disable the dialog as there's no stylesheet we may operate on
+        if(STYLESHEETS_MODEL.getSize() == 0) {
+            selectorCB.setEnabled(false);
+            selectorCB.setEditable(false);
+            selectorTypeList.setEnabled(false);
+            descriptionPane.setText(Bundle.CreateRulePanel_no_stylesheet());
+        }
 
     }
 
@@ -725,7 +741,9 @@ public class CreateRulePanel extends javax.swing.JPanel {
                 return;
             }
             CssIndex index = CssIndex.create(project);
-            for (FileObject file : index.getAllIndexedFiles()) {
+            DependenciesGraph dependencies = index.getDependencies(context);
+            
+            for (FileObject file : dependencies.getAllReferedFiles()) {
                 if ("text/css".equals(file.getMIMEType())) {
                     items.add(file);
                 }
@@ -771,12 +789,15 @@ public class CreateRulePanel extends javax.swing.JPanel {
 
     /**
      * Refreshes the at-rules combobox model according to the at-rules
-     * defined in the given file.
+     * defined in the selected stylesheet.
      * 
      * Does not set selected element in the model!
-     * @param file file context, never null
      */
-    private void updateAtRulesModel(FileObject file) {
+    private void updateAtRules() {
+        FileObject file = (FileObject) STYLESHEETS_MODEL.getSelectedItem();
+        if (file == null) {
+            return;
+        }
         try {
             final Collection<AtRuleItem> items = new ArrayList<AtRuleItem>();
             items.add(null);
@@ -797,6 +818,12 @@ public class CreateRulePanel extends javax.swing.JPanel {
             });
 
             AT_RULES_MODEL.setItems(items);
+
+            //disable the at-rules combobox if there isn't a single at-rule in the choosen stylesheet
+            atRuleCB.setEnabled(AT_RULES_MODEL.getSize() > 1);
+            
+            atRuleCB.setSelectedIndex(0);
+
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -905,6 +932,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
     private void createNewRule(final SelectorItem selectorItem) throws IOException, ParseException {
         final FileObject createInFile = selectorItem.getCreateInFile();
         final Model cssSourceModel = getCssSourceModel(createInFile);
+        final AtomicReference<Rule> createdRuleRef = new AtomicReference<Rule>();
 
         cssSourceModel.runWriteTask(new Model.ModelTask() {
             @Override
@@ -928,28 +956,25 @@ public class CreateRulePanel extends javax.swing.JPanel {
                     styleSheet.getBody().addRule(rule);
                 } else {
                     //add to the at-rule
-
-                    //XXX: is it too hacky? As the underlying source model cannot 
-                    //normally change during the modal dialog is opened the 
-                    //media item obtained when the combobox model was created 
-                    //should be the same as the model created in this method.
-                    //if this is not true - the media object from the older
-                    //source model would have to be resolved to the new source model.
-                    Media media = createInAtRule.getMedia();
-                    assert media.getModel() == cssSourceModel;
-
-                    media.addRule(rule);
+                    Media oldMedia = createInAtRule.getMedia();  //ref from the old model
+                    ModelUtils utils = new ModelUtils(cssSourceModel);
+                    Media match = utils.findMatchingMedia(oldMedia.getModel(), oldMedia);
+                    match.addRule(rule);
                 }
 
                 try {
                     cssSourceModel.applyChanges();
+                    createdRuleRef.set(rule);
                     LOGGER.log(Level.FINE, "Created new rule {0} in file {1} (at-rule: {2}).", new Object[]{selectorItem.getItemFQName(), createInFile.getNameExt(), createInAtRule});
-                    selectTheRuleInEditorIfOpened(cssSourceModel, rule);
                 } catch (Exception /*ParseException, IOException, BadLocationException*/ ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
         });
+        Rule createdRule = createdRuleRef.get();
+        if(createdRule != null) {
+            selectTheRuleInEditorIfOpened(cssSourceModel, createdRule);
+        }
 
     }
 
@@ -1487,11 +1512,6 @@ public class CreateRulePanel extends javax.swing.JPanel {
         styleSheetCB.setModel(STYLESHEETS_MODEL);
         styleSheetCB.setEnabled(false);
         styleSheetCB.setRenderer(createStylesheetsRenderer());
-        styleSheetCB.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                styleSheetCBItemStateChanged(evt);
-            }
-        });
 
         atRuleCB.setModel(AT_RULES_MODEL);
         atRuleCB.setEnabled(false);
@@ -1610,15 +1630,6 @@ public class CreateRulePanel extends javax.swing.JPanel {
                 .addContainerGap(16, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
-    private void styleSheetCBItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_styleSheetCBItemStateChanged
-        FileObject file = (FileObject) STYLESHEETS_MODEL.getSelectedItem();
-        //update at rules model
-        updateAtRulesModel(file);
-
-        //disable the at-rules combobox if there isn't a single at-rule in the choosen stylesheet
-        atRuleCB.setEnabled(AT_RULES_MODEL.getSize() > 1);
-    }//GEN-LAST:event_styleSheetCBItemStateChanged
 
     private void applyChangesCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyChangesCBActionPerformed
         Settings.setCreateRule_ApplyChangesToSelectedSourceElement(applyChangesCB.isSelected());

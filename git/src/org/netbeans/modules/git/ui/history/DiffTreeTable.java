@@ -48,7 +48,6 @@ import java.awt.Component;
 import java.awt.Graphics;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
-import org.openide.nodes.PropertySupport;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
@@ -57,7 +56,8 @@ import org.openide.ErrorManager;
 import javax.swing.*;
 import java.util.*;
 import java.beans.PropertyVetoException;
-import java.lang.reflect.InvocationTargetException;
+import javax.swing.table.TableColumnModel;
+import org.netbeans.swing.etable.ETableColumnModel;
 import org.netbeans.swing.outline.RenderDataProvider;
 import org.openide.explorer.view.OutlineView;
 
@@ -88,12 +88,19 @@ class DiffTreeTable extends OutlineView {
     @SuppressWarnings("unchecked")
     private void setupColumns() {
         ResourceBundle loc = NbBundle.getBundle(DiffTreeTable.class);
-        setPropertyColumns(RevisionNode.COLUMN_NAME_DATE, loc.getString("LBL_DiffTree_Column_Time"),
+        setPropertyColumns(RevisionNode.COLUMN_NAME_PATH, loc.getString("LBL_DiffTree_Column_Path"),
+                RevisionNode.COLUMN_NAME_DATE, loc.getString("LBL_DiffTree_Column_Time"),
                 RevisionNode.COLUMN_NAME_USERNAME, loc.getString("LBL_DiffTree_Column_Username"),
                 RevisionNode.COLUMN_NAME_MESSAGE, loc.getString("LBL_DiffTree_Column_Message"));
+        setPropertyColumnDescription(RevisionNode.COLUMN_NAME_PATH, loc.getString("LBL_DiffTree_Column_Path_Desc"));
         setPropertyColumnDescription(RevisionNode.COLUMN_NAME_DATE, loc.getString("LBL_DiffTree_Column_Time_Desc"));
         setPropertyColumnDescription(RevisionNode.COLUMN_NAME_USERNAME, loc.getString("LBL_DiffTree_Column_Username_Desc"));
         setPropertyColumnDescription(RevisionNode.COLUMN_NAME_MESSAGE, loc.getString("LBL_DiffTree_Column_Message_Desc"));
+        TableColumnModel model = getOutline().getColumnModel();
+        if (model instanceof ETableColumnModel) {
+            ((ETableColumnModel) model).setColumnHidden(model.getColumn(1), true);
+        }
+        setDefaultColumnSizes();
     }
     
     private void setDefaultColumnSizes() {
@@ -159,24 +166,11 @@ class DiffTreeTable extends OutlineView {
         return getOutline().getRowCount();
     }
 
-    private static class ColumnDescriptor<T> extends PropertySupport.ReadOnly<T> {
-        
-        public ColumnDescriptor(String name, Class<T> type, String displayName, String shortDescription) {
-            super(name, type, displayName, shortDescription);
-        }
-
-        @Override
-        public T getValue() throws IllegalAccessException, InvocationTargetException {
-            return null;
-        }
-    }
-
     @Override
     public void addNotify() {
         super.addNotify();
         ExplorerManager em = ExplorerManager.find(this);
         em.setRootContext(rootNode);
-        setDefaultColumnSizes();
     }
 
     public void setResults(List<RepositoryRevision> results) {

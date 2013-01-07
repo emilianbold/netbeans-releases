@@ -949,7 +949,7 @@ public class ImportRemoteProject implements PropertyChangeListener {
                 logger.log(Level.INFO, "#{0} --netbeans-project={1} --project-reconfigure build-log={2}", // NOI18N
                             new Object[]{projectCreator.getPath(), projectFolder.getPath(), makeLog});
             }
-            DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(makeProject, false);
+            DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(makeProject, null);
             FileObject conf1 = projectFolder.getFileObject().getFileObject("nbproject/configurations.xml"); //NOI18N
             ExitStatus execute = ProcessUtils.execute(executionEnvironment, projectCreator.getPath()
                                          , "--netbeans-project="+projectFolder.getPath() // NOI18N

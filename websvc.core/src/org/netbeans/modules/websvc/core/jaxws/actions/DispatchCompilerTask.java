@@ -57,7 +57,6 @@ final class DispatchCompilerTask implements CancellableTask<WorkingCopy> {
     public void run(WorkingCopy workingCopy) throws Exception {
         boolean changed = false;
         workingCopy.toPhase(Phase.RESOLVED);
-        ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
         TreeMaker make = workingCopy.getTreeMaker();
         CompilationUnitTree cut = workingCopy.getCompilationUnit();
         CompilationUnitTree copy = cut;

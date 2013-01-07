@@ -184,11 +184,12 @@ public class TubesProjectConfigPanel extends JPanel {
                 return;
             }
             TubeTableModel tModel = client ? tubeTableClientModel : tubeTableServiceModel;
-            String className = "";
+            StringBuilder className = new StringBuilder();
             for (int i : selectedRows) {
-                className += (String) tModel.getValueAt(i, 0) + ", \n";
+                className.append((String) tModel.getValueAt(i, 0));
+		 className.append( ", \n");
             }
-            if (confirmDeletion(className)) {
+            if (confirmDeletion(className.toString())) {
                 for (int i = selectedRows.length-1; i >= 0; i--) {
                     tModel.removeRow(selectedRows[i]);
                 }
@@ -208,7 +209,7 @@ public class TubesProjectConfigPanel extends JPanel {
     class AddButtonActionListener implements ActionListener {
 
         private boolean client;
-        DialogDescriptor dlgDesc = null;
+        //DialogDescriptor dlgDesc = null;
 
         public AddButtonActionListener(boolean client) {
             this.client = client;
@@ -506,7 +507,7 @@ private void overrideChBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         }
     }
 
-    class TubeTableModel extends DefaultTableModel {
+    static class TubeTableModel extends DefaultTableModel {
 
         public TubeTableModel(Object[] columnNames, int rowCount) {
             super(columnNames, rowCount);

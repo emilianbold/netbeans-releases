@@ -100,7 +100,7 @@ public class JSTestDriverSupport {
     private static JSTestDriverSupport def;
     private static final Logger LOGGER = Logger.getLogger(JSTestDriverSupport.class.getName());
     private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.jstestdriver"); // NOI18N
-    private RequestProcessor RP = new RequestProcessor("js-test-driver server", 5);
+    private RequestProcessor RP = new RequestProcessor("js-test-driver server", 5); //NOI18N
     private AbstractLookup projectContext;
     private InstanceContent lookupContent;
     private List<WebBrowserPane> integratedBrowserPanes;
@@ -130,7 +130,7 @@ public class JSTestDriverSupport {
             try {
                 testDriver = new JsTestDriver(f);
             } catch (RuntimeException ex) {
-                LOGGER.log(Level.INFO, "cannot access js-test-driver wrapper", ex);
+                LOGGER.log(Level.INFO, "cannot access js-test-driver wrapper", ex); //NOI18N
                 return null;
             }
         }
@@ -140,13 +140,13 @@ public class JSTestDriverSupport {
     
     public String getUserDescription() {
         if (JSTestDriverCustomizerPanel.getPort() == -1) {
-            return "External server '"+JSTestDriverCustomizerPanel.getServerURL()+"' cannot be managed by the IDE";
+            return NbBundle.getMessage(JSTestDriverSupport.class, "SERVER_EXTERNAL", JSTestDriverCustomizerPanel.getServerURL());
         } else if (wasStartedExternally()) {
-            return "Server was started externally on port "+JSTestDriverCustomizerPanel.getPort()+". IDE cannot manage this instance.";
+            return NbBundle.getMessage(JSTestDriverSupport.class, "SERVER_EXTERNAL2", JSTestDriverCustomizerPanel.getPort());
         } else if (isRunning()) {
-            return "Server running at "+JSTestDriverCustomizerPanel.getServerURL();
+            return NbBundle.getMessage(JSTestDriverSupport.class, "SERVER_RUNNING", JSTestDriverCustomizerPanel.getServerURL());
         } else {
-            return "Not running";
+            return NbBundle.getMessage(JSTestDriverSupport.class, "SERVER_NOT_RUNNING");
         }
     }
 
@@ -226,7 +226,7 @@ public class JSTestDriverSupport {
                         }
                     }
                 } catch (Throwable t) {
-                    LOGGER.log(Level.SEVERE, "cannot start server", t);
+                    LOGGER.log(Level.SEVERE, "cannot start server", t); //NOI18N
                 }
             }
         });
@@ -315,14 +315,14 @@ public class JSTestDriverSupport {
     private void captureBrowsers() {
         integratedBrowserPanes = new ArrayList<WebBrowserPane>();        
         for (JSTestDriverCustomizerPanel.WebBrowserDesc bd : JSTestDriverCustomizerPanel.getBrowsers()) {
-            String s = JSTestDriverCustomizerPanel.getServerURL()+"/capture";
+            String s = JSTestDriverCustomizerPanel.getServerURL()+"/capture"; //NOI18N
             if (bd.nbIntegration) {
                 // '/timeout/-1/' - will prevent js-test-driver from timeouting the test
                 //   when test execution takes too much time, for example when test is being debugged
-                s += "/timeout/-1/";
+                s += "/timeout/-1/"; //NOI18N
             }
             if (JSTestDriverCustomizerPanel.isStricModel()) {
-                s += "?strict";
+                s += "?strict"; //NOI18N
             }
             try {
                 URL u = new URL(s);
@@ -361,7 +361,7 @@ public class JSTestDriverSupport {
         public List<ConvertedLine> convert(String line) {
             // pattern is "at ...... (file:line:column)"
             // file can be also http:// url
-            if (!line.endsWith(")")) {
+            if (!line.endsWith(")")) { //NOI18N
                 return convertLineURL(line);
             }
             int start = line.lastIndexOf('(');
@@ -532,7 +532,9 @@ public class JSTestDriverSupport {
 
         public Listener(Project project) {
             manager = Manager.getInstance();
-            testSession = new TestSession(ProjectUtils.getInformation(project).getDisplayName() + " Testing", project, TestSession.SessionType.TEST);
+            testSession = new TestSession(
+                    NbBundle.getMessage(JSTestDriverSupport.class, "TESTING", ProjectUtils.getInformation(project).getDisplayName()),
+                    project, TestSession.SessionType.TEST);
             manager.testStarted(testSession);
         }
         
@@ -554,8 +556,8 @@ public class JSTestDriverSupport {
             if (testResult.getResult() == TestResult.Result.failed || testResult.getResult() == TestResult.Result.error) {
                 Trouble t = new Trouble(true);
                 if (testResult.getStack().length() > 0) {
-                    t.setStackTrace(testResult.getStack().split("\\u000d"));
-                    testCase.addOutputLines(Arrays.asList(testResult.getStack().split("\\u000d")));
+                    t.setStackTrace(trimArray(testResult.getStack().split("\\u000d"))); //NOI18N
+                    testCase.addOutputLines(Arrays.asList(testResult.getStack().split("\\u000d"))); //NOI18N
                     //manager.displayOutput(testSession, testResult.getStack(), true);
                 }
                 if (testResult.getMessage().length() > 0) {
@@ -595,6 +597,20 @@ public class JSTestDriverSupport {
                 report = testSession.getReport(0);
             }
             manager.displayReport(testSession, report, true);
+        }
+
+        private String[] trimArray(String[] split) {
+            if (split == null) {
+                return null;
+            }
+            List<String> r = new ArrayList<String>();
+            for (int i = 0; i < split.length; i++) {
+                String s = split[i].trim();
+                if (s.length() > 0) {
+                    r.add(s);
+                }
+            }
+            return r.toArray(new String[r.size()]);
         }
         
     }

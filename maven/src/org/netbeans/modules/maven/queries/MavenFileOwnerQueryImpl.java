@@ -50,23 +50,28 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Parent;
 import org.apache.maven.model.io.ModelReader;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.project.ui.ProjectGroup;
 import org.netbeans.api.project.ui.ProjectGroupChangeEvent;
 import org.netbeans.api.project.ui.ProjectGroupChangeListener;
+import org.netbeans.modules.maven.NbMavenProjectFactory;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
@@ -91,7 +96,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
     
     private final PropertyChangeListener projectListener;
     private final ProjectGroupChangeListener groupListener;
-    private final ChangeSupport cs = new ChangeSupport(this);
+    private final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
 
     private static final AtomicReference<Preferences> prefs = new AtomicReference<Preferences>(NbPreferences.forModule(MavenFileOwnerQueryImpl.class).node(EXTERNAL_OWNERS));
 
@@ -102,7 +107,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
             public @Override void propertyChange(PropertyChangeEvent evt) {
                 if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
                     if (!registerProject((NbMavenProjectImpl) evt.getSource(), true)) {
-                        fireChange();
+                        fireChange(new ChangeEvent(this));
                     }
                 }
             }
@@ -129,7 +134,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
                         registerProject(mp, false);
                     }
                 }
-                fireChange(); //optimization, just one change gets fired.
+                fireChange(new ChangeEvent(this)); //optimization, just one change gets fired.
             }
         };
         ProjectGroup pg = OpenProjects.getDefault().getActiveProjectGroup();
@@ -178,7 +183,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
         prefs().put(key, ownerString);
         LOG.log(Level.FINE, "Registering {0} under {1}", new Object[] {owner, key});
         if (fire) {
-            fireChange();
+            fireChange(new GAVCHangeEvent(this, groupId, artifactId, version));
         }
         
     }
@@ -201,15 +206,17 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
     }
     
     public void addChangeListener(ChangeListener list) {
-        cs.addChangeListener(list);
+        listeners.add(list);
     }
     
     public void removeChangeListener(ChangeListener list) {
-        cs.removeChangeListener(list);
+        listeners.remove(list);
     }
     
-    private void fireChange() {
-        cs.fireChange();
+    private void fireChange(ChangeEvent event) {
+        for (ChangeListener l : listeners) {
+            l.stateChanged(event);
+        }
     }
     
     public @Override Project getOwner(URI uri) {
@@ -255,7 +262,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
         return null;
     }
     private static @CheckForNull String[] findCoordinates(File parentGroup, String artifactID, String version) {
-        File repo = new File(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir()); // ~/.m2/repository
+        File repo = EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile(); // ~/.m2/repository
         String repoS = repo.getAbsolutePath();
         if (!repoS.endsWith(File.separator)) {
             repoS += File.separatorChar; // ~/.m2/repository/
@@ -273,6 +280,13 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
     }
 
     private Project getOwner(File file) {
+        //#223841 at least one project opened is a stronger condition, embedder gets sometimes reset.
+        //once we have the project loaded, not loaded embedder doesn't matter anymore, we have to process.
+        // sometimes the embedder is loaded even though a maven project is not yet loaded, it doesn't hurt to proceed then.
+        if (!NbMavenProjectFactory.isAtLeastOneMavenProjectAround() && !EmbedderFactory.isProjectEmbedderLoaded()) { 
+            return null;
+        }
+
         LOG.log(Level.FINER, "Looking for owner of {0}", file);
         String[] coordinates = findCoordinates(file);
         if (coordinates == null) {
@@ -416,5 +430,35 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
 
     static Preferences prefs() {
         return prefs.get();
+    }
+    
+    /**
+     * in some situations this ChangeEvent subclass can be fired, allowing listeners
+     * to optimize response based on GAV affected.
+     */
+    public static class GAVCHangeEvent extends ChangeEvent {
+        private final String groupId;
+        private final String version;
+        private final String artifactId;
+
+        public GAVCHangeEvent(@NonNull Object source, @NonNull String groupId, @NonNull String artifactId, @NonNull String version) {
+            super(source);
+            this.groupId = groupId;
+            this.version = version;
+            this.artifactId = artifactId;
+        }
+
+        public String getGroupId() {
+            return groupId;
+        }
+
+        public String getVersion() {
+            return version;
+        }
+
+        public String getArtifactId() {
+            return artifactId;
+        }
+        
     }
 }

@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfigurat
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.SnapShot;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -96,6 +97,7 @@ public class ProjectBridge {
     private Project project;
     private Set<Project> resultSet = new HashSet<Project>();
     private Map<String,Item> canonicalItems;
+    private SnapShot delta;
     
     public ProjectBridge(Project project) {
         this.project = project;
@@ -118,7 +120,7 @@ public class ProjectBridge {
     public void startModifications() {
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         if (pdp != null) {
-            pdp.stratModifications();
+            delta = pdp.startModifications();
             startedModification = true;
         }
     }
@@ -429,7 +431,7 @@ public class ProjectBridge {
     public Set<Project> getResult(){
         if (startedModification) {
             ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-            pdp.endModifications(startedModification, ImportProject.logger);
+            pdp.endModifications(delta, startedModification, ImportProject.logger);
         } else {
             makeConfigurationDescriptor.checkForChangedItems(project, null, null);
         }

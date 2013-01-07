@@ -163,6 +163,8 @@ public class JspFoldManager implements FoldManager {
     }
 
     private List<FoldInfo> generateFolds() {
+        //hack for Bug 212105 - JspKit.createSyntax slow - LowPerformance took 9988 ms. 
+        JspKit.ATTACH_COLORING_LISTENER_TO_SYNTAX.set(false);
         try {
             BaseDocument bdoc = (BaseDocument) getDocument();
             JspSyntaxSupport jspsup = JspSyntaxSupport.get(bdoc);
@@ -204,6 +206,8 @@ public class JspFoldManager implements FoldManager {
             return found;
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
+        } finally {
+            JspKit.ATTACH_COLORING_LISTENER_TO_SYNTAX.set(true);
         }
         return null;
     }

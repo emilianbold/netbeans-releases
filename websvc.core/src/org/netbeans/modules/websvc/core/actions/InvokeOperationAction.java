@@ -127,18 +127,17 @@ public class InvokeOperationAction extends NodeAction {
                         if (target != null) {
                             invokeCookie.invokeOperation(serviceExplorer.getSelectedClient(), target);
                         }
-
+                        // logging usage of action
+                        Object[] params = new Object[2];
+                        String cookieClassName = invokeCookie.getClass().getName();
+                        if (cookieClassName.contains("jaxrpc")) { // NOI18N
+                            params[0] = LogUtils.WS_STACK_JAXRPC;
+                        } else {
+                            params[0] = LogUtils.WS_STACK_JAXWS;
+                        }
+                        params[1] = "CALL WS OPERATION"; // NOI18N
+                        LogUtils.logWsAction(params);
                     }
-                    // logging usage of action
-                    Object[] params = new Object[2];
-                    String cookieClassName = invokeCookie.getClass().getName();
-                    if (cookieClassName.contains("jaxrpc")) { // NOI18N
-                        params[0] = LogUtils.WS_STACK_JAXRPC;
-                    } else {
-                        params[0] = LogUtils.WS_STACK_JAXWS;
-                    }
-                    params[1] = "CALL WS OPERATION"; // NOI18N
-                    LogUtils.logWsAction(params);
                 }
             }
         }

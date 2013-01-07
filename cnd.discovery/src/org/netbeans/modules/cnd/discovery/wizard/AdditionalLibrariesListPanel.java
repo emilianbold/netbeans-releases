@@ -174,11 +174,11 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel<String> {
         if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION) {
             return;
         }
-        String newS = notifyDescriptor.getInputText();
+        String newS = notifyDescriptor.getInputText().trim();
         replaceElement(o, newS, i);
     }
     
     private String getString(String key) {
-        return NbBundle.getBundle(AdditionalLibrariesListPanel.class).getString(key);
+        return NbBundle.getMessage(AdditionalLibrariesListPanel.class, key);
     }
 }

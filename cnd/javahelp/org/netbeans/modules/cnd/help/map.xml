@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1'?>
-<!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 1.0//EN"
-                     "http://java.sun.com/products/javahelp/map_1_0.dtd">
+<!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN"
+                     "http://java.sun.com/products/javahelp/map_2_0.dtd">
 
 <map version="1.0">
 	<mapID target="AboutCandC++Projects" url="WorkingWithCandC++Projects/AboutCandC++Projects.html"/>
@@ -363,4 +363,11 @@
 	<mapID target="RemoteDevelopmentBrowsing" url="WorkingWithCandC++Projects/RemoteDevelopmentManaging.html"/>
 	<mapID target="refresh" url="images/refresh.png"/>
 	<mapID target="FindinProject" url="EditingSourceFiles/FindinProject.html"/>
+	<mapID target="connected24" url="images/connected24.png"/>
+	<mapID target="newProject24" url="images/newProject24.png"/>
+	<mapID target="openFile24" url="images/openFile24.png"/>
+	<mapID target="openProject24" url="images/openProject24.png"/>
+	<mapID target="RemoteDevelopmentToolbar" url="WorkingWithCandC++Projects/RemoteDevelopmentToolbar.html"/>
+	<mapID target="GlobalDebuggingOptions" url="CandC++ProjectBasics/GlobalDebuggingOptions.html"/>
+	<mapID target="DebuggingOptions" url="CandC++ProjectBasics/DebuggingOptions.html"/>
 </map>

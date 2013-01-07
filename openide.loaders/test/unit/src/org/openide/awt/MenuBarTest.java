@@ -194,6 +194,37 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
         assertEquals("Still No removals in MenuBar", 0, remove);
         assertEquals("Still Two additions in MenuBar", 2, add);
     }
+    
+    
+    public void testClientPropertiesMayBePropagated() throws Exception {
+        mb.addContainerListener(this);
+        assertEquals("No children now", 0, mb.getComponentCount());
+        
+        class Atom implements FileSystem.AtomicAction {
+            FileObject m1, m2;
+            
+            public void run() throws IOException {
+                m1 = FileUtil.createFolder(df.getPrimaryFile(), "m1");
+                m1.setAttribute("property-prefix", "ahoj.");
+                m1.setAttribute("ahoj.jardo", "Hi!");
+                m2 = FileUtil.createFolder(df.getPrimaryFile(), "m2");
+                m2.setAttribute("property-prefix", "buk-");
+                m2.setAttribute("buk-muk", "Hello!");
+            }
+        }
+        Atom atom = new Atom();
+        df.getPrimaryFile().getFileSystem().runAtomicAction(atom);
+        mb.waitFinished();
+        
+        assertEquals("Two children there", 2, mb.getComponentCount());
+        final JMenuItem c0 = (JMenuItem) mb.getComponent(0);
+        assertEquals("Programatic names deduced from the folder", "m1", c0.getName());
+        final JMenuItem c1 = (JMenuItem) mb.getComponent(1);
+        assertEquals("Programatic names deduced from the folder", "m2", c1.getName());
+        
+        assertEquals("Hi!", c0.getClientProperty("jardo"));
+        assertEquals("Hello!", c1.getClientProperty("muk"));
+    }
 
     static void simulateExpansionOfMenu(JMenu m1) {
         // simulate expansion in the menu

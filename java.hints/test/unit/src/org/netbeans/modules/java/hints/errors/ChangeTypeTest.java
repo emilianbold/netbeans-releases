@@ -166,23 +166,34 @@ public class ChangeTypeTest extends ErrorHintsTestBase {
 
     public void testForEach1() throws Exception {
         performFixTest("test/Test.java",
-                       "package test; public class Test {public void foo(Iterable<Object> it) { for (String o : |it) { } } }",
+                       "package test; public class Test {public void foo(Iterable<Object> it) { for (String o : it) { } } }",
+                       -1,
                        "Change type of o to Object",
                        "package test; public class Test {public void foo(Iterable<Object> it) { for (Object o : it) { } } }");
     }
 
     public void testForEach2() throws Exception {
         performFixTest("test/Test.java",
-                       "package test; public class Test {public void foo(java.util.List<? extends Object> it) { for (String o : |it) { } } }",
+                       "package test; public class Test {public void foo(java.util.List<? extends Object> it) { for (String o : it) { } } }",
+                       -1,
                        "Change type of o to Object",
                        "package test; public class Test {public void foo(java.util.List<? extends Object> it) { for (Object o : it) { } } }");
     }
 
     public void testForEach3() throws Exception {
         performFixTest("test/Test.java",
-                       "package test; public class Test {public void foo(Object[] it) { for (String o : |it) { } } }",
+                       "package test; public class Test {public void foo(Object[] it) { for (String o : it) { } } }",
+                       -1,
                        "Change type of o to Object",
                        "package test; public class Test {public void foo(Object[] it) { for (Object o : it) { } } }");
+    }
+    
+    public void testForEachCaptured224232() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test {public void foo() { for (String o : m()) { } } private Object[] m() {return null;} }",
+                       -1,
+                       "Change type of o to Object",
+                       "package test; public class Test {public void foo() { for (Object o : m()) { } } private Object[] m() {return null;} }");
     }
 
     public void testGenericsEscaped() throws Exception {

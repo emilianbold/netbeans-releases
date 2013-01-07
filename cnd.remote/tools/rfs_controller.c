@@ -51,6 +51,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <alloca.h>
+#include <sys/time.h>
 
 #include "rfs_protocol.h"
 #include "rfs_util.h"
@@ -60,8 +61,10 @@ static int emulate = false;
 
 enum  {
     VERSION_1 = '3',
-    VERSION_2 = '4'
+    VERSION_2 = '5'
 } protocol_version = 0;
+
+static struct timeval fs_skew;
 
 typedef struct connection_data {
     int sd;
@@ -135,7 +138,7 @@ static void serve_connection(void* data) {
         if (pkg->kind == pkg_written) {
             // NB 1: process that wrote a file does NOT wait any response
             // NB 2: MODIFIED status is final => no need to sync here
-            if (fd == NULL) {                
+            if (fd == NULL) {
                 trace("File %s is unknown - nothing to uncontrol\n", filename);
             } else if (fd->state == MODIFIED) {
                 trace("File %s already reported as modified\n", filename);
@@ -248,7 +251,7 @@ static int create_dir(const char* path) {
         // TODO: report errors
         trace("\t\terror creating dir %s: rc=%d\n", path, rc);
     }
-    return true; // TODO: check 
+    return true; // TODO: check
 }
 
 static int create_lnk(const char* path, const char* lnk_src) {
@@ -333,7 +336,7 @@ static enum file_state char_to_state(char c) {
 /**
  * Converts a string that represents a non negative number with trailing space char
  * to long.
- * Checks whether the number is followed by the space char; if it is not, returns -1. 
+ * Checks whether the number is followed by the space char; if it is not, returns -1.
  * Stores the pointer to the character AFTER this space into *next_char
  */
 static long string2num(const char *buffer, const char *buf_limit, const char** next_char) {
@@ -357,7 +360,7 @@ static bool scan_line(const char* buffer, int bufsize, enum file_state *state, i
     if (*state == -1) {
         return false;
     }
-    
+
     file_time->tv_sec = 0;
     file_time->tv_usec = 0;
 
@@ -425,15 +428,100 @@ static void free_file_list(file_elem* list) {
     }
 }
 
+static void calc_fs_skew(struct timeval *skew) {
+
+    skew->tv_sec = 0;
+    skew->tv_usec = 0;
+    
+    char path[PATH_MAX+1];
+    getcwd(path, sizeof path);
+    strncat(path, "/tmpXXXXXX", sizeof path);
+
+    int fd;
+
+    fd = mkstemp(path);
+
+    struct timeval curr_time;
+    gettimeofday(&curr_time, 0);
+
+    if (fd < 0) {
+        perror("rfs_controller: mktemp failed: ");
+        return;
+    }
+    struct stat st;
+    if (stat(path, &st) != 0) {
+        perror("rfs_controller: stat failed: ");
+        return;
+    } 
+    
+    unlink(path);
+    
+    skew->tv_sec = st.st_mtim.tv_sec - curr_time.tv_sec;
+    skew->tv_usec = st.st_mtim.tv_nsec/1000000 - curr_time.tv_usec/1000;
+}
+
+static int calc_time_skew() {
+    int bufsize = 256;
+    char buffer[bufsize];
+    if(fgets(buffer, bufsize, stdin)) {
+        if (strncmp("SKEW_COUNT=", buffer, 11) != 0) {
+            report_error("protocol error: expected SKEW_COUNT=<number>: %s\n", buffer);
+            return false;
+        }
+        int cnt;
+        sscanf(buffer + 11, "%d", &cnt);
+        if (cnt < 0) {
+            report_error("protocol error: unexpected skew pass count: %d\n", cnt);
+            return false;
+        }
+        trace("Going to get skew. cnt=%d\n", cnt);
+        int i;        
+        for (i = 0; i < cnt; i++) {
+            if(fgets(buffer, bufsize, stdin)) {
+                if (strncmp("SKEW ", buffer, 5) != 0) {
+                    report_error("protocol error: expected SKEW :%s\n", buffer);
+                    return false;
+                }
+                struct timeval tm;
+                gettimeofday(&tm, 0);
+                long millis = tm.tv_sec * 1000 + tm.tv_usec / 1000;
+                fprintf(stdout, "%ld\n", millis);
+                fflush(stdout);
+            } else {
+                report_error("protocol error on pass %d during skew processing: unexpected EOF\n", i);
+                return false;
+            }
+        }
+        if(fgets(buffer, bufsize, stdin)) {
+            if (strncmp("SKEW_END", buffer, 8) != 0) {
+                report_error("protocol error: expected SKEW_END :%s\n", buffer);
+                return false;
+            }
+        }
+
+        trace("Calculating FS skew\n");
+        calc_fs_skew(&fs_skew);
+        trace("FS skew is %ld s %ld mks\n", fs_skew.tv_sec, fs_skew.tv_usec);
+        
+        fprintf(stdout, "FS_SKEW %ld\n", fs_skew.tv_sec*1000 + fs_skew.tv_usec/1000);
+        fflush(stdout);
+
+        return true;
+    } else {
+        report_error("protocol error during skew processing: unexpected EOF\n");
+        return false;
+    }
+}
+
 static int init() {
     trace("Initialization. Sending supported versions: %c %c\n", VERSION_1, VERSION_2);
-    fprintf(stdout, "VERSIONS %c %c\n", VERSION_1, VERSION_2);
+    fprintf(stdout, "VERSIONS %c %c 6\n", VERSION_1, VERSION_2);
     fflush(stdout);
     int bufsize = 256;
     char buffer[bufsize];
     if(fgets(buffer, bufsize, stdin)) {
         if ( strncmp("VERSION=", buffer, 8) != 0 ) {
-            report_error("protocol error: first line shoud start with VERSION: %s\n", buffer);
+            report_error("protocol error: first line shoud start with VERSION= but was: %s\n", buffer);
             return false;
         }
         protocol_version = buffer[8];
@@ -553,7 +641,7 @@ static int init_files() {
                         char *pfile_start = file; // save file start char
                         char file_start = *file;  // save file start char
                         *file = 0; // replace the '/' that separates file from dir by zero
-                        file++; 
+                        file++;
                         if (!realpath(dir, real_path)) {
                             report_unresolved_path(dir);
                             break;
@@ -569,7 +657,7 @@ static int init_files() {
                 } else {
                     if (!realpath(path, real_path)) {
                        report_unresolved_path(path);
-                       break; 
+                       break;
                     }
                 }
                 trace("\t\tadding %s with state '%c' (0x%x) -> %s\n", path, (char) new_state, (char) new_state, real_path);
@@ -661,7 +749,7 @@ int main(int argc, char* argv[]) {
             exit(4);
         }
     };
-    
+
     /* show that we are willing to listen */
     if (listen(sd, 5) == -1) {
         perror("listen");
@@ -669,6 +757,10 @@ int main(int argc, char* argv[]) {
     }
 
     if (!init()) {
+        report_error("Initialization error\n");
+        exit(8);
+    }
+    if (!calc_time_skew()) {
         report_error("Initialization error\n");
         exit(8);
     }

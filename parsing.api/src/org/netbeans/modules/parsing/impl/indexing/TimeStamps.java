@@ -53,6 +53,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -64,6 +65,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -102,6 +104,21 @@ public final class TimeStamps {
         impl.reset(now);
     }
 
+    void remove(@NonNull final Iterable<? extends String> relativePaths) {
+        Parameters.notNull("relativePaths", relativePaths); //NOI18N
+        impl.remove(relativePaths);
+    }
+
+    @NonNull
+    Collection<? extends String> getEnclosedFiles(@NonNull String folder) {
+        Parameters.notNull("folder", folder);           //NOI18N
+        if (!folder.isEmpty() && folder.charAt(folder.length()-1) != '/') {  //NOI18N
+            folder = folder + '/';                      //NOI18N
+        }
+        Collection<? extends String> res = impl.getEnclosedFiles(folder);
+        return res;
+    }
+
     public static TimeStamps forRoot(
             @NonNull final URL root,
             final boolean detectDeletedFiles) throws IOException {
@@ -127,6 +144,9 @@ public final class TimeStamps {
         boolean checkAndStoreTimestamp(FileObject root, String relativePath);
         Set<String> getUnseenFiles();
         void reset(long time);
+        void remove(@NonNull Iterable<? extends String> relativePaths);
+        @NonNull
+        Collection<? extends String> getEnclosedFiles(@NonNull String relativePath);
         void store() throws IOException;
     }
     
@@ -192,6 +212,25 @@ public final class TimeStamps {
             for (LongHashMap.Entry<String> entry : timestamps.entrySet()) {
                 entry.setValue(value);
             }
+        }
+
+        @Override
+        public void remove(@NonNull final Iterable<? extends String> relativePaths) {
+            for (String relPath : relativePaths) {
+                timestamps.remove(relPath);
+            }
+        }
+
+        @NonNull
+        @Override
+        public Collection<? extends String> getEnclosedFiles(@NonNull final String relativePath) {
+            final Set<String> res = new HashSet<String>();
+            for (String filePath : timestamps.keySet()) {
+                if (filePath.startsWith(relativePath)) {
+                    res.add(filePath);
+                }
+            }
+            return res;
         }
 
         @Override
@@ -334,6 +373,16 @@ public final class TimeStamps {
 
         @Override
         public void reset(long time) {
+        }
+
+        @Override
+        public void remove(@NonNull final Iterable<? extends String> relativePaths) {
+        }
+
+        @NonNull
+        @Override
+        public Collection<? extends String> getEnclosedFiles(@NonNull final String relativePath) {
+            return Collections.<String>emptySet();
         }
 
         @Override

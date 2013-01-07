@@ -98,7 +98,7 @@ public final class ClassPathTableModel extends AbstractTableModel implements Lis
 
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return columnIndex != 0 && getShowItemAsIncludedInDeployment(getItem(rowIndex)) instanceof Boolean;
+        return columnIndex != 0;
     }
 
     public Object getValueAt(int row, int column) {
@@ -116,7 +116,7 @@ public final class ClassPathTableModel extends AbstractTableModel implements Lis
             return;
         }
 
-        getItem(row).setAdditionalProperty(ClassPathSupportCallbackImpl.INCLUDE_IN_DEPLOYMENT, Boolean.toString(value == Boolean.TRUE));
+        getItem(row).setAdditionalProperty(ClassPathSupportCallbackImpl.INCLUDE_IN_DEPLOYMENT, Boolean.toString(Boolean.TRUE.equals(value)));
         fireTableCellUpdated(row, column);
     }
 

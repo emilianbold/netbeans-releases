@@ -56,7 +56,10 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -293,7 +296,7 @@ public abstract class RestSupport {
     public RestApplicationModel getRestApplicationsModel() {
         FileObject sourceRoot = findSourceRoot();
         if (restApplicationModel.get() == null && sourceRoot != null) {
-            ClassPathProvider cpProvider = getProject().getLookup().lookup(ClassPathProvider.class);
+            //ClassPathProvider cpProvider = getProject().getLookup().lookup(ClassPathProvider.class);
             /*
              * Fix for BZ#158250 -  NullPointerException: The classPath parameter cannot be null 
              * 
@@ -471,9 +474,11 @@ public abstract class RestSupport {
         try {
             lock = fo.lock();
             OutputStream os = fo.getOutputStream(lock);
-            writer = new BufferedWriter(new OutputStreamWriter(os));
+            writer = new BufferedWriter(new OutputStreamWriter(os,
+                    Charset.forName("UTF-8")));
             InputStream is = RestSupport.class.getResourceAsStream("resources/"+name);
-            reader = new BufferedReader(new InputStreamReader(is));
+            reader = new BufferedReader(new InputStreamReader(is, 
+                    Charset.forName("UTF-8")));
             String line;
             String lineSep = "\n";//Unix
             if(File.separatorChar == '\\')//Windows
@@ -510,10 +515,10 @@ public abstract class RestSupport {
         BufferedWriter writer = null;
         BufferedReader reader = null;
         try {
-            lock = fo.lock();
             writer = new BufferedWriter(content);
             InputStream is = fo.getInputStream();
-            reader = new BufferedReader(new InputStreamReader(is));
+            reader = new BufferedReader(new InputStreamReader(is, 
+                    Charset.forName("UTF-8")));
             String line;
             String lineSep = "\n";//Unix
             if(File.separatorChar == '\\')//Windows
@@ -526,28 +531,27 @@ public abstract class RestSupport {
                 writer.write(lineSep);
             }
         } finally {
-            if (writer != null) {
-                writer.close();
-            }
             if ( reader!= null ){
                 reader.close();
             }
+            if (writer!= null){
+                writer.close();
+            }
             StringBuffer buffer = content.getBuffer();
+            lock = fo.lock();
             try {
                 OutputStream outputStream = fo.getOutputStream( lock );
-                writer = new BufferedWriter( new OutputStreamWriter( outputStream ) );
+                writer = new BufferedWriter( new OutputStreamWriter( outputStream ,
+                        Charset.forName("UTF-8")) );
                 writer.write( buffer.toString() );
             }
             finally {
+                if (lock != null) {
+                    lock.releaseLock();
+                }
                 if (writer != null) {
                     writer.close();
                 }
-            }
-            if (lock != null) {
-                lock.releaseLock();
-            }
-            if (reader != null) {
-                reader.close();
             }
         }      
         return fo;
@@ -648,10 +652,7 @@ public abstract class RestSupport {
     protected boolean ignorePlatformRestLibrary() {
         String v = getProjectProperty(IGNORE_PLATFORM_RESTLIB);
         Boolean ignore = v != null ? Boolean.valueOf(v) : true;
-        if (ignore == Boolean.FALSE) {
-            return false;
-        }
-        return true;
+        return !ignore;
     }
     
     public AntProjectHelper getAntProjectHelper() {
@@ -815,6 +816,9 @@ public abstract class RestSupport {
         }
         FileObject sourceRoot = sgs[0].getRootFolder();
         ClassPath classPath = ClassPath.getClassPath(sourceRoot, ClassPath.COMPILE);
+        if ( classPath == null ){
+            return false;
+        }
         FileObject resourceFile = classPath.findResource(resource); 
         if (resourceFile != null) {
             return true;
@@ -855,10 +859,22 @@ public abstract class RestSupport {
     }
     
     private boolean contains( ClassPath classPath , URL url ){
+        URI uri = null;
+        try {
+            uri = url.toURI();
+        }
+        catch(URISyntaxException e ){
+            return false;
+        }
         List<ClassPath.Entry> entries = classPath.entries();
         for (ClassPath.Entry entry : entries) {
-            if ( entry.getURL().equals(url)){
-                return true;
+            try {
+                if ( entry.getURL().toURI().equals(uri)){
+                    return true;
+                }
+            }
+            catch(URISyntaxException ignore ){
+                continue;
             }
         }
         return false;

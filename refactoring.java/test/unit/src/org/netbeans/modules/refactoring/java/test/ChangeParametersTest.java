@@ -67,6 +67,37 @@ public class ChangeParametersTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test221730() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "import java.util.Map;\n"
+                + "\n"
+                + "public class A {\n"
+                + "    public static void testMethod(Map<String, Map<Boolean, Long>> x) {\n"
+                + "         System.out.println(x);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod(null);\n"
+                + "    }\n"
+                + "}\n"));
+        ParameterInfo[] paramTable = {new ParameterInfo(0, "x", "Map<String, Map<Boolean, Long>>", null), new ParameterInfo(-1, "y", "int", "1")};
+        performChangeParameters(null, null, null, paramTable, Javadoc.NONE, 1, false);
+        verifyContent(src,
+                new File("t/A.java","package t;\n"
+                + "import java.util.Map;\n"
+                + "\n"
+                + "public class A {\n"
+                + "    public static void testMethod(Map<String, Map<Boolean, Long>> x, int y) {\n"
+                + "         System.out.println(x);\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(string[] args) {\n"
+                + "        testMethod(null, 1);\n"
+                + "    }\n"
+                + "}\n"));
+    }
+    
     public void test215256() throws Exception { // #215256 - Refactoring "change method parameters" confuses parameters of newly created delegate
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"

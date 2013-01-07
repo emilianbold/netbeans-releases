@@ -53,6 +53,7 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
@@ -169,7 +170,7 @@ public abstract class PhpElementImpl implements PhpElement {
     @Override
     public synchronized FileObject getFileObject() {
         String urlStr = fileUrl;
-        if ((fileObject == null) && (fileUrl != null)) {
+        if ((fileObject == null) && StringUtils.hasText(fileUrl)) {
             fileObject = resolveFileObject(urlStr);
         }
         return fileObject;

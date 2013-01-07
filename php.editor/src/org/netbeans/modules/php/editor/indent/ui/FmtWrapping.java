@@ -100,7 +100,7 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         cbOpenCloseBlockBrace.putClientProperty(OPTION_ID, WRAP_BLOCK_BRACES);
         cbStatements.putClientProperty(OPTION_ID, WRAP_STATEMENTS_ON_THE_LINE);
         wrapAfterBinOpsCheckBox.putClientProperty(OPTION_ID, WRAP_AFTER_BIN_OPS);
-        wrapAfterAssignOpsCheckBox.putClientProperty(OPTION_ID, WRAP_ASSIGN_OPS);
+        wrapAfterAssignOpsCheckBox.putClientProperty(OPTION_ID, WRAP_AFTER_ASSIGN_OPS);
 
         Dimension dimension = new Dimension((int) panel1.getPreferredSize().getWidth() + Utils.POSSIBLE_SCROLL_BAR_WIDTH, (int) scrollPane.getMinimumSize().getHeight());
         scrollPane.setMinimumSize(dimension);

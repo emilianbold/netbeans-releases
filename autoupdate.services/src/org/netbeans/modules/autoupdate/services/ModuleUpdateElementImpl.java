@@ -281,7 +281,7 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
     }
     
     public String getInstallationCluster() {
-        assert item instanceof InstalledModuleItem : this + " is installed";
+        assert item instanceof InstalledModuleItem : item + " is InstalledModuleItem in " + this;
         if (! (item instanceof InstalledModuleItem)) {
             return null;
         }

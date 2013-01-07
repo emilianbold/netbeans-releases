@@ -48,6 +48,7 @@ import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -315,7 +316,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                     TokenSequence<? extends JsDocumentationTokenId> jsDocTS =
                             LexUtilities.getJsDocumentationTokenSequence(tokenHierarchy, offset);
                     if (jsDocTS != null) {
-                        if (!endsCommentProperly(jsDocTS)) {
+                        if (!hasCommentEnd(jsDocTS)) {
                             // setup comment generator
                             commentGenerator = new CommentGenerator(offset + carretPosition, indent);
                             // append end of the comment
@@ -669,16 +670,24 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         return id == JsTokenId.BLOCK_COMMENT || id == JsTokenId.DOC_COMMENT;
     }
 
-    private static boolean endsCommentProperly(TokenSequence ts) {
+    private static boolean hasCommentEnd(TokenSequence ts) {
         while (ts.moveNext()) {
-            if (ts.token().id() == JsDocumentationTokenId.EOL) {
-                while (ts.moveNext() && ts.token().id() == JsDocumentationTokenId.WHITESPACE);
-                if (!CharSequenceUtilities.startsWith(ts.token().text(), "*")) {
-                    return false;
+            Token<JsDocumentationTokenId> token = ts.token();
+            if (token.id() == JsDocumentationTokenId.COMMENT_END) {
+                return true;
+            } else if (CharSequenceUtilities.endsWith(token.text(), "/")) { //NOI18N
+                if (ts.moveNext()) {
+                    Token<JsDocumentationTokenId> nextToken = ts.token();
+                    if (CharSequenceUtilities.textEquals(nextToken.text(), "/")) { //NOI18N
+                        ts.movePrevious();
+                        continue;
+                    } else if (nextToken.id() == JsDocumentationTokenId.ASTERISK) {
+                        return false;
+                    }
                 }
             }
         }
-        return ts.token().id() == JsDocumentationTokenId.COMMENT_END;
+        return false;
     }
 
     @MimeRegistrations({

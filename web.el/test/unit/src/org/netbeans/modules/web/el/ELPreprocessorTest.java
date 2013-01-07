@@ -318,7 +318,7 @@ public class ELPreprocessorTest extends TestCase {
     
     public void testEscapedAttributeValues2() {
         String source = "${fn:replace(\"hello\",\"\\\"\",\"&quot\")}";
-        String result = "${fn:replace(\"hello\",\"\"\",\"&quot\")}";
+        String result = "${fn:replace(\"hello\",\"\\\"\",\"&quot\")}";
                 
         ELPreprocessor elp = new ELPreprocessor(source, ELPreprocessor.ESCAPED_CHARACTERS);
         
@@ -382,6 +382,65 @@ public class ELPreprocessorTest extends TestCase {
         //at the A char
         assertEquals(24, elp.getPreprocessedOffset(34));
         
+    }
+
+    public void testNotEscapedStringValues1() {
+        String source = "#{cc.attrs.clearForm ? '$(\\'#form\\').clearForm();' : ' '}";
+        String result = "#{cc.attrs.clearForm ? '$(\\'#form\\').clearForm();' : ' '}";
+
+        ELPreprocessor elp = new ELPreprocessor(source, ELPreprocessor.ESCAPED_CHARACTERS, ELPreprocessor.XML_ENTITY_REFS_CONVERSION_TABLE);
+        String preprocessed = elp.getPreprocessedExpression();
+        assertNotNull(preprocessed);
+        assertEquals(result, preprocessed);
+    }
+
+    public void testNotEscapedStringValues2() {
+        String source = "#{myBean.translate('AAA\\\\BBB')}";
+        String result = "#{myBean.translate('AAA\\\\BBB')}";
+
+        ELPreprocessor elp = new ELPreprocessor(source, ELPreprocessor.ESCAPED_CHARACTERS, ELPreprocessor.XML_ENTITY_REFS_CONVERSION_TABLE);
+        String preprocessed = elp.getPreprocessedExpression();
+        assertNotNull(preprocessed);
+        assertEquals(result, preprocessed);
+    }
+
+    public void testNotEscapedStringValues3() {
+        String source = "#{myBean.property &amp;&amp; myBean.escapedText == \"\\\"text\\\"\"}";
+        //               0123456789012345678901234567890123456789012345678901
+        //               0         1         2         3         4         5
+        String result = "#{myBean.property && myBean.escapedText == \"\\\"text\\\"\"}";
+
+        ELPreprocessor elp = new ELPreprocessor(source, ELPreprocessor.ESCAPED_CHARACTERS, ELPreprocessor.XML_ENTITY_REFS_CONVERSION_TABLE);
+
+        String preprocessed = elp.getPreprocessedExpression();
+        assertNotNull(preprocessed);
+        assertEquals(result, preprocessed);
+
+        //before the pattern
+        assertEquals(0, elp.getOriginalOffset(0));
+        assertEquals(1, elp.getOriginalOffset(1));
+        assertEquals(18, elp.getOriginalOffset(18));
+
+        //between the patterns
+        assertEquals(23, elp.getOriginalOffset(19));
+
+        //after the second pattern
+        assertEquals(28, elp.getOriginalOffset(20));
+        assertEquals(29, elp.getOriginalOffset(21));
+        assertEquals(51, elp.getOriginalOffset(43));
+    }
+
+    public void testNotEscapedStringValues4() {
+        String source = "#{myBean.escapedText == \"\\\"text\\\"\" && myBean.quotes == \\\"}";
+        //               0123456789012345678901234567890123456789012345678901
+        //               0         1         2         3         4         5
+        String result = "#{myBean.escapedText == \"\\\"text\\\"\" && myBean.quotes == \"}";
+
+        ELPreprocessor elp = new ELPreprocessor(source, ELPreprocessor.ESCAPED_CHARACTERS, ELPreprocessor.XML_ENTITY_REFS_CONVERSION_TABLE);
+
+        String preprocessed = elp.getPreprocessedExpression();
+        assertNotNull(preprocessed);
+        assertEquals(result, preprocessed);
     }
     
 }

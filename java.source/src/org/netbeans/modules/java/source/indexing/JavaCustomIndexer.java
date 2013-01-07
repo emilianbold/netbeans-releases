@@ -90,6 +90,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
+import org.netbeans.modules.java.source.JBrowseModule;
 import org.netbeans.modules.java.source.JavaSourceTaskFactoryManager;
 import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
 import org.netbeans.modules.java.source.parsing.FileObjects;
@@ -316,14 +317,25 @@ public class JavaCustomIndexer extends CustomIndexer {
                         context.addSupplementaryFiles(entry.getKey(), entry.getValue());
                     }
                 }
-                javaContext.store();
+                try {
+                    javaContext.store();
+                } catch (JavaParsingContext.BrokenIndexException bi) {
+                    JavaIndex.LOG.log(
+                        Level.WARNING,
+                        "Broken index for root: {0} reason {1}, recovering.",  //NOI18N
+                        new Object[] {
+                            context.getRootURI()
+                        });
+                    final PersistentIndexTransaction piTx = txCtx.get(PersistentIndexTransaction.class);
+                    piTx.setBroken();
+                }
                 ciTx.addedTypes(context.getRootURI(), _at);
                 ciTx.removedTypes(context.getRootURI(), _rt);
                 ciTx.changedTypes(context.getRootURI(), compileResult.addedTypes);
                 if (!context.checkForEditorModifications()) { // #152222
                     ciTx.addedCacheFiles(context.getRootURI(), compileResult.createdFiles);
                     ciTx.removedCacheFiles(context.getRootURI(), removedFiles);
-                }
+                }                
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
@@ -406,7 +418,20 @@ public class JavaCustomIndexer extends CustomIndexer {
                 for (Map.Entry<URL, Set<URL>> entry : findDependent(context.getRootURI(), removedTypes, false).entrySet()) {
                     context.addSupplementaryFiles(entry.getKey(), entry.getValue());
                 }
-                javaContext.store();
+                try {
+                    javaContext.store();
+                } catch (JavaParsingContext.BrokenIndexException bi) {
+                    JavaIndex.LOG.log(
+                        Level.WARNING,
+                        "Broken index for root: {0} reason: {1}, recovering.",  //NOI18N
+                        new Object[] {
+                            context.getRootURI(),
+                            bi.getMessage()
+                        });
+                    final PersistentIndexTransaction piTx = txCtx.get(PersistentIndexTransaction.class);
+                    assert piTx != null;
+                    piTx.setBroken();
+                }
                 ciTx.removedCacheFiles(context.getRootURI(), removedFiles);
                 ciTx.removedTypes(context.getRootURI(), removedTypes);
             } finally {
@@ -990,6 +1015,9 @@ public class JavaCustomIndexer extends CustomIndexer {
                 try {
                     final Set<URL> toRefresh = new HashSet<URL>();
                     for (URL removedRoot : removedRoots) {
+                        if (JBrowseModule.isClosed()) {
+                            return;
+                        }
                         cim.removeRoot(removedRoot);
                         ffl.stopListeningOn(removedRoot);
                         final FileObject root = URLMapper.findFileObject(removedRoot);
@@ -1001,7 +1029,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                     }
                     for (URL removedRoot : removedRoots) {
                         toRefresh.remove(removedRoot);
-                    }
+                    }                    
                     for (URL url : toRefresh) {
                         IndexingManager.getDefault().refreshIndex(url, null, true);
                     }
@@ -1010,7 +1038,11 @@ public class JavaCustomIndexer extends CustomIndexer {
                 }
             } finally {
                 try {
-                    txCtx.commit();
+                    if (JBrowseModule.isClosed()) {
+                        txCtx.rollBack();
+                    } else {
+                        txCtx.commit();
+                    }
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }

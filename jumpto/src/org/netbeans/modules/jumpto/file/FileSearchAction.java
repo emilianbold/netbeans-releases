@@ -66,6 +66,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -533,7 +534,6 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         }
 
         private List<? extends FileDescriptor> getFileNames() {
-            final Collection<FileObject> roots = new ArrayList<FileObject>(QuerySupport.findRoots((Project) null, null, Collections.<String>emptyList(), Collections.<String>emptyList()));
             try {
                 String searchField;
                 String indexQueryText;
@@ -557,49 +557,22 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                         indexQueryText = text;
                         break;
                 }
-                long st = System.currentTimeMillis();
-                QuerySupport q = QuerySupport.forRoots(FileIndexer.ID, FileIndexer.VERSION, roots.toArray(new FileObject [roots.size()]));
-                Collection<? extends IndexResult> results = q.query(searchField, indexQueryText, searchType);
+
                 ArrayList<FileDescriptor> files = new ArrayList<FileDescriptor>();
-                for(IndexResult r : results) {
-                    FileObject file = r.getFile();
-                    if (file == null || !file.isValid()) {
-                        // the file has been deleted in the meantime
-                        continue;
-                    }
-
-                    Project project = FileOwnerQuery.getOwner(file);
-                    boolean preferred = project != null && currentProject != null ? project.getProjectDirectory() == currentProject.getProjectDirectory() : false;
-                    FileDescriptor fd = new FileDescription(
-                        file,
-                        r.getRelativePath().substring(0, Math.max(r.getRelativePath().length() - file.getNameExt().length() - 1, 0)),
-                        project,
-                        lineNr);
-                    FileProviderAccessor.getInstance().setFromCurrentProject(fd, preferred);
-                    files.add(fd);
-                    LOGGER.log(Level.FINER, "Found: {0}, project={1}, currentProject={2}, preferred={3}",
-                            new Object[]{
-                                file.getPath(),
-                                project, currentProject, preferred
-                    });
-                }
-                long et = System.currentTimeMillis();
-                LOGGER.log(Level.FINE, "Indexed Search: {0}ms", (et-st));
-                if (isCanceled) {
-                    return files;
-                }
-
-                st = System.currentTimeMillis();
-                final Set<FileObject> excludes = new HashSet<FileObject>(roots);
+                
+                // handled by providers and should be excluded from other searches
+                final Set<FileObject> excludes = new HashSet<FileObject>();
                 final Project[] projects = OpenProjects.getDefault().getOpenProjects();
                 final List<FileObject> sgRoots = new LinkedList<FileObject>();
                 for (Project p : projects) {
-                    for (SourceGroup group: ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC)) {
+                    for (SourceGroup group : ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC)) {
                         sgRoots.add(group.getRootFolder());
                     }
                 }
-                //Ask GTF providers
                 final SearchType jumpToSearchType = toJumpToSearchType(searchType);
+
+                long st = System.currentTimeMillis();
+                //Ask GTF providers
                 final FileProvider.Context ctx = FileProviderAccessor.getInstance().createContext(text, jumpToSearchType, lineNr, currentProject);
                 final FileProvider.Result fpR = FileProviderAccessor.getInstance().createResult(files,new String[1], ctx);
                 for (FileProvider provider : getProviders()) {
@@ -622,9 +595,44 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                         }
                     }
                 }
-                et = System.currentTimeMillis();
+                long et = System.currentTimeMillis();
                 LOGGER.log(Level.FINE, "Providers Search: {0}ms", (et-st));
+                    
+                final Set<FileObject> roots = new LinkedHashSet<FileObject>(QuerySupport.findRoots((Project) null, null, Collections.<String>emptyList(), Collections.<String>emptyList()));
+                roots.removeAll(excludes);
+                
+                // indexing-based search
+                QuerySupport q = QuerySupport.forRoots(FileIndexer.ID, FileIndexer.VERSION, roots.toArray(new FileObject[roots.size()]));
+                Collection<? extends IndexResult> results = q.query(searchField, indexQueryText, searchType);
+                for (IndexResult r : results) {
+                    FileObject file = r.getFile();
+                    if (file == null || !file.isValid()) {
+                        // the file has been deleted in the meantime
+                        continue;
+                    }
 
+                    Project project = FileOwnerQuery.getOwner(file);
+                    boolean preferred = project != null && currentProject != null ? project.getProjectDirectory() == currentProject.getProjectDirectory() : false;
+                    FileDescriptor fd = new FileDescription(
+                            file,
+                            r.getRelativePath().substring(0, Math.max(r.getRelativePath().length() - file.getNameExt().length() - 1, 0)),
+                            project,
+                            lineNr);
+                    FileProviderAccessor.getInstance().setFromCurrentProject(fd, preferred);
+                    files.add(fd);
+                    LOGGER.log(Level.FINER, "Found: {0}, project={1}, currentProject={2}, preferred={3}",
+                            new Object[]{
+                                file.getPath(),
+                                project, currentProject, preferred
+                            });
+                }
+                excludes.addAll(roots);
+                et = System.currentTimeMillis();
+                LOGGER.log(Level.FINE, "Indexed Search: {0}ms", (et - st));
+                if (isCanceled) {
+                    return files;
+                }
+                
                 //PENDING Now we have to search folders which not included in Search API
                 st = System.currentTimeMillis();
                 Collection <FileObject> allFolders = new HashSet<FileObject>();
@@ -752,7 +760,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 	    String text = (String) getClientProperty(TOOL_TIP_TEXT_KEY);
 	    if( text == null ) {
                 if( fd != null) {
-                    text = FileUtil.getFileDisplayName(fd.getFileObject());
+                    text = fd.getFileDisplayPath();
                 }
                 putClientProperty(TOOL_TIP_TEXT_KEY, text);
 	    }
@@ -816,7 +824,22 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 
         @Override
         public FileObject getFileObject() {
-            return delegate.getFileObject();
+            final FileObject res = delegate.getFileObject();
+            if (res == null) {
+                LOGGER.log(
+                    Level.FINE,
+                    "FileDescriptor: {0} : {1} returned null from getFile", //NOI18N
+                    new Object[]{
+                        delegate,
+                        delegate.getClass()
+                    });
+            }
+            return res;
+        }
+
+        @Override
+        public String getFileDisplayPath() {
+            return delegate.getFileDisplayPath();
         }
 
         @Override

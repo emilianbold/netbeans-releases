@@ -71,14 +71,18 @@ public class JsEmbeddingProviderTest extends JsTestBase {
     public void testExtractJsEmbeddings02() throws Exception {
         String text = "    <!-- anything \n -->             ";
         List<EmbeddingPosition> embeddings = JsEmbeddingProvider.extractJsEmbeddings(text, 0);
-        assertEquals(embeddings.size(), 1);
+        assertEquals(embeddings.size(), 2);
         assertEquals(0, embeddings.get(0).getOffset());
-        assertEquals(text.length(), embeddings.get(0).getLength());
+        assertEquals(4, embeddings.get(0).getLength());
+        assertEquals(19, embeddings.get(1).getOffset());
+        assertEquals(17, embeddings.get(1).getLength());
 
         embeddings = JsEmbeddingProvider.extractJsEmbeddings(text, 5);
-        assertEquals(embeddings.size(), 1);
+        assertEquals(embeddings.size(), 2);
         assertEquals(5, embeddings.get(0).getOffset());
-        assertEquals(text.length(), embeddings.get(0).getLength());
+        assertEquals(4, embeddings.get(0).getLength());
+        assertEquals(24, embeddings.get(1).getOffset());
+        assertEquals(17, embeddings.get(1).getLength());
     }
 
     public void testExtractJsEmbeddings03() throws Exception {
@@ -139,6 +143,35 @@ public class JsEmbeddingProviderTest extends JsTestBase {
         assertEquals(30, embeddings.get(3).getLength());
         assertEquals(47, embeddings.get(4).getLength());
         assertEquals(36, embeddings.get(5).getLength());
+    }
+
+    public void testExtractJsEmbeddings06() throws Exception {
+        String text = "\n  <!--\n  myImage = new Image();\n  myImage = '../templates/images/indicator.gif';\n  //-->";
+        List<EmbeddingPosition> embeddings = JsEmbeddingProvider.extractJsEmbeddings(text, 0);
+        assertEquals(2, embeddings.size());
+        assertEquals(0, embeddings.get(0).getOffset());
+        assertEquals(text.indexOf("  myImage = new Image();"), embeddings.get(1).getOffset());
+        assertEquals(3, embeddings.get(0).getLength());
+        assertEquals(81, embeddings.get(1).getLength());
+    }
+
+    public void testIssue223883() throws Exception {
+        String text =   "<!--//--><![CDATA[//><!--\n" +
+                        "    var abcd ='11111';\n" +
+                        "//--><!]]>";
+        List<EmbeddingPosition> embeddings = JsEmbeddingProvider.extractJsEmbeddings(text, 0);
+        assertEquals(1, embeddings.size());
+        assertEquals(text.indexOf("    var abcd ='11111';\n"), embeddings.get(0).getOffset());
+        assertEquals(33, embeddings.get(0).getLength());
+    }
+
+    public void testIssue217081() throws Exception {
+        String text =   "<!--\n" +
+                        "    ";
+        List<EmbeddingPosition> embeddings = JsEmbeddingProvider.extractJsEmbeddings(text, 0);
+        assertEquals(1, embeddings.size());
+        assertEquals(text.indexOf("    "), embeddings.get(0).getOffset());
+        assertEquals(4, embeddings.get(0).getLength());
     }
 
 }

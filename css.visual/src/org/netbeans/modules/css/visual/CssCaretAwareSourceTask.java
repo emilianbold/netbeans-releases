@@ -73,7 +73,7 @@ import org.openide.windows.WindowManager;
  */
 public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserResult> {
 
-    private static final Logger LOG = RuleEditorPanel.LOG;
+    private static final Logger LOG = Logger.getLogger("rule.editor");
     private static final String CSS_MIMETYPE = "text/css"; //NOI18N
     private boolean cancelled;
 
@@ -217,7 +217,10 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserRes
                                 //end and there're only WS between,
                                 //activate the rule
                                 CharSequence source = snapshot.getText();
-                                for(int i = astOffset - 1; i >= 0; i--) {
+                                
+                                //weird - looks like parsing.api bug - the astoffset may point beond the snapshot's length?!?!?
+                                int adjustedAstOffset = Math.min(source.length(), astOffset);
+                                for(int i = adjustedAstOffset - 1; i >= 0; i--) {
                                     if(i == rule.getEndOffset()) {
                                         ruleRef.set(rule);
                                         return ;

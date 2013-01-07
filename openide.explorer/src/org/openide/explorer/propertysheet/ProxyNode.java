@@ -263,7 +263,7 @@ final class ProxyNode extends AbstractNode {
             Node.PropertySet[] p = getOriginalPropertySets(copy).get(i);
 
             for (int j = 0; j < p.length; j++) {
-                if (setName.equals(p[j].getName())) {
+                if (Utilities.compareObjects(setName, p[j].getName())) {
                     Node.Property[] np = p[j].getProperties();
 
                     for (int k = 0; k < np.length; k++) {

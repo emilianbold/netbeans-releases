@@ -592,7 +592,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
             if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION) {
                 return;
             }
-            String newS = notifyDescriptor.getInputText();
+            String newS = notifyDescriptor.getInputText().trim();
             replaceElement(o, newS, i);
         }
     }
@@ -611,7 +611,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
             if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION) {
                 return null;
             }
-            String newS = notifyDescriptor.getInputText();
+            String newS = notifyDescriptor.getInputText().trim();
             return newS;
         }
 
@@ -660,7 +660,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
             if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION) {
                 return;
             }
-            String newS = notifyDescriptor.getInputText();
+            String newS = notifyDescriptor.getInputText().trim();
             replaceElement(o, newS, i);
         }
     }
@@ -687,7 +687,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
     // End of variables declaration//GEN-END:variables
 
     private static String getString(String s) {
-        return NbBundle.getBundle(PanelProjectLocationVisual.class).getString(s);
+        return NbBundle.getMessage(PanelProjectLocationVisual.class, s);
     }
     
     private class LogFileFilter extends javax.swing.filechooser.FileFilter {

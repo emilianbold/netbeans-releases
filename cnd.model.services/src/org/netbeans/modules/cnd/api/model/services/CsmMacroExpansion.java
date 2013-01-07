@@ -154,13 +154,14 @@ public final class CsmMacroExpansion {
      * If we already knew file for document it's better to use this function, because it's faster.
      *
      * @param doc - document for macro expansion
-     * @param doc - file of the document
+     * @param file - file of the document
      * @param startOffset - start offset for expansion
      * @param endOffset - end offset for expansion
+     * @param updateIfNeeded - update if needed (slow and should not be done from EDT or under doc locks)
      * @return - expansion, null otherwise
      */
-    public static String expand(Document doc, CsmFile file, int startOffset, int endOffset) {
-        return getMacroExpansionDocProvider().expand(doc, file, startOffset, endOffset);
+    public static String expand(Document doc, CsmFile file, int startOffset, int endOffset, boolean updateIfNeeded) {
+        return getMacroExpansionDocProvider().expand(doc, file, startOffset, endOffset, updateIfNeeded);
     }
 
     /**
@@ -272,7 +273,7 @@ public final class CsmMacroExpansion {
         }
 
         @Override
-        public String expand(Document doc, CsmFile file, int startOffset, int endOffset) {
+        public String expand(Document doc, CsmFile file, int startOffset, int endOffset, boolean updateIfNeeded) {
             return null;
         }
         

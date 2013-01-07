@@ -82,9 +82,10 @@ public class DynamicVerifyTest extends NbTestCase {
             addTest(ServersNodeActionsCheck.class, "testGetAll", "testCheckAllPretest").
             addTest(MenuProfileActionsCheck.class, "testGetAll", "testCheckAllPretest").
             addTest(LibrariesCheck.class, "testGetLibraries", "testCheckLibrariesPretest").
+            addTest(OptionsCheck.class, "testGetKeywords", "testCheckKeywordsPretest").
             gui(false).
             clusters("ergonomics.*").
-            clusters(".*").
+            clusters("^(?!(mobility)).*$").
             enableModules(".*").
             honorAutoloadEager(true)
         );
@@ -99,9 +100,10 @@ public class DynamicVerifyTest extends NbTestCase {
             addTest(ServersNodeActionsCheck.class, "testCheckAllReal").
             addTest(MenuProfileActionsCheck.class, "testCheckAllReal").
             addTest(LibrariesCheck.class, "testCheckLibrariesReal").
+            addTest(OptionsCheck.class, "testCheckKeywordsReal").
             gui(false).
             clusters("ergonomics.*").
-            clusters(".*").
+            clusters("^(?!(mobility)).*$").
             enableModules("ide[0-9]*", ".*").
             honorAutoloadEager(true)
         );

@@ -186,7 +186,11 @@ public final class UiUtils {
 
                         @Override
                         public boolean charBackspaced(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
-                            return defaultt.charBackspaced(doc, caretOffset, target, ch);
+                            if (!fwHandler.charBackspaced(doc, caretOffset, target, ch)) {
+                                return bwHandler.charBackspaced(doc, caretOffset, target, ch);
+                            } else {
+                                return true;
+                            }
                         }
 
                         @Override

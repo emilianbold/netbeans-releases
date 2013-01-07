@@ -61,12 +61,10 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
 public class RestServiceNode extends AbstractNode{
-    private Project project;
     private String serviceName;
     private String uriTemplate;
     private String className;
     private ActiveEditorDrop editorDrop;
-    private RestServicesModel model;
     
     public  RestServiceNode(Project project, RestServicesModel model,
             RestServiceDescription desc) {
@@ -76,7 +74,6 @@ public class RestServiceNode extends AbstractNode{
     private RestServiceNode(Project project, RestServicesModel model,
             final RestServiceDescription desc, InstanceContent content) {
         super(new RestServiceChildren(project, model, desc.getName()), new AbstractLookup(content));
-        this.project = project;
         this.serviceName = desc.getName();
         this.uriTemplate = desc.getUriTemplate();
         this.className = desc.getClassName();

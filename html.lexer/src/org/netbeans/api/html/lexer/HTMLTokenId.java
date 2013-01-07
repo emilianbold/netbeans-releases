@@ -134,6 +134,14 @@ public enum HTMLTokenId implements TokenId {
      * this token as a class selector.
      */
     public static final String VALUE_CSS_TOKEN_TYPE_CLASS = "class"; //NOI18N
+    
+    /**
+     * Token property name for the SCRIPT tokens.
+     * 
+     * Allows to get value of the type attribute of script tag.
+     */
+    public static final String SCRIPT_TYPE_TOKEN_PROPERTY = "type"; //NOI18N
+    
     private static final Logger LOGGER = Logger.getLogger(HtmlLexer.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
 
@@ -232,7 +240,10 @@ public enum HTMLTokenId implements TokenId {
                     }
                     break;
                 case SCRIPT:
-                    mimeType = JAVASCRIPT_MIMETYPE;
+                    String scriptType = (String)token.getProperty(SCRIPT_TYPE_TOKEN_PROPERTY);
+                    if(scriptType == null || JAVASCRIPT_MIMETYPE.equals(scriptType)) {
+                        mimeType = JAVASCRIPT_MIMETYPE;
+                    }
                     break;
                 case STYLE:
                     mimeType = STYLE_MIMETYPE;

@@ -346,7 +346,7 @@ public class HtmlCompletionProvider implements CompletionProvider {
                         TokenSequence ts = Utils.getJoinedHtmlSequence(doc, dotPos);
                         if (ts == null) {
                             //no suitable token sequence found
-                            value.set(true);
+                            value.set(false);
                             return;
                         }
 

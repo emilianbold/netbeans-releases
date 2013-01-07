@@ -54,9 +54,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.ServerListUI;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
-import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
-import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizerAdaptor;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider;
+import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.OutputListenerRegistry;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.Result;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -88,12 +87,14 @@ public final class LDErrorParser implements ErrorParserProvider.ErrorParser {
     //private Pattern LD_FATAL = Pattern.compile("ld\\.so.*fatal: (.*\\.so):"); //NOI18N
 
     private static final Pattern LD_LIB_BUILD_TRACE = Pattern.compile(".*ld\\.so.*libBuildTrace.so"); //NOI18N
+    private static final Pattern LD_LIB_BUILD_TRACE_MAC = Pattern.compile(".*dyld:.*libBuildTrace.dylib"); //NOI18N
     private static final Pattern LD_RFS_PRELOAD = Pattern.compile(".*ld\\.so.*rfs_preload.so"); //NOI18N
 
     private final ExecutionEnvironment execEnv;
     private final Project project;
     private boolean checkBuildTrace = false;
     private boolean checkRfs = false;
+    private boolean isMac = false;
 
     public LDErrorParser(Project project, CompilerFlavor flavor, ExecutionEnvironment execEnv, FileObject relativeTo) {
         this.execEnv = execEnv;
@@ -102,13 +103,17 @@ public final class LDErrorParser implements ErrorParserProvider.ErrorParser {
         try {
             HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
             switch (hostInfo.getOSFamily()) {
+                case MACOSX:
+                    isMac = true;
+                    checkBuildTrace = true;
+                    checkRfs = false;
+                    break;
                 case LINUX:
                 case SUNOS:
-                case UNKNOWN:
                     checkBuildTrace = true;
                     checkRfs = execEnv.isRemote();
                     break;
-                case MACOSX:
+                case UNKNOWN:
                 case WINDOWS:
                     // unsuported
                     break;
@@ -121,9 +126,18 @@ public final class LDErrorParser implements ErrorParserProvider.ErrorParser {
     }
 
     @Override
-    public Result handleLine(final String line) throws IOException {
+    public void setOutputListenerRegistry(OutputListenerRegistry regestry) {
+    }
+
+    @Override
+    public Result handleLine(final String line) {
         if (checkBuildTrace) {
-            Matcher m = LD_LIB_BUILD_TRACE.matcher(line);
+            Matcher m;
+            if (isMac) {
+                m = LD_LIB_BUILD_TRACE_MAC.matcher(line);
+            } else {
+                m = LD_LIB_BUILD_TRACE.matcher(line);
+            }
             if (m.find()) {
                 return new Result() {
 

@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.swing.text.BadLocationException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.model.api.Declaration;
@@ -60,6 +61,7 @@ import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.actions.Resource;
 import org.netbeans.modules.web.webkit.debugging.api.css.Property;
@@ -106,8 +108,12 @@ public class Utilities {
             String propertyName = property.getName();
             properties.add(propertyName.trim());
         }
+        int sourceLine = rule.getSourceLine();
+        SourceRange range = rule.getSelectorRange();
+        int startOffset = (range == null) ? Short.MIN_VALUE : range.getStart();
         org.netbeans.modules.css.model.api.Rule result = findRuleInStyleSheet0(
-                sourceModel, styleSheet, selector, mediaQuery, properties);
+                sourceModel, styleSheet, selector, mediaQuery, properties,
+                sourceLine, startOffset);
         if (result == null) {
             // rule.getSelector() sometimes returns value that differs slightly
             // from the selector in the source file. Besides whitespace changes
@@ -120,14 +126,13 @@ public class Utilities {
             // method sometimes returns incorrect values. That's why we use
             // it as a fallback only.
             StyleSheetBody parentStyleSheet = rule.getParentStyleSheet();
-            SourceRange range = rule.getSelectorRange();
             if (parentStyleSheet != null && range != null) {
                 String styleSheetText = parentStyleSheet.getText();
                 if (styleSheetText != null) {
                     selector = styleSheetText.substring(range.getStart(), range.getEnd());
                     selector = CSSUtils.normalizeSelector(selector);
                     result = findRuleInStyleSheet0(sourceModel, styleSheet,
-                            selector, mediaQuery, properties);
+                            selector, mediaQuery, properties, sourceLine, startOffset);
                     if ((result == null) && !rule.getMedia().isEmpty() && (range.getStart() == 0)) {
                         // Workaround for a bug in WebKit (already fixed in the latest
                         // versions of Chrome, but still present in WebView)
@@ -152,7 +157,8 @@ public class Utilities {
                             selector = selector.substring(index+1);
                             selector = CSSUtils.normalizeSelector(selector);
                             result = findRuleInStyleSheet0(sourceModel,
-                                    styleSheet, selector, mediaQuery, properties);
+                                    styleSheet, selector, mediaQuery,
+                                    properties, sourceLine, startOffset);
                         }
                     }
                 }
@@ -169,12 +175,15 @@ public class Utilities {
      * @param selector selector of the rule to find.
      * @param mediaQuery media query of the rule (can be {@code null}).
      * @param properties name of the properties in the rule.
+     * @param sourceLine (the first) source line of the rule.
+     * @param startOffset starting offset of the rule.
      * @return source model representation of a rule with the specified selector.
      */
     private static org.netbeans.modules.css.model.api.Rule findRuleInStyleSheet0(
             final Model sourceModel, StyleSheet styleSheet,
             final String selector, final String mediaQuery,
-            final Set<String> properties) {
+            final Set<String> properties, final int sourceLine,
+            final int startOffset) {
         final org.netbeans.modules.css.model.api.Rule[] result =
                 new org.netbeans.modules.css.model.api.Rule[1];
 
@@ -220,9 +229,20 @@ public class Utilities {
                         org.netbeans.modules.css.model.api.Property modelProperty = declaration.getProperty();
                         String modelPropertyName = modelProperty.getContent().toString().trim();
                         if (properties.contains(modelPropertyName)) {
-                            value++;
+                            value += 2;
                         }
                     }
+                }
+                int offset = rule.getStartOffset();
+                // The CSS model never uses CR+LF line ends, but the browser
+                // does. Hence, the second part of the following check.
+                if ((offset == startOffset) || (offset+sourceLine == startOffset)) {
+                    try {
+                        int line = LexerUtils.getLineOffset(sourceModel.getModelSource(), offset);
+                        if (line == sourceLine) {
+                            value += 1;
+                        }
+                    } catch (BadLocationException blex) {}
                 }
                 return value;
             }

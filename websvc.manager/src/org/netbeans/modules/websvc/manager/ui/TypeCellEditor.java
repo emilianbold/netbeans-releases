@@ -141,8 +141,8 @@ public class TypeCellEditor extends DefaultCellEditor implements TableCellEditor
                         type.equalsIgnoreCase(Boolean.class.getName())) {
                     JComboBox combo = new JComboBox();
                     lastComponent = (Component)combo;
-                    combo.addItem(new Boolean(true));
-                    combo.addItem(new Boolean(false));
+                    combo.addItem(true);
+                    combo.addItem(false);
 
                     /**
                      * Set the value as the current Enumeration value.
@@ -197,7 +197,7 @@ public class TypeCellEditor extends DefaultCellEditor implements TableCellEditor
     }
 
     private void comboActionPerformed(ActionEvent evt) {
-        JComboBox combo = (JComboBox)evt.getSource();
+        //JComboBox combo = (JComboBox)evt.getSource();
         this.fireEditingStopped();
 
     }
@@ -209,51 +209,51 @@ public class TypeCellEditor extends DefaultCellEditor implements TableCellEditor
         if(currentType.equalsIgnoreCase("int") ||
         currentType.equalsIgnoreCase("java.lang.Integer")) {
             try {
-                returnValue = new Integer(inValue);
+                returnValue = Integer.valueOf(inValue);
             } catch(NumberFormatException nfe) {
-                returnValue = new Integer(0);
+                returnValue = Integer.valueOf(0);
             }
         } else if(currentType.equalsIgnoreCase("byte") ||
         currentType.equalsIgnoreCase("java.lang.Byte")) {
             try {
-                returnValue = new Byte(inValue);
+                returnValue = Byte.valueOf(inValue);
             } catch(NumberFormatException nfe) {
-                returnValue = new Byte("0");
+                returnValue = Byte.valueOf("0");
             }
         } else if(currentType.equalsIgnoreCase("boolean") ||
         currentType.equalsIgnoreCase("java.lang.Boolean")) {
             try {
-                returnValue = new Boolean(inValue);
+                returnValue = Boolean.valueOf(inValue);
             } catch(NumberFormatException nfe) {
-                returnValue = new Boolean(false);
+                returnValue = false;
             }
         } else if(currentType.equalsIgnoreCase("float") ||
         currentType.equalsIgnoreCase("java.lang.Float")) {
             try {
-                returnValue = new Float(inValue);
+                returnValue = Float.valueOf(inValue);
             } catch(NumberFormatException nfe) {
-                returnValue = new Float(0);
+                returnValue = Float.valueOf(0);
             }
         } else if(currentType.equalsIgnoreCase("double") ||
         currentType.equalsIgnoreCase("java.lang.Double")) {
             try {
-                returnValue = new Double(inValue);
+                returnValue = Double.valueOf(inValue);
             } catch(NumberFormatException nfe) {
-                returnValue = new Double(0);
+                returnValue = Double.valueOf(0);
             }
         } else if(currentType.equalsIgnoreCase("long") ||
         currentType.equalsIgnoreCase("java.lang.Long")) {
             try {
-                returnValue = new Long(inValue);
+                returnValue = Long.valueOf(inValue);
             } catch(NumberFormatException nfe) {
-                returnValue = new Long(0);
+                returnValue = Long.valueOf(0);
             }
         } else if(currentType.equalsIgnoreCase("short") ||
         currentType.equalsIgnoreCase("java.lang.Short")) {
             try {
-                returnValue = new Short(inValue);
+                returnValue = Short.valueOf(inValue);
             } catch(NumberFormatException nfe) {
-                returnValue = new Short(" ");
+                returnValue = Short.valueOf(" ");
             }
         } else if(currentType.equalsIgnoreCase("java.lang.String")) {
             returnValue = inValue;
@@ -261,7 +261,7 @@ public class TypeCellEditor extends DefaultCellEditor implements TableCellEditor
             try {
                 returnValue = new BigDecimal(inValue);
             } catch(NumberFormatException nfe) {
-                returnValue = new BigDecimal(0);
+                returnValue = BigDecimal.valueOf(0);
             }
         } else if(currentType.equalsIgnoreCase("java.math.BigInteger")) {
             try {

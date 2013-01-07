@@ -49,10 +49,15 @@ import org.netbeans.modules.git.ui.commit.GitFileNode;
 import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
 import org.netbeans.modules.git.ui.diff.DiffAction;
 import org.netbeans.modules.versioning.util.status.VCSStatusNode;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.PropertySupport.ReadOnly;
 import org.openide.nodes.Sheet;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -62,7 +67,11 @@ public class GitStatusNode extends VCSStatusNode<GitFileNode> {
     private final Mode mode;
 
     public GitStatusNode (GitFileNode node, Mode mode) {
-        super(node);
+        this(node, mode, Lookups.fixed(node.getLookupObjects()));
+    }
+
+    public GitStatusNode (GitFileNode node, Mode mode, Lookup lkp) {
+        super(node, lkp);
         this.mode = mode;
         initProperties();
     }
@@ -74,6 +83,28 @@ public class GitStatusNode extends VCSStatusNode<GitFileNode> {
         } else {
             return SystemAction.get(DiffAction.class);
         }
+    }
+    
+    /**
+     * Provide cookies to actions.
+     * If a node represents primary file of a DataObject
+     * it has respective DataObject cookies.
+     */
+    @SuppressWarnings("unchecked") // Adding getCookie(Class<Cookie> klass) results in name clash
+    @Override
+    public Cookie getCookie(Class klass) {
+        FileObject fo = getLookup().lookup(FileObject.class);
+        if (fo != null) {
+            try {
+                DataObject dobj = DataObject.find(fo);
+                if (fo.equals(dobj.getPrimaryFile())) {
+                    return dobj.getCookie(klass);
+                }
+            } catch (DataObjectNotFoundException e) {
+                // ignore file without data objects
+            }
+        }
+        return super.getCookie(klass);
     }
 
     private void initProperties() {

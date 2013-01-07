@@ -45,7 +45,12 @@ package org.netbeans.modules.websvc.rest.nodes;
 
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.swing.SwingUtilities;
+
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
@@ -57,6 +62,7 @@ import org.openide.text.Line;
 import org.openide.text.Line.ShowOpenType;
 import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -85,22 +91,55 @@ public class OpenCookieFactory {
         
         @Override
         public void open() {
+            if ( SwingUtilities.isEventDispatchThread()){
+                final AtomicBoolean cancel = new AtomicBoolean();
+                ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        doOpen();
+                    }
+                },
+                NbBundle.getMessage(OpenCookieFactory.class, "TXT_OpenResource"),    // NOI18N
+                cancel,
+                false);
+            }
+            else {
+                doOpen();
+            }
+        }
+
+        private void doOpen() {
             try {
-                FileObject source = SourceGroupSupport.getFileObjectFromClassName(className, project);
+                FileObject source = SourceGroupSupport.getFileObjectFromClassName(
+                        className, project);
                 if (source != null) {
-                    DataObject dataObj = DataObject.find(source);
+                    final DataObject dataObj = DataObject.find(source);
                     if (dataObj != null) {
-                        OpenCookie oc = (OpenCookie) dataObj.getCookie(OpenCookie.class);
-                        if (oc != null) {
-                            oc.open();
-                        }
                         JavaSource javaSource = JavaSource.forFileObject(source);
-                        LineCookie lc = (LineCookie) dataObj.getCookie(LineCookie.class);
-                        if (lc != null) {
-                            long[] position = JavaSourceHelper.getPosition(javaSource, methodName);
-                            Line line = lc.getLineSet().getOriginal((int) position[0]);
-                            line.show(ShowOpenType.OPEN, ShowVisibilityType.NONE, (int) position[1]);
-                        }
+                        final long[] position = JavaSourceHelper.getPosition(
+                                javaSource, methodName);
+                        
+                        SwingUtilities.invokeLater( new Runnable() {
+                            
+                            @Override
+                            public void run() {
+                                OpenCookie oc = (OpenCookie) dataObj.getCookie(
+                                        OpenCookie.class);
+                                if (oc != null) {
+                                    oc.open();
+                                }
+                                LineCookie lc = (LineCookie) dataObj.getCookie(
+                                        LineCookie.class);
+                                if (lc != null) {
+                                    Line line = lc.getLineSet().getOriginal(
+                                            (int) position[0]);
+                                    line.show(ShowOpenType.OPEN, 
+                                            ShowVisibilityType.NONE, (int) position[1]);
+                                }
+                                
+                            }
+                        });
+                        
                     }
                 }
             } catch (IOException ex) {

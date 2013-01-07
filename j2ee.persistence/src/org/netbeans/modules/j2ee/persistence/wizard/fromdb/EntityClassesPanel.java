@@ -49,7 +49,6 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -348,9 +347,12 @@ public class EntityClassesPanel extends javax.swing.JPanel {
                 warning = NbBundle.getMessage(EntityClassesPanel.class, "ERR_NoPersistenceUnit");
             }
 
-        } catch (InvalidPersistenceXmlException ipx){
+        } catch (InvalidPersistenceXmlException ipx) {
             createPUCheckbox.setVisible(false);
             warning = NbBundle.getMessage(EntityClassesPanel.class, "ERR_InvalidPersistenceUnit", ipx.getPath());
+        } catch (RuntimeException ipx) {
+            createPUCheckbox.setVisible(false);
+            warning = NbBundle.getMessage(EntityClassesPanel.class, "ERR_InvalidPersistenceUnit", ipx.getMessage());
         }
 
         if(warning.trim().length() == 0){//may need to show warning about sourc level

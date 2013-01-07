@@ -456,6 +456,7 @@ public class TopSecurityManager extends SecurityManager {
         wl.add("org.apache.lucene.util.Constants"); //#217037
         wl.add("org.apache.lucene.util.RamUsageEstimator");//#217037
         wl.add("com.google.gson.internal.UnsafeAllocator"); //#219464   //NOI18N
+        wl.add("org.netbeans.modules.web.jspparser_ext.WebAppParseSupport$ParserClassLoader"); //#218690 // NOI18N
         return wl;
     }
     private static Set<String> createCallerBlackList() {

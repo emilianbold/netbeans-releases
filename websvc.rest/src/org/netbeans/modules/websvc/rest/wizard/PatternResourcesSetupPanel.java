@@ -227,8 +227,6 @@ final class PatternResourcesSetupPanel extends AbstractPanel {
         public void read(final WizardDescriptor wizard) {
             mainPanel.read(wizard);
             Project project = Templates.getProject(wizard);
-            WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
-            Profile profile = webModule.getJ2eeProfile();
             final WebRestSupport restSupport = project.getLookup().
                     lookup(WebRestSupport.class);
             boolean hasSpringSupport = restSupport.hasSpringSupport();

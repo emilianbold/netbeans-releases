@@ -86,7 +86,6 @@ public class RestServiceDescriptionImpl extends PersistentObject implements Rest
     
     private void initMethods(TypeElement typeElement) {
         methods = new HashMap<String, RestMethodDescriptionImpl>();
-        AnnotationModelHelper helper = getHelper();
         
         for (Element element : typeElement.getEnclosedElements()) {
             if (element!= null && element.getKind() == ElementKind.METHOD) {

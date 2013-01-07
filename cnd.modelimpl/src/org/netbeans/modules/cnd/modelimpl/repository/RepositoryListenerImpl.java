@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.repository.api.*;
 import org.netbeans.modules.cnd.repository.spi.*;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * RepositoryListener implementation.
@@ -78,7 +79,9 @@ public class RepositoryListenerImpl implements RepositoryListener {
 
         @Override
         public void run() {
-            RepositoryUtils.shutdown();
+            if (!CndUtils.isUnitTestMode()) {
+                RepositoryUtils.shutdown();
+            }
         }
     }
 
@@ -223,6 +226,7 @@ public class RepositoryListenerImpl implements RepositoryListener {
     }
 
     private void scheduleClosing(final int unitId) {
+        assert Thread.holdsLock(lock);
         final CharSequence unitName = KeyUtilities.getUnitName(unitId);
         if (explicitelyOpened.contains(unitId)) {
             if (TraceFlags.TRACE_REPOSITORY_LISTENER) {
@@ -250,7 +254,7 @@ public class RepositoryListenerImpl implements RepositoryListener {
                 }
                 RepositoryUtils.closeUnit(unitId, null, !TraceFlags.PERSISTENT_REPOSITORY); // null means the list of required units stays unchanged
             }
-        }, "Closing implicitly opened project"); // NOI18N
+        }, "Closing implicitly opened project " + unitName + ":" + unitId); // NOI18N
     }
 
     private void trace(String format, Object... args) {

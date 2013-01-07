@@ -104,9 +104,8 @@ import org.xml.sax.InputSource;
  */
 public class MakeSampleProjectGenerator {
 
-    private static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/make-project/1"; // NOI18N
-    private static final String PROJECT_CONFIGURATION_FILE = "nbproject/configurations.xml"; // NOI18N
-    private static final String PROJECT_PRIVATE_CONFIGURATION_FILE = "nbproject/private/configurations.xml"; // NOI18N
+    private static final String PROJECT_CONFIGURATION_FILE = MakeConfiguration.NBPROJECT_FOLDER + '/' + MakeConfiguration.CONFIGURATIONS_XML; // NOI18N
+    private static final String PROJECT_PRIVATE_CONFIGURATION_FILE = MakeConfiguration.NBPROJECT_PRIVATE_FOLDER + '/' + MakeConfiguration.CONFIGURATIONS_XML; // NOI18N
 
     private MakeSampleProjectGenerator() {
     }

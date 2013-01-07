@@ -351,7 +351,7 @@ public class AutoupdateCheckScheduler {
             }
             err.log (Level.FINE, "findUpdateElements(" + type + ") returns " + visibleUpdateElement.size () +
                     " visible elements (" + updates.size() + " in all)");
-            return visibleUpdateElement;
+            return updates;
         }
     }
 

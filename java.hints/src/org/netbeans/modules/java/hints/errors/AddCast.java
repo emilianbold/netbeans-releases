@@ -127,9 +127,8 @@ public final class AddCast implements ErrorRule<Void> {
                 
                 if (parents != null) {
                     Tree returnTypeTree = ((MethodTree) parents.getLeaf()).getReturnType();
-                    if (returnTypeTree != null) {
+                    if (returnTypeTree != null && (found = ((ReturnTree) scope).getExpression()) != null) {
                         expected = info.getTrees().getTypeMirror(new TreePath(parents, returnTypeTree));
-                        found = ((ReturnTree) scope).getExpression();
                         resolved = info.getTrees().getTypeMirror(new TreePath(path, found));
                     }
                 }

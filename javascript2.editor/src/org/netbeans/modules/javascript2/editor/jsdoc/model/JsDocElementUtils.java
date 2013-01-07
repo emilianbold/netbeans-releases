@@ -54,6 +54,9 @@ import org.netbeans.modules.javascript2.editor.model.impl.TypeImpl;
  */
 public class JsDocElementUtils {
 
+    /** Limit for number of spaces inside the type declaration. */
+    public static final int LIMIT_SPACES_IN_TYPE = 10;
+
     /**
      * Creates element of correct type for given type and remaining element text.
      * @param type element type
@@ -118,7 +121,24 @@ public class JsDocElementUtils {
                 typeOffset = descStartOffset + 1;
                 int rparIndex = parts[0].indexOf("}"); //NOI18N
                 if (rparIndex == -1) {
-                    types = parts[0].trim();
+                    // issue #224205 - search for ending } curly braces, spaces in its type
+                    int actualProcessed = process;
+                    StringBuilder typesSB = new StringBuilder(parts[0].substring(1));
+                    while ((actualProcessed < parts.length - 1)  && (actualProcessed < LIMIT_SPACES_IN_TYPE)) {
+                       actualProcessed++;
+                       rparIndex = parts[actualProcessed].indexOf("}"); //NOI18N
+                       if (rparIndex != -1) {
+                           typesSB.append(parts[actualProcessed].substring(0, rparIndex));
+                           process = actualProcessed;
+                           types = typesSB.toString();
+                           break;
+                       } else {
+                           typesSB.append(parts[actualProcessed]);
+                       }
+                    }
+                    if (types.isEmpty()) {
+                        types = parts[0].trim();
+                    }
                 } else {
                     types = parts[0].substring(1, rparIndex);
                 }
@@ -127,7 +147,7 @@ public class JsDocElementUtils {
 
             // get name value (mandatory part)
             if (parts.length > process && elementType.getCategory() == JsDocElement.Category.NAMED_PARAMETER) {
-                nameOffset = descStartOffset + elementText.indexOf(parts[process]);
+                nameOffset = descStartOffset + elementText.indexOf(parts[process], types.length());
                 name.append(parts[process].trim());
                 process++;
                 if (name.toString().contains("\"") || name.toString().contains("'")) { //NOI18N

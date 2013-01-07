@@ -58,7 +58,6 @@ import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
 public final class ShareAction extends AbstractAction {
@@ -96,7 +95,7 @@ public final class ShareAction extends AbstractAction {
         "NameAndLicenseWizardPanelGUI.versioningNotSupported=Local project \"{0}\" is already shared via versioning system."
     })
     private void actionPerformed (final Node[] nodes) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        Utilities.getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
                 if (nodes != null) {

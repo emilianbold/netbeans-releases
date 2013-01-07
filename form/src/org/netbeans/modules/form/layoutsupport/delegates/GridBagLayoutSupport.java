@@ -45,6 +45,8 @@
 package org.netbeans.modules.form.layoutsupport.delegates;
 
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.*;
 import java.util.*;
 import java.util.List;
@@ -64,8 +66,10 @@ import org.netbeans.modules.form.FormProperty;
 import org.netbeans.modules.form.FormPropertyContext;
 import org.netbeans.modules.form.RADVisualContainer;
 import org.netbeans.modules.form.editors.PrimitiveTypeArrayEditor;
-import org.netbeans.modules.form.layoutsupport.griddesigner.GridDesignerWindow;
+import org.netbeans.modules.form.layoutsupport.griddesigner.GridDesigner;
 import org.netbeans.modules.form.project.ClassPathUtils;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
 
@@ -82,6 +86,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport {
 
     private GridBagLayout initialLayout;
 
+    private Rectangle customizerBounds;
     private static Reference<GridBagCustomizer.Window> customizerRef;
     private FormProperty[] layoutProperties;
 
@@ -102,7 +107,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport {
      */
     @Override
     public Class getCustomizerClass() {
-        return isGridDesignerEnabled() ? GridDesignerWindow.class : GridBagCustomizer.Window.class;
+        return isGridDesignerEnabled() ? GridDesigner.class : GridBagCustomizer.Window.class;
     }
 
     /** Creates an instance of customizer for GridBagLayout.
@@ -111,11 +116,24 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport {
     @Override
     public Component getSupportCustomizer() {
         if (isGridDesignerEnabled()) {
-            GridDesignerWindow designer = new GridDesignerWindow();
+            GridDesigner designer = new GridDesigner();
             RADVisualContainer container = ((LayoutSupportManager)getLayoutContext()).getMetaContainer();
-            designer.setObject(container);
-            return designer;            
-        } else {
+            designer.setDesignedContainer(container);
+            DialogDescriptor dd = new DialogDescriptor(designer, NbBundle.getMessage(GridDesigner.class, "GridDesignerWindow.title")); // NOI18N
+            dd.setOptions(new Object[] { DialogDescriptor.CLOSED_OPTION });
+            Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+            dialog.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosed(WindowEvent e) {
+                    customizerBounds = e.getWindow().getBounds();
+                }
+            });
+            if (customizerBounds != null) { // set same bounds as last time
+                dialog.setBounds(customizerBounds);
+                dialog.setPreferredSize(new Dimension(customizerBounds.width, customizerBounds.height)); // so pack() does not change size
+            }
+            return dialog;
+        } else { // the old GridBag customizer
             GridBagCustomizer.Window customizer = null;
             if (customizerRef != null)
                 customizer = customizerRef.get();

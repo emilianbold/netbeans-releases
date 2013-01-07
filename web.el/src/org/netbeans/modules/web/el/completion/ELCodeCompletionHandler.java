@@ -257,7 +257,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                     continue;
                 }
                 String methodName = enclosed.getSimpleName().toString();
-                String propertyName = RefactoringUtil.getPropertyName(methodName, true);
+                String propertyName = RefactoringUtil.getPropertyName(methodName, enclosed.getReturnType(), true);
                 if (!prefix.matches(propertyName)) {
                     continue;
                 }
@@ -275,28 +275,30 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                     proposals.add(completionItem);
                 } else {
                     ELJavaCompletionItem completionItem;
-                    
-                    if (enclosed.getParameters().isEmpty() && !contains(proposals, propertyName)) {
-                        completionItem = new ELJavaCompletionItem(info, enclosed, elElement); //
-                    } else {
-                        completionItem = new ELJavaCompletionItem(info, enclosed, methodName, elElement);
-                    }
-                    
-                    completionItem.setSmart(false);
-                    completionItem.setAnchorOffset(context.getCaretOffset() - prefix.length());
 
-                    proposals.add(completionItem);
+                    if (!contains(proposals, propertyName)) {
+                        if (enclosed.getParameters().isEmpty()) {
+                            completionItem = new ELJavaCompletionItem(info, enclosed, elElement); //
+                        } else {
+                            completionItem = new ELJavaCompletionItem(info, enclosed, methodName, elElement);
+                        }
+
+                        completionItem.setSmart(false);
+                        completionItem.setAnchorOffset(context.getCaretOffset() - prefix.length());
+
+                        proposals.add(completionItem);
+                    }
                 }
             }
         }
     }
     
-    private boolean contains(List<CompletionProposal> completionProposals, String propertyName) {
-        if (propertyName == null || propertyName.isEmpty()) {
+    private boolean contains(List<CompletionProposal> completionProposals, String proposalName) {
+        if (proposalName == null || proposalName.isEmpty()) {
             return true;
         }
         for (CompletionProposal completionProposal : completionProposals) {
-            if (propertyName.equals(completionProposal.getName())) {
+            if (proposalName.equals(completionProposal.getName())) {
                 return true;
             }
         }
@@ -349,7 +351,9 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
             ELJavaCompletionItem item = new ELJavaCompletionItem(info, element, bean.name, elElement);
             item.setAnchorOffset(context.getCaretOffset() - prefix.length());
             item.setSmart(true);
-            proposals.add(item);
+            if (!contains(proposals, bean.name)) {
+                proposals.add(item);
+            }
         }
     }
 
