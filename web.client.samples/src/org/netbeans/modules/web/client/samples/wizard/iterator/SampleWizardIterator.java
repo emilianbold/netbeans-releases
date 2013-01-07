@@ -43,11 +43,14 @@
 package org.netbeans.modules.web.client.samples.wizard.iterator;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -111,7 +114,9 @@ public class SampleWizardIterator extends AbstractWizardIterator {
         }
         FileLock lock = fo.lock();
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(FileUtil.toFile(fo)));
+            BufferedReader reader = new BufferedReader(new InputStreamReader( 
+                    new FileInputStream(FileUtil.toFile(fo)), 
+                    Charset.forName("UTF-8")));                     // NOI18N
             String line;
             StringBuilder sb = new StringBuilder();
             while ((line = reader.readLine()) != null) {
@@ -122,7 +127,7 @@ public class SampleWizardIterator extends AbstractWizardIterator {
                 sb.append("\n");
             }
             OutputStreamWriter writer = new OutputStreamWriter(
-                    fo.getOutputStream(lock), "UTF-8");         // NOI18N
+                    fo.getOutputStream(lock), "UTF-8");             // NOI18N
             try {
                 writer.write(sb.toString());
             } finally {

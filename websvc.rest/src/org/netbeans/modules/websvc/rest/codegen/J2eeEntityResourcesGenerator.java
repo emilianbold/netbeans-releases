@@ -243,6 +243,9 @@ public class J2eeEntityResourcesGenerator extends EntityResourcesGenerator {
         bodyText.append( "throw new RuntimeException(ex);}");           // NOI18N
 
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        if ( javaSource== null){
+            return false;
+        }
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws Exception {

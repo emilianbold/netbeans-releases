@@ -92,6 +92,7 @@ public class MethodGenerator {
         this.wsdlModel=wsdlModel;
     }
     
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     public void generateMethod(final String operationName) throws IOException {
         
         // Use Progress API to display generator messages.
@@ -176,6 +177,7 @@ public class MethodGenerator {
         }
     }
     
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     public static void deleteMethod(final FileObject implClass, final String operationName) throws IOException{
         JavaSource targetSource = JavaSource.forFileObject(implClass);
         CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
@@ -227,6 +229,7 @@ public class MethodGenerator {
         }
     }
     
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     public static void removeMethod(final FileObject implClass, 
             final String operationName) throws IOException 
     {

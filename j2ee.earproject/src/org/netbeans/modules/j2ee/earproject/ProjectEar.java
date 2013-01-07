@@ -137,8 +137,6 @@ public final class ProjectEar extends J2eeApplicationProvider
     
     ProjectEar (EarProject project) { // ], AntProjectHelper helper) {
         this.project = project;
-        AntProjectHelper helper = project.getAntProjectHelper();
-        //helper.getStandardPropertyEvaluator().addPropertyChangeListener(this);
     }
     
     /**
@@ -810,11 +808,15 @@ public final class ProjectEar extends J2eeApplicationProvider
         
         public void artifactsUpdated(Iterable<Artifact> artifacts) {
             List<Artifact> recomputed = new ArrayList<Artifact>();
+            String buildDirName = project.evaluator().getProperty(EarProjectProperties.BUILD_DIR);
+            if (buildDirName == null) {
+                return;
+            }
             for (Artifact artifact : artifacts) {
                 if (artifact.isReferencedLibrary() && artifact.isRelocatable()) {
                     // FIXME manifest ant TLD magic
                     File buildDir = project.getAntProjectHelper().resolveFile(
-                            project.evaluator().getProperty(EarProjectProperties.BUILD_DIR));
+                            buildDirName);
                     String relocation = artifact.getRelocation();
                     File destFile = null;
                     if (relocation != null) {

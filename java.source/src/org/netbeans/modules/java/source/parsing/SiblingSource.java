@@ -43,13 +43,14 @@
 package org.netbeans.modules.java.source.parsing;
 
 import java.net.URL;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  *
  * @author Tomas Zezula
  */
 public interface SiblingSource {
-    void push(URL sobling);
-    URL pop();
-    SiblingProvider getProvider();
+    void push(@NonNull URL sibling, boolean inSourceRoot);
+    @NonNull URL pop();
+    @NonNull SiblingProvider getProvider();
 }

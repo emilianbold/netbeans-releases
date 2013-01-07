@@ -596,7 +596,7 @@ public class AddWsOperationHelper {
     
     /** Holder class for result
      */
-    private class ResultHolder<E> {
+    private static class ResultHolder<E> {
         private Collection<E> result;
         
         public Collection<E> getResult() {

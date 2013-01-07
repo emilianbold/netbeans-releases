@@ -104,7 +104,7 @@ public class AddPropertyAction extends AbstractAction {
                     ResultIterator ri = WebUtils.getResultIterator(resultIterator, "text/css");
                     if (ri != null) {
                         CssParserResult result = (CssParserResult) ri.getParserResult();
-                        model_ref.set(Model.getModel(result));
+                        model_ref.set(Model.createModel(result));
                     }
                 }
             });
@@ -131,6 +131,13 @@ public class AddPropertyAction extends AbstractAction {
                 public void actionPerformed(ActionEvent e) {
                     if ("OK".equals(e.getActionCommand())) {
                         addPropertyPanel.node.applyModelChanges();
+                        //Refresh the RE content:
+                        //As here we use a new css source model but not the one held in RE panel,
+                        //we need to explicly let the RE know that its model changed.
+                        //Normally this is done by the CssCaretAwareSourceTask, but in some
+                        //cases the task is not called as the source is not even opened in editor.
+                        //(RE content is set by "document" section of the CSS Styles Window)
+                        panel.refreshModel();
                     }
                 }
             });

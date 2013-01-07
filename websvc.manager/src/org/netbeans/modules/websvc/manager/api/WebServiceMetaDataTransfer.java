@@ -65,12 +65,12 @@ public class WebServiceMetaDataTransfer {
     /**
      * The {@link DataFlavor} representing a web service port
      */
-    public static DataFlavor PORT_FLAVOR;
+    public static final DataFlavor PORT_FLAVOR;
     
     /**
      * The {@link DataFlavor} representing a web service method
      */
-    public static DataFlavor METHOD_FLAVOR;
+    public static final DataFlavor METHOD_FLAVOR;
 
     public static final DataFlavor METHOD_NODE_FLAVOR;
     protected static final DataFlavor PORT_NODE_FLAVOR;

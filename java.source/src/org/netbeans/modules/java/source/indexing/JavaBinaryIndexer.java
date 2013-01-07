@@ -62,6 +62,7 @@ import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.java.source.JBrowseModule;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
 import org.netbeans.modules.java.source.parsing.FileObjects;
@@ -253,7 +254,11 @@ public class JavaBinaryIndexer extends BinaryIndexer {
                 Exceptions.printStackTrace(e);
             } finally {
                 try {
-                    txCtx.commit();
+                    if (JBrowseModule.isClosed()) {
+                        txCtx.rollBack();
+                    } else {
+                        txCtx.commit();
+                    }
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }

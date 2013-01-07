@@ -1,4 +1,4 @@
-// $ANTLR 3.3 Nov 30, 2010 12:50:56 /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2012-12-03 12:19:54
+// $ANTLR 3.3 Nov 30, 2010 12:50:56 /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2012-12-14 10:11:24
 
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -101,11 +101,11 @@ public class Css3Lexer extends Lexer {
     public static final int GREATER=49;
     public static final int TILDE=50;
     public static final int MINUS=51;
-    public static final int STAR=52;
-    public static final int HASH=53;
-    public static final int DOT=54;
-    public static final int LBRACKET=55;
-    public static final int DCOLON=56;
+    public static final int HASH=52;
+    public static final int DOT=53;
+    public static final int LBRACKET=54;
+    public static final int DCOLON=55;
+    public static final int STAR=56;
     public static final int PIPE=57;
     public static final int NAME=58;
     public static final int OPEQ=59;

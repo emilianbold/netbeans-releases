@@ -44,6 +44,7 @@ package org.netbeans.modules.maven.embedder;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -83,6 +84,7 @@ public final class EmbedderFactory {
     private static final Logger LOG = Logger.getLogger(EmbedderFactory.class.getName());
 
     private static MavenEmbedder project;
+    private static AtomicBoolean projectLoaded = new AtomicBoolean(false);
     private static final Object PROJECT_LOCK = new Object();
     private static MavenEmbedder online;
     private static final Object ONLINE_LOCK = new Object();
@@ -121,6 +123,7 @@ public final class EmbedderFactory {
      */
     public static void resetCachedEmbedders() {
         synchronized (PROJECT_LOCK) {
+            projectLoaded.set(false);
             project = null;
         }
         synchronized (ONLINE_LOCK) {
@@ -311,6 +314,17 @@ public final class EmbedderFactory {
             rethrowThreadDeath(t2);
         }
     }
+    
+    /**
+     * a simple way to tell if projectEmbedder is loaded or not.
+     * just for performance reasons if someone wants to skip processing because of risk of loading the embedder.
+     * Mostly applies to global services only.
+     * @return 
+     * @since 2.35
+     */
+    public static boolean isProjectEmbedderLoaded() {
+        return projectLoaded.get();
+    }
 
     public static @NonNull MavenEmbedder getProjectEmbedder() {
         synchronized (PROJECT_LOCK) {
@@ -321,6 +335,7 @@ public final class EmbedderFactory {
                     rethrowThreadDeath(ex);
                     throw new IllegalStateException(ex);
                 }
+                projectLoaded.set(true);
             }
             return project;
         }

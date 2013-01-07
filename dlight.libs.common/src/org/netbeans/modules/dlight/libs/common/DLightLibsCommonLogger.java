@@ -115,7 +115,7 @@ public class DLightLibsCommonLogger {
 
     public static void assertNonUiThread(String message, Level level, boolean once) {
         if (assertionsEnabled && SwingUtilities.isEventDispatchThread()) {
-            if (once && StackElementArray.addStackIfNew(toStringStacks, 8)) {
+            if (!once || StackElementArray.addStackIfNew(toStringStacks, 8)) {
                 instance.log(level, message, lastAssertion = new Exception(message));
             }
         }

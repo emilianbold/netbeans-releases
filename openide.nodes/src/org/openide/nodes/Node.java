@@ -896,6 +896,10 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     /** A method to notify FilterNode that a listenerAdded has been added */
     void listenerAdded() {
     }
+    
+    final int getNodeListenerCount() {
+        return listeners.getListenerCount(NodeListener.class);
+    }
 
     /** Remove a node listener.
      * @param l the listener
@@ -1030,6 +1034,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
 
         Object[] listeners = this.listeners.getListenerList();
 
+        Set<PropertyChangeListener> dormant = Collections.emptySet();
         // Process the listeners last to first, notifying
         // those that are interested in this event
         for (int i = listeners.length - 2; i >= 0; i -= 2) {
@@ -1038,10 +1043,13 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
                 if (ev == null) {
                     ev = new PropertyChangeEvent(this, name, o, n);
                 }
-
-                ((PropertyChangeListener) listeners[i + 1]).propertyChange(ev);
+                final PropertyChangeListener l = (PropertyChangeListener) listeners[i + 1];
+                l.propertyChange(ev);
+                
+                dormant = FilterNode.PropertyChangeAdapter.checkDormant(l, dormant);
             }
         }
+        removeDormant(dormant, PropertyChangeListener.class);
     }
 
     /**
@@ -1103,6 +1111,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     *   Can be null if one should find indices from current set of nodes
     */
     final void fireSubNodesChange(boolean addAction, Node[] delta, Node[] from) {
+        Set<NodeListener> dormant = Collections.emptySet();
         try {
             // enter to readAccess to prevent firing another event before all listeners receive current event
             Children.PR.enterReadAccess();
@@ -1124,17 +1133,20 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
                     if (ev == null) {
                         ev = new NodeMemberEvent(this, addAction, delta, from);
                     }
+                    final NodeListener l = (NodeListener) listeners[i + 1];
 
                     if (addAction) {
-                        ((NodeListener) listeners[i + 1]).childrenAdded(ev);
+                        l.childrenAdded(ev);
                     } else {
-                        ((NodeListener) listeners[i + 1]).childrenRemoved(ev);
+                        l.childrenRemoved(ev);
                     }
+                    dormant = FilterNode.NodeAdapter.checkDormant(l, dormant);
                 }
             }
         } finally {
             Children.PR.exitReadAccess();
         }
+        removeDormant(dormant, NodeListener.class);
     }
     
     /** Fires that some indexes has been removed.
@@ -1142,6 +1154,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
      * @param indices removed indicies, 
      */
     final void fireSubNodesChangeIdx(boolean added, int[] idxs, Children.Entry sourceEntry, List<Node> current, List<Node> previous) {
+        Set<NodeListener> dormant = Collections.emptySet();
         try {
             // enter to readAccess to prevent firing another event before all listeners receive current event
             Children.PR.enterReadAccess();
@@ -1165,16 +1178,19 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
                         ev = new NodeMemberEvent(this, added, idxs, current, previous);
                         ev.sourceEntry = sourceEntry;
                     }
+                    final NodeListener l = (NodeListener) tmpListeners[i + 1];
                     if (added) {
-                        ((NodeListener) tmpListeners[i + 1]).childrenAdded(ev);
+                        l.childrenAdded(ev);
                     } else {
-                        ((NodeListener) tmpListeners[i + 1]).childrenRemoved(ev);
+                        l.childrenRemoved(ev);
                     }
+                    dormant = FilterNode.NodeAdapter.checkDormant(l, dormant);
                 }
             }
         } finally {
             Children.PR.exitReadAccess();
         }
+        removeDormant(dormant, NodeListener.class);
     }     
 
     /** Fires info about reordering of some children.
@@ -1182,6 +1198,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     * @param indices array of integers describing the permutation
     */
     final void fireReorderChange(int[] indices) {
+        Set<NodeListener> dormant = Collections.emptySet();
         NodeReorderEvent ev = null;
 
         Object[] listeners = this.listeners.getListenerList();
@@ -1194,15 +1211,19 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
                 if (ev == null) {
                     ev = new NodeReorderEvent(this, indices);
                 }
+                final NodeListener l = (NodeListener) listeners[i + 1];
 
-                ((NodeListener) listeners[i + 1]).childrenReordered(ev);
+                l.childrenReordered(ev);
+                dormant = FilterNode.NodeAdapter.checkDormant(l, dormant);
             }
         }
+        removeDormant(dormant, NodeListener.class);
     }
 
     /** To all node listeners fire node destroyed notification.
     */
     protected final void fireNodeDestroyed() {
+        Set<NodeListener> dormant = Collections.emptySet();
         NodeEvent ev = null;
 
         Object[] listeners = this.listeners.getListenerList();
@@ -1215,10 +1236,13 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
                 if (ev == null) {
                     ev = new NodeEvent(this);
                 }
+                final NodeListener l = (NodeListener) listeners[i + 1];
 
-                ((NodeListener) listeners[i + 1]).nodeDestroyed(ev);
+                l.nodeDestroyed(ev);
+                dormant = FilterNode.NodeAdapter.checkDormant(l, dormant);
             }
         }
+        removeDormant(dormant, NodeListener.class);
     }
 
     /** Fires info about change of parent node.
@@ -1261,6 +1285,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
             return;
         }
 
+        Set<NodeListener> dormant = Collections.emptySet();
         PropertyChangeEvent ev = null;
 
         Object[] listeners = this.listeners.getListenerList();
@@ -1273,10 +1298,12 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
                 if (ev == null) {
                     ev = new PropertyChangeEvent(this, name, o, n);
                 }
-
-                ((NodeListener) listeners[i + 1]).propertyChange(ev);
+                final NodeListener l = (NodeListener) listeners[i + 1];
+                l.propertyChange(ev);
+                dormant = FilterNode.NodeAdapter.checkDormant(l, dormant);
             }
         }
+        removeDormant(dormant, NodeListener.class);
     }
 
     /** Compares for equality. Does special treatment of
@@ -1311,6 +1338,12 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     @Override
     public String toString() {
         return super.toString() + "[Name=" + getName() + ", displayName=" + getDisplayName() + "]"; // NOI18N
+    }
+
+    private <T extends PropertyChangeListener> void removeDormant(Set<T> dormant, Class<T> c) {
+        for (T l : dormant) {
+            listeners.remove(c, l);
+        }
     }
 
     /** Marker interface for all cookies.

@@ -377,6 +377,9 @@ public class MoveClassTransformer extends RefactoringVisitor {
     }
     
     private boolean isElementMoving(Element el) {
+        if (el == null) {
+            return false;
+        }
         ElementKind kind = el.getKind();
         if (!(kind.isClass() || kind.isInterface())) {
             return false;

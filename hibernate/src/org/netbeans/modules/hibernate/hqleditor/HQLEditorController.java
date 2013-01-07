@@ -719,6 +719,13 @@ public class HQLEditorController {
                 if (jdkVersion == null || jdkVersion.equals("")) { //NOI18N
                     // Set to 1.5
                     jdkVersion = "1.5"; //NOI18N
+                } else {
+                    if(javax.lang.model.SourceVersion.latest().ordinal()<10){//should work for up to 1.9 release, need to be reviewed after 10  will be reached.
+                        String biggest = "1."+javax.lang.model.SourceVersion.latest().ordinal();//it's workaround for #223036
+                        if(jdkVersion.compareTo(biggest)>0) {
+                            jdkVersion = biggest;
+                        }
+                    }
                 }
                 options.add(jdkVersion);
 

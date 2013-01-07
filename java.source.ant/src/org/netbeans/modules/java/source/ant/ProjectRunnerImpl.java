@@ -136,6 +136,9 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
         Properties props = execenv.getProperties();
         props.putAll(antProps);
         props.put("nb.wait.for.caches", "true");
+        if (properties.containsKey("maven.disableSources")) {
+            props.put("maven.disableSources", String.valueOf(properties.get("maven.disableSources")));
+        }
         execenv.setProperties(props);
 
         return AntTargetExecutor.createTargetExecutor(execenv).execute(apc, null);

@@ -38,8 +38,8 @@ Classpath Exception. In addition, the Product also contains
 components which are governed exclusively by the terms of
 the GPLv2 with Classpath Exception (e.g. components from
 OpenJDK) or by the terms of one of the licenses listed below
-(i.e. Java ME SDK 3.2, Oracle JDBC Drivers, and Java Card
-Development Kit 3.0.2).
+(i.e. Oracle JDBC Drivers, and Java Card Development
+Kit 3.0.2).
 
 Third party technology that may be necessary for use with
 the Product is specified in THIRDPARTYLICENSE.txt. Such
@@ -69,10 +69,6 @@ LICENSE #2: CDDL.
 
 OTHER TERMS AND CONDITIONS INCORPORATED IN THIS AGREEMENT:
 
-The use of Java ME SDK 3.2 is subject to the terms and
-conditions set forth at
-http://www.oracle.com/technetwork/java/javame/downloads/java-me-sdk-3-0-5-license-459303.html
-
 The use of Oracle JDBC drivers is subject to the terms and
 conditions set forth at
 http://www.oracle.com/technetwork/licenses/distribution-license-152002.html
@@ -81,7 +77,7 @@ The use of Java Card Development Kit 3.0.2 is subject to the
 terms and conditions set forth at
 http://download.oracle.com/otn-pub/java/licenses/OTN_Java_Card_Classic_Connected_SDK_4April2012.pdf
 
-Last updated 27 September 2012
+Last updated 27 December 2012
 
 ************************************************************
 

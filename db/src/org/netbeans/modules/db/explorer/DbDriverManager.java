@@ -223,12 +223,19 @@ public class DbDriverManager {
      */
     public Driver getDriver(JDBCDriver jdbcDriver) throws SQLException {
         ClassLoader l = getClassLoader(jdbcDriver);
+        Object driver;
         try {
-            return (Driver)Class.forName(jdbcDriver.getClassName(), true, l).newInstance();
+            driver = Class.forName(jdbcDriver.getClassName(), true, l).newInstance();
         } catch (Exception e) {
             SQLException sqlex = createDriverNotFoundException();
             sqlex.initCause(e);
             throw sqlex;
+        }
+        if (driver instanceof Driver) {
+            return (Driver) driver;
+        } else {
+            throw new SQLException(driver.getClass().getName()
+                    + " is not a driver");                              //NOI18N
         }
     }
     

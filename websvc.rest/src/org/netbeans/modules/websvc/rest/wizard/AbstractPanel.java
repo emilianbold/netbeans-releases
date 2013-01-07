@@ -91,7 +91,6 @@ public abstract class AbstractPanel implements ChangeListener, FinishablePanel,
     
     @Override
     public void storeSettings(Object settings) {
-        WizardDescriptor d = (WizardDescriptor) settings;
         ((Settings)getComponent()).store(wizardDescriptor);
     }
 

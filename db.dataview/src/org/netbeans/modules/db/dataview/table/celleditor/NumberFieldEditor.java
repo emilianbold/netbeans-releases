@@ -59,7 +59,7 @@ public class NumberFieldEditor extends ResultSetTableCellEditor {
     public Component getTableCellEditorComponent(final JTable table, Object value, boolean isSelected, int row, int column) {
         this.table = table;
         Component c = super.getTableCellEditorComponent(table, value, isSelected, row, column);
-        if (isGtk && c instanceof JComponent) {
+        if (suppressEditorBorder && c instanceof JComponent) {
             ((JComponent) c).setBorder(BorderFactory.createEmptyBorder());
         }
         setEditable(column, c, table.isCellEditable(row, column));

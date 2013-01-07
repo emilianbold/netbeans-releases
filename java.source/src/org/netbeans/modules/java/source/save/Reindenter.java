@@ -139,7 +139,7 @@ public class Reindenter implements IndentTask {
                     int originalStartOffset = it.next();
                     int originalEndOffset;
                     if (it.hasNext()) {
-                        originalEndOffset = it.next();
+                        originalEndOffset = it.next() - 1;
                         it.previous();
                     } else {
                         originalEndOffset = region.getEndOffset();

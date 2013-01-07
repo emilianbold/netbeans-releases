@@ -55,6 +55,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu.Separator;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
@@ -70,6 +71,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 @ActionID(id = "org.netbeans.modules.project.ui.SetMainProject", category = "Project")
@@ -91,6 +93,7 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
     private static Preferences prefs() {
         return NbPreferences.forModule(SetMainProject.class);
     }
+    private static RequestProcessor RP = new RequestProcessor(SetMainProject.class);
     
     protected JMenu subMenu;
     private boolean empty;
@@ -114,16 +117,20 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
     }
     
     @Override protected void actionPerformed(Lookup context) {
-        Project[] projects = ActionsUtil.getProjectsFromLookup( context, null );        
+        final Project[] projects = ActionsUtil.getProjectsFromLookup( context, null );        
         
         if (projects != null && projects.length == 1) {
-            if (projects[0] == OpenProjectList.getDefault().getMainProject()) {
-                OpenProjectList.getDefault().setMainProject(null);
-            } else {
-                OpenProjectList.getDefault().setMainProject(projects[0]);
-            }
-        }
-        
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (projects[0] == OpenProjectList.getDefault().getMainProject()) {
+                        OpenProjectList.getDefault().setMainProject(null);
+                    } else {
+                        OpenProjectList.getDefault().setMainProject(projects[0]);
+                    }
+                }
+            });            
+        }        
     }
 
     @Messages("LBL_UnSetAsMainProjectAction_Name=Unset as Main Project")
@@ -255,10 +262,24 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
     @Override public void propertyChange(PropertyChangeEvent e) {
         
         if ( OpenProjectList.PROPERTY_OPEN_PROJECTS.equals( e.getPropertyName() ) ) {
-            createSubMenu();
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                   createSubMenu();
+                }
+            });
+            
         }
-        else if ( OpenProjectList.PROPERTY_MAIN_PROJECT.equals( e.getPropertyName() ) && subMenu != null ) {
-            selectMainProject();
+        else if ( OpenProjectList.PROPERTY_MAIN_PROJECT.equals( e.getPropertyName() )) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    if (subMenu != null) {
+                        selectMainProject();
+                    }
+                }
+            });            
+            
         }
         
         
@@ -272,13 +293,15 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
             
             if ( e.getSource() instanceof JMenuItem ) {
                 JMenuItem jmi = (JMenuItem)e.getSource();
-                Project project = (Project)jmi.getClientProperty( PROJECT_KEY );
-                OpenProjectList.getDefault().setMainProject(project);
+                final Project project = (Project)jmi.getClientProperty( PROJECT_KEY );
                 prefs().putBoolean(CONTEXT_MENU_ITEM_ENABLED, project != null);
-            }
-            
-        }
-        
-    }
-       
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        OpenProjectList.getDefault().setMainProject(project);
+                    }
+                });   
+            }            
+        }   
+    }       
 }

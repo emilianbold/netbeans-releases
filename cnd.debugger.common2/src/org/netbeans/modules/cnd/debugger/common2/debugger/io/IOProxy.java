@@ -165,7 +165,7 @@ public abstract class IOProxy {
                     pout.flush();
                     pout.close();
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    //Exceptions.printStackTrace(ex);
                 }
             }
         }
@@ -206,12 +206,12 @@ public abstract class IOProxy {
                 try {
                     ioWriter.flush();
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    //Exceptions.printStackTrace(ex);
                 }
                 try {
                     in.close();
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    //Exceptions.printStackTrace(ex);
                 }
             }
         }

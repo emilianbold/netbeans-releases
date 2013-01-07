@@ -896,6 +896,38 @@ public class EvaluatorApp {
         return new float[] { methodAutobox2(4, new Long(lx), new Float(1.4)), 15f, new Float(1.5) }[0];
     }
     
+    public static String testVarArgs1() throws NoSuchMethodException {
+        return Runtime.class.getMethod("runFinalizersOnExit", Boolean.TYPE).getName();
+    }
+    
+    public static String testVarArgs2() throws NoSuchMethodException {
+        return Runtime.class.getMethod("runFinalizersOnExit", new Class[] { Boolean.TYPE }).getName();
+    }
+    
+    public static int testVarArgs3() {
+        return count(new String[] { null });
+    }
+    
+    public static int testVarArgs4() {
+        return count(new Object[] { null });
+    }
+    
+    public static int testVarArgs5() {
+        return count(new Object[][][] { new Object[][] { new Object[] {null} } });
+    }
+    
+    public static int testVarArgs6() {
+        return count(new Object[][][] { new Object[][] { new Object[] {null} } }, new Object[][][] { new Object[][] { new Object[] {null} } });
+    }
+    
+    public static int testVarArgs7() {
+        return count(new String[][] { {"A"}, {"B"} });
+    }
+    
+    public static int testVarArgs8() {
+        return count(new String[] { "A " }, new String[] { "B" });
+    }
+    
     public static String testConversion1() {
         return "a"+10;
     }
@@ -1044,6 +1076,22 @@ public class EvaluatorApp {
     
     public static Float methodAutobox2(Integer i, long l, double d) {
         return new Float(((d / l)) * i);
+    }
+    
+    public static int count(String[]... args) {
+        int c = 0;
+        for (String[] s : args) {
+            c += s.length;
+        }
+        return c;
+    }
+    
+    public static int count(Object[]... args) {
+        int c = 0;
+        for (Object[] s : args) {
+            c += s.length;
+        }
+        return -c;
     }
     
     public static class Inner1 {

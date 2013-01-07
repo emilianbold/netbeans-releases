@@ -51,7 +51,7 @@ package org.netbeans.modules.websvc.manager.model;
 
 public class WebServiceListModelEvent {
     String websvcGroupId;
-    String websvcId;
+    //String websvcId;
     
     public WebServiceListModelEvent(String id) {
         websvcGroupId = id;

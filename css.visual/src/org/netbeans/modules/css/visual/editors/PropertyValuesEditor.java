@@ -48,6 +48,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.FeatureDescriptor;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -235,6 +237,7 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
 
         }
 
+        editingFinished();
         setValue(str);
 
     }
@@ -244,6 +247,14 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
         return getValue().toString();
     }
 
+    private void editingFinished() {
+        panel.editingFinished();
+    }
+    
+    private void editingCancelled() {
+        panel.disposeEditedDeclaration();
+    }
+    
     @Override
     public String toString() {
         return getClass().getSimpleName() + "; property: " + pmodel != null ? pmodel.getName() : "?"; //NOI18N
@@ -253,6 +264,17 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
     public void attachEnv(PropertyEnv env) {
         //if there's at least one unit element, then the text field needs to be editable
         env.getFeatureDescriptor().setValue("canEditAsText", Boolean.TRUE); //NOI18N
+        
+        env.getFeatureDescriptor().setValue("nb.property.editor.callback", new PropertyChangeListener() {
+
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if("editingCancelled".equals(evt.getPropertyName())) {
+                    editingCancelled();
+                }
+            }
+            
+        }); //NOI18N
 
         env.getFeatureDescriptor().setValue("nb.propertysheet.mouse.doubleclick.listener", new MouseAdapter() {
             @Override

@@ -115,7 +115,7 @@ public class Nodes {
             toPopulate.addAll(constructSemiLogicalViewNodes(new LogicalViewCache(), sortErrors(errors.provider2Hints, BY_FILE)));
         } else {
 //            Map<AnalyzerFactory, Map<String, WarningDescription>> analyzerId2Description = new HashMap<AnalyzerFactory, Map<String, WarningDescription>>();
-            Map<String, Map<AnalyzerFactory, List<ErrorDescription>>> byCategoryId = sortErrors(errors.provider2Hints, new ByCategoryRetriever(errors.analyzerId2Description));
+            Map<String, Map<AnalyzerFactory, List<ErrorDescription>>> byCategoryId = sortErrors(errors.provider2Hints, new ByCategoryRetriever(errors.analyzerId2Description.get()));
             List<Node> categoryNodes = new ArrayList<Node>(byCategoryId.size());
             LogicalViewCache lvc = new LogicalViewCache();
 
@@ -128,7 +128,7 @@ public class Nodes {
                     AnalyzerFactory analyzer = typeEntry.getValue().keySet().iterator().next();
                     final Image icon = SPIAccessor.ACCESSOR.getAnalyzerIcon(analyzer);
 
-                    WarningDescription wd = typeEntry.getKey() != null ? findWarningDescription(errors.analyzerId2Description, analyzer, typeEntry.getKey()) : null;
+                    WarningDescription wd = typeEntry.getKey() != null ? findWarningDescription(errors.analyzerId2Description.get(), analyzer, typeEntry.getKey()) : null;
                     String typeDisplayName = wd != null ? SPIAccessor.ACCESSOR.getWarningDisplayName(wd) : null;
                     long typeWarnings = 0;
 

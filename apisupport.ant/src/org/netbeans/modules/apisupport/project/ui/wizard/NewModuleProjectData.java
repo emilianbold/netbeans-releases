@@ -71,6 +71,7 @@ final class NewModuleProjectData {
     private String projectDisplayName;
     private int moduleCounter;
     private int suiteCounter;
+    private int applicationCounter;
     
     /**
      * @param wizardType
@@ -194,6 +195,14 @@ final class NewModuleProjectData {
     
     void setSuiteCounter(int counter) {
         this.suiteCounter = counter;
+    }
+    
+    int getApplicationCounter() {
+        return applicationCounter;
+    }
+    
+    void setApplicationCounter(int counter) {
+        this.applicationCounter = counter;
     }
     
     NewNbModuleWizardIterator.Type getWizardType() {

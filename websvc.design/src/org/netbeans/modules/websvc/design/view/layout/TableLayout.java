@@ -74,7 +74,6 @@ public class TableLayout implements Layout {
     public void layout(Widget widget) {
         List<Widget> children = widget.getChildren();
 
-        int width = (minColumnWidth + hgap) * columnCount - hgap;;
         int y = 0;
 
         for (int i = 0; i < children.size(); i += columnCount) {

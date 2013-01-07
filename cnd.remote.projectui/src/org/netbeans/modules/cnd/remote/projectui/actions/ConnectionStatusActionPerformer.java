@@ -45,15 +45,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.openide.util.Exceptions;
+import org.openide.awt.StatusDisplayer;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ServiceProvider;
@@ -67,6 +68,7 @@ public class ConnectionStatusActionPerformer implements ActionListener, Property
     private RequestProcessor RP = new RequestProcessor("Connection worker", 1); //NOI18N
     private static final Logger logger = Logger.getLogger("remote.toolbar"); //NOI18N
     private ConnectionStatusAction presenter;
+    private ExecutionEnvironment prevEnv = null;
 
     public ConnectionStatusActionPerformer() {
     }
@@ -74,10 +76,8 @@ public class ConnectionStatusActionPerformer implements ActionListener, Property
     private void init() {
         ServerList.addPropertyChangeListener(WeakListeners.propertyChange(this, this));
         ConnectionManager.getInstance().addConnectionListener(WeakListeners.create(ConnectionListener.class, this, this));
-        // initial status
-        ExecutionEnvironment executionEnvironment = ServerList.getDefaultRecord().getExecutionEnvironment();
-        boolean connectedTo = ConnectionManager.getInstance().isConnectedTo(executionEnvironment);
-        updateStatus(executionEnvironment, connectedTo);        
+        // initial status        
+        updateStatus();
     }
     
     @Override
@@ -97,10 +97,21 @@ public class ConnectionStatusActionPerformer implements ActionListener, Property
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (ServerList.PROP_DEFAULT_RECORD.equals(evt.getPropertyName())) {
-            ExecutionEnvironment executionEnvironment = ServerList.getDefaultRecord().getExecutionEnvironment();
-            boolean connectedTo = ConnectionManager.getInstance().isConnectedTo(executionEnvironment);
-            logger.log(Level.FINE, "change default host {0}, connected {1}", new Object[]{executionEnvironment, connectedTo}); // NOI18N
-            updateStatus(executionEnvironment, connectedTo);
+            if (logger.isLoggable(Level.FINE)) {
+                ExecutionEnvironment executionEnvironment = ServerList.getDefaultRecord().getExecutionEnvironment();
+                boolean connectedTo = ConnectionManager.getInstance().isConnectedTo(executionEnvironment);
+                logger.log(Level.FINE, "change default host {0}, connected {1}", new Object[]{executionEnvironment, connectedTo}); // NOI18N
+            }
+            updateStatus();
+        }
+        if (ServerRecord.PROP_STATE_CHANGED.equals(evt.getPropertyName())) {
+            Object source = evt.getSource();
+            if (source instanceof ServerRecord) {
+                ServerRecord r = (ServerRecord) source;
+                if (r.getExecutionEnvironment().equals(ServerList.getDefaultRecord().getExecutionEnvironment())) {
+                    updateStatus();
+                }
+            }
         }
     }
     @Override
@@ -108,7 +119,7 @@ public class ConnectionStatusActionPerformer implements ActionListener, Property
         ExecutionEnvironment executionEnvironment = ServerList.getDefaultRecord().getExecutionEnvironment();
         if (env.equals(executionEnvironment)) {
             logger.log(Level.FINE, "change state host {0}, connected {1}", new Object[]{executionEnvironment, true}); // NOI18N
-            updateStatus(executionEnvironment, true);
+            updateStatus();
         }
     }
 
@@ -117,20 +128,35 @@ public class ConnectionStatusActionPerformer implements ActionListener, Property
         ExecutionEnvironment executionEnvironment = ServerList.getDefaultRecord().getExecutionEnvironment();
         if (env.equals(executionEnvironment)) {
             logger.log(Level.FINE, "change state host {0}, connected {1}", new Object[]{executionEnvironment, false}); // NOI18N
-            updateStatus(executionEnvironment, false);
+            updateStatus();
         }
     }
 
-    private void updateStatus(final ExecutionEnvironment executionEnvironment, final boolean connectedTo) {
-        SwingUtilities.invokeLater(new Runnable() {
+    private void updateStatus() {
 
+        SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 if (presenter != null) {
+                    ExecutionEnvironment executionEnvironment = ServerList.getDefaultRecord().getExecutionEnvironment();
+                    ServerRecord record = ServerList.get(executionEnvironment);
+                    // prevEnv does not need sync - accessed from EDT only
+                    if (!executionEnvironment.equals(prevEnv)) {
+                        record.addPropertyChangeListener(ConnectionStatusActionPerformer.this);
+                        if (prevEnv != null) {
+                            ServerRecord prevRecord = ServerList.get(prevEnv);
+                            prevRecord.removePropertyChangeListener(ConnectionStatusActionPerformer.this);
+                        }
+                    }
                     presenter.setEnabled(!executionEnvironment.isLocal());
+                    boolean connectedTo = ConnectionManager.getInstance().isConnectedTo(executionEnvironment);
                     if (!executionEnvironment.isLocal()) {
-                        if (connectedTo) {
-                            presenter.putValue("iconBase", "org/netbeans/modules/cnd/remote/projectui/resources/connected.png"); //NOI18N
+                        if (connectedTo) {                            
+                            if(record != null && record.isOnline()) {
+                                presenter.putValue("iconBase", "org/netbeans/modules/cnd/remote/projectui/resources/connected.png"); //NOI18N
+                            } else {
+                                presenter.putValue("iconBase", "org/netbeans/modules/cnd/remote/projectui/resources/not_set_up.png"); //NOI18N
+                            }
                         } else {
                             presenter.putValue("iconBase", "org/netbeans/modules/cnd/remote/projectui/resources/disconnected.png"); //NOI18N
                         }
@@ -148,13 +174,15 @@ public class ConnectionStatusActionPerformer implements ActionListener, Property
                 try {
                     if (!isConnected) {
                         ConnectionManager.getInstance().connectTo(executionEnvironment);
+                        ServerRecord record = ServerList.get(executionEnvironment);
+                        record.checkSetupAfterConnection(null);
                     } else {
                         ConnectionManager.getInstance().disconnect(executionEnvironment);
                     }
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (ConnectionManager.CancellationException ex) {
-                    Exceptions.printStackTrace(ex);
+                } catch (Exception ex) {
+                    String message = NbBundle.getMessage(ConnectionStatusActionPerformer.class, 
+                            "ErrorConnectingHost", executionEnvironment.getDisplayName(), ex.getMessage()); // NOI18N
+                    StatusDisplayer.getDefault().setStatusText(message);
                 }
             }
         });

@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.navigation.callgraph;
 
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
 import org.netbeans.modules.cnd.callgraph.api.Call;
@@ -59,12 +60,16 @@ public class CallImpl implements Call {
     private final CsmReference reference;
     private final Function function;
     private final boolean nameOrder;
+    private final CharSequence name;
+    private final CharSequence display;
     
     public CallImpl(CsmFunction owner, CsmReference reference, CsmFunction function, boolean nameOrder){
         this.owner = new FunctionImpl(owner);
         this.reference = reference;
         this.function = new FunctionImpl(function);
         this.nameOrder = nameOrder;
+        name = initDescription();
+        display = initHtmlDisplayName();
     }
 
     public Object getReferencedCall() {
@@ -73,7 +78,15 @@ public class CallImpl implements Call {
 
     @Override
     public void open() {
-        CsmUtilities.openSource(reference);
+        final String taskName = "Open function call"; //NOI18N
+        Runnable run = new Runnable() {
+
+            @Override
+            public void run() {
+                CsmUtilities.openSource(reference);
+            }
+        };
+        CsmModelAccessor.getModel().enqueue(run, taskName);
     }
 
     @Override
@@ -109,15 +122,25 @@ public class CallImpl implements Call {
 
     @Override
     public String getHtmlDisplayName() {
-        return CsmReferenceSupport.getContextLineHtml(reference, true).toString();
+        if (display != null) {
+            return display.toString();
+        }
+        return null;
     }
 
     @Override
     public String getDescription() {
-        CharSequence ret = CsmReferenceSupport.getContextLine(reference);
-        if (ret != null) {
-            return ret.toString();
+        if (name != null) {
+            return name.toString();
         }
         return null;
+    }
+
+    private CharSequence initHtmlDisplayName() {
+        return CsmReferenceSupport.getContextLineHtml(reference, true);
+    }
+
+    private CharSequence initDescription() {
+        return CsmReferenceSupport.getContextLine(reference);
     }
 }

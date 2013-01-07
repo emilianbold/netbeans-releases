@@ -51,15 +51,14 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiActivity;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
+import org.netbeans.modules.kenai.ui.Utilities;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -79,13 +78,13 @@ public class CreateChatAction extends AbstractAction {
 
     public void actionPerformed(ActionEvent e) {
         final JButton source = (e.getSource() instanceof JButton)?(JButton) e.getSource():null;
-        final TopComponent mainWindow = WindowManager.getDefault().findTopComponent("KenaiTopComponent"); // NOI18N
+        final TopComponent mainWindow = WindowManager.getDefault().findTopComponent("TeamTopComponent"); //NOI18N
         mainWindow.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         final ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(CreateChatAction.class, "LBL_CheckPermissions"));
         progress.setInitialDelay(0);
         progress.start();
         if (source!=null) source.setEnabled(true);
-        RequestProcessor.getDefault().post(new Runnable() {
+        Utilities.getRequestProcessor().post(new Runnable() {
 
             public void run() {
                 try {
@@ -119,7 +118,7 @@ public class CreateChatAction extends AbstractAction {
                                 null);
                         if (value == JOptionPane.YES_OPTION) {
                             progress.setDisplayName(NbBundle.getMessage(CreateChatAction.class, "CTL_CreatingChatProgress"));
-                            RequestProcessor.getDefault().post(new Runnable() {
+                            Utilities.getRequestProcessor().post(new Runnable() {
 
                                 public void run() {
                                     try {

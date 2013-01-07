@@ -58,6 +58,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ConditionalExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression.OperatorType;
@@ -139,7 +140,7 @@ public class AmbiguousComparisonHint extends AbstractHint {
         private boolean isValidContext(final List<ASTNode> path) {
             boolean result = false;
             for (ASTNode node : path) {
-                if (isConditionalNode(node) || node instanceof Assignment || node instanceof ReturnStatement) {
+                if (isConditionalNode(node) || node instanceof Assignment || node instanceof ReturnStatement || node instanceof FunctionInvocation) {
                     result = true;
                     break;
                 } else if (node instanceof Block) {

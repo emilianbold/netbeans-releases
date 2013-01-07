@@ -91,7 +91,9 @@ public class JsIndexer extends EmbeddingIndexer {
 
         JsObject globalObject = model.getGlobalObject();
         for(JsObject object : globalObject.getProperties().values()) {
-            storeObject(object, support, indexable);
+            if (object.getParent() != null) {
+                storeObject(object, support, indexable);
+            }
         }
     }
 

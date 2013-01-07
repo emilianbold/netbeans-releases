@@ -107,7 +107,7 @@ public class WebKitDebuggingTransport implements TransportImplementation {
             @Override
             public void run() {
                 try {
-                    if (debugger.isEnabled()) {
+                    if ((debugger != null) && debugger.isEnabled()) {
                         debugger.sendMessage(command.toString());
                     }
                 } catch (Throwable t) {

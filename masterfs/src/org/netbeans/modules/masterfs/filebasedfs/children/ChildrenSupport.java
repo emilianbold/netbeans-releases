@@ -358,7 +358,7 @@ public class ChildrenSupport {
         if (init && existingChildren == null) {
             existingChildren = new HashSet<FileNaming>();
         }
-        return existingChildren != null ? existingChildren : new HashSet<FileNaming>();
+        return existingChildren != null ? existingChildren : Collections.<FileNaming>emptySet();
     }
 
     private synchronized Set<FileNaming> getNotExisting() {
@@ -369,6 +369,17 @@ public class ChildrenSupport {
         if (init && notExistingChildren == null) {
             notExistingChildren = new HashSet<FileNaming>();
         }
-        return notExistingChildren != null ? notExistingChildren : new HashSet<FileNaming>();
+        return notExistingChildren != null ? notExistingChildren : Collections.<FileNaming>emptySet();
+    }
+    
+    protected synchronized final void copyTo(ChildrenSupport newCache, FileNaming name) {
+        assert newCache != this && newCache.existingChildren == null && newCache.notExistingChildren == null;
+        for (FileNaming fn : getExisting(false)) {
+            newCache.getChild(fn.getName(), name, true);
+        }
+        for (FileNaming fn : getNotExisting(false)) {
+            newCache.getChild(fn.getName(), name, true);
+        }
+        newCache.status = status;
     }
 }

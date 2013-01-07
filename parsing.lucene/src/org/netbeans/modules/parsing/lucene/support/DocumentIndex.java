@@ -172,6 +172,13 @@ public interface DocumentIndex {
          * @throws IOException in case of I/O error during rollback
          */
         void rollback() throws IOException;
+
+        /**
+         * Completely deletes the underlying {@link Index}
+         * @throws IOException in case of IO problem
+         * @since 2.20
+         */
+         void clear () throws IOException;
     }
 
 }

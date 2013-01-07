@@ -101,14 +101,7 @@ public class TranslateClassPath extends Task {
     private String translate(String classpath) {
         StringBuilder cp = new StringBuilder();
         boolean first = true;
-
-        Object o = getProject().getProperties().get("maven.disableSources");
-        Boolean disableSources;
-        if (o instanceof Boolean) {
-            disableSources = (Boolean) o;
-        } else {
-            disableSources = Boolean.FALSE;
-        }        
+        boolean disableSources = Boolean.valueOf(getProject().getProperty("maven.disableSources"));
         
         for (String path : PropertyUtils.tokenizePath(classpath)) {
             File[] files = translateEntry(path, disableSources);
@@ -132,7 +125,7 @@ public class TranslateClassPath extends Task {
         return cp.toString();
     }
     
-    private File[] translateEntry(String path, Boolean disableSources) throws BuildException {
+    private File[] translateEntry(String path, boolean disableSources) throws BuildException {
         final File entryFile = new File(path);
         try {
             final URL entry = FileUtil.urlForArchiveOrDir(entryFile);

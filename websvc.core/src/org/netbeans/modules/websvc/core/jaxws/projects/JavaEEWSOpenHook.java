@@ -157,7 +157,7 @@ public class JavaEEWSOpenHook extends ProjectOpenedHook {
                 }
             }
 
-    private class WebservicesChangeListener implements PropertyChangeListener {
+    private static class WebservicesChangeListener implements PropertyChangeListener {
 
         MetadataModel<WebservicesMetadata> wsModel;
         Project prj;
@@ -179,7 +179,7 @@ public class JavaEEWSOpenHook extends ProjectOpenedHook {
 
         private void updateJaxWs() {
             try {
-                wsModel.runReadAction(new MetadataModelAction<WebservicesMetadata, Void>() {
+                wsModel.runReadActionWhenReady(new MetadataModelAction<WebservicesMetadata, Void>() {
 
                     public Void run(WebservicesMetadata metadata) {
                         Map<String, String> result = new HashMap<String, String>();

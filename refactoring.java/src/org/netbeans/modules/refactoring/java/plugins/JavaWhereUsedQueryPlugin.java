@@ -47,6 +47,7 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
+import java.net.URL;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
@@ -55,6 +56,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ClassIndex.SearchScopeType;
 import org.netbeans.modules.refactoring.api.*;
@@ -322,6 +324,17 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
             source.runUserActionTask(task, true);
         } catch (IOException ioe) {
             throw new RuntimeException(ioe);
+        }
+        // filter out files that are not on source path
+        Set<FileObject> set2 = new HashSet<FileObject>(set.size());
+        ClassPath cp = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
+        for (FileObject fo : set) {
+            if (cp.contains(fo)) {
+                set2.add(fo);
+            }
+            if (cancel != null && cancel.get()) {
+                return Collections.<FileObject>emptySet();
+            }
         }
         return set;
     }

@@ -98,6 +98,8 @@ public abstract class Executor {
     public abstract boolean isAlive();
 
     public abstract void terminate() throws IOException;
+    
+    public abstract void interrupt() throws IOException;
 
     public abstract void interrupt(int pid) throws IOException;
 

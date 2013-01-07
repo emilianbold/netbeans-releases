@@ -59,12 +59,14 @@ public final class GdbFrame extends Frame {
 
     public GdbFrame(GdbDebuggerImpl debugger, MIValue frame, MIResult frameargs) {
 	super(debugger);
-	if (frame == null)
+	if (frame == null) {
 	    return;
+        }
 
 	MIframe = frame.asTuple();
-	if (MIframe == null)
+	if (MIframe == null) {
 	    return;
+        }
 
         frameno = MIframe.getConstValue("level"); // NOI18N
         pc = MIframe.getConstValue("addr"); // NOI18N
@@ -74,32 +76,37 @@ public final class GdbFrame extends Frame {
         fullname = MIframe.getConstValue("fullname", null); // NOI18N
         
         MITList args_list = (MITList) MIframe.valueOf("args"); // NOI18N
-	if (args_list != null && frameargs != null)
+	if (args_list != null && frameargs != null) {
 	    System.out.println("GdbFrame Impossible "); // NOI18N
+        }
 
 	// handle args info
-	if (frameargs != null) 
+	if (frameargs != null) {
             args_list = (MITList) frameargs.value().asTuple().valueOf("args"); // NOI18N
+        }
 
         if (args_list != null) {
-            args = " ("; // NOI18N
+            StringBuilder sb = new StringBuilder();
+            sb.append(" ("); // NOI18N
             if (debugger.getVerboseStack()) {
                 int args_count = args_list.size();
                     // iterate through args list
                 for (int vx=0; vx < args_count; vx++) {
                     MIValue arg = (MIValue)args_list.get(vx);
-                    if (vx != 0)
-                        args += ", "; // NOI18N
-                    args += arg.asTuple().getConstValue("name"); // NOI18N
+                    if (vx != 0) {
+                        sb.append(", "); // NOI18N
+                    }
+                    sb.append( arg.asTuple().getConstValue("name")); // NOI18N
                     MIValue value = arg.asTuple().valueOf("value"); // NOI18N
                     if (value != null) {
                         argsArray.add(new GdbLocal(arg));
-                        args += "="; // NOI18N
-                        args += value.asConst().value();
+                        sb.append("="); // NOI18N
+                        sb.append(value.asConst().value());
                     }
                 }
             }
-            args += ")"; // NOI18N
+            sb.append(")"); // NOI18N
+            args = sb.toString();
 	}
 
 	range_of_hidden = false;

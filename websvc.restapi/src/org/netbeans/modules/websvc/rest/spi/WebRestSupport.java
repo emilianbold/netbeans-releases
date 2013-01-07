@@ -149,6 +149,9 @@ public abstract class WebRestSupport extends RestSupport {
     
     public void enableRestSupport( RestConfig config ){
         String type =null;
+        if ( config== null){
+            return;
+        }
         switch( config){
             case IDE: 
                 type= CONFIG_TYPE_IDE;
@@ -164,6 +167,7 @@ public abstract class WebRestSupport extends RestSupport {
                     JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(project);
                 }
                 break;
+            default:
         }
         if ( type!= null ){
             setProjectProperty(PROP_REST_CONFIG_TYPE, type);
@@ -820,7 +824,9 @@ public abstract class WebRestSupport extends RestSupport {
         FileObject srcRoot = findSourceRoot();
         if (srcRoot != null) {
             ClassPath cp = ClassPath.getClassPath(srcRoot, ClassPath.COMPILE);
-            if (cp.findResource("com/sun/jersey/api/spring/Autowire.class") == null) { //NOI18N
+            if (cp ==null ||cp.findResource(
+                    "com/sun/jersey/api/spring/Autowire.class") == null)        //NOI18N 
+            { 
                 File jerseyRoot = InstalledFileLocator.getDefault().locate(JERSEY_API_LOCATION, null, false);
                 if (jerseyRoot != null && jerseyRoot.isDirectory()) {
                     File[] jerseyJars = jerseyRoot.listFiles(new JerseyFilter(JERSEY_SPRING_JAR_PATTERN));

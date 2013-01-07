@@ -59,6 +59,7 @@ import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.model.api.Declaration;
+import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Expression;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Property;
@@ -116,6 +117,8 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
     private CSSStylesNodeLookup nodeLookup = new CSSStylesNodeLookup();
     /** Lookup result with rules selected in the panel. */
     Lookup.Result<Rule> ruleLookupResult;
+    /** Determines whether the view is active (i.e. whether it manages the rule controller). */
+    boolean active = true;
 
     /**
      * Creates a new {@code CSSStylesPanel}.
@@ -240,6 +243,9 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                 }
             }
         });
+        if (!active) {
+            return;
+        }
         final RuleInfo ruleInfo = (rules.size() == 1) ? lookup.lookup(RuleInfo.class) : null;
         EventQueue.invokeLater(new Runnable() {
             @Override
@@ -289,11 +295,13 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
 
     @Override
     public void activated() {
+        active = true;
         updateRulesEditor(ruleLookupResult.allInstances());
     }
 
     @Override
     public void deactivated() {
+        active = false;
     }
 
     /**
@@ -360,7 +368,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
     /**
      * User task that updates the rules editor window (to show the specified rule).
      */
-    static class RuleEditorTask extends UserTask {
+    class RuleEditorTask extends UserTask {
         /** Rule to show in the rules editor. */
         private Rule rule;
         /** Additional rule information. */
@@ -412,37 +420,43 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                     public void run(StyleSheet styleSheet) {
                         org.netbeans.modules.css.model.api.Rule modelRule = Utilities.findRuleInStyleSheet(sourceModel, styleSheet, rule);
                         if (modelRule != null) {
+                            found[0] = true;
+                            if (!active) {
+                                return;
+                            }
                             controller.setModel(sourceModel);
                             controller.setRule(modelRule);
                             if (ruleInfo != null) {
                                 List<String> active = new ArrayList<String>();
-                                List<Declaration> declarations = modelRule.getDeclarations().getDeclarations();
-                                for (int i=declarations.size()-1; i>=0; i--) {
-                                    Declaration declaration = declarations.get(i);
-                                    Property property = declaration.getProperty();
-                                    String propertyName = property.getContent().toString().trim();
-                                    PropertyValue propertyValue = declaration.getPropertyValue();
-                                    Expression expression = propertyValue.getExpression();
-                                    String value = expression.getContent().toString().trim();
-                                    if (isIEHackIgnoredByWebKit(property, result.getSnapshot())) {
-                                        controller.setDeclarationInfo(declaration, DeclarationInfo.INACTIVE);
-                                    } else if (isParsedOk(propertyName, value)) {
-                                        if (!ruleInfo.isInherited() || CSSUtils.isInheritedProperty(propertyName)) {
-                                            if (ruleInfo.isOverriden(propertyName) || active.contains(propertyName)) {
-                                                controller.setDeclarationInfo(declaration, DeclarationInfo.OVERRIDDEN);
+                                Declarations decls = modelRule.getDeclarations();
+                                if (decls != null) {
+                                    List<Declaration> declarations = decls.getDeclarations();
+                                    for (int i=declarations.size()-1; i>=0; i--) {
+                                        Declaration declaration = declarations.get(i);
+                                        Property property = declaration.getProperty();
+                                        String propertyName = property.getContent().toString().trim();
+                                        PropertyValue propertyValue = declaration.getPropertyValue();
+                                        Expression expression = propertyValue.getExpression();
+                                        String value = expression.getContent().toString().trim();
+                                        if (isIEHackIgnoredByWebKit(property, result.getSnapshot())) {
+                                            controller.setDeclarationInfo(declaration, DeclarationInfo.INACTIVE);
+                                        } else if (isParsedOk(propertyName, value)) {
+                                            if (!ruleInfo.isInherited() || CSSUtils.isInheritedProperty(propertyName)) {
+                                                if (ruleInfo.isOverriden(propertyName) || active.contains(propertyName)) {
+                                                    controller.setDeclarationInfo(declaration, DeclarationInfo.OVERRIDDEN);
+                                                } else {
+                                                    active.add(propertyName);
+                                                }
                                             } else {
-                                                active.add(propertyName);
+                                                // Inherited rule but a property that is not inherited
+                                                controller.setDeclarationInfo(declaration, DeclarationInfo.INACTIVE);
                                             }
                                         } else {
-                                            // Inherited rule but a property that is not inherited
-                                            controller.setDeclarationInfo(declaration, DeclarationInfo.INACTIVE);
+                                            controller.setDeclarationInfo(declaration, DeclarationInfo.ERRONEOUS);
                                         }
-                                    } else {
-                                        controller.setDeclarationInfo(declaration, DeclarationInfo.ERRONEOUS);
                                     }
                                 }
                             }
-                            found[0] = true;
                         }
                     }
                 });
@@ -450,7 +464,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                     break;
                 }
             }
-            if (!found[0]) {
+            if (active && !found[0]) {
                 controller.setNoRuleState();
             }
         }

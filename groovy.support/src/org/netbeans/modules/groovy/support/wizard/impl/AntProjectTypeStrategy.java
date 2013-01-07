@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.groovy.support.wizard.impl;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -104,17 +105,18 @@ public class AntProjectTypeStrategy extends ProjectTypeStrategy {
 
     @Override
     protected boolean existsGroovyTestFolder(List<SourceGroup> groups) {
-        return existsFolder(groups, "/test"); // NOI18N
+        return existsFolder(groups, "test"); // NOI18N
     }
 
     @Override
     protected boolean existsGroovySourceFolder(List<SourceGroup> groups) {
-        return existsFolder(groups, "/src"); // NOI18N
+        return existsFolder(groups, "src"); // NOI18N
     }
 
     private boolean existsFolder(List<SourceGroup> groups, String folderName) {
         for (SourceGroup group : groups) {
-            if (group.getRootFolder().getPath().contains(folderName)) {
+            final String groupPath = group.getRootFolder().getPath();
+            if (groupPath.endsWith(File.separator + folderName) || groupPath.contains(File.separator + folderName + File.separator)) {
                 return true;
             }
         }

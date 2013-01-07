@@ -130,9 +130,9 @@ public class RunTests {
                 return "";
             }
             return s.replace("\\", "\\\\").replace("/", "\\/").
-                    replace("\"", "\\\"").replace("\t", "\\\t").
-                    replace("\n", "\\u000d").replace("\r", "\\\r").
-                    replace("\b", "\\\b").replace("\f", "\\\f");
+                    replace("\"", "\\\"").replace("\t", " ").
+                    replace("\n", "\\u000d").replace("\r", " ").
+                    replace("\b", " ").replace("\f", " ");
         }
 
         @Override

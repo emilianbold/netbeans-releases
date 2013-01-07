@@ -77,4 +77,5 @@ public abstract class SPIAccessor {
 
     public abstract void setLookupObjects(HistoryEntry entry, Object[] lookupObjects);
 
+    public abstract void flushCachedContext ();
 }

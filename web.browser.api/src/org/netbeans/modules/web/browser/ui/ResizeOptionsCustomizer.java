@@ -54,6 +54,7 @@ import org.netbeans.modules.web.browser.api.ResizeOption;
 import org.netbeans.modules.web.browser.api.ResizeOptions;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -272,6 +273,7 @@ class ResizeOptionsCustomizer extends javax.swing.JPanel {
 
     public boolean showCustomizer() {
         DialogDescriptor descriptor = new DialogDescriptor( this, NbBundle.getMessage(ResizeOptionsCustomizer.class, "Title_CUSTOMIZE_WINDOW_SETTINGS"), true, DialogDescriptor.DEFAULT_OPTION, null, null );
+        descriptor.setHelpCtx( new HelpCtx("org.netbeans.modules.web.browser.ui.ResizeOptionsCustomizer") );
         Dialog dlg = DialogDisplayer.getDefault().createDialog( descriptor );
         dlg.setVisible( true );
         return descriptor.getValue() == DialogDescriptor.OK_OPTION;

@@ -42,6 +42,7 @@
 package org.netbeans.modules.javafx2.editor.parser.processors;
 
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -110,7 +111,16 @@ public class IncludeResolver extends FxNodeVisitor.ModelTreeTraversal implements
         } else {
             try {
                 URL u = new URL(env.getModel().getBaseURL(), srcPath);
+                u.toURI();
                 targetFo = URLMapper.findFileObject(u);
+            } catch (URISyntaxException ex) {
+                TextPositions pos = env.getTreeUtilities().positions(decl);
+                env.addError(new ErrorMark(
+                        pos.getStart(), pos.getEnd() - pos.getStart(),
+                        "invalid-include-path",
+                        ERR_invalidSourcePath(srcPath, ex.getLocalizedMessage()),
+                        decl
+                ));
             } catch (MalformedURLException ex) {
                 TextPositions pos = env.getTreeUtilities().positions(decl);
                 env.addError(new ErrorMark(

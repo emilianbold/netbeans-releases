@@ -50,6 +50,7 @@ import java.net.URL;
 import java.nio.channels.SelectionKey;
 import java.nio.charset.Charset;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.simple.JSONArray;
@@ -93,6 +94,8 @@ public final class ExternalBrowserPlugin {
     public static ExternalBrowserPlugin getInstance(){
         return INSTANCE;
     }
+    
+    private List<MessageListener> listeners;
 
     private static final ExternalBrowserPlugin INSTANCE = new ExternalBrowserPlugin();
     
@@ -103,6 +106,7 @@ public final class ExternalBrowserPlugin {
             + "for more information. This is likely caused by multiple instances of NetBeans "
             + "running at the same time or some other application using port {0}"})
     private ExternalBrowserPlugin() {
+        listeners = new CopyOnWriteArrayList<MessageListener>();
         try {
             server = new WebSocketServer(new InetSocketAddress(PORT), new BrowserPluginHandler());
             server.start();
@@ -182,6 +186,14 @@ public final class ExternalBrowserPlugin {
     public void sendWebKitDebuggerCommand(BrowserTabDescriptor tab, JSONObject command) {
         server.sendMessage(tab.keyForFeature(FEATURE_ROS), createDebuggerCommandMessage(tab.tabID, command));
     }
+    
+    public void addMessageListener(MessageListener listener){
+        listeners.add(listener);
+    }
+    
+    public void removeMessageListener(MessageListener listener ){
+        listeners.remove(listener);
+    }
 
     private void removeKey( SelectionKey key ) {
         for(Iterator<BrowserTabDescriptor> iterator = knownBrowserTabs.iterator() ; iterator.hasNext() ; ) {
@@ -216,6 +228,12 @@ public final class ExternalBrowserPlugin {
                     dispatcher.dispatchMessage(featureId, message);
                 }
             }
+        }
+    }
+    
+    private void fireMessageEvent( Message msg ) {
+        for (MessageListener listener : listeners) {
+            listener.messageReceived(msg);
         }
     }
 
@@ -265,6 +283,7 @@ public final class ExternalBrowserPlugin {
                 notifyDispatchers(message, key);
                 return;
             }
+            fireMessageEvent(msg);
             Message.MessageType type = msg.getType();
             switch (type) {
                 case INIT:
@@ -294,6 +313,8 @@ public final class ExternalBrowserPlugin {
                     break;
                 case SAVE_RESIZE_OPTIONS:
                     handleSaveResizeOptions(msg.getValue());
+                    break;
+                case READY:
                     break;
                 default:
                     assert false : "Unknown message type: " + type;

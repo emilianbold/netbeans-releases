@@ -1,0 +1,9 @@
+Display text: <font color=#000000>public function TestFunc(Test $</font><b>fred</b><font color=#000000>) {</font>
+File name: index.php
+Name: $fred
+Position: BEGIN: 164 END: 168
+
+Display text: <font color=#000000>echo $</font><b>fred</b><font color=#000000>->hello;</font>
+File name: index.php
+Name: $fred
+Position: BEGIN: 186 END: 190

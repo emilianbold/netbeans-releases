@@ -70,4 +70,9 @@ final class SPIAccessorImpl extends SPIAccessor {
     public Object[] getLookupObjects(HistoryEntry entry) {
         return entry.getLookupObjects();
     }
+
+    @Override
+    public void flushCachedContext () {
+        VCSContext.flushCached();
+    }
 }

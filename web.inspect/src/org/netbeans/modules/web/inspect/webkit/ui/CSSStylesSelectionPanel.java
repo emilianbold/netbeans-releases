@@ -223,7 +223,7 @@ public class CSSStylesSelectionPanel extends JPanel {
         titlePanel.add(Box.createHorizontalGlue());
         JToggleButton pseudoClassToggle = new JToggleButton();
         pseudoClassToggle.setFocusPainted(false);
-        pseudoClassToggle.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/web/inspect/resources/selectionMode.png", true)); // NOI18N
+        pseudoClassToggle.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/web/inspect/resources/elementStates.png", true)); // NOI18N
         pseudoClassToggle.setToolTipText(NbBundle.getMessage(CSSStylesSelectionPanel.class, "CSSStylesSelectionPanel.pseudoClasses")); // NOI18N
         CustomToolbar toolBar = new CustomToolbar();
         toolBar.addButton(pseudoClassToggle);
@@ -644,21 +644,46 @@ public class CSSStylesSelectionPanel extends JPanel {
                                 }
                             }
                         }
+                        Node[] nodes = rulePaneManager.getSelectedNodes();
+                        if (nodes.length == 0) {
+                            // The previous selection was either empty
+                            // or is no longer valid => pre-select the most
+                            // specific rule
+                            preselectRule();
+                        }
                     }
                 });
             } else {
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        Node[] nodes = propertyPaneRoot.getChildren().getNodes();
-                        if (nodes.length > 0) {
-                            try {
-                                propertyPaneManager.setSelectedNodes(new Node[] { nodes[0] });
-                            } catch (PropertyVetoException pvex) {}
-                        }
+                        preselectRule();
                     }
                 });
             }
+        }
+    }
+
+    /**
+     * Pre-selects the first property in the property pane (and
+     * the corresponding rule in the rule pane) or just the first
+     * rule in the rule pane.
+     */
+    void preselectRule() {
+        Node propertyPaneRoot = propertyPaneManager.getRootContext();
+        Node[] nodes = propertyPaneRoot.getChildren().getNodes();
+        if (nodes.length == 0) {
+            Node rulePaneRoot = rulePaneManager.getRootContext();
+            nodes = rulePaneRoot.getChildren().getNodes();
+            if (nodes.length > 0) {
+                try {
+                    rulePaneManager.setSelectedNodes(new Node[] { nodes[0] });
+                } catch (PropertyVetoException pvex) {}                                
+            }
+        } else {
+            try {
+                propertyPaneManager.setSelectedNodes(new Node[] { nodes[0] });
+            } catch (PropertyVetoException pvex) {}
         }
     }
 

@@ -60,6 +60,8 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ui.TypeElementFinder;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
+import org.netbeans.modules.schema2beans.Schema2BeansException;
+import org.netbeans.modules.schema2beans.Schema2BeansException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -119,6 +121,8 @@ public class EntityWizardPanel extends javax.swing.JPanel {
             }
         } catch (InvalidPersistenceXmlException ex) {
             warning = NbBundle.getMessage(EntityWizardDescriptor.class, "ERR_InvalidPersistenceXml", ex.getPath());//NOI18N
+        } catch (RuntimeException ex) {
+            warning = NbBundle.getMessage(EntityWizardDescriptor.class, "ERR_InvalidPersistenceXml", ex.getMessage());//NOI18N
         }
         Icon icon = null;
         if (warning != null) {

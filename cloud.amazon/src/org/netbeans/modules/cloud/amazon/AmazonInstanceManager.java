@@ -130,14 +130,12 @@ public class AmazonInstanceManager {
                 continue;
             }
             String keyId = new String(ch);
-            assert keyId != null : "key ID is missing for "+name; // NOI18N
             ch = Keyring.read(PREFIX+KEY+"."+name);
             if (ch == null) {
                 LOG.log(Level.WARNING, "no secret access key found for "+name);
                 continue;
             }
             String key = new String(ch);
-            assert key != null : "secret access key is missing for "+name; // NOI18N
             result.add(new AmazonInstance(name, keyId, key, region));
         }
         return result;

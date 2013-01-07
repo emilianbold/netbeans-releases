@@ -219,9 +219,10 @@ public class BraceMatchingSidebarComponent extends JComponent implements
         } else {
             baseUI = null;
         }
+        setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
         updatePreferredSize();
     }
-    
+
     private void loadPreferences() {
         showOutline = prefs.getBoolean(SimpleValueNames.BRACE_SHOW_OUTLINE, true);
         showToolTip = prefs.getBoolean(SimpleValueNames.BRACE_FIRST_TOOLTIP, true);

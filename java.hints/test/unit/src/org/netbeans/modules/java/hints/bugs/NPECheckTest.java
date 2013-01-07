@@ -160,11 +160,23 @@ public class NPECheckTest extends NbTestCase {
     }
     
     public void testAssignNullToNotNull() throws Exception {
-        performAnalysisTest("test/Test.java", "package test; class Test {private void test() {s = null;} @NotNull private String s; @interface NotNull {}}", "0:47-0:55:verifier:ANNNV");
+        HintTest.create()
+                .preference(NPECheck.KEY_ENABLE_FOR_FIELDS, true)
+                .input("package test; class Test {private void test() {s = null;} @NotNull private String s; @interface NotNull {}}")
+                .run(NPECheck.class)
+                .assertWarnings("0:47-0:55:verifier:ANNNV");
     }
     
     public void testPossibleAssignNullToNotNull() throws Exception {
-        performAnalysisTest("test/Test.java", "package test; class Test {private void test(int i) {String s2 = null; if (i == 0) {s2 = \"\";} s = s2;} @NotNull private String s; @interface NotNull {}}", "0:93-0:99:verifier:PANNNV");
+        HintTest.create()
+                .preference(NPECheck.KEY_ENABLE_FOR_FIELDS, true)
+                .input("package test; class Test {private void test(int i) {String s2 = null; if (i == 0) {s2 = \"\";} s = s2;} @NotNull private String s; @interface NotNull {}}")
+                .run(NPECheck.class)
+                .assertWarnings("0:93-0:99:verifier:PANNNV");
+    }
+    
+    public void testAssignNullToNotNullVarInitializer1() throws Exception {
+        performAnalysisTest("test/Test.java", "package test; class Test {private void test() {@NotNull String s = null;} @interface NotNull {}}", "0:47-0:72:verifier:ANNNV");
     }
     
     public void testNullCheckAnd1() throws Exception {
@@ -914,6 +926,124 @@ public class NPECheckTest extends NbTestCase {
                        "}")
                 .run(NPECheck.class)
                 .assertWarnings();
+    }
+    
+    public void testLoopExponentialExplosion() throws Exception {
+        String sourceCode = "package test;\n" +
+                            "import java.util.*;\n" +
+                            "class Test {\n" +
+                            "    private void t(List<String> args) {\n";
+        
+        for (int i = 0; i < 20; i++) {
+            sourceCode += "for (Iterator<String> it" + i + " = args.iterator(); it" + i + ".hasNext(); )";
+        }
+        
+        sourceCode += "if (args.size() == 0) System.err.println('a');\n" +
+                      "    }\n" +
+                      "}\n";
+        HintTest.create()
+                .input(sourceCode)
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void test223297() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import java.util.*;\n" +
+                       "import java.util.concurrent.*;\n" +
+                       "class Test {\n" +
+                       "    public boolean foo() {\n" +
+                       "        String name = \"a\";\n" +
+                       "        String path = \"b\";\n" +
+                       "        ConcurrentMap<String, List<String>> result = new ConcurrentHashMap<String, List<String>>();\n" +
+                       "        List<String> list = result.get(name);\n" +
+                       "        if (list == null) {\n" +
+                       "            List<String> prev = result.putIfAbsent(name, list = new ArrayList<String>(1));\n" +
+                       "            if (prev != null) {\n" +
+                       "                list = prev;\n" +
+                       "            }\n" +
+                       "        }\n" +
+                       "        return list.add(path);\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void testTestedProduceWarning() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import java.util.*;\n" +
+                       "import java.util.concurrent.*;\n" +
+                       "class Test {\n" +
+                       "    public void foo(String param) {\n" +
+                       "        boolean b = param != null;\n" +
+                       "        System.err.println(param.toString());\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings("6:33-6:41:verifier:Possibly Dereferencing null");
+    }
+    
+    public void test224028() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import java.io.*;\n" +
+                       "import java.util.*;\n" +
+                       "class Test {\n" +
+                       "    private void doSomething(Properties props) {\n" +
+                       "        if (props == null) {\n" +
+                       "            props = new Properties();\n" +
+                       "        }\n" +
+                       "        props.clear();\n" +
+                       "        try {\n" +
+                       "            canThrow();\n" +
+                       "        } catch (EmptyStackException | IOException ex) {\n" +
+                       "        }\n" +
+                       "        props.clear();\n" +
+                       "    }\n" +
+                       "    private void canThrow() throws EmptyStackException, IOException {\n" +
+                       "    }\n" +
+                       "}")
+                .sourceLevel("1.7")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void testFields1() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import java.io.*;\n" +
+                       "import java.util.*;\n" +
+                       "class Test {\n" +
+                       "    private String str;\n" +
+                       "    private void text() {\n" +
+                       "        str = null;\n" +
+                       "        System.err.println(str.length());\n" +
+                       "    }\n" +
+                       "}")
+                .sourceLevel("1.7")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void testFields2() throws Exception {
+        HintTest.create()
+                .preference(NPECheck.KEY_ENABLE_FOR_FIELDS, true)
+                .input("package test;\n" +
+                       "import java.io.*;\n" +
+                       "import java.util.*;\n" +
+                       "class Test {\n" +
+                       "    private String str;\n" +
+                       "    private void text() {\n" +
+                       "        str = null;\n" +
+                       "        System.err.println(str.length());\n" +
+                       "    }\n" +
+                       "}")
+                .sourceLevel("1.7")
+                .run(NPECheck.class)
+                .assertWarnings("7:31-7:37:verifier:DN");
     }
     
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {

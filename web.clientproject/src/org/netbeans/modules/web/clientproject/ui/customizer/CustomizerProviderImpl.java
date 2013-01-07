@@ -128,9 +128,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                 } finally {
                     WaitCursor.hide();
                 }
-                if (dialog != null) {
-                    dialog.setVisible(true);
-                }
+                dialog.setVisible(true);
             }
         });
     }

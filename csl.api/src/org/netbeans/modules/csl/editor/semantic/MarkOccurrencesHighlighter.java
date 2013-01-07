@@ -48,11 +48,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -61,15 +60,13 @@ import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.api.ColoringAttributes.Coloring;
-import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
+import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -88,6 +85,7 @@ public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
     //private FileObject file;
     private final Language language;
     private final Snapshot snapshot;
+    private int version;
     static Coloring MO = ColoringAttributes.add(ColoringAttributes.empty(), ColoringAttributes.MARK_OCCURRENCES);
     
     /** Creates a new instance of SemanticHighlighter */
@@ -116,8 +114,6 @@ public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
             return;
         }
 
-        long start = System.currentTimeMillis();
-
         int caretPosition = ((CursorMovedSchedulerEvent) event).getCaretOffset();
         
         if (isCancelled()) {
@@ -143,36 +139,20 @@ public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
             return;
         }
         
-        //Logger.getLogger("TIMER").log(Level.FINE, "Occurrences",
-        //    new Object[] {((DataObject) doc.getProperty(Document.StreamDescriptionProperty)).getPrimaryFile(), (System.currentTimeMillis() - start)});
-        //
-        
-// TODO: Support KEEP_MARKS!        
-//        if (bag == null) {
-//            if (node.getBoolean(MarkOccurencesSettings.KEEP_MARKS, true)) {
-//                return ;
-//            }
-//            
-//            bag = new ArrayList<int[]>();
-//        }
+        GsfSemanticLayer layer = GsfSemanticLayer.getLayer(MarkOccurrencesHighlighter.class, doc);
+        SortedSet seqs = new TreeSet<SequenceElement>();
 
         if (bag.size() > 0) {
-            Collections.sort(bag);
-        }
-        OffsetsBag obag = new OffsetsBag(doc);
-        obag.clear();
-        
-        if (bag.size() > 0) {
-            AttributeSet attributes = language.getColoringManager().getColoringImpl(MO);
-
             for (OffsetRange range : bag) {
                 if (range != OffsetRange.NONE) {
-                    obag.addHighlight(range.getStart(), range.getEnd(), attributes);
+                    SequenceElement s = new SequenceElement(language, range, MO);
+                    seqs.add(s);
                 }
             }
         }
         
-        getHighlightsBag(doc).setHighlights(obag);
+        layer.setColorings(seqs, version++);
+        
         OccurrencesMarkProvider.get(doc).setOccurrences(OccurrencesMarkProvider.createMarks(doc, bag, ES_COLOR, NbBundle.getMessage(MarkOccurrencesHighlighter.class, "LBL_ES_TOOLTIP")));
     }
     
@@ -196,7 +176,7 @@ public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
 
         return highlights == null ? null : new ArrayList<OffsetRange>(highlights.keySet());
     }
-
+    
     @Override
     public int getPriority() {
         return Integer.MAX_VALUE;
@@ -221,32 +201,8 @@ public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
         canceled = false;
     }
     
-    public static OffsetsBag getHighlightsBag(Document doc) {
-        OffsetsBag bag = (OffsetsBag) doc.getProperty(MarkOccurrencesHighlighter.class);
-        
-        if (bag == null) {
-            doc.putProperty(MarkOccurrencesHighlighter.class, bag = new OffsetsBag(doc, false));
-            
-            final OffsetsBag bagFin = bag;
-            DocumentListener l = new DocumentListener() {
-                public void insertUpdate(DocumentEvent e) {
-                    bagFin.removeHighlights(e.getOffset(), e.getOffset(), false);
-                }
-                public void removeUpdate(DocumentEvent e) {
-                    bagFin.removeHighlights(e.getOffset(), e.getOffset(), false);
-                }
-                public void changedUpdate(DocumentEvent e) {}
-            };
-            
-            doc.addDocumentListener(l);
-            
-            Object stream = DataLoadersBridge.getDefault().getFileObject(doc);
-            if (stream instanceof FileObject) {
-                Logger.getLogger("TIMER").log(Level.FINE, "MarkOccurrences Highlights Bag", new Object[] {(FileObject) stream, bag}); //NOI18N
-                Logger.getLogger("TIMER").log(Level.FINE, "MarkOccurrences Highlights Bag Listener", new Object[] {(FileObject) stream, l}); //NOI18N
-            }
-        }
-        
-        return bag;
+    public static AbstractHighlightsContainer getHighlightsBag(Document doc) {
+        GsfSemanticLayer highlight = GsfSemanticLayer.getLayer(MarkOccurrencesHighlighter.class, doc);
+        return highlight;
     }
 }

@@ -43,13 +43,12 @@ package org.netbeans.modules.cnd.indexing.impl;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.indexing.api.CndTextIndexKey;
+import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
@@ -60,11 +59,14 @@ import org.openide.util.RequestProcessor;
 /**
  *
  * @author Egor Ushakov <gorrus@netbeans.org>
+ * @author Vladimir Voskresensky
  */
-public class CndTextIndexImpl {
+public final class CndTextIndexImpl {
+    private final static Logger LOG = Logger.getLogger("CndTextIndexImpl"); // NOI18N
     private final DocumentIndex index;
-    private final HashMap<CndTextIndexKey, Set<String>> unsaved = new HashMap<CndTextIndexKey, Set<String>>();
-    private static final RequestProcessor RP = new RequestProcessor("Index saver", 1); //NOI18N
+    private final ConcurrentLinkedQueue<StoreQueueEntry> unsavedQueue = new ConcurrentLinkedQueue<StoreQueueEntry>();
+    
+    private static final RequestProcessor RP = new RequestProcessor("CndTextIndexImpl saver", 1); //NOI18N
     private final RequestProcessor.Task storeTask = RP.create(new Runnable() {
         @Override
         public void run() {
@@ -72,42 +74,58 @@ public class CndTextIndexImpl {
         }
     });
     private static final int STORE_DELAY = 3000;
+    private final UnitCodec unitCodec;
 
-    public CndTextIndexImpl(DocumentIndex index) {
+    public CndTextIndexImpl(DocumentIndex index, UnitCodec unitCodec) {
         this.index = index;
+        assert unitCodec != null;
+        this.unitCodec = unitCodec;
     }
 
     public void put(CndTextIndexKey key, Collection<String> values) {
-        synchronized (unsaved) {
-            unsaved.put(key, new HashSet<String>(values));
+        if (LOG.isLoggable(Level.FINE)) {
+            if (key.getFileNameIndex() < 2) {
+                LOG.log(Level.FINE, "Cnd Text Index put for {0}:\n\t{1}", new Object[]{key, values});
+            } else {
+                LOG.log(Level.FINE, "Cnd Text Index put for {0}:{1}", new Object[] {key, values.size()});
+            }
         }
+        unsavedQueue.add(new StoreQueueEntry(key, values));
         storeTask.schedule(STORE_DELAY);
     }
+    
+    private static class StoreQueueEntry {
+        private final CndTextIndexKey key;
+        private final Collection<String> ids;
 
-    void store() {
-        synchronized (unsaved) {
-            if (unsaved.isEmpty()) {
-                return;
-            }
-            long start = System.currentTimeMillis();
-            for (Map.Entry<CndTextIndexKey, Set<String>> entry : unsaved.entrySet()) {
-                final CndTextIndexKey key = entry.getKey();
-                IndexDocument doc = IndexManager.createDocument(String.valueOf(key.getFileNameIndex()));
-                for (String id : entry.getValue()) {
-                    doc.addPair(CndTextIndexManager.FIELD_UNIT_ID, String.valueOf(key.getUnitId()), false, true);
-                    doc.addPair(CndTextIndexManager.FIELD_IDS, id, true, true);
-                }
-                index.addDocument(doc);
-            }
-            try {
-                index.store(false);
-                unsaved.clear();
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            Logger.getLogger(CndTextIndexImpl.class.getName()).log(Level.FINE, 
-                    "Cnd Text Index store took {0}ms", System.currentTimeMillis() - start); //NOI18N
+        public StoreQueueEntry(CndTextIndexKey key, Collection<String> ids) {
+            this.key = key;
+            this.ids = ids;
         }
+    }
+
+    synchronized void store() {
+        if (unsavedQueue.isEmpty()) {
+            return;
+        }
+        long start = System.currentTimeMillis();
+        StoreQueueEntry entry = unsavedQueue.poll();
+        while (entry != null) {
+            final CndTextIndexKey key = entry.key;
+            // use unitID+fileID for primary key, otherwise indexed files from different projects overwrite each others
+            IndexDocument doc = IndexManager.createDocument(toPrimaryKey(key));
+            for (String id : entry.ids) {
+                doc.addPair(CndTextIndexManager.FIELD_IDS, id, true, false);
+            }
+            index.addDocument(doc);
+            entry = unsavedQueue.poll();
+        }
+        try {
+            index.store(false);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        LOG.log(Level.FINE, "Cnd Text Index store took {0}ms", System.currentTimeMillis() - start); 
     }
 
     public Collection<CndTextIndexKey> query(String value) {
@@ -115,17 +133,30 @@ public class CndTextIndexImpl {
         store();
         
         try {
-            Collection<? extends IndexDocument> queryRes = index.query(CndTextIndexManager.FIELD_IDS, value, Queries.QueryKind.EXACT, null);
+            // load light weight document with primary key field _sn only
+            // it's enough to restore CndTextIndexKey, but reduces memory by not loading FIELD_IDS set
+            Collection<? extends IndexDocument> queryRes = index.query(CndTextIndexManager.FIELD_IDS, value, Queries.QueryKind.EXACT, "_sn"); // NOI18N
             HashSet<CndTextIndexKey> res = new HashSet<CndTextIndexKey>(queryRes.size());
             for (IndexDocument doc : queryRes) {
-                res.add(new CndTextIndexKey(
-                        Integer.parseInt(doc.getValue(CndTextIndexManager.FIELD_UNIT_ID)),
-                        Integer.parseInt(doc.getPrimaryKey())));
+                res.add(fromPrimaryKey(doc.getPrimaryKey()));
             }
+            LOG.log(Level.FINE, "Cnd Text Index query for {0}:\n\t{1}", new Object[] {value, res});
             return res;
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
         return Collections.emptySet();
+    }
+    
+    private String toPrimaryKey(CndTextIndexKey key) {
+        return String.valueOf(((long) unitCodec.unmaskRepositoryID(key.getUnitId()) << 32) + (long) key.getFileNameIndex());
+    }
+
+    private CndTextIndexKey fromPrimaryKey(String ext) {
+        long value = Long.parseLong(ext);
+        int unitId = (int) (value >> 32);
+        unitId = unitCodec.maskByRepositoryID(unitId);
+        int fileNameIndex = (int) (value & 0xFFFFFFFF);
+        return new CndTextIndexKey(unitId, fileNameIndex);
     }
 }

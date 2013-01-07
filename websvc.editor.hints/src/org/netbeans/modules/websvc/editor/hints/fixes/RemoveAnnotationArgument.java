@@ -93,7 +93,6 @@ public class RemoveAnnotationArgument implements Fix {
                 }
                 if (element.getKind() == ElementKind.PARAMETER){
                     Element method = element.getEnclosingElement();
-                    ElementHandle<Element> methodHandle = ElementHandle.create(method);
                     if ( method instanceof ExecutableElement ){
                         ExecutableElement methodElement = (ExecutableElement)method;
                         List<? extends VariableElement> parameters = methodElement.getParameters();
@@ -120,7 +119,9 @@ public class RemoveAnnotationArgument implements Fix {
         JavaSource javaSource = JavaSource.forFileObject(fileObject);
         
         try{
-            javaSource.runModificationTask(task).commit();
+            if ( javaSource!= null ){
+                javaSource.runModificationTask(task).commit();
+            }
         } catch (IOException e){
         }
         return null;

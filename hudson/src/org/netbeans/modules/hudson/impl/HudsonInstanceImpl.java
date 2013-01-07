@@ -96,7 +96,7 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
 
     private HudsonInstanceProperties properties;
     private BuilderConnector builderConnector;
-    private String info; // additional info for transient instances
+    private Persistence persistence;
     
     private HudsonVersion version;
     private boolean connected;
@@ -118,10 +118,10 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
     private final Map<String,Reference<RemoteFileSystem>> workspaces = new HashMap<String,Reference<RemoteFileSystem>>();
     private final Map<String,Reference<RemoteFileSystem>> artifacts = new HashMap<String,Reference<RemoteFileSystem>>();
     
-    private HudsonInstanceImpl(HudsonInstanceProperties properties, boolean interactive, BuilderConnector builderConnector, String info) {
+    private HudsonInstanceImpl(HudsonInstanceProperties properties, boolean interactive, BuilderConnector builderConnector, Persistence persistence) {
         this.builderConnector = builderConnector;
         this.properties = properties;
-        this.info = info;
+        this.persistence = persistence;
 
         RP = new RequestProcessor(getUrl(), 1, true);
         final AtomicBoolean firstSynch = new AtomicBoolean(interactive); // #200643
@@ -194,12 +194,12 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
     }
     
     public static HudsonInstanceImpl createHudsonInstance(HudsonInstanceProperties properties, boolean interactive) {
-        return createHudsonInstance(properties, interactive, null);
+        return createHudsonInstance(properties, interactive, Persistence.persistent());
     }
 
-    public static HudsonInstanceImpl createHudsonInstance(HudsonInstanceProperties properties, boolean interactive, String info) {
+    public static HudsonInstanceImpl createHudsonInstance(HudsonInstanceProperties properties, boolean interactive, Persistence persistence) {
         HudsonConnector connector = new HudsonConnector(properties.get(HudsonInstanceConstants.INSTANCE_URL));
-        HudsonInstanceImpl instance = new HudsonInstanceImpl(properties, interactive, connector, info);
+        HudsonInstanceImpl instance = new HudsonInstanceImpl(properties, interactive, connector, persistence);
 
         assert instance.getName() != null;
         assert instance.getUrl() != null;
@@ -226,6 +226,9 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
         // Fire changes
         fireStateChanges();
         fireContentChanges();
+        if (problemNotificationController != null) {
+            problemNotificationController.clearNotifications();
+        }
     }
     
     public BuilderConnector getBuilderConnector() {
@@ -564,7 +567,7 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
         this.setViews(viewList, foundPrimaryView);
     }
 
-    public String getInfo() {
-        return info;
+    public Persistence getPersistence() {
+        return persistence;
     }
 }

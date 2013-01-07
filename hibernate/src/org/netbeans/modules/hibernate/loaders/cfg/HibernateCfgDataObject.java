@@ -95,8 +95,8 @@ import org.openide.windows.TopComponent;
 )
 public class HibernateCfgDataObject extends XmlMultiViewDataObject {
 
-    private static final int TYPE_TOOLBAR = 0;
     public static final int UPDATE_DELAY = 200;
+    public static final String SOURCE_VIEW_ID = "hibernate_configuration_multiview_source"; // NOI18N
     public static final String DESIGN_VIEW_ID = "hibernate_configuration_multiview_design"; // NOI18N
     private HibernateConfiguration configuration;
     private ModelSynchronizer modelSynchronizer;
@@ -172,11 +172,16 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
         return HibernateCfgDataLoader.REQUIRED_MIME;
     }
     
+    @Override
+    protected int getXMLMultiViewIndex(){
+        return 1;
+    }
+    
     @MultiViewElement.Registration(
         mimeType=HibernateCfgDataLoader.REQUIRED_MIME,
         iconBase=ICON,
         persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
-        preferredID=DESIGN_VIEW_ID+TYPE_TOOLBAR,
+        preferredID=SOURCE_VIEW_ID,
         displayName="#CTL_SourceTabCaption",
         position=2550
     )

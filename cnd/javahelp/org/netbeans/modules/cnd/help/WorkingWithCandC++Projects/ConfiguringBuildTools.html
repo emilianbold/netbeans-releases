@@ -1,12 +1,12 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2007, 2012 Oracle and/or its affiliates. All rights reserved.
+Copyright &copy; 2007, 2009, 2012 Oracle and/or its affiliates. All rights reserved.
  -->
 <html>
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type">
-    <link href="/org/netbeans/modules/usersguide/ide.css" rel="StyleSheet" type="text/css">
-     
+    <link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    <meta name="generator" content="Helen">
     <title>Configuring Build Tools for C/C++/Fortran Projects</title>
   </head>
   <body>
@@ -17,14 +17,15 @@ Copyright &copy; 2007, 2012 Oracle and/or its affiliates. All rights reserved.
        <small><a href="#seealso">See Also</a>&nbsp;</small>
     </p>
     <p>
-       The IDE uses the build tools (compilers, debuggers, make utility) that are installed on your system,
-       or on a remote system that you set up as a remote build host. The IDE looks for installed compilers
-       debuggers, and make utility on your path. You cannot work with C, C++, or Fortran projects without
-       these build tools. If the IDE does not find your compilers, you can configure build tools to show
-       the IDE where to find them.</p>
+       The IDE uses the build tools (compilers, debuggers, make utility) that are installed on your
+      system, or on a remote system that you set up as a remote build host. The IDE looks for
+      installed compilers debuggers, and make utility on your path. You cannot work with C, C++, or
+      Fortran projects without these build tools. If the IDE does not find your compilers, you can
+      configure build tools to show the IDE where to find them.
+    </p>
     <p>
-       You can use the Options window to configure build tools for your C/C++/Fortran projects. The options
-       that you specify are used by default for all new C/C++/Fortran projects.
+       You can use the Options window to configure build tools for your C/C++/Fortran projects. The
+      options that you specify are used by default for all new C/C++/Fortran projects.
     </p>
     <p>
        <b>To configure build tools:</b>
@@ -48,46 +49,44 @@ Copyright &copy; 2007, 2012 Oracle and/or its affiliates. All rights reserved.
     </p>
     <ul>
       <li>
-        <b>Build Host.</b> The Build Host list includes your local host and any remote
-        hosts you have defined. For information on using remote hosts, see <a href=
-        "RemoteDevelopment.html">Overview of Remote Development</a>. You can add and remove 
-        remote build hosts, change the default host, and change IDE properties of remote build
-        hosts.
+        <b>Build Host.</b> The Build Host list includes your local host and any remote hosts you
+        have defined. For information on using remote hosts, see <a href=
+        "RemoteDevelopment.html">Overview of Remote Development</a>. You can add and remove remote
+        build hosts, change the default host, and change IDE properties of remote build hosts. 
         <ul>
           <li>
-            To add a remote host, click Edit. In the Build Hosts Manager dialog box, click
-            Add. The New Remote Host Setup wizard starts. See the help for the <a href=
+            To add a remote host, click Edit. In the Build Hosts Manager dialog box, click Add. The
+            New Remote Host Setup wizard starts. See the help for the <a href=
             "NewRemoteDevelopmentHostWizardP1.html">New Remote Host Setup wizard</a> for more
             information.
           </li>
           <li>
-            To remove a remote host, click Edit. In the Build Hosts Manager dialog box, select
-            the host you want to remove, click Remove, then click OK.
+            To remove a remote host, click Edit. In the Build Hosts Manager dialog box, select the
+            host you want to remove, click Remove, then click OK.
           </li>
           <li>
-            To set a host as the default build host, select the host from the build 
-            Host list and click Set as Default.
+            To set a host as the default build host, select the host from the build Host list and
+            click Set as Default.
           </li>
-         
           <li>
-            To change IDE properties related to a remote build host, click Edit. In the Build
-            Hosts Manager dialog box, select the host you want to change and click Properties. In
-            the Host Properties dialog box, you can change the name displayed in the IDE for the
-            host by typing in the Display Name field. To change the way project files are shared with the
-            remote host, select the file synchronization method in the Synchronization list. If the
-            project files are in a shared folder that is accessible from the local host and remote host, you can
-            select File System Sharing. If sharing the files is not possible, select Smart Secure Copy
-            to copy the files. The files are copied using SSH protocols to your .netbeans directory on the remote host by default.
-            
+            To change IDE properties related to a remote build host, click Edit. In the Build Hosts
+            Manager dialog box, select the host you want to change and click Properties. In the
+            Host Properties dialog box, you can change the name displayed in the IDE for the host
+            by typing in the Display Name field. To change the way project files are shared with
+            the remote host, select the file synchronization method in the Synchronization list. If
+            the project files are in a shared folder that is accessible from the local host and
+            remote host, you can select System-level File Sharing. If sharing the files is not
+            possible, select Automatic Copying to copy the files. The files are copied using SSH
+            protocols to your .netbeans directory on the remote host by default.
           </li>
         </ul>
       </li>
       <li>
         <b>Tool Collection.</b> The tool collection list displays the collections found on the
-        current development host and the local host. The default collection is listed in bold type.
-        This collection is selected by default for any new project you create. You can change the
-        default tool collection for a specific project in the project properties. You can
-        manually add and remove tool collections.
+        current build host and the local host. The default collection is listed in bold type. This
+        collection is selected by default for any new project you create. You can change the
+        default tool collection for a specific project in the project properties. You can manually
+        add and remove tool collections. 
         <ul>
           <li>
             To add a collection to the list, click Add and specify the base directory in the Add
@@ -102,8 +101,8 @@ Copyright &copy; 2007, 2012 Oracle and/or its affiliates. All rights reserved.
           <li>
             To duplicate a collection, select the collection from the list and modify the base
             directory, tool set family, or tool set name in the dialog box. This might be useful if
-            you have two releases of the same tool collection. You can edit the path to the base directory
-            in the duplicate tool collection to specify the path to the other release.
+            you have two releases of the same tool collection. You can edit the path to the base
+            directory in the duplicate tool collection to specify the path to the other release.
           </li>
           <li>
             To make a collection the default, select the collection and click Default.
@@ -111,42 +110,51 @@ Copyright &copy; 2007, 2012 Oracle and/or its affiliates. All rights reserved.
         </ul>
       </li>
       <li>
-        <b>Base Directory.</b> The base directory for compilers for the current development host. The
+        <b>Base Directory.</b> The base directory for compilers for the current build host. The
         base directory is often the <tt>bin</tt> directory of the tool collection.
       </li>
+      <li style=" list-style-type: none; list-style-image: none;">
         <ul>
           <li>
-            <b>C Compiler.</b> The path to the C compiler to use for building projects. The default compiler is
-            the first one found in the base directory.
-          </li>
-          <li>
-            <b>C++ Compiler.</b> The path to the C++ compiler to use for building projects. The default
+            <b>C Compiler.</b> The path to the C compiler to use for building projects. The default
             compiler is the first one found in the base directory.
           </li>
           <li>
-            <b>Fortran Compiler.</b> The path to the Fortran compiler to use for building projects. The default
-            compiler is the first one found in the base directory.
+            <b>C++ Compiler.</b> The path to the C++ compiler to use for building projects. The
+            default compiler is the first one found in the base directory.
           </li>
-          <li><b>Assembler.</b> The path to the assembler program to use for translating assembly instructions.</li>
-         </li>
+          <li>
+            <b>Fortran Compiler.</b> The path to the Fortran compiler to use for building projects.
+            The default compiler is the first one found in the base directory.
+          </li>
+          <li>
+            <b>Assembler.</b> The path to the assembler program to use for translating assembly
+            instructions.
+          </li>
         </ul>
       </li>
+    </ul>
+    <ul class="noindent">
       <li>
-        <b>Make Command.</b> The path to the make command to use for building projects. The default command is
-        the first one found in the base directory. To select a different command from the base
-        directory or another directory, click the browse button and navigate to a different command
-        in the Select Tool dialog box.
-      </li>
-      <li>
-        <b>Debugger Command.</b> The path to the gdb command to use when debugging projects. The default
+        <b>Make Command.</b> The path to the make command to use for building projects. The default
         command is the first one found in the base directory. To select a different command from
         the base directory or another directory, click the browse button and navigate to a
         different command in the Select Tool dialog box.
       </li>
-      <li><b>QMake Command.</b> The path to the qmake command, which is used to generate makefiles
-          for Qt projects.</li>
-      <li><b>CMake Command.</b> The path to the cmake command to use for projects with existing
-      sources that use the CMake cross compiler.</li>
+      <li>
+        <b>Debugger Command.</b> The path to the gdb command to use when debugging projects. The
+        default command is the first one found in the base directory. To select a different command
+        from the base directory or another directory, click the browse button and navigate to a
+        different command in the Select Tool dialog box.
+      </li>
+      <li>
+        <b>QMake Command.</b> The path to the qmake command, which is used to generate makefiles
+        for Qt projects.
+      </li>
+      <li>
+        <b>CMake Command.</b> The path to the cmake command to use for projects with existing
+        sources that use the CMake cross compiler.
+      </li>
     </ul>
     <p>
        To display the versions of all of the selected tools, click Versions.
@@ -158,26 +166,37 @@ Copyright &copy; 2007, 2012 Oracle and/or its affiliates. All rights reserved.
        To set the build tools properties for a specific project, right-click the project and choose
       Properties.
     </p>
-<table>
-<tr>
-<th colspan="2" align="left"><a name="seealso">See also</a></th>
-</tr>
-<tr>
-<td width="23">&nbsp;</td>
-<td>
-       <a href="ConfiguringProjectSettings.html">Configuring Project Options for C/C++/Fortran Projects</a><br>
-       <a href="ConfiguringParsingSettings.html">Configuring Code Assistance Settings for C and C++ Projects</a><br>
-       <a href="ConfiguringCodeStyle.html">Configuring Formatting Style for C/C++/Fortran Projects</a><br>
-       <a href="ConfiguringSemanticHighlighting.html">Configuring Highlighting for C/C++/Fortran Projects</a><br>
-       <a href="ConfiguringFileExtensions.html">Configuring  File Extensions for C/C++/Fortran Projects</a><br>
-       <a href="SettingCandC++ProjectProperties.html">Setting Project Properties</a><br>
-       <a href="ProjectPropsBuild.html">C/C++ Properties Dialog Box: Build</a>
-</td
-</tr>
+    <table>
+      <tr>
+        <th align="left" colspan="2">
+          <a name="seealso">See also</a> 
+        </th>
+      </tr>
+      <tr>
+        <td width="23">
+          &nbsp;
+        </td>
+        <td>
+          <a href="ConfiguringProjectSettings.html">Configuring Project Options for C/C++/Fortran
+          Projects</a><br>
+           <a href="ConfiguringParsingSettings.html">Configuring Code Assistance Settings for C and
+          C++ Projects</a><br>
+           <a href="ConfiguringCodeStyle.html">Configuring Formatting Style for C/C++/Fortran
+          Projects</a><br>
+           <a href="ConfiguringSemanticHighlighting.html">Configuring Highlighting for
+          C/C++/Fortran Projects</a><br>
+           <a href="ConfiguringFileExtensions.html">Configuring File Extensions for C/C++/Fortran
+          Projects</a><br>
+           <a href="SettingCandC++ProjectProperties.html">Setting Project Properties</a><br>
+           <a href="ProjectPropsBuild.html">C/C++ Properties Dialog Box: Build</a> 
+        </td>
+      </tr>
     </table>
     <hr>
+    <p>
        <small><a href="../credits.html">Legal Notices</a></small>
-     <table border="0" cellpadding="20">
+    </p>
+    <table border="0" cellpadding="20">
       <tr>
         <td>
           &nbsp;

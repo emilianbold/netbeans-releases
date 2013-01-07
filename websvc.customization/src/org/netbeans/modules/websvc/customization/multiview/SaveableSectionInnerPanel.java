@@ -111,7 +111,7 @@ public abstract class SaveableSectionInnerPanel extends SectionInnerPanel {
         }
     }
 
-    private class EnterKeyListener extends KeyAdapter {
+    private static class EnterKeyListener extends KeyAdapter {
 
         @Override
         public void keyPressed(KeyEvent e) {
