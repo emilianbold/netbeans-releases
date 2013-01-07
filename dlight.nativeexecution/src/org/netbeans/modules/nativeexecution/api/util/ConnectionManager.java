@@ -66,9 +66,9 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.jsch.JSchChannelsSupport;
 import org.netbeans.modules.nativeexecution.jsch.JSchConnectionTask;
 import org.netbeans.modules.nativeexecution.support.Authentication;
+import org.netbeans.modules.nativeexecution.support.HostConfigurationPanel;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
-import org.netbeans.modules.nativeexecution.support.ui.AuthenticationSettingsPanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
@@ -485,9 +485,7 @@ public final class ConnectionManager {
     }
 
     public ValidateablePanel getConfigurationPanel(ExecutionEnvironment env) {
-        Authentication auth = Authentication.getFor(env);
-        AuthenticationSettingsPanel panel = new AuthenticationSettingsPanel(auth, env != null);
-        return panel;
+        return new HostConfigurationPanel(env);
     }
 
     /**
