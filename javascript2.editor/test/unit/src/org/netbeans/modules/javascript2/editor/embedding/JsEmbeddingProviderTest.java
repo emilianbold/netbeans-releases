@@ -155,4 +155,23 @@ public class JsEmbeddingProviderTest extends JsTestBase {
         assertEquals(81, embeddings.get(1).getLength());
     }
 
+    public void testIssue223883() throws Exception {
+        String text =   "<!--//--><![CDATA[//><!--\n" +
+                        "    var abcd ='11111';\n" +
+                        "//--><!]]>";
+        List<EmbeddingPosition> embeddings = JsEmbeddingProvider.extractJsEmbeddings(text, 0);
+        assertEquals(1, embeddings.size());
+        assertEquals(text.indexOf("    var abcd ='11111';\n"), embeddings.get(0).getOffset());
+        assertEquals(33, embeddings.get(0).getLength());
+    }
+
+    public void testIssue217081() throws Exception {
+        String text =   "<!--\n" +
+                        "    ";
+        List<EmbeddingPosition> embeddings = JsEmbeddingProvider.extractJsEmbeddings(text, 0);
+        assertEquals(1, embeddings.size());
+        assertEquals(text.indexOf("    "), embeddings.get(0).getOffset());
+        assertEquals(4, embeddings.get(0).getLength());
+    }
+
 }

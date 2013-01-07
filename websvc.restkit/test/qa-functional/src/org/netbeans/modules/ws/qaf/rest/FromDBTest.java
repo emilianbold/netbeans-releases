@@ -96,7 +96,7 @@ public class FromDBTest extends CRUDTest {
         wo.btFinish().pushNoBlock();
         closeResourcesConfDialog();
         String generationTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.fromdb.Bundle", "TXT_EntityClassesGeneration");
-        waitDialogClosed(generationTitle);
+        waitDialogClosed(generationTitle, 180000); // wait 3 minutes
         new EventTool().waitNoEvent(1500);
         waitScanFinished();
         Set<File> files = getFiles(getRestPackage() + ".service"); //NOI18N
