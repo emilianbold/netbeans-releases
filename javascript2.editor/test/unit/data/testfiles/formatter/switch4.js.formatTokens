@@ -22,9 +22,11 @@ FormattingToken{kind=TEXT, offset=32, text=XXX}
 FormattingToken{kind=TEXT, offset=35, text='}
 FormattingToken{kind=TEXT, offset=36, text=:}
 FormattingToken{kind=AFTER_CASE, offset=-1, text=null}
+FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=37, text=
 }
 FormattingToken{kind=WHITESPACE, offset=38, text=       }
+FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=45, text=case}
 FormattingToken{kind=WHITESPACE, offset=49, text= }
 FormattingToken{kind=TEXT, offset=50, text='}
@@ -32,11 +34,13 @@ FormattingToken{kind=TEXT, offset=51, text=THEAD}
 FormattingToken{kind=TEXT, offset=56, text='}
 FormattingToken{kind=TEXT, offset=57, text=:}
 FormattingToken{kind=AFTER_CASE, offset=-1, text=null}
+FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=58, text=
 }
 FormattingToken{kind=EOL, offset=59, text=
 }
 FormattingToken{kind=WHITESPACE, offset=60, text=    }
+FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=64, text=default}
 FormattingToken{kind=TEXT, offset=71, text=:}
 FormattingToken{kind=AFTER_CASE, offset=-1, text=null}
@@ -93,11 +97,13 @@ FormattingToken{kind=TEXT, offset=144, text=XXX}
 FormattingToken{kind=TEXT, offset=147, text='}
 FormattingToken{kind=TEXT, offset=148, text=:}
 FormattingToken{kind=AFTER_CASE, offset=-1, text=null}
+FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=149, text=
 }
 FormattingToken{kind=EOL, offset=150, text=
 }
 FormattingToken{kind=WHITESPACE, offset=151, text=    }
+FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=155, text=default}
 FormattingToken{kind=TEXT, offset=162, text=:}
 FormattingToken{kind=AFTER_CASE, offset=-1, text=null}

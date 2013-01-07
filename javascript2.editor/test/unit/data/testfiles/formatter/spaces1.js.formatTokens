@@ -557,9 +557,11 @@ FormattingToken{kind=WHITESPACE, offset=750, text= }
 FormattingToken{kind=TEXT, offset=751, text=0}
 FormattingToken{kind=TEXT, offset=752, text=:}
 FormattingToken{kind=AFTER_CASE, offset=-1, text=null}
+FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=753, text=
 }
 FormattingToken{kind=WHITESPACE, offset=754, text=    }
+FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=758, text=case}
 FormattingToken{kind=WHITESPACE, offset=762, text= }
 FormattingToken{kind=TEXT, offset=763, text=1}
