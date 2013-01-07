@@ -155,6 +155,14 @@ public class JsDocParserTest extends JsTestBase {
         assertEquals("the user", namedParameter.getParamDescription());
     }
 
+    public void testIssue224552() throws Exception {
+        // Unfinished param type shouldn't lead to AIOOBE
+        Source source = getTestSource(getTestFile("testfiles/jsdoc/parser/issue224552.js"));
+        List<? extends JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();
+        assertEquals(JsDocElementType.PARAM, tags.get(0).getType());
+        assertTrue(tags.get(0) instanceof NamedParameterElement);
+    }
+
     private void checkElementTypes(String filePath) {
         Source source = getTestSource(getTestFile(filePath));
         List<? extends JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();

@@ -124,7 +124,7 @@ public class JsDocElementUtils {
                     // issue #224205 - search for ending } curly braces, spaces in its type
                     int actualProcessed = process;
                     StringBuilder typesSB = new StringBuilder(parts[0].substring(1));
-                    while (actualProcessed < parts.length && actualProcessed < LIMIT_SPACES_IN_TYPE) {
+                    while ((actualProcessed < parts.length - 1)  && (actualProcessed < LIMIT_SPACES_IN_TYPE)) {
                        actualProcessed++;
                        rparIndex = parts[actualProcessed].indexOf("}"); //NOI18N
                        if (rparIndex != -1) {
