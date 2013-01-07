@@ -52,6 +52,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
@@ -233,11 +234,10 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
     
     @Override
     public String getContextPath() {
-        Profile prof = getJ2eeProfile();
         // #170528the javaee6 level might not have a descriptor,
         // but I still keep the check for older versions, as it was known to fail without one
         // in older versions it probably means the web.xml file is generated..
-        if(getDeploymentDescriptor() != null || prof == Profile.JAVA_EE_6_FULL || prof == Profile.JAVA_EE_6_WEB) {
+        if(getDeploymentDescriptor() != null || Util.isAtLeastJavaEE6Web(getJ2eeProfile())) {
             try {
                 String path = provider.getConfigSupport().getWebContextRoot();
                 if (path != null) {
@@ -252,11 +252,10 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
     
     public void setContextPath(String newPath) {
         //TODO store as pom profile configuration, probably for the deploy-plugin.
-        Profile prof = getJ2eeProfile();
         // #170528 the javaee6 level might not have a descriptor,
         // but I still keep the check for older versions, as it was known to fail without one
         // in older versions it probably means the web.xml file is generated..
-        if (getDeploymentDescriptor() != null|| prof == Profile.JAVA_EE_6_FULL || prof == Profile.JAVA_EE_6_WEB) {
+        if (getDeploymentDescriptor() != null|| Util.isAtLeastJavaEE6Web(getJ2eeProfile())) {
             try {
                 provider.getConfigSupport().setWebContextRoot(newPath);
             }
