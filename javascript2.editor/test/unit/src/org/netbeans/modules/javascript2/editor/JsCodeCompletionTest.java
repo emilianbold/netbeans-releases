@@ -183,4 +183,8 @@ public class JsCodeCompletionTest extends JsCodeComplationBase {
     public void testIssue222955() throws Exception {
         checkCompletion("testfiles/completion/issue222955.js", "po^ //here CC", false);
     }
+
+    public void testIssue224458() throws Exception {
+        checkCompletion("testfiles/completion/issue224458.js", "U^ //CC here", false);
+    }
 }

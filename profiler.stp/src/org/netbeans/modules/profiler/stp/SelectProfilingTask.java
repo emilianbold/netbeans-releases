@@ -207,6 +207,8 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
     private static final Icon MEMORY_ICON = Icons.getIcon(ProfilerIcons.MEMORY_32);
     private static final Icon RUN_ICON = Icons.getIcon(GeneralIcons.BUTTON_RUN);
     private static final Icon ATTACH_ICON = Icons.getIcon(GeneralIcons.BUTTON_ATTACH);
+    
+    private static final Dimension MINIMUM_SIZE = new Dimension();
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
@@ -325,6 +327,13 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
             public void run() {
                 Dialog d = DialogDisplayer.getDefault().createDialog(dd);
                 d.pack();
+                if (MINIMUM_SIZE.width * MINIMUM_SIZE.height > 0) {
+                    d.setMinimumSize(MINIMUM_SIZE);
+                } else {
+                    Dimension dim = d.getSize();
+                    MINIMUM_SIZE.width = dim.width;
+                    MINIMUM_SIZE.height = dim.height;
+                }
                 d.setVisible(true);
                 latch.countDown();
             }
@@ -377,6 +386,13 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
             public void run() {
                 Dialog d = DialogDisplayer.getDefault().createDialog(dd);
                 d.pack();
+                if (MINIMUM_SIZE.width * MINIMUM_SIZE.height > 0) {
+                    d.setMinimumSize(MINIMUM_SIZE);
+                } else {
+                    Dimension dim = d.getSize();
+                    MINIMUM_SIZE.width = dim.width;
+                    MINIMUM_SIZE.height = dim.height;
+                }
                 d.setVisible(true);
                 latch.countDown();
             }
@@ -425,6 +441,13 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                 Dialog d = DialogDisplayer.getDefault().createDialog(spt[0].dd);
                 d.getAccessibleContext().setAccessibleDescription(d.getTitle());
                 d.pack();
+                if (MINIMUM_SIZE.width * MINIMUM_SIZE.height > 0) {
+                    d.setMinimumSize(MINIMUM_SIZE);
+                } else {
+                    Dimension dim = d.getSize();
+                    MINIMUM_SIZE.width = dim.width;
+                    MINIMUM_SIZE.height = dim.height;
+                }
                 d.setVisible(true);
                 latch.countDown();
             }

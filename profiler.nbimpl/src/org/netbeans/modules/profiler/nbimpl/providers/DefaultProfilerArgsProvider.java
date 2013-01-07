@@ -70,19 +70,23 @@ public class DefaultProfilerArgsProvider implements StartupExtenderImplementatio
             if (s != null) {
                 Map<String, String> m = ProfilerLauncher.getLastSession().getProperties();
                 if (m != null) {
-                    String agentArgs = m.get("agent.jvmargs");
-                    String jvmargs = m.get("profiler.info.jvmargs");
-                    jvmargs = jvmargs.replace(" -", "^");
-                    StringTokenizer st = new StringTokenizer(jvmargs, "^");
-                    
                     List<String> args = new ArrayList<String>();
+                    
+                    String agentArgs = m.get("agent.jvmargs"); // NOI18N // Always set
                     args.add(agentArgs);
-                    while (st.hasMoreTokens()) {
-                        String arg = st.nextToken();
-                        if (!arg.isEmpty()) {
-                            args.add((arg.startsWith("-") ? "" : "-") + arg);
+                    
+                    String jvmargs = m.get("profiler.info.jvmargs"); // NOI18N // May not be set
+                    if (jvmargs != null) {
+                        jvmargs = jvmargs.replace(" -", "^"); // NOI18N
+                        StringTokenizer st = new StringTokenizer(jvmargs, "^"); // NOI18N
+                        while (st.hasMoreTokens()) {
+                            String arg = st.nextToken();
+                            if (!arg.isEmpty()) {
+                                args.add((arg.startsWith("-") ? "" : "-") + arg); // NOI18N
+                            }
                         }
                     }
+                    
                     return args;
                 }
             }

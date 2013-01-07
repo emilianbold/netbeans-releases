@@ -323,8 +323,13 @@ public class GeneralHTMLProject extends JellyTestCase {
      * Timeout is {@link GeneralHTMLProject#WAIT_INSPECTION_TIME}
      *
      * @param expectedElements number of elements to be selected
+     * @param jsLimit initial waiting time - since attributes in html could be
+     * changed using setTimeout(), elements are modified to look as selected
+     * after this timeout. So first one must wait this timeout and then start to
+     * wait for actual selected element(s)
      */
-    public void waitElementsSelected(final int expectedElements) {
+    public void waitElementsSelected(final int expectedElements, long jsLimit) {
+        evt.waitNoEvent(jsLimit);
         try {
             Waiter waiter = new Waiter(new Waitable() {
                 @Override
@@ -349,8 +354,13 @@ public class GeneralHTMLProject extends JellyTestCase {
      * Timeout is {@link GeneralHTMLProject#WAIT_INSPECTION_TIME}
      *
      * @param expectedElements number of elements to be highlighted
+     * @param jsLimit initial waiting time - since attributes in html could be
+     * changed using setTimeout(), elements are modified to look as selected
+     * after this timeout. So first one must wait this timeout and then start to
+     * wait for actual selected element(s)
      */
-    public void waitElementsHighlighted(final int expectedElements) {
+    public void waitElementsHighlighted(final int expectedElements, long jsLimit) {
+        evt.waitNoEvent(jsLimit);
         try {
             Waiter waiter = new Waiter(new Waitable() {
                 @Override
@@ -375,8 +385,13 @@ public class GeneralHTMLProject extends JellyTestCase {
      * parameter. Timeout is {@link GeneralHTMLProject#WAIT_INSPECTION_TIME}
      *
      * @param expectedElements number of elements to be outlined
+     * @param jsLimit initial waiting time - since attributes in html could be
+     * changed using setTimeout(), elements are modified to look as selected
+     * after this timeout. So first one must wait this timeout and then start to
+     * wait for actual selected element(s)
      */
-    public void waitMatchedElements(final int expectedElements) {
+    public void waitMatchedElements(final int expectedElements, long jsLimit) {
+        evt.waitNoEvent(jsLimit);
         try {
             Waiter waiter = new Waiter(new Waitable() {
                 @Override

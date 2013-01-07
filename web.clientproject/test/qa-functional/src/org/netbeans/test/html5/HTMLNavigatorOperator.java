@@ -131,7 +131,7 @@ public class HTMLNavigatorOperator extends TopComponentOperator {
             sb.append(";SOURCE");
         }
 
-        return sb.toString();
+        return sb.toString().trim();
     }
 
     /**
@@ -155,7 +155,7 @@ public class HTMLNavigatorOperator extends TopComponentOperator {
     public String getFocusedElement() {
         StringBuilder sb = new StringBuilder();
         TreePath tp = treeDOM().getSelectionPath();
-        sb.append(tp.toString());
+        sb.append(tp.toString().replaceFirst("\\[root, ", "["));// ignore root in path
         org.openide.nodes.Node node = Visualizer.findNode(treeDOM().getLastSelectedPathComponent());
 
         if (node instanceof HtmlElementNode) {
