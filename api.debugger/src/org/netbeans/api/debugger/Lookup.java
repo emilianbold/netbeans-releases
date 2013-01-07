@@ -1152,6 +1152,7 @@ abstract class Lookup implements ContextProvider {
                             }
                         }
                     } else {
+                        logger.log(Level.INFO, "Returning null instance from LazyInstance.getEntry(). className = {0}, service = {1}, lookupItem = {2}", new Object[]{ className, service, lookupItem });
                         return null;
                     }
                 }

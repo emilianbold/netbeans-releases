@@ -285,7 +285,9 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                                             } catch (UnsupportedOperationException ex) {
                                                 Exceptions.printStackTrace(ex);
                                             } finally {
-                                                touchCoSTimeStamp(config, false);
+                                                if (RunUtils.hasApplicationCompileOnSaveEnabled(config)) {
+                                                    touchCoSTimeStamp(config, false);
+                                                }
                                             }
                                         }
                                     }, config.getTaskDisplayName());
@@ -315,7 +317,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         }
         if (RunUtils.hasTestCompileOnSaveEnabled(config)) {
             String testng = PluginPropertyUtils.getPluginProperty(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,
-                    Constants.PLUGIN_SUREFIRE, "testNGArtifactName", "test"); //NOI18N
+                    Constants.PLUGIN_SUREFIRE, "testNGArtifactName", "test", "testNGArtifactName"); //NOI18N
             if (testng == null) {
                 testng = "org.testng:testng"; //NOI18N
             }
@@ -416,7 +418,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             Set<String> jvmPropNames = new HashSet<String>();
             params.put(JavaRunner.PROP_PROJECT_NAME, config.getExecutionName() + "/CoS");
             String dir = PluginPropertyUtils.getPluginProperty(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,
-                    Constants.PLUGIN_SUREFIRE, "basedir", "test"); //NOI18N
+                    Constants.PLUGIN_SUREFIRE, "basedir", "test", "basedir"); //NOI18N
             //TODO there's another property named workingDirectory that overrides  basedir.
             // basedir is also assumed to end up as system property for tests..
             jvmPropNames.add("basedir"); //NOI18N
@@ -463,7 +465,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             }
 
             String argLine = PluginPropertyUtils.getPluginProperty(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,
-                    Constants.PLUGIN_SUREFIRE, "argLine", "test"); //NOI18N
+                    Constants.PLUGIN_SUREFIRE, "argLine", "test", "argLine"); //NOI18N
             if (argLine != null) {
                 try {
                     String[] arr = CommandLineUtils.translateCommandline(argLine);
@@ -557,7 +559,12 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                                         Exceptions.printStackTrace(ex);
                                     } finally {
                                         touchCoSTimeStamp(config, true);
-                                        touchCoSTimeStamp(config, false);
+                                        if (RunUtils.hasApplicationCompileOnSaveEnabled(config)) {
+                                            touchCoSTimeStamp(config, false);
+                                        } else {
+                                            deleteCoSTimeStamp(config, false);
+                                        }
+                                        
                                     }
                                 }
                             }, config.getTaskDisplayName());

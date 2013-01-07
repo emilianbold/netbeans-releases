@@ -175,7 +175,7 @@ class LogicalViewChildren extends BaseMakeViewChildren implements PropertyChange
                         }
 
                         // Add file to the view
-                        Item item = Item.createInFileSystem(provider.getMakeConfigurationDescriptor().getBaseDirFileSystem(), child.getPath());
+                        Item item = Item.createDetachedViewItem(provider.getMakeConfigurationDescriptor().getBaseDirFileSystem(), child.getPath());
                         Folder.insertItemElementInList(collection2, item);
                     }
                 }

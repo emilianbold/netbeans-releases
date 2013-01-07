@@ -550,7 +550,13 @@ final public class WebApplicationPanel extends JPanel
         // Setup comboboxes
         rootComboBox.setModel(new DefaultComboBoxModel( this.groupItems ));
         final ModelItem preselectedGroup = getPreselectedGroup( preselectedFolder );
-        rootComboBox.setSelectedItem( preselectedGroup );
+        if(rootComboBox.getItemCount() > 0) {
+            if(preselectedGroup != null) {
+                rootComboBox.setSelectedItem( preselectedGroup );
+            } else {
+                rootComboBox.setSelectedIndex(0);
+            }
+        }
         updatePackages();
         final ModelItem preselectedPackage = getPreselectedPackage(preselectedGroup, preselectedFolder);
         if (preselectedPackage != null) {
@@ -614,11 +620,11 @@ final public class WebApplicationPanel extends JPanel
                 return groupItems[i];
             }
         }
-        return groupItems[0];
+        return null;
     }
     
     private ModelItem getPreselectedPackage( final ModelItem groupItem, final FileObject folder ) {
-        if (folder == null) {
+        if (folder == null || groupItem == null) {
             return null;
         }
         final ModelItem ch[] = groupItem.getChildren();
@@ -643,28 +649,31 @@ final public class WebApplicationPanel extends JPanel
     }
     
     private void updatePackages() {
-        packageComboBox.setModel(
-                new DefaultComboBoxModel(((ModelItem) rootComboBox.getSelectedItem()).getChildren()));
+        if(rootComboBox.getItemCount() > 0) {
+            packageComboBox.setModel(
+                    new DefaultComboBoxModel(((ModelItem) rootComboBox.getSelectedItem()).getChildren()));
+        }
     }
     
     private void updateText() {
-        
-        final ModelItem modelItem = (ModelItem) rootComboBox.getSelectedItem();
-        final FileObject rootFolder = modelItem.group.getRootFolder();
-        final String packageName = getPackageFileName();
-        String documentName = documentNameTextField.getText().trim();
-        if (isPackage) {
-            documentName = documentName.replace('.', '/'); // NOI18N
-        } else if (documentName.length() > 0) {
-            documentName = documentName + expectedExtension;
+        if(rootComboBox.getItemCount() > 0) {
+            final ModelItem modelItem = (ModelItem) rootComboBox.getSelectedItem();
+            final FileObject rootFolder = modelItem.group.getRootFolder();
+            final String packageName = getPackageFileName();
+            String documentName = documentNameTextField.getText().trim();
+            if (isPackage) {
+                documentName = documentName.replace('.', '/'); // NOI18N
+            } else if (documentName.length() > 0) {
+                documentName = documentName + expectedExtension;
+            }
+            final String createdFileName = FileUtil.getFileDisplayName(rootFolder) +
+                    (packageName.startsWith("/") || packageName.startsWith(File.separator) ? "" : "/") + // NOI18N
+                    packageName +
+                    (packageName.endsWith("/") || packageName.endsWith(File.separator) || packageName.length() == 0 ? "" : "/") + // NOI18N
+                    documentName;
+
+            fileTextField.setText(createdFileName.replace('/', File.separatorChar)); // NOI18N
         }
-        final String createdFileName = FileUtil.getFileDisplayName(rootFolder) +
-                (packageName.startsWith("/") || packageName.startsWith(File.separator) ? "" : "/") + // NOI18N
-                packageName +
-                (packageName.endsWith("/") || packageName.endsWith(File.separator) || packageName.length() == 0 ? "" : "/") + // NOI18N
-                documentName;
-        
-        fileTextField.setText(createdFileName.replace('/', File.separatorChar)); // NOI18N
     }
     
     public String getPackageFileName() {

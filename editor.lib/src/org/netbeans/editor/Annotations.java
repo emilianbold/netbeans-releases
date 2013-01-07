@@ -533,19 +533,30 @@ public class Annotations implements DocumentListener {
         else
             return null;
     }
-    
-    /** Return list of pasive annotations which should be drawn on the backgorund */
+        
+    /** 
+     * Return list of passive annotations which should be drawn on the background.
+     * @deprecated The method name contains a typo. Use {@link getPassiveAnnotationsForLine} 
+     */
     public AnnotationDesc[] getPasiveAnnotations(int line) {
+        return getPassiveAnnotationsForLine(line);
+    }
+    
+    /**
+     * @param line
+     * @return list of passive annotations which should be drawn on the background.
+     */
+    public AnnotationDesc[] getPassiveAnnotationsForLine(int line) {
         LineAnnotations annos = getLineAnnotations(line);
         if (annos == null)
             return null;
-        return annos.getPasive();
+        return annos.getPassive();
     }
     
     /** Return list of passive annotations attached on the line of given offset */
     public AnnotationDesc[]  getPassiveAnnotations(int offset){
         int lineIndex = doc.getDefaultRootElement().getElementIndex(offset);
-        return (lineIndex>=0) ? getPasiveAnnotations(lineIndex) : null;
+        return (lineIndex>=0) ? getPassiveAnnotationsForLine(lineIndex) : null;
     }
 
     /** Returns number of visible annotations on the line*/
@@ -791,7 +802,7 @@ public class Annotations implements DocumentListener {
             }
 
             // second, add submenus for all pasive annotations
-            AnnotationDesc[] pasiveAnnos = annos.getPasive();
+            AnnotationDesc[] pasiveAnnos = annos.getPassive();
             if (pasiveAnnos != null) {
                 for (int i=0; i < pasiveAnnos.length; i++) {
                     List<JMenu> subMenus = createSubMenus(pasiveAnnos[i], kit);
@@ -1019,8 +1030,16 @@ public class Annotations implements DocumentListener {
             throw new IllegalStateException("Setting of line number not allowed"); // NOI18N
         }
 
-        /** Gets the array of all pasive and visible annotations */
+        /** 
+         * Gets the array of all passive and visible annotations 
+         * @deprecated The method name contains typo. Use {@link getPassive()} instead.
+         */
         public AnnotationDesc[] getPasive() {
+            return getPassive();
+        }
+
+        /** Gets the array of all passive and visible annotations */
+        public AnnotationDesc[] getPassive() {
             synchronized (annos) {
                 if (getCount() <= 1)
                     return null;

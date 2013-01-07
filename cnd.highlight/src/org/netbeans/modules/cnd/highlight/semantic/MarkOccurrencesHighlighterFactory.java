@@ -71,7 +71,7 @@ public class MarkOccurrencesHighlighterFactory extends CaretAwareCsmFileTaskFact
                 if (doc != null) {
                     String mimeType = DocumentUtilities.getMimeType(doc);
                     if (mimeType != null) {
-                        if (MIMENames.isHeaderOrCppOrC((String)mimeType)) {
+                        if (MIMENames.isHeaderOrCppOrC(mimeType)) {
                             ph = new MarkOccurrencesHighlighter(doc);
                         }
                     }

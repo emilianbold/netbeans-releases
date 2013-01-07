@@ -50,7 +50,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -59,6 +58,8 @@ import javax.swing.JSeparator;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.builds.MakefileTargetProvider;
 import org.netbeans.modules.cnd.builds.TargetEditor;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
@@ -74,6 +75,7 @@ public class MakeTargetAction extends MakeBaseAction implements Presenter.Popup 
     /* target mnemonics for the first 10 targets */
     private static String mnemonics = "1234567890"; // NOI18N
 
+    @Override
     public String getName () {
         return getString("BTN_Target");	// NOI18N
     }
@@ -112,23 +114,29 @@ public class MakeTargetAction extends MakeBaseAction implements Presenter.Popup 
 
                 Node activeNode = activeNodes[0];
 
-                MakefileTargetProvider targetProvider = activeNode.getCookie(MakefileTargetProvider.class);
+                MakefileTargetProvider targetProvider = activeNode.getLookup().lookup(MakefileTargetProvider.class);
                 if (targetProvider != null) {
                     try {
-                        List<String> targets = new ArrayList<String>(targetProvider.getPreferredTargets());
-                        Collections.sort(targets);
-                        for (String target : targets) {
-                            popup.add(new PopupItemTarget(activeNode, target, -1));
-                        }
-                        if (!targets.isEmpty()) {
-                            popup.add(new JSeparator());
+                        DataObject dao = activeNode.getLookup().lookup(DataObject.class);
+                        if (dao != null) {
+                            FileObject fo = dao.getPrimaryFile();
+                            if (fo != null && fo.isValid()) {
+                                List<String> targets = new ArrayList<String>(targetProvider.getPreferredTargets());
+                                Collections.sort(targets);
+                                for (String target : targets) {
+                                    popup.add(new PopupItemTarget(activeNode, target, -1));
+                                }
+                                if (!targets.isEmpty()) {
+                                    popup.add(new JSeparator());
+                                }
+                            }
                         }
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
                 }
 
-                MakeExecSupport mes = activeNode.getCookie(MakeExecSupport.class);
+                MakeExecSupport mes = activeNode.getLookup().lookup(MakeExecSupport.class);
                 if (mes != null) {
                     String[] targets = mes.getMakeTargetsArray();
 
@@ -182,6 +190,7 @@ public class MakeTargetAction extends MakeBaseAction implements Presenter.Popup 
         /** Invoked when an action occurs.
          * @param e
          */
+        @Override
         public void actionPerformed(ActionEvent e) {
             performAction(node, target);
         }
@@ -200,8 +209,9 @@ public class MakeTargetAction extends MakeBaseAction implements Presenter.Popup 
         }
 
         /** Invoked when an action occurs. */
+        @Override
         public void actionPerformed(ActionEvent e) {
-            MakeExecSupport mes = node.getCookie(MakeExecSupport.class);
+            MakeExecSupport mes = node.getLookup().lookup(MakeExecSupport.class);
             if (mes != null) {
                 TargetEditor targetEditor = new TargetEditor(mes.getMakeTargetsArray(), null, null);
                 int ret = targetEditor.showOpenDialog((JFrame) WindowManager.getDefault().getMainWindow());

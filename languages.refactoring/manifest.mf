@@ -3,3 +3,4 @@ OpenIDE-Module: org.netbeans.modules.languages.refactoring/0
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/languages/refactoring/Bundle.properties
 OpenIDE-Module-Implementation-Version: 1
 AutoUpdate-Show-In-Client: false
+OpenIDE-Module-Provides: languages.refactoring

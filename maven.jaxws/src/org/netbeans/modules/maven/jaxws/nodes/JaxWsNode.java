@@ -54,6 +54,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
@@ -304,7 +305,6 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
     // Create the popup menu:
     @Override
     public Action[] getActions(boolean context) {
-        DataObject dobj = getCookie(DataObject.class);
         ArrayList<Action> actions = new ArrayList<Action>(Arrays.asList(
                 SystemAction.get(OpenAction.class),
 //                SystemAction.get(JaxWsRefreshAction.class),
@@ -378,7 +378,7 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
         ServerContextInfo serverContextInfo = getServerContextInfo();
         ServiceInfo serviceInfo = getServiceInfo();
         WSStackUtils stackUtils = new WSStackUtils(project);
-        boolean isJsr109Supported = stackUtils.isJsr109Supported();
+//        boolean isJsr109Supported = stackUtils.isJsr109Supported();
         WSStack<JaxWs> jaxWsStack = stackUtils.getWsStack(JaxWs.class);
         if (jaxWsStack != null) {
             JaxWs.UriDescriptor uriDescriptor = jaxWsStack.get().getWsUriDescriptor();
@@ -661,9 +661,13 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
                     isNew[0] = false;
                     Map<? extends ExecutableElement, ? extends AnnotationValue> 
                         expressions = handlerAnnotation.getElementValues();
-                    for (ExecutableElement ex : expressions.keySet()) {
+                    for (Entry<? extends ExecutableElement, 
+                            ? extends AnnotationValue> entry: expressions.entrySet()) 
+                    {
+                        ExecutableElement ex = entry.getKey();
+                        AnnotationValue annotation = entry.getValue();
                         if (ex.getSimpleName().contentEquals("file")) {   //NOI18N
-                            handlerFileName[0] = (String) expressions.get(ex).getValue();
+                            handlerFileName[0] = (String) annotation.getValue();
                             break;
                         }
                     }
@@ -748,15 +752,17 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
                 if (uriDescriptor != null) {
                     fromStack = true;
 
-                    ServerContextInfo serverContextInfo = getServerContextInfo();
-                    wsURI = uriDescriptor.getServiceUri(contextRoot, serviceInfo.getServiceName(), serviceInfo.getPortName(), serviceInfo.isEjb());
+                    wsURI = uriDescriptor.getServiceUri(contextRoot, 
+                            serviceInfo.getServiceName(), serviceInfo.getPortName(), 
+                                serviceInfo.isEjb());
                 }
             }
 
             if (!fromStack) {
                 // default service URI
                 String portName = serviceInfo.getPortName();
-                wsURI = (contextRoot == null ? "" : contextRoot+"/")+serviceInfo.getServiceName()+ (portName == null ? "" : "/"+portName);
+                wsURI = (contextRoot == null ? "" : contextRoot+"/")+
+                        serviceInfo.getServiceName()+ (portName == null ? "" : "/"+portName);
             }
 
         } catch (UnsupportedEncodingException ex) {
@@ -946,7 +952,7 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
         return true;
     }
     
-    private class ServerContextInfo {
+    private static class ServerContextInfo {
         private String host, port, contextRoot;
 
         public ServerContextInfo(String host, String port, String contextRoot) {
@@ -969,7 +975,7 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
         }
     }
 
-    private class ServiceInfo {
+    private static class ServiceInfo {
         private String serviceName, portName;
         private boolean ejb;
 

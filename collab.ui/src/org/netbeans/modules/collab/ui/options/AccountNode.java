@@ -43,19 +43,16 @@
  */
 package org.netbeans.modules.collab.ui.options;
 
+import com.sun.collablet.*;
 import java.awt.Image;
 import java.beans.*;
 import java.io.IOException;
-import java.util.*;
-
+import org.netbeans.modules.collab.core.Debug;
+import org.netbeans.modules.collab.ui.actions.*;
 import org.openide.actions.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
-
-import com.sun.collablet.*;
-import org.netbeans.modules.collab.core.Debug;
-import org.netbeans.modules.collab.ui.actions.*;
 
 /**
  *
@@ -77,37 +74,6 @@ public class AccountNode extends BeanNode implements Node.Cookie, PropertyChange
             SystemAction.get(PasteAction.class), null, SystemAction.get(DeleteAction.class),
             SystemAction.get(RenameAction.class), null, SystemAction.get(PropertiesAction.class),
         };
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Static initializer
-    ////////////////////////////////////////////////////////////////////////////
-    static {
-        // Add our own bean info search path, since we want to provide BeanInfo
-        // for the Account class, but it's in another package. Note, this code 
-        // goes here because this class may be referenced before others in the 
-        // module (including DefaultUserInterface).  If, however, other classes 
-        // also want to provide alternate BeanInfo, then this code may need to 
-        // move to the first class likely to be loaded.
-        final String BEAN_INFO_PATH = "org.netbeans.modules.collab.ui.beaninfo"; // NOI18N
-
-        boolean found = false;
-
-        String[] paths = Introspector.getBeanInfoSearchPath();
-
-        for (int i = 0; i < paths.length; i++) {
-            if (paths[i].equals(BEAN_INFO_PATH)) {
-                found = true;
-
-                break;
-            }
-        }
-
-        if (!found) {
-            List pathList = new ArrayList(Arrays.asList(paths));
-            pathList.add(BEAN_INFO_PATH);
-            Introspector.setBeanInfoSearchPath((String[]) pathList.toArray(new String[pathList.size()]));
-        }
-    }
 
     ////////////////////////////////////////////////////////////////////////////
     // Instance variables

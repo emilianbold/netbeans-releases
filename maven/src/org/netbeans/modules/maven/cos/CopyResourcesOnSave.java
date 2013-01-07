@@ -110,6 +110,7 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
             for (File fl : resourceUris) {
                 FileUtil.removeRecursiveListener(this, fl);
             }
+            resourceUris.clear();
         }
     }
     

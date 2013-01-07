@@ -46,6 +46,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
@@ -87,7 +88,6 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -154,7 +154,19 @@ public final class CompletionSupport implements DocumentListener {
         return false;
     }
 
-    public static boolean isIncludeCompletionEnabled(Document doc, int offset) {
+    public static boolean isIncludeCompletionEnabled(final Document doc, final int offset) {
+        final AtomicBoolean out = new AtomicBoolean(false);
+        doc.render(new Runnable() {
+
+            @Override
+            public void run() {
+                out.set(isIncludeCompletionEnabledImpl(doc, offset));
+            }            
+        });
+        return out.get();
+    }
+    
+    private static boolean isIncludeCompletionEnabledImpl(Document doc, int offset) {
         TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, offset, false, true);
         if (ts == null) {
             return false;
@@ -353,6 +365,15 @@ public final class CompletionSupport implements DocumentListener {
      */
     public static Collection<CsmFunction> filterMethods(Collection<CsmFunction> methodList, List parmTypeList,
             boolean acceptMoreParameters, boolean acceptIfSameNumberParams) {
+        Collection<CsmFunction> result = filterMethods(methodList, parmTypeList, acceptMoreParameters, acceptIfSameNumberParams, false);
+        if (result.size() > 1) {
+            result = filterMethods(result, parmTypeList, acceptMoreParameters, acceptIfSameNumberParams, true);
+        }
+        return result;
+    }
+    
+    private static Collection<CsmFunction> filterMethods(Collection<CsmFunction> methodList, List parmTypeList,
+            boolean acceptMoreParameters, boolean acceptIfSameNumberParams, boolean ignoreConstAndRef) {
         assert (methodList != null);
         if (parmTypeList == null) {
             return methodList;
@@ -383,7 +404,7 @@ public final class CompletionSupport implements DocumentListener {
                     CsmType mpt = methodParms[j].getType();
                     CsmType t = (CsmType) parmTypeList.get(j);
                     if (t != null) {
-                        if (!methodParms[j].isVarArgs() && !equalTypes(t, mpt)) {
+                        if (!methodParms[j].isVarArgs() && !equalTypes(t, mpt, ignoreConstAndRef)) {
                             bestMatch = false;
                             if (!isAssignable(t, mpt)) {
                                 accept = false;
@@ -513,14 +534,22 @@ public final class CompletionSupport implements DocumentListener {
         return false;
     }
 
-    private static boolean equalTypes(CsmType t, CsmType mpt) {
+    private static boolean equalTypes(CsmType t, CsmType mpt, boolean ignoreConstAndRef) {
         assert t != null;
         if (t.equals(mpt)) {
             return true;
         } else if (mpt != null) {
             String t1 = t.getCanonicalText().toString();
-            String t2 = mpt.getCanonicalText().toString();
-            return t1.equals(t2);
+            String canonicalText = mpt.getCanonicalText().toString().trim();
+            if (ignoreConstAndRef) {
+                if (canonicalText.endsWith("&")) { //NOI18N
+                    canonicalText = canonicalText.substring(0, canonicalText.length()-1);
+                }
+                if (canonicalText.startsWith("const") && canonicalText.length() > 5 && Character.isWhitespace(canonicalText.charAt(5))) { //NOI18N
+                    canonicalText = canonicalText.substring(6);
+                }
+            }
+            return t1.equals(canonicalText);
         }
         return false;
     }

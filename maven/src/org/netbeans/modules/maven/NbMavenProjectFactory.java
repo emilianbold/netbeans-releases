@@ -44,6 +44,7 @@ package org.netbeans.modules.maven;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ProjectFactory;
@@ -60,6 +61,19 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=ProjectFactory.class, position=666)
 public class NbMavenProjectFactory implements ProjectFactory2 {
+    
+    private static final AtomicBoolean atLeastOneMavenProjectAround = new AtomicBoolean(false);
+    
+    /**
+     * a simple way to tell if at least one maven project was loaded, to be used for
+     * performance optimizations in global services.
+     * @return 
+     * @since
+     */
+    public static boolean isAtLeastOneMavenProjectAround() {
+        return atLeastOneMavenProjectAround.get();
+    }
+    
     
     public @Override boolean isProject(FileObject fileObject) {
         File projectDir = FileUtil.toFile(fileObject);
@@ -101,6 +115,7 @@ public class NbMavenProjectFactory implements ProjectFactory2 {
             return null;
             
         }
+        atLeastOneMavenProjectAround.set(true);
         return new NbMavenProjectImpl(fileObject, projectFile, projectState);
     }
     

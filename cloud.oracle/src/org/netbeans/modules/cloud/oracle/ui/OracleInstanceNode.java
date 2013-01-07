@@ -55,12 +55,10 @@ import org.openide.util.lookup.Lookups;
  */
 public class OracleInstanceNode extends AbstractNode {
     
-    private OracleInstance ai;
     private static final String ORACLE_ICON = "org/netbeans/modules/cloud/oracle/ui/resources/oracle.png"; // NOI18N
     
     public OracleInstanceNode(OracleInstance ai) {
         super(Children.LEAF, Lookups.fixed(ai));
-        this.ai = ai;
         setName(""); // NOI18N
         setDisplayName(ai.getName());
         setIconBaseWithExtension(ORACLE_ICON);
@@ -77,8 +75,7 @@ public class OracleInstanceNode extends AbstractNode {
     }
     
     private Image badgeIcon(Image origImg) {
-        Image badge = null;        
-        return badge != null ? ImageUtilities.mergeImages(origImg, badge, 15, 8) : origImg;
+        return origImg;
     }
     @Override
     public Action[] getActions(boolean context) {

@@ -173,7 +173,7 @@ public class RenameTest extends RefactoringTestBase {
                 + "}"));
         UndoManager undoManager = UndoManager.getDefault();
         undoManager.setAutoConfirm(true);
-        undoManager.undo();
+        undoManager.undo(null);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -190,7 +190,7 @@ public class RenameTest extends RefactoringTestBase {
                 + "        return a.getProperty();\n"
                 + "    }\n"
                 + "}"));
-        undoManager.redo();
+        undoManager.redo(null);
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"

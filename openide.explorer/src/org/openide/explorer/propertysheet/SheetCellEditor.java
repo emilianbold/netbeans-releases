@@ -280,6 +280,8 @@ final class SheetCellEditor implements TableCellEditor, ActionListener {
             PropUtils.log(SheetCellEditor.class, "    SheetCellEditor firing editing cancelled to table "); //NOI18N
         }
 
+        PropUtils.notifyEditingCancelled(reusableEnv);
+        
         if (listenerList == null) {
             return;
         }

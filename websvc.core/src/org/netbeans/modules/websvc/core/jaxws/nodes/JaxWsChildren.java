@@ -182,16 +182,20 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
                 if (wsdlModeler==null) { 
                     wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(wsdlFo.getURL());
                 }
-                if (wsdlModeler!=null) {
-                    wsdlChangeListener = new WsdlChangeListener() {
-                        public void wsdlModelChanged(WsdlModel oldWsdlModel, WsdlModel newWsdlModel) {
-                            wsdlModel=newWsdlModel;
-                            updateKeys();
-                            ((JaxWsNode)getNode()).changeIcon();
-                        }
-                    };
-                    wsdlModeler.addWsdlChangeListener(wsdlChangeListener);
+                if (wsdlModeler==null) {
+                    return;
                 }
+                wsdlChangeListener = new WsdlChangeListener() {
+
+                    public void wsdlModelChanged( WsdlModel oldWsdlModel,
+                            WsdlModel newWsdlModel )
+                    {
+                        wsdlModel = newWsdlModel;
+                        updateKeys();
+                        ((JaxWsNode) getNode()).changeIcon();
+                    }
+                };
+                wsdlModeler.addWsdlChangeListener(wsdlChangeListener);
                 String packageName = service.getPackageName();
                 if (packageName!=null && service.isPackageNameForceReplace()) {
                     // set the package name for the modeler
@@ -644,12 +648,17 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
                                     jaxWsModelChanged=true;
                                 }
                             }
-                            WsdlPort wsdlPort = wsdlService.getPortByName(portName);
-                            if (wsdlPort==null) {
-                                if ( !wsdlService.getPorts().isEmpty()){
-                                    wsdlPort = (WsdlPort)wsdlService.getPorts().get(0);
-                                    service.setPortName(wsdlPort.getName());
-                                    jaxWsModelChanged=true;
+                            
+                            if (wsdlService != null) {
+                                WsdlPort wsdlPort = wsdlService
+                                        .getPortByName(portName);
+                                if (wsdlPort == null) {
+                                    if (!wsdlService.getPorts().isEmpty()) {
+                                        wsdlPort = (WsdlPort) wsdlService
+                                                .getPorts().get(0);
+                                        service.setPortName(wsdlPort.getName());
+                                        jaxWsModelChanged = true;
+                                    }
                                 }
                             }
                             
@@ -766,6 +775,7 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
         return method.getOperationName()+": "+getClassName(method.getReturnType()); //NOI18N
     }
     
+    @org.netbeans.api.annotations.common.SuppressWarnings("SE_COMPARATOR_SHOULD_BE_SERIALIZABLE")
     private static class WebOperationInfoComparator implements Comparator<WebOperationInfo>{
         
         public int compare(WebOperationInfo info1, WebOperationInfo info2) {
@@ -775,7 +785,7 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
         }
     }
     
-    private class WebOperationInfo {
+    private static class WebOperationInfo {
         private String operationName;
         private List<String> paramTypes;
         private String returnType;

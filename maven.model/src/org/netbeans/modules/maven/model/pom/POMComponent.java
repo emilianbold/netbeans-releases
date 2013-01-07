@@ -43,14 +43,14 @@ package org.netbeans.modules.maven.model.pom;
 
 import java.util.List;
 import javax.xml.namespace.QName;
-import org.netbeans.modules.xml.xam.dom.DocumentComponent;
+import org.netbeans.modules.xml.xam.dom.DocumentComponent2;
 
 /**
  * Interface for all the components in the model.
  *
  * @author mkleint
  */
-public interface POMComponent extends DocumentComponent<POMComponent> {
+public interface POMComponent extends DocumentComponent2<POMComponent> {
     
     public static final String EXTENSIBILITY_ELEMENT_PROPERTY = "extensibilityElement"; // NOI18N
     

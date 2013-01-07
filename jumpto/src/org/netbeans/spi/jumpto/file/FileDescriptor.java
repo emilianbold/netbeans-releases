@@ -45,6 +45,7 @@ package org.netbeans.spi.jumpto.file;
 import javax.swing.Icon;
 import org.netbeans.api.project.SourceGroup;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * A FileDescriptor describes a file to show in the Go To File dialog.
@@ -106,6 +107,23 @@ public abstract class FileDescriptor {
      * @return The file object.
      */
     public abstract FileObject getFileObject();
+
+    /**
+     * Returns a display name of the {@link FileDescriptor}.
+     * Default implementation uses
+     * <code>
+     * FileUtil.getFileDisplayName(getFileObject())
+     * </code>.
+     * Could be overridden if a more efficient way could be provided.
+     * Threading: This method is invoked in the EDT.
+     *
+     * @return The string representation of the path of the associated file.
+     * @since 1.33
+     */
+     public String getFileDisplayPath() {
+        final FileObject fo = getFileObject();
+        return fo == null ? "" : FileUtil.getFileDisplayName(fo); // NOI18N
+    }
 
 
     //<editor-fold defaultstate="collapsed" desc="Package private methods">

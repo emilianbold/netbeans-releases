@@ -328,6 +328,7 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
 
                         } else {
                             FileObject file = resolvedDeclaration.getSource();
+                            final BaseDocument doc = (BaseDocument)resolvedDeclaration.getDocument();
                             Entry entry = resolvedDeclaration.getDeclaration().entry();
                             //In case of id selector, just add the code to the refered selector body and remove the inlined style
 
@@ -339,10 +340,31 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
                             }
 
                             //where to put the moved code
-                            int appendOffset = docBodyRange.getStart();
+                            final AtomicInteger appendOffset = new AtomicInteger(docBodyRange.getStart()); //points to the open curly bracket '{'
+                            //put the section to the next line beginning
+                            doc.render(new Runnable() {
 
+                                @Override
+                                public void run() {
+                                    try {
+                                        if(Utilities.getFirstNonWhiteFwd(doc, appendOffset.get()) == -1) {
+                                            //just WS at the rest of the line
+                                            //=>put the section at the beginning of the next line
+                                            int newPos = Utilities.getRowEnd(doc, appendOffset.get()) + 1;
+                                            appendOffset.set(newPos);
+                                        } else {
+                                            //put right after the open curly bracket
+                                            appendOffset.incrementAndGet();
+                                        }
+                                    } catch (BadLocationException ex) {
+                                        Exceptions.printStackTrace(ex);
+                                    }
+                                }
+                                
+                            });
+                            
                             //get the indentation from the selector's line indent + base indent
-                            int prevLineIndent = getPreviousLineIndent(resolvedDeclaration.getDocument(), appendOffset);
+                            int prevLineIndent = getPreviousLineIndent(doc, appendOffset.get());
                             List<String> lines = new LinkedList<String>();
                             lines.add(""); //empty line = will add new line
                             appendConvertedInlinedCodeLines(lines, si);
@@ -352,8 +374,8 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
                             //append the code to the existing selector
                             CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(file);
                             Difference appendDiff = new Difference(Difference.Kind.INSERT,
-                                    editor.createPositionRef(appendOffset, Bias.Forward),
-                                    editor.createPositionRef(appendOffset, Bias.Backward),
+                                    editor.createPositionRef(appendOffset.get(), Bias.Forward),
+                                    editor.createPositionRef(appendOffset.get(), Bias.Backward),
                                     null,
                                     addedCode,
                                     NbBundle.getMessage(ExtractInlinedStyleRefactoringPlugin.class, "MSG_AppendCssCodeToExistingSelector")); //NOI18N

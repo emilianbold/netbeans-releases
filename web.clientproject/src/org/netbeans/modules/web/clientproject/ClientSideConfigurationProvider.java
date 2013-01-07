@@ -162,11 +162,7 @@ public final class ClientSideConfigurationProvider implements ProjectConfigurati
         if (Utilities.compareObjects(n, ep.getProperty(PROP_CONFIG))) {
             return;
         }
-        if (n != null) {
-            ep.setProperty(PROP_CONFIG, n);
-        } else {
-            ep.remove(PROP_CONFIG);
-        }
+        ep.setProperty(PROP_CONFIG, n);
         p.getProjectHelper().putProperties(CONFIG_PROPS_PATH, ep);
         ProjectManager.getDefault().saveProject(p);
         assert p.getProjectDirectory().getFileObject(CONFIG_PROPS_PATH) != null;
@@ -249,6 +245,10 @@ public final class ClientSideConfigurationProvider implements ProjectConfigurati
             }
         }
         // fallback on first one:
-        return cfgs.get(0);
+        if (cfgs.size() > 0) {
+            return cfgs.get(0);
+        } else {
+            return null;
+        }
     }
 }

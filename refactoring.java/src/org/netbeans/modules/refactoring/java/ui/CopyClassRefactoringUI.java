@@ -116,7 +116,7 @@ public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypas
                     RefactoringUtils.getPackageName(target),
                     getName() + " - " + resource.getName(), // NOI18N
                     NbBundle.getMessage(CopyClassRefactoringUI.class, "LBL_CopyWithoutRefactoring"),
-                    target, resource.getName());
+                    target, resource.getName(), false);
             panel.setCombosEnabled(!(targetFolder != null));
             panel.setRefactoringBypassRequired(needsByPass);
         }

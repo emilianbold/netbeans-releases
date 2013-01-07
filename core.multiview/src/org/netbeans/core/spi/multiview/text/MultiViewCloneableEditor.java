@@ -137,9 +137,7 @@ class MultiViewCloneableEditor extends CloneableEditor  implements MultiViewElem
     
     @Override
     public void componentShowing() {
-        if (multiViewObserver != null) {
-            updateName();
-        }
+        updateDisplayText();
         super.componentShowing();
     }
     
@@ -184,6 +182,10 @@ class MultiViewCloneableEditor extends CloneableEditor  implements MultiViewElem
     @Override
     public void updateName() {
         super.updateName();
+        updateDisplayText();
+    }
+
+    private void updateDisplayText() {
         if (multiViewObserver != null) {
             TopComponent tc = multiViewObserver.getTopComponent();
             tc.setHtmlDisplayName(getHtmlDisplayName());

@@ -260,7 +260,7 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
-        if (!NativeDebuggerManager.isStandalone() && !isPL()) {
+        if (!NativeDebuggerManager.isStandalone() && !NativeDebuggerManager.isPL()) {
             add(projectLabel, gridBagConstraints);
         }
 
@@ -271,7 +271,7 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 6, 0);
-        if (!NativeDebuggerManager.isStandalone() && !isPL()) {
+        if (!NativeDebuggerManager.isStandalone() && !NativeDebuggerManager.isPL()) {
             add(projectComboBox, gridBagConstraints);
         }
 
@@ -313,10 +313,6 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
     private javax.swing.JComboBox projectComboBox;
     private javax.swing.JLabel projectLabel;
     // End of variables declaration//GEN-END:variables
-
-    private boolean isPL() {
-        return "on".equals(System.getProperty("PL_MODE")); // NOI18N
-    }
 
     public static class ProjectCBItem {
         private ProjectInformation pinfo;
@@ -552,6 +548,10 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
         PathMap map = HostInfoProvider.getMapper(executionEnvironment);
 
         String filePath = map.getLocalPath(path);
+        if (filePath == null) {
+            return null;
+        }
+        
         do {
             f = CndFileUtils.toFileObject(FileSystemProvider.getFileSystem(ExecutionEnvironmentFactory.getLocal()), filePath);
             if (f != null && f.isValid()) {

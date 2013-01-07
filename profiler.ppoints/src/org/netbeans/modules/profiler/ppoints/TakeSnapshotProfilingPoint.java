@@ -642,7 +642,8 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
             if (heapdumpFile.exists()) {
                 File fixedHeapdumpFile = constructHeapDumpFile(Utils.getTimeInMillis(time));
                 heapdumpFile.renameTo(fixedHeapdumpFile);
-                ProfilerControlPanel2.getDefault().refreshSnapshotsList();
+                if (ProfilerControlPanel2.hasDefault())
+                    ProfilerControlPanel2.getDefault().refreshSnapshotsList();
 
                 return fixedHeapdumpFile.toURI().toURL().toExternalForm();
             }

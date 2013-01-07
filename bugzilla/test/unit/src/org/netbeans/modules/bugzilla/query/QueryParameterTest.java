@@ -53,7 +53,7 @@ import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugtracking.util.TextUtils;
+import org.netbeans.modules.bugzilla.query.QueryParameter.AllWordsTextFieldParameter;
 import org.netbeans.modules.bugzilla.query.QueryParameter.CheckBoxParameter;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ComboParameter;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ListParameter;
@@ -177,6 +177,41 @@ public class QueryParameterTest extends NbTestCase implements TestConstants {
         text.setText("New Value1");
         assertEquals(1, tp.getValues().length);
         parameterValue = "New+Value1";
+        assertEquals(new ParameterValue(parameterValue), tp.getValues()[0]);
+        assertEquals(tp.get(true).toString(), "&" + PARAMETER + "=" + URLEncoder.encode(parameterValue, "UTF-8"));
+
+    }
+    
+    public void testAllWordsTextFieldParameter() throws UnsupportedEncodingException {
+        JTextField text = new JTextField();
+        TextFieldParameter tp = new AllWordsTextFieldParameter(text, PARAMETER, "UTF-8");
+        assertEquals(PARAMETER, tp.getParameter());
+        assertEquals("", text.getText());
+        assertEquals(tp.get(false).toString(), "&" + PARAMETER + "=");
+
+        tp.setValues(new ParameterValue[] {PV2});
+        assertEquals(PV2.getValue(), text.getText());
+        assertEquals(1, tp.getValues().length);
+        assertEquals(PV2, tp.getValues()[0]);
+        assertEquals(tp.get(false).toString(), "&" + PARAMETER + "=" + PV2.getValue());
+
+        String parameterValue = "New+Value";
+        tp.setValues(new ParameterValue[] {new ParameterValue(parameterValue)});
+        assertEquals("New+Value", text.getText());
+        assertEquals(1, tp.getValues().length);
+        assertEquals(new ParameterValue(parameterValue), tp.getValues()[0]);
+        assertEquals(tp.get(true).toString(), "&" + PARAMETER + "=" + URLEncoder.encode(parameterValue, "UTF-8"));
+
+        parameterValue = "NewValue";
+        text.setText(parameterValue);
+        assertEquals(1, tp.getValues().length);
+        assertEquals(new ParameterValue(parameterValue), tp.getValues()[0]);
+        assertEquals(tp.get(true).toString(), "&" + PARAMETER + "=" + URLEncoder.encode(parameterValue, "UTF-8"));
+        assertEquals("NewValue", text.getText());
+
+        text.setText("New Value1");
+        assertEquals(1, tp.getValues().length);
+        parameterValue = "New Value1";
         assertEquals(new ParameterValue(parameterValue), tp.getValues()[0]);
         assertEquals(tp.get(true).toString(), "&" + PARAMETER + "=" + URLEncoder.encode(parameterValue, "UTF-8"));
 

@@ -105,6 +105,7 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
         this.project = project;
     }
     
+    @Override
     public FileObject getWsdlFolder(boolean create) throws java.io.IOException {
         WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
         if (webModule!=null) {
@@ -124,6 +125,7 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
      * Useful for web service from wsdl
      * @param name service "display" name
      */
+    @Override
     public String getWsdlLocation(String serviceName) {
         String localWsdl = serviceName+".wsdl"; //NOI18N
         JaxWsModel jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
@@ -149,18 +151,16 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
         
         WebApp webApp = getWebApp();
         if(webApp != null){
-            Servlet servlet = null;
-            Listener listener = null;
+            Servlet servlet;
             try{
                 servlet = (Servlet)webApp.addBean("Servlet", new String[]{"ServletName","ServletClass"},
                         new Object[]{servletName,servletClassName}, "ServletName");
                 servlet.setLoadOnStartup(new java.math.BigInteger("1"));
-                ServletMapping servletMapping = (ServletMapping)
                 webApp.addBean("ServletMapping", new String[]{"ServletName","UrlPattern"},
                         new Object[]{servletName, "/" + serviceName}, "ServletName");
                 
                 if(!webAppHasListener(webApp, servletListener)){
-                    listener = (Listener)webApp.addBean("Listener", new String[]{"ListenerClass"},
+                    webApp.addBean("Listener", new String[]{"ListenerClass"},
                             new Object[]{servletListener}, "ListenerClass");
                 }
                 // This also saves server specific configuration, if necessary.
@@ -183,11 +183,13 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
             JAXWSSupport wss = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
             if (wss != null) {
                 Map properties = wss.getAntProjectHelper().getStandardPropertyEvaluator().getProperties();
-                String serverInstance = (String)properties.get("j2ee.server.instance"); //NOI18N
-                if (serverInstance != null) {
-                    J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstance);
-                    if (j2eePlatform != null) {
-                        if (j2eePlatform.isToolSupported("JaxWs-in-j2ee14-supported")) addServletEntry = true;
+                if (properties != null) {
+                    String serverInstance = (String)properties.get("j2ee.server.instance"); //NOI18N
+                    if (serverInstance != null) {
+                        J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstance);
+                        if (j2eePlatform != null) {
+                            if (j2eePlatform.isToolSupported("JaxWs-in-j2ee14-supported")) addServletEntry = true;
+                        }
                     }
                 }
             }
@@ -196,7 +198,6 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
                     Servlet servlet = (Servlet)webApp.addBean("Servlet", new String[]{"ServletName","ServletClass"},
                             new Object[]{wsName,serviceImpl}, "ServletName");
                     servlet.setLoadOnStartup(new java.math.BigInteger("1"));
-                    ServletMapping servletMapping = (ServletMapping)
                     webApp.addBean("ServletMapping", new String[]{"ServletName","UrlPattern"},
                             new Object[]{wsName, "/" + wsName}, "UrlPattern");
                     // This also saves server specific configuration, if necessary.
@@ -292,6 +293,7 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
     /**
      * Returns the directory that contains the deployment descriptor in the project
      */
+    @Override
     public FileObject getDeploymentDescriptorFolder() {
         WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
         if(webModule != null) {
@@ -315,13 +317,15 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
     private boolean isProjectOpened() {
         // XXX workaround: OpenProjects.getDefault() can be null
         // when called from ProjectOpenedHook.projectOpened() upon IDE startup
-        if (OpenProjects.getDefault() == null)
+        if (OpenProjects.getDefault() == null) {
             return true;
+        }
         
         Project[] projects = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i < projects.length; i++) {
-            if (projects[i].equals(project))
+            if (projects[i].equals(project)) {
                 return true;
+            }
         }
         return false;
     }
@@ -345,28 +349,31 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
         }
     }
     
+    @Override
     protected void addJaxwsArtifacts(Project project, String wsName, String serviceImpl) throws Exception {
         
         // check if the wsimport class is already present - this means we don't need to add the library
         SourceGroup[] sgs = SourceGroups.getJavaSourceGroups(project);
         if (sgs.length > 0) {
             ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
-            FileObject wsimportFO = classPath.findResource("com/sun/tools/ws/ant/WsImport.class"); // NOI18N
+            if (classPath != null) {
+                FileObject wsimportFO = classPath.findResource("com/sun/tools/ws/ant/WsImport.class"); // NOI18N
 
-            if (wsimportFO == null) {
-                //Add the Metro library to the project to be packed with the archive
-                Library metroLib = LibraryManager.getDefault().getLibrary("metro"); //NOI18N
-                if (metroLib != null) {
-                    try {
-                        ProjectClassPathModifier.addLibraries(
-                                new Library[] {metroLib},
-                                sgs[0].getRootFolder(),
-                                ClassPath.COMPILE);
-                    }catch(IOException e){
-                        throw new Exception("Unable to add Metro library", e);
+                if (wsimportFO == null) {
+                    //Add the Metro library to the project to be packed with the archive
+                    Library metroLib = LibraryManager.getDefault().getLibrary("metro"); //NOI18N
+                    if (metroLib != null) {
+                        try {
+                            ProjectClassPathModifier.addLibraries(
+                                    new Library[] {metroLib},
+                                    sgs[0].getRootFolder(),
+                                    ClassPath.COMPILE);
+                        }catch(IOException e){
+                            throw new Exception("Unable to add Metro library", e);
+                        }
+                    } else {
+                        throw new Exception("Unable to add Metro Library"); //NOI18N
                     }
-                } else {
-                    throw new Exception("Unable to add Metro Library"); //NOI18N
                 }
             }
         }
@@ -397,11 +404,13 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
                     os = sunjaxwsFile.getOutputStream(lock);
                     endpoints.write(os);
                 }finally{
-                    if(lock != null)
+                    if(lock != null) {
                         lock.releaseLock();
+                    }
 
-                    if(os != null)
+                    if(os != null) {
                         os.close();
+                    }
                 }
             }
         }else{
@@ -413,6 +422,7 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
     
     /** return root folder for xml artifacts
      */
+    @Override
     protected FileObject getXmlArtifactsRoot() {
         return project.getWebModule().getConfDir();
     }
@@ -423,6 +433,7 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
      * or when impl.class is removed (manually from project)
      * Default implementation does nothing.
      */
+    @Override
     public void serviceFromJavaRemoved(String serviceName) {
         JaxWsModel jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
         Boolean isJsr109 = jaxWsModel.getJsr109();
@@ -446,6 +457,7 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
      * Removes the servlet entry from web.xml and
      * the endpoint entry from the sun-jaxws.xml file
      */
+    @Override
     public void removeNonJsr109Entries(String serviceName) throws IOException {
         //delete web.xml entry
         removeServiceEntriesFromDD(serviceName);
@@ -558,6 +570,7 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
         return changed;
     }
  
+    @Override
     public String addService(String name, String serviceImpl, String wsdlUrl, String serviceName, 
             String portName, String packageName, boolean isJsr109, boolean useProvider) {
         // create jax-ws.xml if necessary
@@ -574,6 +587,7 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
         return super.addService(name, serviceImpl, wsdlUrl, serviceName, portName, packageName, isJsr109, useProvider);
     }
 
+    @Override
     public void addService(String serviceName, String serviceImpl, boolean isJsr109) {
         // create jax-ws.xml if necessary
         FileObject fo = WSUtils.findJaxWsFileObject(project);
@@ -589,6 +603,7 @@ public class WebProjectJAXWSSupport extends ProjectJAXWSSupport /*implements JAX
         super.addService(serviceName, serviceImpl, isJsr109);
     }
 
+    @Override
     public MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {
         return project.getWebModule().getWebservicesMetadataModel();
     }

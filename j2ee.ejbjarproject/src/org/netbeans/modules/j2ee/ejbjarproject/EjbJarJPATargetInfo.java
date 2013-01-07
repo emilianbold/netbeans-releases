@@ -57,10 +57,8 @@ import org.openide.util.Exceptions;
  * @author sp153251
  */
 public class EjbJarJPATargetInfo implements JPATargetInfo {
-    private EjbJarProject project;
 
     public EjbJarJPATargetInfo(EjbJarProject project) {
-        this.project = project;
     }
 
     @Override

@@ -79,6 +79,7 @@ class RevisionNode extends AbstractNode {
     static final String COLUMN_NAME_DATE        = "date"; // NOI18N
     static final String COLUMN_NAME_USERNAME    = "username"; // NOI18N
     static final String COLUMN_NAME_MESSAGE     = "message"; // NOI18N
+    static final String COLUMN_NAME_PATH        = "path"; // NOI18N
         
     private RepositoryRevision.Event    event;
     private RepositoryRevision          container;
@@ -149,6 +150,7 @@ class RevisionNode extends AbstractNode {
         Sheet sheet = Sheet.createDefault();
         Sheet.Set ps = Sheet.createPropertiesSet();
         
+        ps.put(new PathProperty());
         ps.put(new DateProperty());
         ps.put(new UsernameProperty());
         ps.put(new MessageProperty());
@@ -226,6 +228,23 @@ class RevisionNode extends AbstractNode {
                 return container.getLog().getAuthor();
             } else {
                 return ""; // NOI18N
+            }
+        }
+    }
+
+    private class PathProperty extends CommitNodeProperty {
+
+        @SuppressWarnings("unchecked")
+        public PathProperty() {
+            super(COLUMN_NAME_PATH, String.class, COLUMN_NAME_PATH, COLUMN_NAME_PATH);
+        }
+
+        @Override
+        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+            if (event == null) {
+                return "";
+            } else {
+                return event.getChangedPath().getPath();
             }
         }
     }

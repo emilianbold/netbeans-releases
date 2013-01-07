@@ -83,7 +83,7 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
     private static final long serialVersionUID = -1555851385128542149L;
     private int index;
     private transient WizardDescriptor.Panel<?>[] panels;
-    private RequestProcessor.Task transformTask;
+    private transient RequestProcessor.Task transformTask;
     
     public Set<DataObject> instantiate(TemplateWizard wizard) throws IOException {
         final Project project = Templates.getProject(wizard);

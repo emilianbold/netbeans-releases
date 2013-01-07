@@ -159,4 +159,28 @@ public class AddUnderscoresTest extends NbTestCase {
                 .run(AddUnderscores.class)
                 .assertWarnings();
     }
+    
+    public void test220979a() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private static final int CONST = -123;\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .preference(AddUnderscores.KEY_SIZE_DECIMAL, 3)
+                .run(AddUnderscores.class)
+                .assertWarnings();
+    }
+    
+    public void test220979b() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private static final int CONST = -/*foobar*/123;\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .preference(AddUnderscores.KEY_SIZE_DECIMAL, 3)
+                .run(AddUnderscores.class)
+                .assertWarnings();
+    }
 }

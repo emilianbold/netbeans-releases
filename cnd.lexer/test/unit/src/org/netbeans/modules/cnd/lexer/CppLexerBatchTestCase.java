@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.lexer;
 
+import static junit.framework.Assert.assertFalse;
 import junit.framework.TestCase;
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -284,6 +285,15 @@ public class CppLexerBatchTestCase extends TestCase {
         assertFalse("No more tokens", ts.moveNext());
     }
 
+    public void test_RawWStrings() {
+        // LR".(This is a "raw W" string.)."
+        String text = "LR\".(This is a \"raw W\" string.).\"";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
+        TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.RAW_STRING_LITERAL, "LR\".(This is a \"raw W\" string.).\"");
+        assertFalse("No more tokens", ts.moveNext());
+    }
+    
     public void test_RawString() {
         // UR".(This is a "raw UTF-32" string.)."
         String text = "R\"()\"";
@@ -352,6 +362,23 @@ public class CppLexerBatchTestCase extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.RAW_STRING_LITERAL, "UR\"( not complete\" other text");
         TokenSequence<?> es = ts.embedded();
         LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppStringTokenId.PREFIX_UR, "UR");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppStringTokenId.FIRST_QUOTE, "\"");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppStringTokenId.START_DELIMETER_PAREN, "(");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppStringTokenId.TEXT, " not complete");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppStringTokenId.DOUBLE_QUOTE, "\"");
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppStringTokenId.TEXT, " other text");
+
+        assertFalse("No more tokens", es.moveNext());
+        assertFalse("No more tokens", ts.moveNext());
+    }
+    
+    public void test_IncompleteRawString_5() {
+        String text = "LR\"( not complete\" other text";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
+        TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, org.netbeans.cnd.api.lexer.CppTokenId.RAW_STRING_LITERAL, "LR\"( not complete\" other text");
+        TokenSequence<?> es = ts.embedded();
+        LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppStringTokenId.PREFIX_LR, "LR");
         LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppStringTokenId.FIRST_QUOTE, "\"");
         LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppStringTokenId.START_DELIMETER_PAREN, "(");
         LexerTestUtilities.assertNextTokenEquals(es, org.netbeans.cnd.api.lexer.CppStringTokenId.TEXT, " not complete");

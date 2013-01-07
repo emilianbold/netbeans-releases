@@ -53,8 +53,10 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -883,8 +885,19 @@ public class ConfigurationMakefileWriter {
         }
     }
 
+    public static Item[] getSortedProjectItems(MakeConfigurationDescriptor projectDescriptor) {
+        List<Item> res = new ArrayList<Item>(Arrays.asList(projectDescriptor.getProjectItems()));
+        Collections.<Item>sort(res, new Comparator<Item>(){
+            @Override
+            public int compare(Item o1, Item o2) {
+                return o1.getPath().compareTo(o2.getPath());
+            }
+        });
+        return res.toArray(new Item[res.size()]);
+    }
+    
     public static void writeCompileTargets(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
-        Item[] items = projectDescriptor.getProjectItems();
+        Item[] items = getSortedProjectItems(projectDescriptor);
         if (conf.isCompileConfiguration()) {
             String target = null;
             String folders;
@@ -1140,7 +1153,7 @@ public class ConfigurationMakefileWriter {
     }
 
     public static void writeCompileTargetsWithoutMain(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
-        Item[] items = projectDescriptor.getProjectItems();
+        Item[] items = getSortedProjectItems(projectDescriptor);
         if (conf.isCompileConfiguration()) {
             String target = null;
             String folders;
@@ -1379,7 +1392,7 @@ public class ConfigurationMakefileWriter {
             }
 
             // Also clean output from custom tool
-            Item[] items = projectDescriptor.getProjectItems();
+            Item[] items = getSortedProjectItems(projectDescriptor);
             for (int i = 0; i < items.length; i++) {
                 ItemConfiguration itemConfiguration = items[i].getItemConfiguration(conf); //ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(items[i].getPath()));
                 if (itemConfiguration == null){
@@ -1476,7 +1489,7 @@ public class ConfigurationMakefileWriter {
     }
 
     private static String getObjectFiles(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf) {
-        Item[] items = projectDescriptor.getProjectItems();
+        Item[] items = getSortedProjectItems(projectDescriptor);
         StringBuilder linkObjects = new StringBuilder();
         if (conf.isCompileConfiguration()) {
             for (int x = 0; x < items.length; x++) {

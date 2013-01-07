@@ -124,17 +124,17 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
 
             // create new class
             Tree newClassTree;
+            final Set<Modifier> modifiers = new HashSet(source.getModifiers());
+            modifiers.remove(Modifier.ABSTRACT);
             if(noInterface) {
                 newClassTree = make.Class(
-                   make.Modifiers(source.getModifiers()), //classModifiersTree,
+                   make.Modifiers(modifiers), //classModifiersTree,
                    name,
                    newTypeParams,
                    wrap ? null : make.Type(source.asType()), //superClass,
                    implementsList,
                    members);
-            } else {
-                final Set<Modifier> modifiers = new HashSet(source.getModifiers());
-                modifiers.remove(Modifier.ABSTRACT);
+            } else {    
                 newClassTree = make.Interface(
                    make.Modifiers(modifiers), //classModifiersTree,
                    name,
@@ -387,7 +387,9 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
             typeArguments.add(identifier);
         }
         MemberSelectTree memberSelect;
-        if (method.getModifiers().contains(Modifier.STATIC)) {
+        final Set<Modifier> mods = EnumSet.copyOf(method.getModifiers());
+        mods.remove(Modifier.ABSTRACT);
+        if (mods.contains(Modifier.STATIC)) {
             memberSelect = make.MemberSelect(make.QualIdent(source), method);
         } else {
             memberSelect = make.MemberSelect(make.Identifier("delegate"), method); //NOI18N
@@ -427,7 +429,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
             statement = make.ExpressionStatement(methodInvocation);
         }
 
-        ModifiersTree modifiers = make.Modifiers(method.getModifiers());
+        ModifiersTree modifiers = make.Modifiers(mods);
 
         List<TypeParameterTree> newTypeParams = new ArrayList<TypeParameterTree>(typeParameters.size());
         transformTypeParameters(typeParameters, make, genUtils, newTypeParams);
@@ -536,7 +538,8 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
         EnumSet<Modifier> modifiers = EnumSet.copyOf(origClass.getModifiers());
         modifiers.remove(Modifier.STATIC);
         modifiers.remove(Modifier.FINAL);
-
+        modifiers.remove(Modifier.ABSTRACT);
+        
         if (refactoring.getWrap() && origClass.getKind() != ElementKind.INTERFACE) {
             // create constructor
             AssignmentTree assignment = make.Assignment(make.MemberSelect(make.Identifier("this"), "delegate"), make.Identifier("delegate")); //NOI18N
@@ -600,7 +603,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
             BlockTree block = make.Block(Collections.singletonList(statement), false);
 
             // create constructor
-            MethodTree newConstr = make.Method(make.Modifiers(constr.getModifiers()),
+            MethodTree newConstr = make.Method(make.Modifiers(modifiers),
                     refactoring.getNewName(),
                     null,
                     newTypeParams,

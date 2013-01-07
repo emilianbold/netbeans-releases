@@ -199,9 +199,15 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
                             String select = GroupsMenu_select();
                             NotifyDescriptor nd = new NotifyDescriptor(pnl, GroupsMenu_moreTitle(), NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.PLAIN_MESSAGE, new Object[] {select, NotifyDescriptor.CANCEL_OPTION} , select);
                             if (select == DialogDisplayer.getDefault().notify(nd)) {
-                                Object o = lst.getSelectedValue();
+                                final Object o = lst.getSelectedValue();
                                 if (o != null) {
-                                    Group.setActiveGroup((Group)o);
+                                    // Could be slow (if needs to load projects); don't block EQ.
+                                    RP.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Group.setActiveGroup((Group)o);
+                                        }
+                                    });
                                 }
                             }
                         }
@@ -307,10 +313,17 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
         dd.setOptions(new Object[] {create, cancel});
         Object result = DialogDisplayer.getDefault().notify(dd);
         if (result.equals(create)) {
-            final Group g = panel.create();
+            assert panel.isReady();
+            final NewGroupPanel.Type type = panel.getSelectedType();
+            final boolean autoSync = panel.isAutoSyncField();
+            final boolean useOpen = panel.isUseOpenedField();
+            final String name = panel.getNameField();
+            final String masterProject = panel.getMasterProjectField();
+            final String directory = panel.getDirectoryField();
             RP.post(new Runnable() {
                 @Override
                 public void run() {
+                    Group g = NewGroupPanel.create(type, name, autoSync, useOpen, masterProject, directory);
                     Group.setActiveGroup(g);
                 }
             });

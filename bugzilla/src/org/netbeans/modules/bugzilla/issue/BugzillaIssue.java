@@ -821,7 +821,7 @@ public class BugzillaIssue {
         return attachments;
     }
 
-    void addAttachment(File file, final String comment, final String desc, String contentType, final boolean patch) {
+    public void addAttachment(File file, final String comment, final String desc, String contentType, final boolean patch) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         final FileTaskAttachmentSource attachmentSource = new FileTaskAttachmentSource(file);
         if (contentType == null) {

@@ -31,10 +31,12 @@
 package org.netbeans.modules.refactoring.java.spi.ui;
 
 import javax.swing.Action;
+import javax.swing.JEditorPane;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.cookies.EditorCookie;
+import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -144,10 +146,13 @@ public abstract class JavaRefactoringActionDelegate {
      */
     protected boolean isEnabled(Lookup context) {
         EditorCookie ck = JavaRefactoringGlobalAction.getEditorCookie(context);
-        boolean result = ck != null && ck.getOpenedPanes().length > 0;
-        if (requiresSelection) {
-            result &= ck.getOpenedPanes()[0].getSelectionStart() !=
-                    ck.getOpenedPanes()[0].getSelectionEnd();
+        boolean result = false;
+        if(ck != null) {
+            JEditorPane pane = NbDocument.findRecentEditorPane(ck);
+            result = pane != null;
+            if (requiresSelection) {
+                result = result && (pane.getSelectionStart() != pane.getSelectionEnd());
+            }
         }
         return result;
     }

@@ -38,9 +38,11 @@
 package org.netbeans.modules.image.navigation;
 
 import java.awt.Color;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import javax.swing.JPanel;
+import org.openide.util.NbBundle;
 
 /**
  * JPanel used for image preview in Navigator window
@@ -59,10 +61,11 @@ public class ImagePreviewPanel extends JPanel {
         this.repaint();
     }
 
+    @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.setColor(Color.BLACK);
         if (image != null) {
+            g.setColor(Color.BLACK);
 
             int width = image.getWidth();
             int height = image.getHeight();
@@ -78,6 +81,12 @@ public class ImagePreviewPanel extends JPanel {
                 height = (int) (((double) image.getHeight()) / ratio);
             }
             g.drawImage(image, (this.getWidth() - width) / 2, (this.getHeight() - height) / 2, width, height, this);
+        } else {
+            g.setColor(Color.RED);
+            FontMetrics fm = this.getFontMetrics(g.getFont()) ;
+            String errMessage = NbBundle.getMessage(ImagePreviewPanel.class, "ERR_Thumbnail");
+            int stringWidth = fm.stringWidth(errMessage);
+            g.drawString(errMessage, (this.getWidth() - stringWidth) / 2, this.getHeight() / 2);
         }
     }
 }

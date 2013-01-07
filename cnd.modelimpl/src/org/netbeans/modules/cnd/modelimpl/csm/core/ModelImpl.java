@@ -238,13 +238,15 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                 ListenersImpl.getImpl().fireProjectOpened(prj);
             }
         } else {
-            disabledProjects.add(id);
+            synchronized (lock) {
+                disabledProjects.add(id);
+            }
         }
         return prj;
     }
 
     // for testing purposes only
-    public ProjectBase addProject(ProjectBase prj) {
+    public ProjectBase testAddProject(ProjectBase prj) {
         synchronized (lock) {
             Object id = prj.getPlatformProject();
             assert id != null : "It is expected that prj.getPlatformProject() is not NULL here"; // NOI18N
@@ -290,14 +292,14 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                     _closeProject2(csmProject, platformProjectKey, cleanRepository);
                 }
             };
-            this.enqueueModelTask(task, "Closing Project "); // NOI18N
+            this.enqueueModelTask(task, "Closing Project " + csmProject.getDisplayName()); // NOI18N
         } else {
             _closeProject2(csmProject, platformProjectKey, cleanRepository);
         }
     }
 
     private void _closeProject2_pre(ProjectBase csmProject, Object platformProjectKey) {
-        ProjectBase prj = (csmProject == null) ? (ProjectBase) getProject(platformProjectKey) : csmProject;
+        ProjectBase prj = (csmProject == null) ? getProject(platformProjectKey) : csmProject;
         if (prj != null) {
             prj.setDisposed();
         }
@@ -313,6 +315,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                     prj = (prj == null) ? (ProjectBase) UIDCsmConverter.UIDtoProject(uid) : prj;
                     assert prj != null : "null object for UID " + uid;
                 }
+                disabledProjects.remove(platformProjectKey);
             }
             cleanModel = (platf2csm.isEmpty());
         }
@@ -509,6 +512,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 
         ParserThreadManager.instance().startup(CndUtils.isStandalone());
         RepositoryUtils.startup();
+        ReferencesIndex.startup();
     //if( ! isStandalone() ) {
     //    for( NativeProject nativeProject : ModelSupport.instance().getNativeProjects() ) {
     //    	addProject(nativeProject, nativeProject.getProjectDisplayName());
@@ -635,7 +639,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         synchronized (lock) {
             disabledProjects.add(nativeProject);
         }
-        ProjectBase csmProject = (ProjectBase) findProject(nativeProject);
+        ProjectBase csmProject = findProject(nativeProject);
         if (csmProject != null) {
             disableProject2(csmProject);
         }

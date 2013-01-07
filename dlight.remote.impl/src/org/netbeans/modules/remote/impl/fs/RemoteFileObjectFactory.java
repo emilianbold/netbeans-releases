@@ -282,7 +282,7 @@ public class RemoteFileObjectFactory {
             if (result == fo) { 
                 ((RemoteLinkChild) result).initListeners(true);
             } else {
-                RemoteFileObjectBase oldDelegate = ((RemoteLinkChild) result).getDelegate();
+                RemoteFileObjectBase oldDelegate = ((RemoteLinkChild) result).getCanonicalDelegate();
                 if (oldDelegate != delegate) {
                     // delegate has changed     
                     RemoteFileObject ownerFileObject = result.getOwnerFileObject();

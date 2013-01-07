@@ -164,7 +164,7 @@ public class CustomizerProviderImpl implements CustomizerProvider2, ProjectShara
         return;
     }
 
-    private class StoreListener implements ActionListener {
+    private static class StoreListener implements ActionListener {
     
         private EjbJarProjectProperties uiProperties;
         

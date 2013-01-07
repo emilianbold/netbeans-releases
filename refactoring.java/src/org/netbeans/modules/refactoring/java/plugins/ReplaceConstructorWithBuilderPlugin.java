@@ -47,8 +47,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.java.api.ReplaceConstructorWithBuilderRefactoring.Setter;
@@ -144,6 +147,7 @@ public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
                 public void run(WorkingCopy workingCopy) throws Exception {
                     workingCopy.toPhase(JavaSource.Phase.RESOLVED);
                     TreePath constrPath = constr.resolve(workingCopy);
+                    ExecutableElement element = (ExecutableElement) workingCopy.getTrees().getElement(constrPath);
                     MethodTree constructor = (MethodTree) constrPath.getLeaf();
                     TypeElement parent = (TypeElement) workingCopy.getTrees().getElement(constrPath.getParentPath());
                     parentSimpleName[0] = parent.getSimpleName().toString();
@@ -151,17 +155,21 @@ public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
                     StringBuilder parameters = new StringBuilder();
                     StringBuilder constraints = new StringBuilder();
                     StringBuilder realParameters = new StringBuilder();
-                    int count = 1;
-                    for (VariableTree vt : constructor.getParameters()) {
-                        if (count > 1) {
+                    for (int count = 0; count < constructor.getParameters().size(); count++) {
+                        VariableTree vt = constructor.getParameters().get(count);
+                        if (count > 0) {
                             parameters.append(", "); //NOI18N
                             constraints.append(" && "); //NOI18N
                             realParameters.append(", "); //NOI18N
                         }
                         realParameters.append(vt.getName());
-                        parameters.append("$").append(count); //NOI18N
-                        constraints.append("$").append(count).append(" instanceof ").append(workingCopy.getTrees().getTypeMirror(new TreePath(new TreePath(constrPath, vt), vt.getType()))); //NOI18N
-                        count++;
+                        parameters.append("$").append(count+1); //NOI18N
+                        if(count == constructor.getParameters().size() -1 &&
+                                element.isVarArgs()) {
+                            parameters.append("$");
+                        } else {
+                            constraints.append("$").append(count+1).append(" instanceof ").append(workingCopy.getTrees().getTypeMirror(new TreePath(new TreePath(constrPath, vt), vt.getType()))); //NOI18N
+                        }
                     }
                     List members = new ArrayList();
                     final String simpleName = refactoring.getBuilderName().substring(refactoring.getBuilderName().lastIndexOf('.') + 1);
@@ -169,10 +177,19 @@ public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
                     StringBuilder args = null;
 
                     for (Setter set : refactoring.getSetters()) {
+                        String type = set.getType();
+                        boolean varargs = false;
+                        if(type.endsWith("...")) { //NOI18N
+                            type = type.substring(0, type.length() -3);
+                            varargs = true;
+                        }
+                        ExpressionTree ident = make.QualIdent(type);
+                        if(varargs) {
+                            ident = (ExpressionTree) make.ArrayType(ident);
+                        }
                         members.add(make.Variable(
                                 make.Modifiers(Collections.singleton(Modifier.PRIVATE)),
-                                set.getVarName(),
-                                make.QualIdent(set.getType()),
+                                set.getVarName(), ident,
                                 set.getDefaultValue() == null ? null : make.Identifier(set.getDefaultValue())));
                         if (args == null) {
                             args = new StringBuilder();
@@ -190,15 +207,27 @@ public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
                             "{}")); //NOI18N
 
                     for (Setter set : refactoring.getSetters()) {
+                        List<StatementTree> stmts = new LinkedList<StatementTree>();
+                        stmts.add(make.ExpressionStatement(make.Assignment(make.Identifier("this." + set.getVarName()), make.Identifier(set.getVarName())))); //NOI18N
+                        stmts.add(make.Return(make.Identifier("this"))); //NOI18N
+                        BlockTree body = make.Block(stmts, false);
+                        String type = set.getType();
+                        boolean varargs = false;
+                        if(type.endsWith("...")) { //NOI18N
+                            type = type.substring(0, type.length() -3);
+                            varargs = true;
+                        }
+                        ExpressionTree ident = make.QualIdent(type);
                         members.add(make.Method(
                                 make.Modifiers(EnumSet.of(Modifier.PUBLIC)),
                                 set.getName(),
                                 make.Type(simpleName),
                                 Collections.<TypeParameterTree>emptyList(),
-                                Collections.<VariableTree>singletonList(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), set.getVarName(), make.QualIdent(set.getType()), null)),
+                                Collections.<VariableTree>singletonList(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), set.getVarName(), ident, null)),
                                 Collections.<ExpressionTree>emptyList(),
-                                "{this." + set.getVarName() + " = " + set.getVarName() + ";\nreturn this;}", //NOI18N
-                                null));
+                                body,
+                                null,
+                                varargs));
                     }
                     
                     ClassTree parentTree = (ClassTree) constrPath.getParentPath().getLeaf();
@@ -260,6 +289,11 @@ public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
                 @Override
                 public void transform(WorkingCopy copy, Occurrence occurrence) {
                     final TreeMaker make = copy.getTreeMaker();
+                    Element element = copy.getTrees().getElement(occurrence.getOccurrenceRoot());
+                    ExecutableElement constrElement = (ExecutableElement) constr.resolveElement(copy);
+                    if(!constrElement.equals(element)) {
+                        return;
+                    }
                     Collection<? extends TreePath> modifiers = occurrence.getMultiVariables().get("$modifiers$");
                     ExpressionTree ident = make.QualIdent(refactoring.getBuilderName());
                     if(modifiers != null) {
@@ -270,18 +304,30 @@ public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
                         ident = (ExpressionTree) make.ParameterizedType(ident, arguments);
                     }
                     ExpressionTree expression = make.NewClass(null, Collections.EMPTY_LIST, ident, Collections.EMPTY_LIST, null);
-
-                    int i = 0;
-                    for (Setter set : refactoring.getSetters()) {
-                        i++;
-                        final Tree value = occurrence.getVariables().get("$" + i).getLeaf(); //NOI18N
-                        if (set.isOptional() && treeEquals(copy, value, set.getDefaultValue())) {
-                            continue;
+                    
+                    Map<String, TreePath> variables = occurrence.getVariables();
+                    Map<String, Collection<? extends TreePath>> multiVariables = occurrence.getMultiVariables();
+                    for (int i = 1; i <= refactoring.getSetters().size(); i++) {
+                        Setter set = refactoring.getSetters().get(i-1);
+                        final List<ExpressionTree> arguments;
+                        if(variables.containsKey("$" + i)) { //NOI18N
+                            final Tree value = variables.get("$" + i).getLeaf(); //NOI18N
+                            if (set.isOptional() && treeEquals(copy, value, set.getDefaultValue())) {
+                                continue;
+                            }
+                            arguments = Collections.singletonList((ExpressionTree)value);
+                        } else {
+                            Collection<? extends TreePath> value = multiVariables.get("$" + i + "$"); //NOI18N
+                            if (set.isOptional() && treeEquals(copy, value, set.getDefaultValue())) {
+                                continue;
+                            }
+                            arguments = createArguments(copy, value);
                         }
+                        
                         expression = make.MethodInvocation(
                                 Collections.<ExpressionTree>emptyList(),
                                 make.MemberSelect(expression, set.getName()),
-                                Collections.singletonList((ExpressionTree) value));
+                                arguments);
                     }
 
                     MethodInvocationTree create = make.MethodInvocation(
@@ -327,6 +373,39 @@ public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
             }
         }
         return defaultValue.equals(value.toString());
+    }
+    
+    private boolean treeEquals(WorkingCopy copy, Collection<? extends TreePath> value, String defaultValue) {
+        if (defaultValue == null) {
+            return false;
+        }
+        String[] values = defaultValue.split(",");
+        if(values.length != value.size()) {
+            return false;
+        }
+        for (String defValue : values) {
+            defValue = defValue.trim();
+            boolean parsed = false;
+            if (value instanceof LiteralTree) {
+                ExpressionTree parseExpression = copy.getTreeUtilities().parseExpression(defValue, new SourcePositions[1]);
+                parsed = parseExpression instanceof LiteralTree;
+                if (parsed && !((LiteralTree) value).getValue().equals(((LiteralTree) parseExpression).getValue())) {
+                    return false;
+                }
+            }
+            if(!parsed && !defValue.equals(value.toString())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private List<ExpressionTree> createArguments(WorkingCopy copy, Collection<? extends TreePath> value) {
+        List<ExpressionTree> arguments = new LinkedList<ExpressionTree>();
+        for (TreePath treePath : value) {
+            arguments.add((ExpressionTree)treePath.getLeaf());
+        }
+        return arguments;
     }
 
     @Override

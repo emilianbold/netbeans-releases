@@ -78,6 +78,10 @@ import org.apache.tools.ant.types.Path;
  * @see "#71675"
  * @see <a href="http://java.sun.com/docs/books/vmspec/2nd-edition/html/ClassFile.doc.html">Class file spec</a>
  */
+
+//-------------------------
+//jglick: when considering rewrites please check https://github.com/jenkinsci/constant-pool-scanner 
+//-------------------------
 public class VerifyClassLinkage extends Task {
 
     public VerifyClassLinkage() {}

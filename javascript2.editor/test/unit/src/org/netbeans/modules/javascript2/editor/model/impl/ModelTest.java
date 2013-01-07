@@ -336,7 +336,7 @@ public class ModelTest extends JsTestBase {
         assertNotNull(model);
         
         JsObject  object = model.getGlobalObject();
-        assertEquals(3, object.getProperties().size());
+        assertEquals(4, object.getProperties().size());
         
         object = object.getProperty("_L2").getProperty("jQuery");
         assertEquals(true, object.isDeclared());
@@ -576,7 +576,7 @@ public class ModelTest extends JsTestBase {
         assertEquals(2, object.getProperties().size());
         
         JsObject variable = object.getProperty("param");
-        assertEquals(JsElement.Kind.VARIABLE, variable.getJSKind());
+        assertEquals(JsElement.Kind.OBJECT, variable.getJSKind());
         assertEquals(true, variable.isDeclared());
         assertEquals(4, variable.getProperties().size());
     }

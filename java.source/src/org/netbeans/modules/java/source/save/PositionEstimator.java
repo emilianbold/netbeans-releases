@@ -1189,13 +1189,16 @@ public abstract class PositionEstimator {
      */
     static class CatchesEstimator extends PositionEstimator {
         
+        private final boolean hasFinally;
         private List<int[]> data;
         
         public CatchesEstimator(final List<? extends Tree> oldL, 
                                 final List<? extends Tree> newL, 
+                                final boolean hasFinally,
                                 final DiffContext diffContext)
         {
             super(oldL, newL, diffContext);
+            this.hasFinally = hasFinally;
         }
         
         @Override()
@@ -1321,6 +1324,7 @@ public abstract class PositionEstimator {
         
         public int prepare(int startPos, StringBuilder aHead,
                            StringBuilder aTail) {
+            if (!hasFinally) return startPos;
             seq.move(startPos);
             seq.moveNext();
             moveToSrcRelevant(seq, Direction.BACKWARD);

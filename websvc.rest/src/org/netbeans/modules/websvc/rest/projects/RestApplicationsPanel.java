@@ -149,7 +149,7 @@ public class RestApplicationsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel3;
     // End of variables declaration//GEN-END:variables
 
-    private class ApplicationPathRenderer extends JLabel implements ListCellRenderer {
+    private static class ApplicationPathRenderer extends JLabel implements ListCellRenderer {
 
         public Component getListCellRendererComponent(
             JList list,

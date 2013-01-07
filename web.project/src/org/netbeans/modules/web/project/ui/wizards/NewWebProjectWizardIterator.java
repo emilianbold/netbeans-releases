@@ -182,21 +182,27 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
 
         resultSet.add(dir);
 
-        WebModule apiWebModule = createdWebProject.getAPIWebModule();
+        WebModule apiWebModule = null;
+        if (createdWebProject != null) {
+            apiWebModule = createdWebProject.getAPIWebModule();
+        }
         //add framework extensions
         List selectedExtenders = (List) wiz.getProperty(WizardProperties.EXTENDERS);
-        if (selectedExtenders != null){
+        if (selectedExtenders != null && apiWebModule != null) {
             handle.progress(NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NewWebProjectWizardIterator_WizardProgress_AddingFrameworks"), 3);
             for(int i = 0; i < selectedExtenders.size(); i++) {
-                Object o = ((WebModuleExtender) selectedExtenders.get(i)).extend(apiWebModule);
-                if (o != null && o instanceof Set)
-                    resultSet.addAll((Set<FileObject>)o);
+                Set<FileObject> o = ((WebModuleExtender) selectedExtenders.get(i)).extend(apiWebModule);
+                if (o != null) {
+                    resultSet.addAll(o);
+                }
             }
         }
 
         FileObject webRoot = h.getProjectDirectory().getFileObject("web");//NOI18N
-        FileObject dd = apiWebModule.getDeploymentDescriptor();
-        resultSet.addAll(WebProjectUtilities.ensureWelcomePage(webRoot, dd));
+        if (apiWebModule != null) {
+            FileObject dd = apiWebModule.getDeploymentDescriptor();
+            resultSet.addAll(WebProjectUtilities.ensureWelcomePage(webRoot, dd));
+        }
         
         handle.progress(NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NewWebProjectWizardIterator_WizardProgress_PreparingToOpen"), 4);
 

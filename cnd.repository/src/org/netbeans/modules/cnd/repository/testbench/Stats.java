@@ -104,6 +104,7 @@ public class Stats {
     public final static boolean TRACE_REPOSITORY_TRANSLATOR = CndUtils.getBoolean("cnd.repository.trace.translator", false); //NOI18N
     public final static boolean TRACE_UNIT_DELETION = CndUtils.getBoolean("cnd.repository.trace.unit.deletion", false); //I18N
     public static final boolean TRACE_IZ_215449 = CndUtils.getBoolean("trace.iz.215449", true); //I18N
+    public static final boolean TRACE_IZ_224249 = CndUtils.getBoolean("trace.iz.224249", false); //I18N
     
     public static final boolean isTraceKey(Key key) {
 	if( traceKey ) {

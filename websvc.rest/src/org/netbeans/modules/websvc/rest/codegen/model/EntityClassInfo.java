@@ -53,6 +53,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
@@ -582,10 +583,12 @@ public class EntityClassInfo {
 
         private void parseRelationship(AnnotationMirror annotation) {
             Map<? extends ExecutableElement, ? extends AnnotationValue> map = annotation.getElementValues();
-
-            for (ExecutableElement e : map.keySet()) {
+            for (Entry<? extends ExecutableElement, ? extends AnnotationValue>
+                entry : map.entrySet() )
+            {
+                ExecutableElement e = entry.getKey();
                 if (e.getSimpleName().toString().equals("mappedBy")) {      //NOI18N
-                    mappedBy = map.get(e).getValue().toString();
+                    mappedBy = entry.getValue().toString();
                     return;
                 }
             }

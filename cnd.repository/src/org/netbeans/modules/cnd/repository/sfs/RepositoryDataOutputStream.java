@@ -45,7 +45,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
-import org.netbeans.modules.cnd.repository.util.UnitCodec;
+import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
 
 /**
  *
@@ -67,7 +67,7 @@ public class RepositoryDataOutputStream extends DataOutputStream implements Repo
 
     @Override
     public void writeUnitId(int unitId) throws IOException {
-        writeInt(unitCodec.removeRepositoryID(unitId));
+        writeInt(unitCodec.unmaskRepositoryID(unitId));
     }
 
     private static final int sharedArrySize = 1024;

@@ -304,11 +304,12 @@ public final class NbMavenProject {
         String path = build != null ? (test ? build.getTestOutputDirectory() : build.getOutputDirectory()) : null;
         File toRet;
         if (path != null) {
-            toRet = new File(path);
+            toRet = FileUtil.normalizeFile(new File(path));
         } else { // #189092
+            //getMavenProject().getBasedir() is normalized.
             toRet =  new File(new File(getMavenProject().getBasedir(), "target"), test ? "test-classes" : "classes"); // NOI18N
         }
-        return FileUtil.normalizeFile(toRet);
+        return toRet;
     }
 
     /**

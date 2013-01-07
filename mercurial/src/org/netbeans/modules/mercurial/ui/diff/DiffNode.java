@@ -47,7 +47,6 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
 import org.openide.nodes.PropertySupport;
-import org.openide.util.lookup.Lookups;
 import org.openide.ErrorManager;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -56,6 +55,9 @@ import org.netbeans.modules.mercurial.util.HgUtils;
 import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.mercurial.HgFileNode;
+import org.netbeans.modules.versioning.diff.DiffLookup;
+import org.netbeans.modules.versioning.diff.DiffUtils;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -147,10 +149,19 @@ class DiffNode extends AbstractNode {
     }
 
     private static org.openide.util.Lookup getLookupFor (Setup setup, Object[] lookupObjects) {
-        Object[] allLookupObjects = new Object[lookupObjects.length + 1];
+        EditorCookie eCookie = DiffUtils.getEditorCookie(setup);
+        Object[] allLookupObjects;
+        if (eCookie == null) {
+            allLookupObjects = new Object[lookupObjects.length + 1];
+        } else {
+            allLookupObjects = new Object[lookupObjects.length + 2];
+            allLookupObjects[allLookupObjects.length - 1] = eCookie;
+        }
         allLookupObjects[0] = setup;
         System.arraycopy(lookupObjects, 0, allLookupObjects, 1, lookupObjects.length);
-        return Lookups.fixed(allLookupObjects);
+        DiffLookup lkp = new DiffLookup();
+        lkp.setData(allLookupObjects);
+        return lkp;
     }
 
     private abstract class DiffNodeProperty extends PropertySupport.ReadOnly {

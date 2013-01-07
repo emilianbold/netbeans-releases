@@ -396,7 +396,6 @@ public class AmazonJ2EEServerWizardComponent extends javax.swing.JPanel implemen
                     public void run() {
                         appNameComboBox.setModel(new DefaultComboBoxModel(apps.toArray(new String[apps.size()])));
                         appNameComboBox.setSelectedIndex(0);
-                        JTextField tf = (JTextField)(appNameComboBox.getEditor().getEditorComponent());
                     }
                 });
                 return null;

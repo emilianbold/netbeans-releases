@@ -141,6 +141,9 @@ public class JavaWsdlMapper {
         }
         try {    
             JavaSource js = JavaSource.forFileObject(implClass);
+            if ( js== null){
+                return null;
+            }
             js.runUserActionTask(new AbstractTask<CompilationController>() {
                 @Override
                  public void run(CompilationController controller) 
@@ -235,6 +238,9 @@ public class JavaWsdlMapper {
         final List<String> faults = new ArrayList<String>();
         try {    
             JavaSource js = JavaSource.forFileObject(implClass);
+            if ( js== null){
+                return faults;
+            }
             js.runUserActionTask(new AbstractTask<CompilationController>() {
                  @Override
                  public void run(CompilationController controller) 
@@ -335,9 +341,14 @@ public class JavaWsdlMapper {
     
     public static List<String> getOperationNames(FileObject implClass) {
         final List<String> operations = new ArrayList<String>();
-        if (implClass == null) return null;
+        if (implClass == null) {
+            return operations;
+        }
         try {    
             JavaSource js = JavaSource.forFileObject(implClass);
+            if ( js== null){
+                return operations;
+            }
             js.runUserActionTask(new AbstractTask<CompilationController>() {
                  public void run(CompilationController controller) throws java.io.IOException {
                      controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
@@ -408,9 +419,14 @@ public class JavaWsdlMapper {
     
     public static QName getPortTypeName(FileObject implClass) {
         final java.lang.String[] portTypeQNameARR = new String[2];
-        if (implClass == null) return null;
+        if (implClass == null) {
+            return null;   
+        }
         try {    
             JavaSource js = JavaSource.forFileObject(implClass);
+            if ( js==null){
+                return null;
+            }
             js.runUserActionTask(new AbstractTask<CompilationController>() {
                 @Override
                  public void run(CompilationController controller) throws IOException {
@@ -475,9 +491,14 @@ public class JavaWsdlMapper {
     public static String getWsdlLocation(FileObject implClass) {        
         final java.lang.String[] wsdlLocARR = new String[1];
         try {
-            if (implClass == null) return null;
+            if (implClass == null) {
+                return null;
+            }
             
             JavaSource js = JavaSource.forFileObject(implClass);
+            if ( js== null){
+                return null;
+            }
             js.runUserActionTask(new AbstractTask<CompilationController>() {
                 @Override
                  public void run(CompilationController controller) throws IOException {
@@ -523,9 +544,14 @@ public class JavaWsdlMapper {
     public static QName getPortName(FileObject implClass, final String targetNamespace) {
 
         final java.lang.String[] portNameQNameARR = new String[2];
-        if (implClass == null) return null;
+        if (implClass == null) {
+            return null;   
+        }
         try {    
             JavaSource js = JavaSource.forFileObject(implClass);
+            if ( js== null){
+                return null;
+            }
             js.runUserActionTask(new AbstractTask<CompilationController>() {
                 @Override
                  public void run(CompilationController controller) throws java.io.IOException {

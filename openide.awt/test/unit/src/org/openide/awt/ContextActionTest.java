@@ -57,6 +57,8 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -110,6 +112,29 @@ implements Lookup.Provider, ContextActionEnabler<ContextActionTest.Openable> {
     @Override
     protected boolean runInEQ() {
         return true;
+    }
+    
+    public void testFilterOutDuplicates() throws Exception {
+        // Check enablement logic.
+        ActionsInfraHid.WaitPCL l = new ActionsInfraHid.WaitPCL("enabled");
+        a1.addPropertyChangeListener(l);
+        assertFalse(getIsEnabled(a1));
+        final int[] cnt = { 0 };
+        class O implements Openable {
+            @Override
+            public void open() {
+                cnt[0]++;
+            }
+        }
+        O o = new O();
+        activate(Lookups.fixed(o, o));
+        assertTrue(l.changed());
+        l.gotit = 0;
+        assertTrue(getIsEnabled(a1));
+        
+        doActionPerformed(a1, new ActionEvent(this, 0, ""));
+        
+        assertEquals("One invocation", 1, cnt[0]);
     }
     
     /** Similar to NodeActionTest. */
@@ -648,6 +673,9 @@ implements Lookup.Provider, ContextActionEnabler<ContextActionTest.Openable> {
         
         public void actionPerformed(ActionEvent ev, List<? extends Openable> toOpen) {
             runOn.add(toOpen);
+            for (Openable o : toOpen) {
+                o.open();
+            }
         }
         public static final List<List<? extends Openable>> runOn = new ArrayList<List<? extends Openable>>();
     }

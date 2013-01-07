@@ -73,6 +73,7 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.modules.debugger.ui.models.ColumnModels;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.SessionProvider;
 import org.netbeans.spi.debugger.ui.ViewLifecycle.ModelUpdateListener;
@@ -401,6 +402,11 @@ public class ViewModelListener extends DebuggerManagerAdapter {
                 searchPath = null;
             }
             asynchModelFilters = cp.lookup (searchPath, AsynchronousModelFilter.class);
+        }
+        for (Object model : columnModels) {
+            if (model instanceof ColumnModels.AbstractColumn) {
+                ((ColumnModels.AbstractColumn) model).setViewPath(viewPath);
+            }
         }
         //rp = (e != null) ? e.lookupFirst(null, RequestProcessor.class) : null;
 

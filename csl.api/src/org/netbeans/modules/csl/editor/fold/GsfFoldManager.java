@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.csl.editor.fold;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -90,6 +92,7 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.*;
+import org.openide.text.NbDocument;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -395,7 +398,7 @@ public class GsfFoldManager implements FoldManager {
             }
 
             final TreeSet<FoldInfo> folds = new TreeSet<FoldInfo>();
-            Document doc = info.getSnapshot().getSource().getDocument(false);
+            final Document doc = info.getSnapshot().getSource().getDocument(false);
             if (doc == null) {
                 return;
             }
@@ -405,13 +408,13 @@ public class GsfFoldManager implements FoldManager {
             }
             
             if (mgrs instanceof GsfFoldManager) {
-                SwingUtilities.invokeLater(((GsfFoldManager)mgrs).new CommitFolds(folds));
+                SwingUtilities.invokeLater(((GsfFoldManager)mgrs).new CommitFolds(folds, doc, info.getSnapshot().getSource()));
             } else {
                 SwingUtilities.invokeLater(new Runnable() {
                     Collection<GsfFoldManager> jefms = (Collection<GsfFoldManager>)mgrs;
                     public void run() {
                         for (GsfFoldManager jefm : jefms) {
-                            jefm.new CommitFolds(folds).run();
+                            jefm.new CommitFolds(folds, doc, info.getSnapshot().getSource()).run();
                         }
                 }});
             }
@@ -637,13 +640,17 @@ public class GsfFoldManager implements FoldManager {
     }
     
     private class CommitFolds implements Runnable {
+        private Document scannedDocument;
+        private Source scanSource;
         
         private boolean insideRender;
         private TreeSet<FoldInfo> infos;
         private long startTime;
         
-        public CommitFolds(TreeSet<FoldInfo> infos) {
+        public CommitFolds(TreeSet<FoldInfo> infos, Document scanedDocument, Source s) {
             this.infos = infos;
+            this.scannedDocument = scanedDocument;
+            this.scanSource = s;
         }
         
         /**
@@ -675,7 +682,27 @@ public class GsfFoldManager implements FoldManager {
             }
             
             operation.getHierarchy().lock();
-            
+            if (operation.getHierarchy().getComponent().getDocument() != this.scannedDocument) {
+                Throwable t = (Throwable)scannedDocument.getProperty("Issue-222763-debug");
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                if (t != null) {
+                    pw.print("Scanned document: ");
+                    t.printStackTrace(pw);
+                }
+                t = (Throwable)operation.getHierarchy().getComponent().getDocument().getProperty("Issue-222763-debug");
+                if (t != null) {
+                    pw.print("Manager document: ");
+                    t.printStackTrace(pw);
+                }
+                // hopefully will be removed before release, see issue #223800
+                pw.flush();
+                LOG.warning("Fold manager works with different document than scanner. FmDoc: " + operation.getHierarchy().getComponent().getDocument() +
+                        ", ScanDoc: " + scannedDocument + ", source: " + scanSource);
+                LOG.warning("Creation stacks: " + sw.toString());
+                // prevent folding, bad offsets, see issue #223800
+                return;
+            }
             try {
                 FoldHierarchyTransaction tr = operation.openTransaction();
                 
@@ -767,7 +794,10 @@ public class GsfFoldManager implements FoldManager {
         
         public FoldInfo(Document doc, int start, int end, FoldTemplate template, boolean collapseByDefault) throws BadLocationException {
             this.start = doc.createPosition(start);
-            this.end   = doc.createPosition(end);
+            // see issue #216378; while Fold.end Position is manually updated by FoldHierarchyTransactionImpl, the
+            // FoldInfos are left alone, and end marker must stick with the content, so characters typed after it does
+            // not extend the FoldInfo
+            this.end   = NbDocument.createPosition(doc, end, Position.Bias.Backward);
             this.template = template;
             this.collapseByDefault = collapseByDefault;
         }

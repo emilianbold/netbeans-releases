@@ -145,7 +145,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     void read(WizardDescriptor d) {
     }
     
-    private class ServerWrapper {
+    private static class ServerWrapper {
         private String serverID;
         private String displayName;
         

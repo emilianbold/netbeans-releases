@@ -154,6 +154,7 @@ public class HgUtils {
     public static final String HG_CHECK_REPOSITORY_DEFAULT_TIMEOUT = "5";
     public static final int HG_CHECK_REPOSITORY_DEFAULT_ROUNDS = 50;
     public static final String HG_FOLDER_NAME = ".hg";                 //NOI18N
+    public static final String WLOCK_FILE = "wlock"; //NOI18N
     private static int repositoryValidityCheckRounds = 0;
     public static String PREFIX_VERSIONING_MERCURIAL_URL = "versioning.mercurial.url."; //NOI18N
 
@@ -1387,7 +1388,7 @@ itor tabs #66700).
 
     public static boolean isRepositoryLocked (File repository) {
         String[] locks = getHgFolderForRoot(repository).list();
-        return locks != null && Arrays.asList(locks).contains("wlock"); //NOI18N
+        return locks != null && Arrays.asList(locks).contains(WLOCK_FILE);
     }
 
     public static boolean contains (Collection<File> roots, File file) {

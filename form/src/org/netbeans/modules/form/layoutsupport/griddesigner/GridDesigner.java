@@ -100,6 +100,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -262,6 +263,8 @@ public class GridDesigner extends JPanel {
         boolean gapSupport = gridManager.getGridInfo().hasGaps();
         updateGapProperties(gapSupport);
         updateGapControls(gapSupport);
+
+        HelpCtx.setHelpIDString(this, "gui.layouts.griddesigner"); // NOI18N
     }
     
     /**
