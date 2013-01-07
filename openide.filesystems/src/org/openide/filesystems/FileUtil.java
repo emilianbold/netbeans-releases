@@ -289,16 +289,24 @@ public final class FileUtil extends Object {
      * @since org.openide.filesystems 7.20
      */
     public static void addFileChangeListener(FileChangeListener listener, File path) {
+        addFileChangeListenerImpl(LOG, listener, path);
+    }
+    private static void addFileChangeListenerImpl(Logger logger, FileChangeListener listener, File path) {
         assert assertNormalized(path);
-        LOG.log(Level.FINE, "addFileChangeListener {0} @ {1}", new Object[]{listener, path});
+        logger.log(Level.FINE, "addFileChangeListener {0} @ {1}", new Object[]{listener, path});
         synchronized (holders) {
             Map<File, Holder> f2H = holders.get(listener);
             if (f2H == null) {
                 f2H = new HashMap<File, Holder>();
                 holders.put(listener, f2H);
             }
-            if (f2H.containsKey(path)) {
-                throw new IllegalArgumentException("Already listening to " + path); // NOI18N
+            final Holder prev = f2H.get(path);
+            if (prev != null) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("Already listening to ").append(path); // NOI18N
+                sb.append("\nnew listener   : ").append(listener); // NOI18N
+                sb.append("\nholder listener: ").append(prev.get()); // NOI18N
+                throw new IllegalArgumentException(sb.toString());
             }
             final Holder holder = new Holder(listener, path);
             f2H.put(path, holder);
@@ -316,12 +324,12 @@ public final class FileUtil extends Object {
      * @since org.openide.filesystems 7.20
      */
     public static void removeFileChangeListener(FileChangeListener listener, File path) {
-        removeFileChangeListenerImpl(listener, path);
+        removeFileChangeListenerImpl(LOG, listener, path);
     }
 
-    private static FileChangeListener removeFileChangeListenerImpl(FileChangeListener listener, File path) {
+    private static FileChangeListener removeFileChangeListenerImpl(Logger logger, FileChangeListener listener, File path) {
         assert path.equals(FileUtil.normalizeFile(path)) : "Need to normalize " + toDebugString(path) + "!";  //NOI18N
-        LOG.log(Level.FINE, "removeFileChangeListener {0} @ {1}", new Object[]{listener, path});
+        logger.log(Level.FINE, "removeFileChangeListener {0} @ {1}", new Object[]{listener, path});
         synchronized (holders) {
             Map<File, Holder> f2H = holders.get(listener);
             if (f2H == null) {
@@ -419,7 +427,7 @@ public final class FileUtil extends Object {
     public static void addRecursiveListener(FileChangeListener listener, File path, FileFilter recurseInto, Callable<Boolean> stop) {
         final DeepListener deep = new DeepListener(listener, path, recurseInto, stop);
         deep.init();
-        addFileChangeListener(deep, path);
+        addFileChangeListenerImpl(DeepListener.LOG, deep, path);
     }
 
     /**
@@ -434,7 +442,7 @@ public final class FileUtil extends Object {
     public static void removeRecursiveListener(FileChangeListener listener, File path) {
         final DeepListener deep = new DeepListener(listener, path, null, null);
         // no need to deep.init()
-        DeepListener dl = (DeepListener)removeFileChangeListenerImpl(deep, path);
+        DeepListener dl = (DeepListener)removeFileChangeListenerImpl(DeepListener.LOG, deep, path);
         dl.run();
     }
 
