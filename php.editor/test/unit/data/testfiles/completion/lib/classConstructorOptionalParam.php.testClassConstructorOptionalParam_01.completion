@@ -23,6 +23,7 @@ CLASS      Abc                             [PUBLIC]   issue209405.php
 CLASS      Admin                           [PUBLIC]   Admin
 CLASS      AliasedClassName                [PUBLIC]   Foo\Bar
 CLASS      AnonymousObject                 [PUBLIC]   anonymousObjectVariables.php
+CLASS      Another                         [PUBLIC]   test224549.php
 CLASS      ArraysCc                        [PUBLIC]   arrays.php
 CLASS      Author                          [PUBLIC]   mixedtypes.php
 CLASS      Author_1                        [PUBLIC]   mixedtypes_1.php
