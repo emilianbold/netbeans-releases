@@ -62,12 +62,13 @@ public class InspectionTest extends GeneralHTMLProject {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(InspectionTest.class).addTest(
                 "testOpenProject",
-                //                "testBasicInspection",
-                //                "testMultipleSelect",
-                //                "testEditNumberedProperty",
-                //                "testCSSStylesAfterSave",
+                "testBasicInspection",
+                "testMultipleSelect",
+                "testEditNumberedProperty",
+                "testCSSStylesAfterSave",
+                "testStylesAfterSaveWithInsp",
                 "testHighlightedElements",
-                //                "testInspectionFromNavigator",
+                "testInspectionFromNavigator",
                 "testMatchedHighlighted").enableModules(".*").clusters(".*").honorAutoloadEager(true));
     }
 
