@@ -120,7 +120,7 @@ public class ModelVisitor extends PathNodeVisitor {
         if (!(node != null && node.tokenType() == TokenType.ASSIGN)) {
             if (accessNode.getBase() instanceof IdentNode && "this".equals(((IdentNode)accessNode.getBase()).getName())) { //NOI18N
                 IdentNode iNode = (IdentNode)accessNode.getProperty();
-                JsObject current = modelBuilder.getCurrentDeclarationScope();
+                JsObject current = modelBuilder.getCurrentDeclarationFunction();
                 JsObject property = current.getProperty(iNode.getName());
                 if (property == null && current.getParent() != null && (current.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
                         || current.getParent().getJSKind() == JsElement.Kind.OBJECT)) {
@@ -151,7 +151,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 if (name != null) {
                     List<Identifier> fqname = new ArrayList<Identifier>();
                     fqname.add(name); 
-                    Collection<? extends JsObject> variables = ModelUtils.getVariables(modelBuilder.getCurrentDeclarationScope());
+                    Collection<? extends JsObject> variables = ModelUtils.getVariables(modelBuilder.getCurrentDeclarationFunction());
                     fromAN = null;
                     for(JsObject variable : variables) {
                         if (variable.getName().equals(name.getName())) {
@@ -165,7 +165,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     fromAN.addOccurrence(name.getOffsetRange());
                 }
             } else {
-                JsObject current = modelBuilder.getCurrentDeclarationScope();
+                JsObject current = modelBuilder.getCurrentDeclarationFunction();
                 JsObject property = current.getProperty(accessNode.getProperty().getName());
                 if (property == null && current.getParent() != null && (current.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
                         || current.getParent().getJSKind() == JsElement.Kind.OBJECT
@@ -228,7 +228,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 && !(binaryNode.rhs() instanceof ReferenceNode || binaryNode.rhs() instanceof ObjectNode)
                 && (binaryNode.lhs() instanceof AccessNode || binaryNode.lhs() instanceof IdentNode)) {
             // TODO probably not only assign
-            JsObjectImpl parent = modelBuilder.getCurrentDeclarationScope();
+            JsObjectImpl parent = modelBuilder.getCurrentDeclarationFunction();
             if (binaryNode.lhs() instanceof AccessNode) {
                 AccessNode aNode = (AccessNode)binaryNode.lhs();
                 JsObjectImpl property = null;
@@ -274,7 +274,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     String parameter = null;
                     if(binaryNode.rhs() instanceof IdentNode) {
                         IdentNode rhs = (IdentNode)binaryNode.rhs();
-                        JsFunction function = (JsFunction)modelBuilder.getCurrentDeclarationScope();
+                        JsFunction function = (JsFunction)modelBuilder.getCurrentDeclarationFunction();
                         if(/*function.getProperty(rhs.getName()) == null &&*/ function.getParameter(rhs.getName()) != null) {
                             parameter = "@param;" + ModelUtils.createFQN(function) + ":" + rhs.getName();
                         }
@@ -425,7 +425,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         parent.addOccurrence(parentName.getOffsetRange());
                     }
                 } else {
-                    JsObject current = modelBuilder.getCurrentDeclarationScope();
+                    JsObject current = modelBuilder.getCurrentDeclarationFunction();
                     JsObject property = current.getProperty(iNode.getName());
                     if (property == null && current.getParent() != null && (current.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
                             || current.getParent().getJSKind() == JsElement.Kind.OBJECT
@@ -523,10 +523,10 @@ public class ModelVisitor extends PathNodeVisitor {
         }
         functionStack.add(functions);
 
-        JsFunctionImpl fncScope = (JsFunctionImpl)modelBuilder.getCurrentDeclarationScope();
+        JsFunctionImpl fncScope = (JsFunctionImpl)modelBuilder.getCurrentDeclarationFunction();
         if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
             // create the function object
-            DeclarationScopeImpl scope = modelBuilder.getCurrentDeclarationScope();
+            DeclarationScopeImpl scope = modelBuilder.getCurrentDeclarationFunction();
             boolean isAnonymous = false;
             if (getPreviousFromPath(2) instanceof ReferenceNode) {
                 Node node = getPreviousFromPath(3);
@@ -698,7 +698,7 @@ public class ModelVisitor extends PathNodeVisitor {
             if ( lastVisited instanceof VarNode) {
                 fqName = getName((VarNode)lastVisited);
                 isDeclaredInParent = true;
-                JsObject declarationScope = modelBuilder.getCurrentDeclarationScope();
+                JsObject declarationScope = modelBuilder.getCurrentDeclarationFunction();
                 varNode = (VarNode)lastVisited;
                 if (fqName.size() == 1 && !ModelUtils.isGlobal(declarationScope)) {
                     isPrivate = true;
@@ -858,7 +858,7 @@ public class ModelVisitor extends PathNodeVisitor {
         if(types.isEmpty()) {
            types.add(new TypeUsageImpl(Type.UNRESOLVED, LexUtilities.getLexerOffset(parserResult, returnNode.getStart()), true));
         }
-        JsFunctionImpl function = (JsFunctionImpl)modelBuilder.getCurrentDeclarationScope();
+        JsFunctionImpl function = modelBuilder.getCurrentDeclarationFunction();
         function.addReturnType(types);
         return super.enter(returnNode);
     }
@@ -972,7 +972,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
             }
         } else if(varNode.getInit() instanceof ObjectNode) {
-            JsObjectImpl function = modelBuilder.getCurrentDeclarationScope();
+            JsObjectImpl function = modelBuilder.getCurrentDeclarationFunction();
             Identifier name = ModelElementFactory.create(parserResult, varNode.getName());
             if (name != null) {
                 JsObjectImpl variable = (JsObjectImpl)function.getProperty(name.getName());
