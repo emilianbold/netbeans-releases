@@ -457,8 +457,8 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                             if (c == 'L' || c == 'U' || c == 'u' || c == 'R') {
                                 int next = read(true);
                                 boolean raw_string = (c == 'R');
-                                if (next == 'R' && (c == 'u' || c == 'U')) {
-                                    // uR or UR
+                                if (next == 'R' && (c == 'u' || c == 'U' || c == 'L')) {
+                                    // uR, UR or LR
                                     raw_string = true;
                                     next = read(true);
                                 } else if (next == '8' && c == 'u') {

@@ -398,6 +398,7 @@ public class ChildrenKeysTest extends NbTestCase {
 
     }
 
+    @RandomlyFails // NB-Core-Build #8615, #9022, #9163, #9332, #9370
     public void testGCWhenGetNodesTrue() throws Exception {
 
 
@@ -613,7 +614,7 @@ public class ChildrenKeysTest extends NbTestCase {
         LOG.log(Level.INFO, "root nodes created {0}", Arrays.toString(n));
         
         n = k.getNodes ();
-        LOG.log(Level.INFO, "k's nodes created {0}", Arrays.toString(n));
+        LOG.log(Level.INFO, "k nodes created {0}", Arrays.toString(n));
         
         assertEquals ("1 left", 1, n.length);
         assertEquals("Once add notify", 1, k.addNotify);

@@ -127,6 +127,10 @@ public class ConnectAction extends CookieAction {
                 // to the database explorer.
                 ConnectionManager.getDefault().addConnectionListener(new ConnectionListener() {
                     public void connectionsChanged() {
+                        if (ConnectionManager.getDefault().getConnection(
+                                dbconn.getName()) == null) {
+                            return; // this is not the right event, see #217880
+                        }
                         ConnectionManager.getDefault().showConnectionDialog(dbconn);
                         ConnectionManager.getDefault().removeConnectionListener(this);
                     }

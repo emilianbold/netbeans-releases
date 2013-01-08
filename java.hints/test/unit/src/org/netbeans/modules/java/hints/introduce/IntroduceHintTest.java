@@ -1812,6 +1812,49 @@ public class IntroduceHintTest extends NbTestCase {
                 .of(Modifier.PRIVATE), true),
                        1, 0);
     }
+    
+    public void test224512() throws Exception {
+        performFixTest("package test;\n" +
+                       "class Test {\n" +
+                       "    private static class Foo {}\n" +
+                       "    private static String[] t(String[] strings) {\n" +
+                       "        String[] result = null;\n" +
+                       "        if (strings != null) |{\n" +
+                       "            for (String str : strings) {\n" +
+                       "                result = new String[]{\n" +
+                       "                    str,\n" +
+                       "                    null\n" +
+                       "                };\n" +
+                       "                break;\n" +
+                       "            }\n" +
+                       "        }|\n" +
+                       "        return result;\n" +
+                       "    }\n" +
+                       "}",
+                       ("package test;\n" +
+                        "class Test {\n" +
+                        "    private static String[] name(String[] strings, String[] result) {\n" +
+                        "        for (String str : strings) {\n" +
+                        "            result = new String[]{\n" +
+                        "                str,\n" +
+                        "                null\n" +
+                        "            };\n" +
+                        "            break;\n" +
+                        "        }\n" +
+                        "        return result;\n" +
+                        "    }\n" +
+                        "    private static class Foo {}\n" +
+                        "    private static String[] t(String[] strings) {\n" +
+                        "        String[] result = null;\n" +
+                        "        if (strings != null) result = name(strings, result);\n" +
+                        "        return result;\n" +
+                        "    }\n" +
+                        "}")
+                .replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl3("name", EnumSet
+                .of(Modifier.PRIVATE), true),
+                       1, 0);
+    }
 
     public void testConstantFix204373a() throws Exception {
         performFixTest("package test;\n" +

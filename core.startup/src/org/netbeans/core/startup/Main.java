@@ -251,18 +251,6 @@ public final class Main extends Object {
 
     InstalledFileLocatorImpl.prepareCache();
 
-    // Initialize beans - [PENDING - better place for this ?]
-    //                    [PENDING - can PropertyEditorManager garbage collect ?]
-    String[] sysbisp = Introspector.getBeanInfoSearchPath();
-    String[] nbbisp = new String[] {
-        "org.netbeans.beaninfo", // NOI18N
-    };
-    String[] allbisp = new String[sysbisp.length + nbbisp.length];
-    System.arraycopy(nbbisp, 0, allbisp, 0, nbbisp.length);
-    System.arraycopy(sysbisp, 0, allbisp, nbbisp.length, sysbisp.length);
-    Introspector.setBeanInfoSearchPath(allbisp);
-
-
     try {
         if (!Boolean.getBoolean("netbeans.full.hack") && !Boolean.getBoolean("netbeans.close")) {
 	    // -----------------------------------------------------------------------------------------------------

@@ -54,6 +54,8 @@ import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
+import org.openide.util.Mutex.Action;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
 
@@ -111,14 +113,19 @@ public class FolderActionsImplementationProvider extends ActionsImplementationPr
         return dobj != null ? dobj.getPrimaryFile() : null;
     }
 
-    private static boolean isFromEditor(EditorCookie ec) {
-        if (ec != null && ec.getOpenedPanes() != null) {
-            TopComponent activetc = TopComponent.getRegistry().getActivated();
-            if (activetc instanceof CloneableEditorSupport.Pane) {
-                return true;
+    private static boolean isFromEditor(final EditorCookie ec) {
+        return Mutex.EVENT.readAccess(new Action<Boolean>() {
+            @Override
+            public Boolean run() {
+                if (ec != null && ec.getOpenedPanes() != null) {
+                    TopComponent activetc = TopComponent.getRegistry().getActivated();
+                    if (activetc instanceof CloneableEditorSupport.Pane) {
+                        return true;
+                    }
+                }
+                return false;
             }
-        }
-        return false;
+        });
     }
 
     private static EditorCookie getEditorCookie(Node node) {

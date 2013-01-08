@@ -36,3 +36,6 @@ jQuery.|>CLASS:event<| = {
 jQuery.event.customEvent.test();
 
 }());
+
+|>GLOBAL:jQuery<|.ajaxStart().addClass();
+

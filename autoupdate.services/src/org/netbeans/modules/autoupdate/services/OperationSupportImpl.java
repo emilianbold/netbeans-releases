@@ -134,7 +134,7 @@ public abstract class OperationSupportImpl {
                 Set<ModuleInfo> moduleInfos = new HashSet<ModuleInfo> ();
                 for (OperationInfo operationInfo : elements) {
                     UpdateElementImpl impl = Trampoline.API.impl (operationInfo.getUpdateElement ());
-                    moduleInfos.addAll (impl.getModuleInfos ());
+                    moduleInfos.addAll(impl.getModuleInfos(true));
                 }
                 final Set<Module> modules = new HashSet<Module>();
                 for (ModuleInfo info : moduleInfos) {

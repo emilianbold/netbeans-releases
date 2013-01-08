@@ -277,7 +277,7 @@ public class StructureAnalyzer implements StructureScanner {
         doc.render(new Runnable() {
             @Override
             public void run() {
-                TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(doc, 1);
+                TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, 1);
 
                 int importStart = 0;
                 int importEnd = 0;

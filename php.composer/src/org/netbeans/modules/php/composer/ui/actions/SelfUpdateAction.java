@@ -59,7 +59,7 @@ public class SelfUpdateAction extends BaseComposerAction {
 
     @Override
     protected void runCommand(PhpModule phpModule) throws InvalidPhpExecutableException {
-        Composer.getDefault().selfUpdate(phpModule);
+        Composer.getDefault().selfUpdate();
     }
 
 }

@@ -50,6 +50,7 @@ import java.awt.GraphicsEnvironment;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.JButton;
 import java.util.Locale;
@@ -159,10 +160,10 @@ public class EucJPReadPageTest extends NbTestCase {
         assertNotNull("index_ja found", is);
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        Installer.copyWithEncoding(is, os);
+        Installer.copyWithEncoding(is, os, Collections.<String, String>emptyMap());
         
         assertEquals("No euc:\n" + os, -1, os.toString().toLowerCase().indexOf("euc-jp"));
-        if (os.toString().indexOf("UTF-8") == -1) {
+        if (os.toString().indexOf("UTF-8") == -1 && os.toString().indexOf("utf-8") == -1) {
             fail("utf-8 should be there:\n" + os);
         }
     }

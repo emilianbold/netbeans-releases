@@ -188,7 +188,7 @@ public class LookupProviderSupportTest extends NbTestCase {
             ap.isActionEnabled(ActionProvider.COMMAND_MOVE, Lookup.EMPTY);
             throw new AssertionError("IAE should be thrown");   //NOI18N
         } catch (IllegalArgumentException iae) {
-            assertEquals(ActionProvider.COMMAND_MOVE, iae.getMessage());
+            assertTrue(iae.getMessage().contains(ActionProvider.COMMAND_MOVE));
         }
         ap.invokeAction(ActionProvider.COMMAND_CLEAN, Lookup.EMPTY);
         assertEquals(ActionProvider.COMMAND_CLEAN,ap1.cleanInvokedTarget());

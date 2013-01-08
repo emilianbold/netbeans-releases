@@ -694,8 +694,8 @@ public class JavaScriptLibrarySelection extends JPanel {
                     libs.add(lib);
                 }
             }
-            for (String libName : map.keySet()) {
-                items.add(new ModelItem(map.get(libName)));
+            for (List<Library> libs : map.values()) {
+                items.add(new ModelItem(libs));
             }
             // sort libraries according their name:
             Collections.sort(items, new Comparator<ModelItem>() {

@@ -45,6 +45,7 @@ import java.io.IOException;
 import org.netbeans.modules.nativeexecution.ExProcessInfoProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.HostInfo.CpuFamily;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
@@ -176,7 +177,7 @@ public final class PtySupport {
                 case MACOSX:
                     return true;
                 case LINUX:
-                    return true;
+                    return hostInfo.getCpuFamily().equals(CpuFamily.X86);
                 case SUNOS:
                     return true;
                 default:

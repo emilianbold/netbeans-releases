@@ -65,7 +65,6 @@ import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
-import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.MemberBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass.ForwardClassBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor.TemplateDescriptorBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
@@ -302,7 +301,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
                 result = ((ProjectBase) getContainingFile().getProject()).findClassifier(name);
             }
             if (result == null) {
-                result = ((ProjectBase) getContainingFile().getProject()).getDummyForUnresolved(nameParts, getContainingFile(), getStartOffset());
+                result = ProjectBase.getDummyForUnresolved(nameParts, this);
             }
             lastResult = result;
             updateCache(newParseCount, currentResolver);

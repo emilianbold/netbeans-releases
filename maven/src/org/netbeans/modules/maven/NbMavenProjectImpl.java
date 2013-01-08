@@ -87,6 +87,7 @@ import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.modules.maven.configurations.ProjectProfileHandlerImpl;
+import org.netbeans.modules.maven.cos.CopyResourcesOnSave;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.modelcache.MavenProjectCache;
@@ -141,6 +142,8 @@ public final class NbMavenProjectImpl implements Project {
     private final M2ConfigProvider configProvider;
     private final @NonNull MavenProjectPropsImpl auxprops;
     private ProjectProfileHandlerImpl profileHandler;
+    private CopyResourcesOnSave copyResourcesOnSave;
+    private final Object COPYRESOURCES_LOCK = new Object();
     @org.netbeans.api.annotations.common.SuppressWarnings("MS_SHOULD_BE_FINAL")
     public static WatcherAccessor ACCESSOR = null;
 
@@ -154,6 +157,26 @@ public final class NbMavenProjectImpl implements Project {
             LOG.log(Level.SEVERE, "very wrong, very wrong, yes indeed", ex);
         }
     }
+
+    //#224012
+    private ProjectOpenedHookImpl hookImpl;
+    private Exception ex;
+    private final Object LOCK_224012 = new Object();
+    boolean setIssue224012(ProjectOpenedHookImpl hook, Exception exception) {
+        synchronized (LOCK_224012) {
+            if (hookImpl == null) {
+                hookImpl = hook;
+                ex = exception;
+                return true;
+            } else {
+                LOG.log(Level.INFO, "    first creation stacktrace", ex);
+                LOG.log(Level.INFO, "    second creation stacktrace", exception);
+                LOG.log(Level.WARNING, "Spotted issue 224012 (https://netbeans.org/bugzilla/show_bug.cgi?id=224012). Please report the incident.");
+                return false;
+            }
+        }
+    }
+
 
     public static abstract class WatcherAccessor {
 
@@ -194,7 +217,7 @@ public final class NbMavenProjectImpl implements Project {
         // @PSP's and the like, and PackagingProvider impls, may check project lookup for e.g. NbMavenProject, so init lookup in two stages:
         basicLookup = createBasicLookup(projectState, auxiliary);
         //here we always load the MavenProject instance because we need to touch the packaging from pom.
-        completeLookup = new PackagingTypeDependentLookup(watcher, basicLookup);
+        completeLookup = LookupProviderSupport.createCompositeLookup(basicLookup, new PackagingTypeDependentLookup(watcher));
     }
 
     public File getPOMFile() {
@@ -294,6 +317,7 @@ public final class NbMavenProjectImpl implements Project {
         if (parent != null) {
             parent.setProjectBuildingRequest(null);
         }
+        MavenEmbedder.normalizePaths(parent);
         return parent;
     }
 
@@ -675,20 +699,27 @@ public final class NbMavenProjectImpl implements Project {
     public Lookup getLookup() {
         return lookup;
     }
+    
+    CopyResourcesOnSave getCopyOnSaveResources() {
+        synchronized (COPYRESOURCES_LOCK) {
+            if (copyResourcesOnSave == null) {
+                copyResourcesOnSave = new CopyResourcesOnSave(watcher, this);
+            }
+            return copyResourcesOnSave;
+        }
+    }
 
     private static class PackagingTypeDependentLookup extends ProxyLookup implements PropertyChangeListener {
 
         private final NbMavenProject watcher;
-        private final Lookup baseLookup;
         private String packaging;
         private final Lookup general;
 
         @SuppressWarnings("LeakingThisInConstructor")
-        PackagingTypeDependentLookup(NbMavenProject watcher, Lookup baseLookup) {
+        PackagingTypeDependentLookup(NbMavenProject watcher) {
             this.watcher = watcher;
-            this.baseLookup = baseLookup;
+            //needs to be kept around to prevent recreating instances
             general = Lookups.forPath("Projects/org-netbeans-modules-maven/Lookup"); //NOI18N
-
             check();
             watcher.addPropertyChangeListener(this);
         }
@@ -701,7 +732,7 @@ public final class NbMavenProjectImpl implements Project {
             if (!newPackaging.equals(packaging)) {
                 packaging = newPackaging;
                 Lookup pack = Lookups.forPath("Projects/org-netbeans-modules-maven/" + packaging + "/Lookup");
-                setLookups(LookupProviderSupport.createCompositeLookup(baseLookup, new ProxyLookup(general, pack)));
+                setLookups(general, pack);
             }
         }
 

@@ -180,7 +180,7 @@ public class Utilities {
     public static ModelSource createModelSource(final FileObject thisFileObj) {
         assert thisFileObj != null : "Null file object.";
         final File fl = FileUtil.toFile(thisFileObj);
-        boolean editable = (fl != null);
+        boolean editable = (fl != null);// && thisFileObj.canWrite();
 
         Lookup proxyLookup = Lookups.proxy(new Lookup.Provider() {
             @Override

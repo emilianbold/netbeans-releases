@@ -92,6 +92,7 @@ public class MercurialInterceptor extends VCSInterceptor {
 
     private static final RequestProcessor rp = new RequestProcessor("MercurialRefresh", 1, true);
     private final HgFolderEventsHandler hgFolderEventsHandler;
+    private final CommandUsageLogger commandLogger;
     private static final boolean AUTOMATIC_REFRESH_ENABLED = !"true".equals(System.getProperty("versioning.mercurial.autoRefreshDisabled", "false")); //NOI18N
     private final Mercurial hg;
 
@@ -101,6 +102,7 @@ public class MercurialInterceptor extends VCSInterceptor {
         refreshTask = rp.create(new RefreshTask());
         lockedRepositoryRefreshTask = rp.create(new LockedRepositoryRefreshTask());
         hgFolderEventsHandler = new HgFolderEventsHandler();
+        commandLogger = new CommandUsageLogger();
     }
 
     @Override
@@ -140,6 +142,9 @@ public class MercurialInterceptor extends VCSInterceptor {
     public void afterDelete(final File file) {
         Mercurial.LOG.log(Level.FINE, "afterDelete {0}", file);
         if (file == null) return;
+        if (HgUtils.isPartOfMercurialMetadata(file) && HgUtils.WLOCK_FILE.equals(file.getName())) {
+            commandLogger.unlocked(file);
+        }
         // we don't care about ignored files
         // IMPORTANT: false means mind checking the sharability as this might cause deadlock situations
         if(HgUtils.isIgnored(file, false)) {
@@ -148,7 +153,7 @@ public class MercurialInterceptor extends VCSInterceptor {
             }
             return;
         }
-        reScheduleRefresh(800, file);
+        reScheduleRefresh(800, file, true);
     }
 
     @Override
@@ -242,13 +247,13 @@ public class MercurialInterceptor extends VCSInterceptor {
         File parent = from.getParentFile();
         // There is no point in refreshing the cache for ignored files.
         if (parent != null && !HgUtils.isIgnored(parent, false)) {
-            reScheduleRefresh(800, from);
+            reScheduleRefresh(800, from, true);
         }
         // target needs to refreshed, too
         parent = to.getParentFile();
         // There is no point in refreshing the cache for ignored files.
         if (parent != null && !HgUtils.isIgnored(parent, false)) {
-            reScheduleRefresh(800, to);
+            reScheduleRefresh(800, to, true);
         }
     }
 
@@ -298,7 +303,7 @@ public class MercurialInterceptor extends VCSInterceptor {
         File parent = to.getParentFile();
         // There is no point in refreshing the cache for ignored files.
         if (parent != null && !HgUtils.isIgnored(parent, false)) {
-            reScheduleRefresh(800, to);
+            reScheduleRefresh(800, to, true);
         }
     }
     
@@ -343,9 +348,12 @@ public class MercurialInterceptor extends VCSInterceptor {
     @Override
     public void afterCreate(final File file) {
         Mercurial.LOG.log(Level.FINE, "afterCreate {0}", file);
+        if (HgUtils.isPartOfMercurialMetadata(file) && HgUtils.WLOCK_FILE.equals(file.getName())) {
+            commandLogger.locked(file);
+        }
         // There is no point in refreshing the cache for ignored files.
         if (!HgUtils.isIgnored(file, false)) {
-            reScheduleRefresh(800, file);
+            reScheduleRefresh(800, file, true);
         }
     }
     
@@ -355,7 +363,7 @@ public class MercurialInterceptor extends VCSInterceptor {
         Mercurial.LOG.log(Level.FINE, "afterChange(): {0}", file);      //NOI18N
         // There is no point in refreshing the cache for ignored files.
         if (!HgUtils.isIgnored(file, false)) {
-            reScheduleRefresh(800, file);
+            reScheduleRefresh(800, file, true);
         }
     }
 
@@ -382,11 +390,14 @@ public class MercurialInterceptor extends VCSInterceptor {
         return HgUtils.getRemoteRepository(file);
     }
 
-    private void reScheduleRefresh(int delayMillis, File fileToRefresh) {
+    private void reScheduleRefresh(int delayMillis, File fileToRefresh, boolean log) {
         // refresh all at once
         Mercurial.STATUS_LOG.log(Level.FINE, "reScheduleRefresh: adding {0}", fileToRefresh.getAbsolutePath());
         if (!HgUtils.isPartOfMercurialMetadata(fileToRefresh)) {
             filesToRefresh.add(fileToRefresh);
+            if (log) {
+                commandLogger.logModification(fileToRefresh);
+            }
         }
         refreshTask.schedule(delayMillis);
     }
@@ -414,16 +425,19 @@ public class MercurialInterceptor extends VCSInterceptor {
      * Refreshes cached modification timestamp of hg administrative folder file for the given repository after.
      * @param callable code to run
      * @param repository
+     * @param commandName name of the hg command if available
      */
-    <T> T runWithoutExternalEvents(File repository, Callable<T> callable) throws Exception {
+    <T> T runWithoutExternalEvents(File repository, String commandName, Callable<T> callable) throws Exception {
         assert repository != null;
         try {
             if (repository != null) {
                 hgFolderEventsHandler.enableEvents(repository, false);
+                commandLogger.lockedInternally(repository, commandName);
             }
             return callable.call();
         } finally {
             if (repository != null) {
+                commandLogger.unlockedInternally(repository);
                 hgFolderEventsHandler.refreshRepositoryTimestamps(repository);
                 hgFolderEventsHandler.enableEvents(repository, true);
             }
@@ -437,6 +451,158 @@ public class MercurialInterceptor extends VCSInterceptor {
      */
     Set<File> getSeenRoots (File repositoryRoot) {
         return hgFolderEventsHandler.getSeenRoots(repositoryRoot);
+    }
+
+    private class CommandUsageLogger {
+        
+        private final Map<File, Events> events = new HashMap<File, Events>();
+        
+        private void locked (File file) {
+            File hgFolder = getHgFolderFor(file);
+            // it is a lock file, lock file still exists=repository is locked
+            if (hgFolder != null && HgUtils.isRepositoryLocked(hgFolder.getParentFile())) {
+                long time = System.currentTimeMillis();
+                synchronized (events) {
+                    Events ev = events.get(hgFolder);
+                    if (ev == null || ev.timeFinished > 0 && ev.timeFinished < time - 10000) {
+                        // is new lock or is an old unfinished stale event
+                        // and is not part of any internal command that could leave
+                        // pending events to be delivered with 10s delay
+                        ev = new Events();
+                        ev.timeStarted = time;
+                        events.put(hgFolder, ev);
+                        scheduleUnlock(hgFolder.getParentFile());
+                    }
+                }
+            }
+        }
+        
+        /**
+         * Command run internally from the IDE
+         */
+        private void lockedInternally (File repository, String commandName) {
+            File hgFolder = HgUtils.getHgFolderForRoot(repository);
+            Events ev = new Events();
+            ev.timeStarted = System.currentTimeMillis();
+            ev.commandName = commandName;
+            synchronized (events) {
+                events.put(hgFolder, ev);
+            }
+        }
+
+        private void unlocked (File file) {
+            File hgFolder = getHgFolderFor(file);
+            if (hgFolder != null) {
+                Events ev;
+                synchronized (events) {
+                    ev = events.remove(hgFolder);
+                    if (ev != null && !ev.isExternal()) {
+                        // this does not log internal commands
+                        events.put(hgFolder, ev);
+                        return;
+                    }
+                }
+                if (ev != null) {
+                    long time = System.currentTimeMillis() - ev.timeStarted;
+                    Utils.logVCSCommandUsageEvent("HG", time, ev.modifications, ev.commandName, ev.isExternal());
+                }
+            }
+        }
+        
+        /**
+         * Internal command finish
+         */
+        private void unlockedInternally (File repository) {
+            File hgFolder = HgUtils.getHgFolderForRoot(repository);
+            Events ev;
+            synchronized (events) {
+                ev = events.get(hgFolder);
+                if (ev == null) {
+                    return;
+                } else if (ev.isExternal()) {
+                    events.remove(hgFolder);
+                }
+            }
+            ev.timeFinished = System.currentTimeMillis();
+            long time = ev.timeFinished - ev.timeStarted;
+            Utils.logVCSCommandUsageEvent("HG", time, ev.modifications, ev.commandName, ev.isExternal());
+        }
+
+        /**
+         * 
+         * @param wlockFile
+         * @return parent hg folder for wlock file or null if the file is not 
+         * a write lock repository file
+         */
+        private File getHgFolderFor (File wlockFile) {
+            File repository = Mercurial.getInstance().getRepositoryRoot(wlockFile);
+            File hgFolder = HgUtils.getHgFolderForRoot(repository);
+            return hgFolder.equals(wlockFile.getParentFile())
+                    ? hgFolder
+                    : null;
+        }
+
+        private void logModification (final File file) {
+            if (HgUtils.isPartOfMercurialMetadata(file)) {
+                return;
+            }
+            final File repository = Mercurial.getInstance().getRepositoryRoot(file);
+            final File hgFolder = HgUtils.getHgFolderForRoot(repository);
+            if (hgFolder != null) {
+                long time = System.currentTimeMillis();
+                synchronized (events) {
+                    Events ev = events.get(hgFolder);
+                    if ((ev == null || ev.timeFinished > 0 && ev.timeFinished < time - 10000)
+                            && HgUtils.isRepositoryLocked(repository)) {
+                        // is new lock or is an old unfinished stale event
+                        // and is not part of any internal command that could leave
+                        // pending events to be delivered with 10s delay
+                        ev = new Events();
+                        ev.timeStarted = time;
+                        events.put(hgFolder, ev);
+                        scheduleUnlock(repository);
+                    }
+                    if (ev != null) {
+                        ++ev.modifications;
+                    }
+                }
+            }
+        }
+
+        private void scheduleUnlock (final File repository) {
+            Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
+                @Override
+                public void run () {
+                    long timeout = 1000;
+                    while (HgUtils.isRepositoryLocked(repository)) {
+                        long t = System.currentTimeMillis();
+                        synchronized (commandLogger) {
+                            try {
+                                commandLogger.wait(timeout);
+                            } catch (InterruptedException ex) {
+                            }
+                        }
+                        if (timeout <= System.currentTimeMillis() - t) {
+                            // timeouted
+                            timeout = Math.min(30000, timeout << 1);
+                        }
+                    }
+                    unlocked(new File(HgUtils.getHgFolderForRoot(repository), HgUtils.WLOCK_FILE));
+                }
+            });
+        }
+
+    }
+
+    private static class Events {
+        long timeStarted;
+        long timeFinished;
+        long modifications;
+        String commandName;
+
+        private boolean isExternal () {
+            return commandName == null;
+        }
     }
 
     private class RefreshTask implements Runnable {
@@ -480,16 +646,23 @@ public class MercurialInterceptor extends VCSInterceptor {
         for (Iterator<Map.Entry<File, Set<File>>> it = lockedRepositories.entrySet().iterator(); it.hasNext();) {
             Map.Entry<File, Set<File>> entry = it.next();
             File repository = entry.getKey();
+            boolean unlocked = true;
             if (!repository.exists()) {
                 // repository does not exist, no need to keep it
                 it.remove();
             } else if (HgUtils.isRepositoryLocked(repository)) {
+                unlocked = false;
                 Mercurial.STATUS_LOG.log(Level.FINE, "checkLockedRepositories(): Repository {0} locked, status refresh delayed", repository); //NOI18N
             } else {
                 // repo not locked, add all files into the returned collection
                 retval.addAll(entry.getValue());
                 if (!keepCached) {
                     it.remove();
+                }
+            }
+            if (unlocked) {
+                synchronized (commandLogger) {
+                    commandLogger.notifyAll();
                 }
             }
         }
@@ -679,6 +852,7 @@ public class MercurialInterceptor extends VCSInterceptor {
                 boolean refreshNeeded = false;
                 HgFolderTimestamps cached;
                 if (isEnabled(hgFolder)) {
+                    commandLogger.locked(new File(hgFolder, HgUtils.WLOCK_FILE));
                     synchronized (hgFolders) {
                         cached = hgFolders.get(hgFolder);
                     }
@@ -764,7 +938,7 @@ public class MercurialInterceptor extends VCSInterceptor {
                     if (newlyAddedRoot != null) {
                         // this means the repository has not yet been scanned, so scan it
                         Mercurial.STATUS_LOG.log(Level.FINE, "pingRepositoryRootFor: planning a scan for {0} - {1}", new Object[]{repositoryRoot.getAbsolutePath(), file.getAbsolutePath()}); //NOI18N
-                        reScheduleRefresh(4000, newlyAddedRoot);
+                        reScheduleRefresh(4000, newlyAddedRoot, false);
                         File hgFolder = FileUtil.normalizeFile(HgUtils.getHgFolderForRoot(repositoryRoot));
                         boolean refreshNeeded = false;
                         synchronized (hgFolders) {

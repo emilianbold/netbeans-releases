@@ -439,9 +439,10 @@ public class RestUtils {
             if (sourceGroups.length > 0) {
                 ClassPath cp = ClassPath.getClassPath(
                         sourceGroups[0].getRootFolder(), ClassPath.COMPILE);
-                if (cp.findResource("javax/ws/rs/ApplicationPath.class") != null      // NOI18N
-                        && 
-                        cp.findResource("javax/ws/rs/core/Application.class") != null)// NOI18N
+                if (cp!=null && cp.findResource(
+                        "javax/ws/rs/ApplicationPath.class") != null      // NOI18N
+                        && cp.findResource(
+                                "javax/ws/rs/core/Application.class") != null)// NOI18N
                 { 
                     return true;
                 }
@@ -462,7 +463,7 @@ public class RestUtils {
             if (sourceGroups.length>0) {
                 ClassPath cp = ClassPath.getClassPath(sourceGroups[0].getRootFolder(), 
                         ClassPath.COMPILE);
-                if (cp.findResource(fqn) != null) { 
+                if (cp != null && cp.findResource(fqn) != null) { 
                     return true;
                 }
             }
@@ -475,6 +476,9 @@ public class RestUtils {
     {   
         FileObject appClass = GenerationUtils.createClass(packageFolder,name, null );
         JavaSource javaSource = JavaSource.forFileObject(appClass);
+        if ( javaSource == null ){
+            return;
+        }
         javaSource.runModificationTask( new Task<WorkingCopy>(){
 
             @Override

@@ -346,6 +346,8 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
             
             if (!isGlobal()) {
                 Utils.setSelfUID(td);
+            } else {
+                ((FileImpl)getFile()).getProjectImpl(true).registerDeclaration(td);
             }
             
             addDeclaration(td);

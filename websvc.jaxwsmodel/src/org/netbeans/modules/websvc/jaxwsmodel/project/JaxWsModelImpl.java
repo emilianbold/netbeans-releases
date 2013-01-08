@@ -492,7 +492,7 @@ public final class JaxWsModelImpl implements JaxWsModel {
         }
     }
     
-    private class JaxWsPCL implements PropertyChangeListener {
+    private static class JaxWsPCL implements PropertyChangeListener {
 
         PropertyChangeListener originalListener;
         JaxWsPCL(PropertyChangeListener originalListener) {

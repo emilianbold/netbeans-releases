@@ -137,7 +137,8 @@ final class BasicConfVisualPanel extends NewTemplateVisualPanel {
     @Messages({
         "BasicConfVisualPanel_err_bundle_empty=Bundle cannot be empty.",
         "BasicConfVisualPanel_err_bundle_def_pkg=Cannot use default package for bundle.",
-        "BasicConfVisualPanel_err_bundle_extension=Bundle must have \".properties\" extension."
+        "BasicConfVisualPanel_err_bundle_extension=Bundle must have \".properties\" extension.",
+        "BasicConfVisualPanel_err_bundle_is_not_valid=Bundle is not valid."
     })
     private boolean checkBundle() {
         String path = getBundleValue();
@@ -151,6 +152,10 @@ final class BasicConfVisualPanel extends NewTemplateVisualPanel {
         }
         if (!path.endsWith(".properties")) {
             setError(BasicConfVisualPanel_err_bundle_extension());
+            return false;
+        }
+        if (!ApisupportAntUtils.isValidFilePath(path)) {
+            setError(BasicConfVisualPanel_err_bundle_is_not_valid());
             return false;
         }
         return true;

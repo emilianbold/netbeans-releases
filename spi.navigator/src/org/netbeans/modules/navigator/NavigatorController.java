@@ -166,7 +166,7 @@ public final class NavigatorController implements LookupListener, PropertyChange
     private boolean updateWhenNotShown = false;
 
     /** boolean flag to indicate that the tc.open is in progress*/
-    private boolean tcOpening = false;
+    private boolean tcActivating = false;
     
     /** boolean flag to indicate first update*/
     private boolean uiready;
@@ -190,7 +190,6 @@ public final class NavigatorController implements LookupListener, PropertyChange
 
     /** Starts listening to selected nodes and active component */
     private void navigatorTCOpened() {
-        tcOpening = true;
         if (panelLookupNodesResult != null) {
             return;
         }
@@ -480,7 +479,7 @@ public final class NavigatorController implements LookupListener, PropertyChange
 
             if (selPanel != null) {
                 // #61334: don't deactivate previous providers if there are no new ones
-                if (!areNewProviders && !force && null != providers) {
+                if (!areNewProviders && !force) {
                     LOG.fine("Exit because no new providers, force: " + force);
                     return;
                 }
@@ -509,10 +508,10 @@ public final class NavigatorController implements LookupListener, PropertyChange
         } finally {
             inUpdate = false;
             navigatorTC.getTopComponent().makeBusy(false);
-            //in case of asynch obtain providers it is needed to request focus while opening TC
-            if (tcOpening && navigatorTC.allowAsyncUpdate()) {
+            //in case of asynch obtain providers it is needed to request focus while TC is activated
+            if (tcActivating && navigatorTC.allowAsyncUpdate()) {
                 navigatorTC.getTopComponent().requestFocus();
-                tcOpening = false;
+                tcActivating = false;
             }
         }
     }
@@ -793,6 +792,7 @@ public final class NavigatorController implements LookupListener, PropertyChange
         this.tcShown = tcShown;
         if (tcShown && tcShown != oldValue && updateWhenActivated) {
             updateWhenActivated = false;
+            tcActivating = true;
             Lookup globalContext = Utilities.actionsGlobalContext();
             updateContext(globalContext.lookup(NavigatorLookupPanelsPolicy.class), globalContext.lookupAll(NavigatorLookupHint.class));
         }

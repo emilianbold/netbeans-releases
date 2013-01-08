@@ -3408,6 +3408,8 @@ public final class LayoutDesigner implements LayoutConstants {
                 }
                 operations.resizeInterval(li, NOT_EXPLICITLY_DEFINED);
             }
+        } else {
+            preferredSizeChanged = true;
         }
         updateDataAfterBuild = true;
     }

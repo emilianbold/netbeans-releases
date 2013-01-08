@@ -63,7 +63,7 @@ public final class HintsOptionsPanelController extends OptionsPanelController {
                     
     public void update() {
         if (panel != null) {
-            panel.update();
+            panel.update(true);
         }
     }
     
@@ -110,7 +110,8 @@ public final class HintsOptionsPanelController extends OptionsPanelController {
     protected void setCurrentSubcategory(String subpath) {
         for (HintMetadata hm : RulesManager.getInstance().readHints(null, null, null).keySet()) {
             if (hm.id.equals(subpath)) {
-                getComponent(null).select(hm);
+                HintsPanel c = getComponent(null);
+                c.select(hm, true);
                 return;
             }
         }

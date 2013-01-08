@@ -37,8 +37,11 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
-import com.oracle.nashorn.ir.FunctionNode;
-import org.netbeans.api.lexer.Language;
+import jdk.nashorn.internal.codegen.CompilerConstants;
+import jdk.nashorn.internal.ir.FunctionNode;
+import jdk.nashorn.internal.parser.Parser;
+import jdk.nashorn.internal.runtime.Source;
+import jdk.nashorn.internal.runtime.options.Options;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;
 
@@ -77,19 +80,20 @@ public class JsParser extends SanitizingParser {
             parsableText = sb.toString();
         }
 
-        com.oracle.nashorn.runtime.Source source = new com.oracle.nashorn.runtime.Source(name, parsableText);
-        com.oracle.nashorn.runtime.options.Options options = new com.oracle.nashorn.runtime.options.Options("nashorn");
+        Source source = new Source(name, parsableText);
+        Options options = new Options("nashorn"); // NOI18N
         options.process(new String[] {
             "--parse-only=true", // NOI18N
             "--empty-statements=true", // NOI18N
             "--debug-lines=false"}); // NOI18N
 
         errorManager.setLimit(0);
-        com.oracle.nashorn.runtime.Context contextN = new com.oracle.nashorn.runtime.Context(options, errorManager);
-        com.oracle.nashorn.runtime.Context.setContext(contextN);
-        com.oracle.nashorn.codegen.Compiler compiler = new com.oracle.nashorn.codegen.Compiler(source, contextN);
-        com.oracle.nashorn.parser.Parser parser = new com.oracle.nashorn.parser.Parser(compiler);
-        com.oracle.nashorn.ir.FunctionNode node = parser.parse(com.oracle.nashorn.codegen.CompilerConstants.runScriptName);
+        jdk.nashorn.internal.runtime.Context nashornContext = new jdk.nashorn.internal.runtime.Context(options, errorManager);
+        // XXX
+        //jdk.nashorn.internal.runtime.Context.setContext(contextN);
+        jdk.nashorn.internal.codegen.Compiler compiler = jdk.nashorn.internal.codegen.Compiler.compiler(source, nashornContext);
+        Parser parser = new Parser(compiler);
+        FunctionNode node = parser.parse(CompilerConstants.RUN_SCRIPT.tag());
         return node;
     }
 }

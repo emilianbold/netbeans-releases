@@ -68,8 +68,6 @@ public final class ViewJavadocAction extends AbstractAction {
     public ViewJavadocAction(Artifact artifact) {
         this.artifact = artifact;
         putValue(Action.NAME, LBL_View_Javadoc());
-        setEnabled(getJavadocFile().isFile());
-
     }
 
     @Override

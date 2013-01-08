@@ -107,6 +107,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
         
+        <change id="findEndPosition">
+            <api name="org.netbeans.modules.xml.xam"/>
+            <summary>Method AbstractDocumentModel.prepareChangeInfo() is replaced with a new one.</summary>
+            <version major="1" minor="22"/>
+            <date day="11" month="12" year="2012"/>
+            <author login="mkleint"/>
+            <compatibility binary="compatible" source="compatible" addition="yes"/>
+            <description>
+                Introduced <code>DocumentComponent2</code> and <code>DocumentModelAccess2</code> to provide additional method 
+                <code>findEndPosition()</code> to get the end position of the object representation in document. It's complimentary to existing <code>findPosition</code>
+            </description>
+            <class package="org.netbeans.modules.xml.xam.dom" name="AbstractDocumentComponent"/>
+            <class package="org.netbeans.modules.xml.xam.dom" name="DocumentComponent2"/>
+            <class package="org.netbeans.modules.xml.xam.dom" name="DocumentModelAccess2"/>
+            <issue number="223226"/>
+        </change>
         <change id="fix_issue_166177">
             <api name="org.netbeans.modules.xml.xam"/>
             <summary>Method AbstractDocumentModel.prepareChangeInfo() is replaced with a new one.</summary>

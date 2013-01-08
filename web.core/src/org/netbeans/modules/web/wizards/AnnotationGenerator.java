@@ -76,7 +76,7 @@ class AnnotationGenerator {
         if (initParams != null) {
             parameters.put(INCL_INIT_PARAMS, TRUE);
         }
-        String res = "@WebServlet("+join(generServletName(data.getName()),
+        String res = "@WebServlet("+join(generServletName(data.getClassName(), data.getName()),
                 generUrlPatterns(data.getUrlMappings()),
                 initParams)+")";
         parameters.put(CLASS_ANNOTATION, res);
@@ -84,8 +84,12 @@ class AnnotationGenerator {
     }
 
     // -------------------------------------------------------------------------
-    private static String generServletName(String name) {
-        return (name == null || name.length() < 1) ? null : "name=\""+name+"\"";
+    private static String generServletName(String className, String servletName) {
+        if (servletName == null || servletName.length() < 1 || servletName.equals(className)) {
+            return null;
+        } else {
+            return "name=\""+servletName+"\"";
+        }
     }
 
     // -------------------------------------------------------------------------

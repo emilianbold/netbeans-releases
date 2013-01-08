@@ -46,6 +46,11 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.Cancellat
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.project.Project;
@@ -55,46 +60,74 @@ import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ScannerDescriptor;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerFlavorImpl;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.ErrorParser;
+import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.OutputListenerRegistry;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.Result;
+import org.netbeans.modules.cnd.toolchain.execution.OutputListenerImpl;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.HostInfo.CpuFamily;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  *
  * @author Alexander Simon
  */
-public final class CompilerLineConvertor implements LineConvertor {
+public final class CompilerLineConvertor implements LineConvertor, ChangeListener {
 
     private final List<ErrorParser> parsers = new ArrayList<ErrorParser>();
+    private final OutputListenerRegistry registry;
+    private static final Logger LOG = Logger.getLogger(CompilerLineConvertor.class.getName());
 
     public CompilerLineConvertor(Project project, CompilerSet set, ExecutionEnvironment execEnv, FileObject relativeTo) {
-	List<CompilerFlavor> flavors = getCompilerSet(set, execEnv);
-	for(CompilerFlavor flavor : flavors) {
-	    ErrorParser parser = ErrorParserProvider.getDefault().getErorParser(project, flavor, execEnv, relativeTo);
-	    if (parser != null) {
-		parsers.add(parser);
-	    }
-	}
-        parsers.addAll(ErrorParserProvider.getUniversalErorParsers(project, execEnv, relativeTo));
-    }
+        registry = new OutputListenerRegistry();
+            List<CompilerFlavor> flavors = getCompilerSet(set, execEnv);
+            for(CompilerFlavor flavor : flavors) {
+                try {
+                    ErrorParser parser = ErrorParserProvider.getDefault().getErorParser(project, flavor, execEnv, relativeTo);
+                    if (parser != null) {
+                        parsers.add(parser);
+                        parser.setOutputListenerRegistry(registry);
+                    }
+                } catch (Throwable ex) {
+                    LOG.log(Level.SEVERE, "Cannot initialize error scanner for "+flavor.getToolchainDescriptor().getName(), ex);
+                }
+            }
+            try {
+                List<ErrorParser> universalErorParsers = ErrorParserProvider.getUniversalErorParsers(project, execEnv, relativeTo);
+                for (ErrorParser parser : universalErorParsers) {
+                    parser.setOutputListenerRegistry(registry);
+                }
+                parsers.addAll(universalErorParsers);
+            } catch (Throwable ex) {
+                LOG.log(Level.SEVERE, "Cannot initialize universal error scanner", ex);
+            }
+}
 
     @Override
     public List<ConvertedLine> convert(String line) {
         try {
             return handleLine(line);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        } catch (Throwable ex) {
+            LOG.log(Level.SEVERE, "Error during handling line "+line, ex);
         }
         return null;
     }
 
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                OutputListenerImpl.attach(registry);
+            }
+        });
+    }
+
     private static final int LENGTH_TRESHOLD = 2048;
 
-    private List<ConvertedLine> handleLine(String line) throws IOException {
+    private List<ConvertedLine> handleLine(String line) {
         if (line.length() < LENGTH_TRESHOLD) {
             // We can ignore strings which can't be compiler messages
             // (their's length is capped by max(filename) + max(error desc)).

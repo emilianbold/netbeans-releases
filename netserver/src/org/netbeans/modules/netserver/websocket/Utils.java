@@ -61,6 +61,9 @@ import java.util.logging.Level;
 final class Utils {
     
     public static final String UTF_8 = "UTF-8";                    // NOI18N
+    
+    private static final Charset UTF_CHARSET = Charset.forName(UTF_8);
+    
     private static final char NEW_LINE = '\n';
     public static final int BYTES = 1000;
     
@@ -134,7 +137,8 @@ final class Utils {
                     headers.add( line );
                     builder.setLength(0);
                     if ( line.isEmpty() ){
-                        int start = stringValue.substring(0, index+1).getBytes().length;
+                        int start = stringValue.substring(0, index+1).getBytes(
+                                UTF_CHARSET).length;
                         copyBytes(bytes, remaining, start, size );
                         break;
                     }

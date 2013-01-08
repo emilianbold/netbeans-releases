@@ -50,7 +50,6 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
@@ -73,6 +72,9 @@ import org.openide.util.Exceptions;
 public class JQueryCodeCompletion {
 
     private static final Logger LOGGER = Logger.getLogger(JQueryCodeCompletion.class.getName());
+
+    protected static final String HELP_LOCATION = "docs/jquery-api.xml"; //NOI18N
+    private static File jQueryApiFile;
 
     private static Collection<HtmlTagAttribute> allAttributes;
 
@@ -163,12 +165,10 @@ public class JQueryCodeCompletion {
             if (index > -1) {
                 name = name.substring(0, index);
             }
-            File apiFile = InstalledFileLocator.getDefault().locate(HELP_LOCATION, "org.netbeans.modules.javascript2.editor", false); //NoI18N
-            return SelectorsLoader.getDocumentation(apiFile, name);
+            return SelectorsLoader.getDocumentation(getJQueryAPIFile(), name);
         } else if (element.getKind() == ElementKind.METHOD) {
             if (JQueryUtils.isJQuery(info, lastTsOffset)) {
-                File apiFile = InstalledFileLocator.getDefault().locate(HELP_LOCATION, "org.netbeans.modules.javascript2.editor", false); //NoI18N
-                return SelectorsLoader.getMethodDocumentation(apiFile, element.getName());
+                return SelectorsLoader.getMethodDocumentation(getJQueryAPIFile(), element.getName());
             }
         }
         return null;
@@ -241,13 +241,17 @@ public class JQueryCodeCompletion {
         contextMap.put(":", Arrays.asList(SelectorKind.AFTER_COLON));
     }
     
-    protected static final String HELP_LOCATION = "docs/jquery-api.xml";
     private void fillAfterColonList() {
-        SelectorItem item;
-        File apiFile = InstalledFileLocator.getDefault().locate(HELP_LOCATION, "org.netbeans.modules.javascript2.editor", false); //NoI18N
-        if(apiFile != null) {
-            afterColonList = SelectorsLoader.getSelectors(apiFile);
+        if(getJQueryAPIFile() != null) {
+            afterColonList = SelectorsLoader.getSelectors(getJQueryAPIFile());
         }
+    }
+
+    private synchronized File getJQueryAPIFile() {
+        if (jQueryApiFile == null) {
+            jQueryApiFile = InstalledFileLocator.getDefault().locate(HELP_LOCATION, "org.netbeans.modules.javascript2.editor", false); //NOI18N
+        }
+        return jQueryApiFile;
     }
   
     private SelectorContext findSelectorContext(String text) {

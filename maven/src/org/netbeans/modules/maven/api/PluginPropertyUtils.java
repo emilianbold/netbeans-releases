@@ -103,7 +103,7 @@ public class PluginPropertyUtils {
      * tries to figure out if the property of the given plugin is customized in the
      * current project and returns it's value if so, otherwise null
      * @param parameter the name of the plugin parameter to look for
-     * @param expressionProperty expression property that once defined (and plugin configuration is omited) is used.
+     * @param expressionProperty expression property that once defined (and plugin configuration is omited) is used. only value, no ${}
      */
     public static @CheckForNull String getPluginProperty(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String parameter, @NullAllowed String goal, @NullAllowed String expressionProperty) {
         NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
@@ -122,7 +122,12 @@ public class PluginPropertyUtils {
     public static @CheckForNull String getPluginProperty(@NonNull MavenProject prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String parameter, @NullAllowed String goal) {
         return getPluginProperty(prj, groupId, artifactId, parameter, goal, null);
     }
-    
+    /**
+     * tries to figure out if the property of the given plugin is customized in the
+     * current project and returns it's value if so, otherwise null
+     * @param parameter the name of the plugin parameter to look for
+     * @param expressionProperty expression property that once defined (and plugin configuration is omited) is used. only value, no ${}
+     */
     public static @CheckForNull String getPluginProperty(@NonNull MavenProject prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String parameter, @NullAllowed String goal, @NullAllowed String expressionProperty) {
         return getPluginPropertyImpl(prj, createEvaluator(prj), groupId, artifactId, parameter, goal, expressionProperty);
     }
@@ -605,7 +610,7 @@ public class PluginPropertyUtils {
         Map<? extends String,? extends String> props = Collections.emptyMap();
         File basedir = prj.getBasedir();
         if (basedir != null) {
-        FileObject bsd = FileUtil.toFileObject(FileUtil.normalizeFile(basedir));
+        FileObject bsd = FileUtil.toFileObject(basedir);
         if (bsd != null) {
             Project p = FileOwnerQuery.getOwner(bsd);
             if (p != null) {

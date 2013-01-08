@@ -696,7 +696,7 @@ public class Gdb {
                 signalled = true;
                 this.silentStop = silentStop;
                 if (interruptGdb) {
-                    executor.interruptGroup();
+                    executor.interrupt();
                 } else {
                     Executor signaller = Executor.getDefault("signaller", factory.host, 0); // NOI18N
                     signaller.interrupt(pid);
@@ -1087,7 +1087,7 @@ public class Gdb {
     
         @Override
         protected void dispatch(MIRecord record) {
-            if (!debugger.postedKillEngine()) {
+            if (debugger != null && !debugger.postedKillEngine()) {
                 super.dispatch(record);
             }
         }
@@ -1131,6 +1131,9 @@ public class Gdb {
         @Override
         protected void execAsyncOutput(MIRecord record) {
             // dispatch async messages without a token here
+            if (debugger == null) {
+                return;
+            }
             if (record.token() == 0) {
                 if (record.cls().equals("stopped")) { // NOI18N
                     debugger.genericStopped(record);

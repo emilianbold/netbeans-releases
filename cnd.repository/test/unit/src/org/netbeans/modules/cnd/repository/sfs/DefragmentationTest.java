@@ -50,7 +50,7 @@ import java.io.IOException;
 import java.util.Collection;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
-import org.netbeans.modules.cnd.repository.util.UnitCodec;
+import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
 
 /**
  * A test for DoubleFileStorage defragmentation
@@ -83,12 +83,12 @@ public class DefragmentationTest extends NbTestCase {
         File file = new File(getWorkDir(), "double_file_storage.dat");
         DoubleFileStorage dfs = new DoubleFileStorage(file, true, new UnitCodec() {
             @Override
-            public int removeRepositoryID(int unitId) {
+            public int unmaskRepositoryID(int unitId) {
                 return unitId;
             }
 
             @Override
-            public int addRepositoryID(int unitId) {
+            public int maskByRepositoryID(int unitId) {
                 return unitId;
             }
         });

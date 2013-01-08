@@ -73,7 +73,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
     private TaskListener taskListener;
     private boolean refresh;
     private final Object LOCK = new Object();
-    private Collection<Issue> toSelect;
+    private Collection<TaskNode> toSelect;
     protected List<TreeLabel> labels;
     protected List<LinkButton> buttons;
     private int pageSize;
@@ -146,7 +146,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
         updateContentAndSelect(null);
     }
 
-    void updateContentAndSelect(Collection<Issue> toSelect) {
+    void updateContentAndSelect(Collection<TaskNode> toSelect) {
         this.toSelect = toSelect;
         final boolean empty = getChildren().isEmpty();
         boolean expand = toSelect != null && !toSelect.isEmpty() && !isExpanded();
@@ -223,7 +223,6 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
                 adjustTaskNode(taskNode);
                 taskNodes.add(taskNode);
                 if (appliedFilters.isInFilter(issue)) {
-                    dashboard.addTaskMapEntry(issue, taskNode);
                     filteredTaskNodes.add(taskNode);
                 }
             }
@@ -260,8 +259,10 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
     }
 
     final void showAdditionalPage() {
+        Collection<TaskNode> list = new ArrayList<TaskNode>(1);
+        list.add(filteredTaskNodes.get(getTaskCountToShow() - 1));
         pageCountShown++;
-        updateContent();
+        updateContentAndSelect(list);
     }
 
     @Override
@@ -293,10 +294,10 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
         pageCountShown = 1;
     }
 
-    final void handleError(String message) {
-        DashboardViewer.LOG.log(Level.WARNING, "Tasks loading failed due to: {0}", message); //NOI18N
+    final void handleError(Throwable throwable) {
         setRefresh(true);
         setError(true);
+        DashboardViewer.LOG.log(Level.WARNING, "Tasks loading failed due to: {0}", throwable); //NOI18N
     }
 
     boolean isError() {
@@ -307,15 +308,26 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
         this.error = error;
     }
 
+    private void refilterTaskNodes() {
+        DashboardViewer dashboard = DashboardViewer.getInstance();
+        AppliedFilters appliedFilters = dashboard.getAppliedTaskFilters();
+        filteredTaskNodes.clear();
+        for (TaskNode taskNode : taskNodes) {
+            if (appliedFilters.isInFilter(taskNode.getTask())) {
+                filteredTaskNodes.add(taskNode);
+            }
+        }
+    }
+
     private class TaskListener implements PropertyChangeListener {
 
         @Override
-        public void propertyChange(PropertyChangeEvent evt) {
+        public void propertyChange(final PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(Issue.EVENT_ISSUE_REFRESHED)) {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        updateNodes();
+                        refilterTaskNodes();
                         updateCounts();
                     }
                 });

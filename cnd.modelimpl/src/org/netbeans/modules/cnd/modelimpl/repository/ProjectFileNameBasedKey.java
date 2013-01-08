@@ -61,15 +61,14 @@ import org.openide.util.CharSequences;
     protected static final CharSequence NO_FILE = CharSequences.create("<No File Name>"); // NOI18N
 
     protected final int fileNameIndex;
-
-    protected ProjectFileNameBasedKey(int unitId, CharSequence fileName) {
-        super(unitId);
-        assert fileName != null;
-        this.fileNameIndex = KeyUtilities.getFileIdByName(getUnitId(), fileName);
+    
+    protected ProjectFileNameBasedKey(int unitID, int fileID) {
+        super(unitID);
+        this.fileNameIndex = fileID;
     }
-
+    
     protected ProjectFileNameBasedKey(FileImpl file) {
-        this(getFileUnitId(file), getFileName(file)); 
+        this(getFileUnitId(file), getFileNameId(file));
     }
 
     protected ProjectFileNameBasedKey(KeyDataPresentation presentation) {
@@ -77,16 +76,16 @@ import org.openide.util.CharSequences;
         fileNameIndex = presentation.getFilePresentation();
     }
 
-    private static int getFileUnitId(FileImpl file) {
+    static int getFileUnitId(FileImpl file) {
         CndUtils.assertNotNull(file, "Null file"); //NOI18N
         // judging by #208877 null might occur here, although it's definitely wrong
         return file == null ? -1 : file.getUnitId();
     }
 
-    private static CharSequence getFileName(FileImpl file) {
+    private static int getFileNameId(FileImpl file) {
         // extra check for #208877
         assert file != null;
-        return file == null ? NO_FILE : file.getAbsolutePath();
+        return file == null ? -1 : file.getFileId();
     }
 
     @Override

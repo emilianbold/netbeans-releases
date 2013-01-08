@@ -111,6 +111,21 @@ public class JQueryModel {
         }
 
         @Override
+        public JsObject getProperty(String name) {
+            JsObject result = super.getProperty(name);
+            if(result == null) {
+                String lookingFor = name + "#";  //NOI18N
+                for(String proName : getProperties().keySet()) {
+                    if(proName.startsWith(lookingFor)) {
+                        result = super.getProperty(proName);
+                        break;
+                    }
+                }
+            }
+            return result;
+        }
+        
+        @Override
         public JsObject getParent() {
             return this.parent;
         }

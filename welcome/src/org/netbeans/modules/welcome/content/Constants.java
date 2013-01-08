@@ -70,12 +70,13 @@ public interface Constants {
     static final String COLOR_HEADER = "HeaderForegroundColor"; //NOI18N
     
     static final int FONT_SIZE = Utils.getDefaultFontSize();
-    static final Font BUTTON_FONT = new Font( "Arial", Font.PLAIN, FONT_SIZE+1 );
-    static final Font RSS_DESCRIPTION_FONT = new Font( "Arial", Font.PLAIN, FONT_SIZE-1 );
-    static final Font TAB_FONT = new Font( "Arial", Font.PLAIN, FONT_SIZE+1 ); //NOI18N
-    static final Font SECTION_HEADER_FONT = new Font( "Arial", Font.BOLD, FONT_SIZE+7 ); //NOI18N
-    static final Font GET_STARTED_FONT = new Font( "Arial", Font.PLAIN, FONT_SIZE+1 ) ; //NOI18N
-    static final Font CONTENT_HEADER_FONT = new Font( "Arial", Font.BOLD, FONT_SIZE+13 ) ; //NOI18N
+    static final String FONT_NAME = BundleSupport.getLabel( "FONT_NAME" ); //NOI18N
+    static final Font BUTTON_FONT = new Font( FONT_NAME, Font.PLAIN, FONT_SIZE+1 );
+    static final Font RSS_DESCRIPTION_FONT = new Font( FONT_NAME, Font.PLAIN, FONT_SIZE-1 );
+    static final Font TAB_FONT = new Font( FONT_NAME, Font.PLAIN, FONT_SIZE+1 ); //NOI18N
+    static final Font SECTION_HEADER_FONT = new Font( FONT_NAME, Font.BOLD, FONT_SIZE+7 ); //NOI18N
+    static final Font GET_STARTED_FONT = new Font( FONT_NAME, Font.PLAIN, FONT_SIZE+1 ) ; //NOI18N
+    static final Font CONTENT_HEADER_FONT = new Font( FONT_NAME, Font.BOLD, FONT_SIZE+13 ) ; //NOI18N
 
     static final String ORACLE_LOGO_IMAGE = "org/netbeans/modules/welcome/resources/oracle_logo.png"; // NOI18N
     static final String JAVA_LOGO_IMAGE = "org/netbeans/modules/welcome/resources/java_logo.png"; // NOI18N

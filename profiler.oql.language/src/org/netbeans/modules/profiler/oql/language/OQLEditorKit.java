@@ -46,13 +46,13 @@ import org.netbeans.modules.editor.NbEditorKit;
 
 /**
  *
- * @author hanz
+ * @author Jaroslav Bachorik
  */
 public class OQLEditorKit extends NbEditorKit {
 
 
     @Override
     public String getContentType () {
-        return "text/x-oql";
+        return "text/x-oql";    // NOI18N
     }
 }

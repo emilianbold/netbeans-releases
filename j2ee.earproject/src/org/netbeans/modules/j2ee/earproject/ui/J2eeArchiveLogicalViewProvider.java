@@ -87,7 +87,7 @@ public class J2eeArchiveLogicalViewProvider extends AbstractLogicalViewProvider2
     
     @Override
     public String[] getBreakableProperties() {
-        return BREAKABLE_PROPERTIES;
+        return BREAKABLE_PROPERTIES.clone();
     }
 
     @Override

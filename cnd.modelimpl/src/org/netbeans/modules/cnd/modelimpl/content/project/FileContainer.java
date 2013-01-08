@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.FileContainerKey;
+import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
@@ -81,6 +82,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.KeyBasedUID;
 import org.netbeans.modules.cnd.modelimpl.uid.LazyCsmCollection;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -474,7 +476,19 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
         while (setIterator.hasNext()) {
             final Map.Entry<CharSequence, FileEntry> anEntry = setIterator.next();
             PersistentUtils.writeFileNameIndex(anEntry.getKey(), output, unitIndex);
+            // TODO: replace call above by the next line if no failures in following asserts
+            // it allows to eleminate charSeq->fileIndex conversion when fileIndex is 
+            // known from fileNew UID kept in value's FileEntry
+//            output.writeInt(UIDUtilities.getFileID(anEntry.getValue().fileNew));
             assert anEntry.getValue() != null;
+            // see IncludedFileContainer.getIncludedUnitId
+            if (false && (CndUtils.isDebugMode() || CndUtils.isUnitTestMode())) {
+                int projectIDFromFileEntry = UIDUtilities.getProjectID(anEntry.getValue().fileNew);
+                CndUtils.assertTrueInConsole(projectIDFromFileEntry == unitIndex, anEntry.getValue().fileNew + "is not from unit " + unitIndex + " but from " + projectIDFromFileEntry);
+                int fileIDFromFileEntry = UIDUtilities.getFileID(anEntry.getValue().fileNew);
+                int fileIdByNameFromUnitId = KeyUtilities.getFileIdByName(unitIndex, anEntry.getKey());
+                CndUtils.assertTrueInConsole(fileIDFromFileEntry == fileIdByNameFromUnitId, fileIDFromFileEntry + ":" + projectIDFromFileEntry + " differs from " + fileIdByNameFromUnitId + ":" + unitIndex);
+            }
             anEntry.getValue().write(output, unitIndex);
         }
     }

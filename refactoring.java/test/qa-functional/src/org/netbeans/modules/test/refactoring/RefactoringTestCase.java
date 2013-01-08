@@ -48,6 +48,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -59,6 +60,8 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JTree;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.parser.ParserDelegator;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.JellyTestCase;
@@ -145,17 +148,10 @@ public abstract class RefactoringTestCase extends JellyTestCase {
      * @param level Distance current root - tree root
      */
     protected void browseChildren(TreeModel model, Object parent, int level) {
-        Object invoke = getPreviewItemLabel(parent);
+        String logNode = getPreviewItemLabel(parent);
         for (int i = 0; i < level; i++) {
             ref("    ");
         }
-
-        String logNode = invoke.toString();
-
-        if (System.getProperty("os.name").contains("Linux")) { // synchronize colors of nodes on Linux 
-            logNode = logNode.replaceAll("3c3c3c", "000000");
-        }
-
         ref(logNode + "\n");
 
         int childs = model.getChildCount(parent);
@@ -222,7 +218,7 @@ public abstract class RefactoringTestCase extends JellyTestCase {
         System.err.println("SP " + selectionPath.getPath());
         Object pathComponent = selectionPath.getPathComponent(2);
         System.err.println("PC " + pathComponent);
-        return (String) getPreviewItemLabel(pathComponent);
+        return getPreviewItemLabel(pathComponent);
     }
 
     /**
@@ -232,12 +228,16 @@ public abstract class RefactoringTestCase extends JellyTestCase {
      * @param parent The tree item
      * @return Test label obtained by method {@code getLabel}
      */
-    protected Object getPreviewItemLabel(Object parent) {
+    protected String getPreviewItemLabel(Object parent) {
         try {
             Method method = parent.getClass().getDeclaredMethod("getLabel");
             method.setAccessible(true);
             Object invoke = method.invoke(parent);
-            return invoke;
+            Label2Text parser = new Label2Text();
+            parser.parse(new StringReader((String)invoke));
+            return parser.result.toString();
+        } catch (IOException ex) {
+            Logger.getLogger(RefactoringTestCase.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
             Logger.getLogger(RefactoringTestCase.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IllegalArgumentException ex) {
@@ -256,7 +256,7 @@ public abstract class RefactoringTestCase extends JellyTestCase {
     private void sortChilds(List<Object> al) {
         final HashMap<Object, String> hashMap = new HashMap<Object, String>();
         for (Object object : al) {
-            hashMap.put(object, (String) getPreviewItemLabel(object));
+            hashMap.put(object, getPreviewItemLabel(object));
         }
 
         Collections.<Object>sort(al, new Comparator() {
@@ -326,4 +326,25 @@ public abstract class RefactoringTestCase extends JellyTestCase {
         assertFile("Golden file differs ", new File(getWorkDir(), getName() + ".ref"), getGoldenFile(), getWorkDir(), new LineDiff());
         System.out.println("Test " + getName() + " finished");
     }
+
+    
+    
+    private static class Label2Text extends HTMLEditorKit.ParserCallback {
+        StringBuffer result;
+
+        public Label2Text() {
+            result = new StringBuffer();
+        }
+
+        public void parse(StringReader in) throws IOException {
+            new ParserDelegator().parse(in, this, Boolean.TRUE);
+        }
+
+        @Override
+        public void handleText(char[] text, int pos) {
+            result.append(text);
+        }
+    }
+
+
 }

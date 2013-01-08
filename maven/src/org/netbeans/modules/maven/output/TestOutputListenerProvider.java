@@ -219,7 +219,7 @@ public class TestOutputListenerProvider implements OutputProcessor {
                     return;
                 }
             
-                String reportNameSuffix = PluginPropertyUtils.getPluginProperty(nbprj.getOriginalMavenProject(), Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE, "reportNameSuffix", null);
+                String reportNameSuffix = PluginPropertyUtils.getPluginProperty(nbprj.getOriginalMavenProject(), Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE, "reportNameSuffix", "test", "surefire.reportNameSuffix");
                 String suffix = reportNameSuffix;
                 if (suffix == null) {
                     suffix = "";

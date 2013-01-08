@@ -74,7 +74,6 @@ import javax.swing.event.ChangeListener;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.openide.explorer.UIException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.AbstractNode;
@@ -82,6 +81,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
+import org.openide.util.Exceptions;
 
 /** Tests that PropertyPanel honors Escape and Enter keys when
  * in a dialog */
@@ -827,8 +827,7 @@ public class PropertyPanelInDialogTest extends NbTestCase {
                 myVal = val;
             } else {
                 IllegalArgumentException iae = new IllegalArgumentException("No!");
-                UIException.annotateUser(iae, "NoNo!", "Localized message", null,
-                                         null);
+                Exceptions.attachLocalizedMessage(iae, "Localized message");
                 throw iae;
             }
         }
@@ -954,8 +953,7 @@ public class PropertyPanelInDialogTest extends NbTestCase {
                 }
             }
             IllegalArgumentException iae = new IllegalArgumentException(txt);
-            UIException.annotateUser(iae, txt, txt + " is not a valid value",
-                                     null, null);
+            Exceptions.attachLocalizedMessage(iae, txt + " is not a valid value");
         }
         
         public Object getValue() {

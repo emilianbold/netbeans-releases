@@ -281,7 +281,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         return fileTS.token();
     }
 
-    private TransformationTable getMacroTable(Document doc) {
+    private TransformationTable getCachedMacroTable(Document doc) {
         Object o = doc.getProperty(MACRO_EXPANSION_MACRO_TABLE);
         if (o != null && o instanceof TransformationTable) {
             TransformationTable tt = (TransformationTable) o;
@@ -309,12 +309,12 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         if(doc == null) {
             return null;
         }
-        return expand(doc, CsmUtilities.getCsmFile(doc, false, false), startOffset, endOffset);
+        return expand(doc, CsmUtilities.getCsmFile(doc, false, false), startOffset, endOffset, true);
     }
 
     @Override
-    public String expand(Document doc, CsmFile file, int startOffset, int endOffset) {
-        TransformationTable tt = updateMacroTableIfNeeded(doc, file);
+    public String expand(Document doc, CsmFile file, int startOffset, int endOffset, boolean updateIfNeeded) {
+        TransformationTable tt = getMacroTable(doc, file, updateIfNeeded);
         return tt == null ? null : expandInterval(doc, tt, startOffset, endOffset);
     }
 
@@ -324,10 +324,10 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         TransformationTable tt;
         if (wait) {
             CsmFile file = CsmUtilities.getCsmFile(doc, false, false);
-            tt = updateMacroTableIfNeeded(doc, file);
+            tt = getMacroTable(doc, file, true);
         } else {
             synchronized (doc) {
-                tt = getMacroTable(doc);
+                tt = getCachedMacroTable(doc);
             }
         }
         if (tt != null) {
@@ -786,9 +786,8 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
     }
 
     private MyTokenSequence getFileTokenSequence(CsmFile file, int startOffset, int endOffset) {
-        FileImpl fileImpl = null;
         if (file instanceof FileImpl) {
-            fileImpl = (FileImpl) file;
+            FileImpl fileImpl = (FileImpl) file;
             // why only one token stream is analyzed and not all preprocessor branches?
             TokenStream ts = fileImpl.getTokenStream(startOffset, endOffset, 0, false);
             if (ts != null) {
@@ -882,7 +881,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
 
     /* package local */ String dumpTables(Document doc) {
         StringBuilder sb = new StringBuilder();
-        TransformationTable tt = getMacroTable(doc);
+        TransformationTable tt = getCachedMacroTable(doc);
         if(tt != null) {
             sb.append("MacroTable: "); // NOI18N
             sb.append(tt.toString());
@@ -895,7 +894,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         return sb.toString();
     }
     
-    private static class MyTokenSequence {
+    private static final class MyTokenSequence {
 
         private final TokenStream ts;
         private final FileImpl file;
@@ -1273,32 +1272,41 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         public String toString() {
             StringBuilder sb = new StringBuilder(""); // NOI18N
             for (IntervalCorrespondence ic : intervals) {
-                sb.append("[" + ic.getInInterval().start + "," +  ic.getInInterval().end + "] => [" + ic.getOutInterval().start + "," + ic.getOutInterval().end + "]\n"); // NOI18N
+                sb.append("[").append(ic.getInInterval().start).append(",").append(ic.getInInterval().end).append("] => [").append(ic.getOutInterval().start).append(",").append(ic.getOutInterval().end).append("]\n"); // NOI18N
             }
             return sb.toString();
         }
     }
 
-    private TransformationTable updateMacroTableIfNeeded(Document doc, CsmFile file) {
+    private TransformationTable getMacroTable(Document doc, CsmFile file, boolean updateIfNeeded) {
         if (file == null || doc == null) {
             return null;
         }
-        TransformationTable tt = null;
+        TransformationTable tt;
         synchronized (doc) {
-            tt = getMacroTable(doc);
+            tt = getCachedMacroTable(doc);
             if (tt == null) {
-                tt = new TransformationTable(DocumentUtilities.getDocumentVersion(doc), CsmFileInfoQuery.getDefault().getFileVersion(file));
+                if (updateIfNeeded) {
+                    tt = new TransformationTable(DocumentUtilities.getDocumentVersion(doc), CsmFileInfoQuery.getDefault().getFileVersion(file));
+                } else {
+                    tt = new TransformationTable(-1, -1);
+                }
                 doc.putProperty(MACRO_EXPANSION_MACRO_TABLE, tt);
             }
         }
+        if (!updateIfNeeded && tt.isInited()) {
+            return tt;
+        }
         synchronized (tt) {
             synchronized (doc) {
-                tt = getMacroTable(doc);
-                if (tt.documentVersion != DocumentUtilities.getDocumentVersion(doc) || tt.fileVersion != CsmFileInfoQuery.getDefault().getFileVersion(file)) {
-                    tt = new TransformationTable(DocumentUtilities.getDocumentVersion(doc), CsmFileInfoQuery.getDefault().getFileVersion(file));
+                tt = getCachedMacroTable(doc);
+                if (updateIfNeeded) {
+                    if (tt.documentVersion != DocumentUtilities.getDocumentVersion(doc) || tt.fileVersion != CsmFileInfoQuery.getDefault().getFileVersion(file)) {
+                        tt = new TransformationTable(DocumentUtilities.getDocumentVersion(doc), CsmFileInfoQuery.getDefault().getFileVersion(file));
+                    }
                 }
             }
-            if (!tt.isInited()) {
+            if (updateIfNeeded && !tt.isInited()) {
                 expand(doc, file, tt);
                 tt.cleanUp();
                 synchronized (doc) {

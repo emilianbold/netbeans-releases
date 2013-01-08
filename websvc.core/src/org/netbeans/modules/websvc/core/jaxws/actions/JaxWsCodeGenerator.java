@@ -697,6 +697,7 @@ public class JaxWsCodeGenerator  {
         }
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     private static void insertJavaMethod( final Document document,
             final int pos, WsdlOperation operation, String wsdlUrl,
             PolicyManager manager, final String serviceJavaName,
@@ -889,6 +890,7 @@ public class JaxWsCodeGenerator  {
                 invocationBody = MessageFormat.format(JSP_STATIC_STUB_ASYNC_CALLBACK, args);
                 break;
             }
+            default:
         }
         return invocationBody;
     }
@@ -1100,6 +1102,7 @@ public class JaxWsCodeGenerator  {
         }
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     private static void insertDispatchJavaMethod( final Document document,
             final int pos, WsdlService service, WsdlPort port,
             WsdlOperation operation, String wsdlUrl, PolicyManager manager )

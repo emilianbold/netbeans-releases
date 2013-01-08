@@ -124,9 +124,7 @@ public class TestResourceUriAction extends NodeAction  {
                         } catch (java.io.IOException ex) {
                             Logger.getLogger(TestResourceUriAction.class.getName()).log(Level.INFO, "URLConnection problem", ex); //NOI18N
                         } finally {
-                            if (httpConnection != null) {
-                                httpConnection.disconnect();
-                            }
+                            httpConnection.disconnect();
                         }
                         // logging usage of action
                         Object[] params = new Object[2];

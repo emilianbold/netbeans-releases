@@ -97,6 +97,7 @@ import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -227,6 +228,7 @@ public class Flow {
         private final Set<Tree> deadBranches = new HashSet<Tree>();
         private final List<TreePath> pendingFinally = new LinkedList<TreePath>();
         private final Cancel cancel;
+        private boolean doNotRecord;
 
         public VisitorImpl(CompilationInfo info, Cancel cancel) {
             super();
@@ -541,33 +543,7 @@ public class Flow {
 
         @Override
         public Boolean visitWhileLoop(WhileLoopTree node, Void p) {
-            Map<VariableElement, State> beforeLoop = variable2State;
-
-            variable2State = new HashMap<VariableElement, Flow.State>(beforeLoop);
-            
-            Boolean condValue = scan(node.getCondition(), null);
-
-            if (condValue != null) {
-                if (condValue) {
-                    //XXX: handle possibly infinite loop
-                } else {
-                    //will not run at all, skip:
-                    return null;
-                }
-            }
-            
-            scan(node.getStatement(), null);
-
-            variable2State = mergeOr(beforeLoop, variable2State);
-            resume(node.getCondition(), resumeBefore);
-            beforeLoop = new HashMap<VariableElement, State>(variable2State);
-
-            scan(node.getCondition(), null);
-            scan(node.getStatement(), null);
-            
-            variable2State = beforeLoop;
-
-            return null;
+            return handleGeneralizedForLoop(null, node.getCondition(), null, node.getStatement(), p);
         }
 
         @Override
@@ -588,25 +564,36 @@ public class Flow {
                 }
             }
 
-            beforeLoop = new HashMap<VariableElement, State>(variable2State = mergeOr(beforeLoop, variable2State));
+            variable2State = mergeOr(beforeLoop, variable2State);
 
-            scan(node.getStatement(), null);
-            scan(node.getCondition(), null);
-
-            variable2State = beforeLoop;
+            if (!doNotRecord) {
+                boolean oldDoNotRecord = doNotRecord;
+                doNotRecord = true;
+                
+                beforeLoop = new HashMap<VariableElement, State>(variable2State);
+                scan(node.getStatement(), null);
+                scan(node.getCondition(), null);
+                
+                doNotRecord = oldDoNotRecord;
+                variable2State = beforeLoop;
+            }
 
             return null;
         }
 
         @Override
         public Boolean visitForLoop(ForLoopTree node, Void p) {
-            scan(node.getInitializer(), null);
+            return handleGeneralizedForLoop(node.getInitializer(), node.getCondition(), node.getUpdate(), node.getStatement(), p);
+        }
+        
+        private Boolean handleGeneralizedForLoop(Iterable<? extends Tree> initializer, Tree condition, Iterable<? extends Tree> update, Tree statement, Void p) {
+            scan(initializer, null);
             
             Map<VariableElement, State> beforeLoop = variable2State;
 
             variable2State = new HashMap<VariableElement, Flow.State>(beforeLoop);
 
-            Boolean condValue = scan(node.getCondition(), null);
+            Boolean condValue = scan(condition, null);
 
             if (condValue != null) {
                 if (condValue) {
@@ -616,17 +603,23 @@ public class Flow {
                     return null;
                 }
             }
+            
+            if (!doNotRecord) {
+                boolean oldDoNotRecord = doNotRecord;
+                doNotRecord = true;
 
-            scan(node.getStatement(), null);
-            scan(node.getUpdate(), null);
+                scan(statement, null);
+                scan(update, null);
 
-            variable2State = mergeOr(beforeLoop, variable2State);
-            resume(node.getCondition(), resumeBefore);
-            beforeLoop = new HashMap<VariableElement, State>(variable2State);
+                variable2State = mergeOr(beforeLoop, variable2State);
+                resume(condition, resumeBefore);
+                beforeLoop = new HashMap<VariableElement, State>(variable2State);
+                scan(condition, null);
+                doNotRecord = oldDoNotRecord;
+            }
 
-            scan(node.getCondition(), null);
-            scan(node.getStatement(), null);
-            scan(node.getUpdate(), null);
+            scan(statement, null);
+            scan(update, null);
 
             variable2State = mergeOr(beforeLoop, variable2State);
 
@@ -741,24 +734,7 @@ public class Flow {
         }
 
         public Boolean visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
-            scan(node.getVariable(), null);
-            scan(node.getExpression(), null);
-
-            Map<VariableElement, State> beforeLoop = variable2State;
-
-            variable2State = new HashMap<VariableElement, Flow.State>(beforeLoop);
-
-            scan(node.getStatement(), null);
-
-            variable2State = mergeOr(beforeLoop, variable2State);
-            resume(node.getStatement(), resumeBefore);
-            beforeLoop = new HashMap<VariableElement, State>(variable2State);
-
-            scan(node.getStatement(), null);
-
-            variable2State = mergeOr(beforeLoop, variable2State);
-
-            return null;
+            return handleGeneralizedForLoop(Arrays.asList(node.getVariable(), node.getExpression()), /*because we are resuming at "condition":*/node.getStatement(), null, null, p);
         }
 
         @Override

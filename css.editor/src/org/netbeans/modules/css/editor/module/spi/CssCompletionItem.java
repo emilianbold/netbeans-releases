@@ -86,6 +86,19 @@ public abstract class CssCompletionItem implements CompletionProposal {
     private CssElement element;
     protected boolean addSemicolon;
 
+    /**
+     * @since 1.40
+     */
+    public static CssCompletionItem createValueCompletionItem(CssValueElement element,
+            String value,
+            String origin,
+            int anchorOffset,
+            boolean addSemicolon,
+            boolean addSpaceBeforeItem) {
+
+        return new ValueCompletionItem(element, value, origin, anchorOffset, addSemicolon, addSpaceBeforeItem);
+    }
+    
     public static CssCompletionItem createValueCompletionItem(CssValueElement element,
             ValueGrammarElement value,
             String origin,

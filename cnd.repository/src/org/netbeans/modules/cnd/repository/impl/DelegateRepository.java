@@ -52,6 +52,8 @@ import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.api.DatabaseTable;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.disk.DiskRepositoryManager;
+import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
+import org.netbeans.modules.cnd.repository.relocate.spi.RelocationSupportProvider;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
@@ -60,13 +62,18 @@ import org.netbeans.modules.cnd.repository.translator.RepositoryTranslatorImpl;
 import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.repository.api.Repository.class)
-public final class DelegateRepository implements Repository {    
+@ServiceProviders({
+@ServiceProvider(service = org.netbeans.modules.cnd.repository.api.Repository.class),
+@ServiceProvider(path = RelocationSupportProvider.PATH, service = RelocationSupportProvider.class, position = 1000)
+})
+public final class DelegateRepository implements Repository, RelocationSupportProvider {    
 
     /** guards cacheToDelegate and delegates *modification* */
     private final Object delegatesLock = new Object();    
@@ -241,29 +248,43 @@ public final class DelegateRepository implements Repository {
         return getDelegate(unitId).getTranslation();
     }
 
-    public int getUnitId(CharSequence unitName, CacheLocation cacheLocation) {
+    private BaseRepository getOrCreateRepository(CacheLocation cacheLocation) {
         CndUtils.assertNotNull(cacheLocation, "null cache location"); //NOI18N
         if (cacheLocation == null) {
             cacheLocation = CacheLocation.DEFAULT;
         }
         assert cacheLocation != null;
+        BaseRepository repo;
         synchronized (delegatesLock) {
-            BaseRepository repo = cacheToDelegate.get(cacheLocation);
+            repo = cacheToDelegate.get(cacheLocation);
             if (repo == null) {
                 int newId = delegates.size();
                 repo = createRepository(newId, cacheLocation);
                 cacheToDelegate.put(cacheLocation, repo);
                 delegates.add(repo);
             }
-            int unitId = repo.getTranslation().getUnitId(unitName);
-            return unitId;
-        }        
+        }
+        return repo;
     }
 
+    public int getUnitId(CharSequence unitName, CacheLocation cacheLocation) {
+        BaseRepository repo = getOrCreateRepository(cacheLocation);
+        synchronized (delegatesLock) {
+            int unitId = repo.getTranslation().getUnitId(unitName);
+            return unitId;
+        }
+    }
+    
+    @Override
+    public UnitCodec getUnitCodec(CacheLocation cacheLocation) {
+        BaseRepository repo = getOrCreateRepository(cacheLocation);
+        return repo.getUnitCodec();
+    }
+    
     public CacheLocation getCacheLocation(int unitId) {
         return getDelegate(unitId).getCacheLocation();
     }
-    
+        
     private static class DummyRepository extends BaseRepository {
 
         private static final String exceptionText = "DummyRepository should never be accessed"; //NOI18N

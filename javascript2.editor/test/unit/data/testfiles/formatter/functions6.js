@@ -6,7 +6,7 @@ var a = x / 2/ 5 /6 ;
 x = /eeeee/i
 + 2 / 5
 
-adad = /sdsdsd/
+adad = /sdsdsd/;
 
 /dfdfdf/
 

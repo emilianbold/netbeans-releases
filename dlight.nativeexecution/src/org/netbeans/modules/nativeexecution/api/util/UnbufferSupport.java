@@ -50,6 +50,7 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.HostInfo.CpuFamily;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
@@ -61,7 +62,7 @@ import org.openide.util.Exceptions;
 
 /*
  * Used to unbuffer application's output in case OutputWindow is used.
- * 
+ *
  */
 public class UnbufferSupport {
 
@@ -86,15 +87,22 @@ public class UnbufferSupport {
             return;
         }
 
-        boolean isMacOS = hinfo.getOSFamily() == HostInfo.OSFamily.MACOSX;
+        boolean isWindows = false;
 
-        // Bug 179172 - unbuffer.dylib not found
-        // Will disable unbuffer on Mac as seems it is not required...
-        if (isMacOS) {
-            return;
+        switch (hinfo.getOSFamily()) {
+            case MACOSX:
+                // No unbuffer on MacOS - see IZ179172
+                return;
+            case LINUX:
+                if (!hinfo.getCpuFamily().equals(CpuFamily.X86)) {
+                    // Unbuffer is available for x86 only
+                    return;
+                }
+                break;
+            case WINDOWS:
+                isWindows = true;
+                break;
         }
-
-        boolean isWindows = hinfo.getOSFamily() == HostInfo.OSFamily.WINDOWS;
 
         final MacroExpander macroExpander = MacroExpanderFactory.getExpander(execEnv);
         // Setup LD_PRELOAD to load unbuffer library...
@@ -167,9 +175,6 @@ public class UnbufferSupport {
                 if (isWindows) {
                     ldLibraryPathEnv = "PATH"; // NOI18N
                     ldPreloadEnv = "LD_PRELOAD"; // NOI18N
-                } else if (isMacOS) {
-                    ldLibraryPathEnv = "DYLD_LIBRARY_PATH"; // NOI18N
-                    ldPreloadEnv = "DYLD_INSERT_LIBRARIES"; // NOI18N
                 } else {
                     ldLibraryPathEnv = "LD_LIBRARY_PATH"; // NOI18N
                     ldPreloadEnv = "LD_PRELOAD"; // NOI18N
@@ -191,13 +196,6 @@ public class UnbufferSupport {
                         // will not set LD_PRELOAD
                         return;
                     }
-
-                } else if (isMacOS) {
-                    // TODO: FIXME (?) For Mac and Windows just put unbuffer
-                    // with path to it to LD_PRELOAD/DYLD_INSERT_LIBRARIES
-                    // Reason: no luck to make it work using PATH ;(
-                    ldPreload = ((ldPreload == null) ? "" : (ldPreload + ":")) + // NOI18N
-                            unbufferPath + "/" + unbufferLib; // NOI18N
                 } else {
                     ldPreload = ((ldPreload == null) ? "" : (ldPreload + ":")) + // NOI18N
                             unbufferLib;
@@ -205,9 +203,7 @@ public class UnbufferSupport {
 
                 env.put(ldPreloadEnv, ldPreload);
 
-                if (isMacOS) {
-                    env.put("DYLD_FORCE_FLAT_NAMESPACE", "yes"); // NOI18N
-                } else if (isWindows) {
+                if (isWindows) {
 //                    String ldLibPath = env.get(ldLibraryPathEnv);
 //                    ldLibPath = ((ldLibPath == null) ? "" : (ldLibPath + ";")) + // NOI18N
 //                            unbufferPath + ";" + unbufferPath + "_64"; // NOI18N

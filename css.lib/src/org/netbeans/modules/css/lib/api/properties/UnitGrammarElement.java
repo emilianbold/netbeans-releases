@@ -41,6 +41,10 @@
  */
 package org.netbeans.modules.css.lib.api.properties;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import org.netbeans.modules.css.lib.api.CssTokenId;
+
 /**
  *
  * @author mfukala@netbeans.org
@@ -60,10 +64,32 @@ public class UnitGrammarElement extends ValueGrammarElement {
         return tokenAcceptor.id();
     }
     
+    /**
+    * <b>
+    * TODO fix - this is all wrong - there should NOT be getValue() method in the ValueGrammarElement,
+    * resp. UnitGrammarElement.
+    * Instead of that the ValueGrammarElement should have the getFixedValues() method,
+    * which would return just one value for the FixedTextGrammarElement and possibly
+    * more here int UnitGrammarElement
+    * 
+    * as this needs an incompatible change, I'll do that along with others post 7.3
+    * </b>
+    */
     @Override
     public String getValue() {
         return name;
     }
+    
+    /**
+     * Just temporary - read javadoc for {@link #getValue()}
+     * @since 1.25
+     * @deprecated
+     * @return null if there are no fixed value tokens, or list of the fixed token values
+     */
+    public Collection<String> getFixedValues() {
+        return tokenAcceptor.getFixedImageTokens();
+    }
+    //<<<
     
     @Override
     public boolean accepts(Token token) {

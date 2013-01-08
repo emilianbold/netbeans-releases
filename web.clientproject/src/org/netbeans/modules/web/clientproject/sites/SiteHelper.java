@@ -116,7 +116,9 @@ public final class SiteHelper {
             copyToFile(is, target);
         } catch (IOException ex) {
             // error => ensure file is deleted
-            target.delete();
+            if (!target.delete()) {
+                // nothing we can do about it
+            }
             throw ex;
         } finally {
             is.close();
@@ -215,6 +217,10 @@ public final class SiteHelper {
                     }
                     // ignore build folder from mobile boilerplate; unrelated junk IMO.
                     if (entryName.startsWith("build/") || entryName.startsWith("nbproject/")) { //NOI18N
+                        continue;
+                    }
+                    // NetBeans LOCK files
+                    if (entryName.contains("/.LCK") && entryName.endsWith("~")) { //NOI18N
                         continue;
                     }
                     FileObject fo = FileUtil.createData(targetDir, entryName);

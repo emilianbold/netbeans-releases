@@ -46,6 +46,8 @@ package org.netbeans.core.output2;
 
 import java.io.Reader;
 import junit.framework.TestCase;
+import org.openide.util.Exceptions;
+import org.openide.windows.OutputWriter;
 
 /**
  *
@@ -98,4 +100,78 @@ public class NbIOTest extends TestCase {
               rdr.eof();
     }
     
+    public void testSynchronization223370SeveralTimes() {
+        for (int i = 0; i < 10; i++) {
+            try {
+                checkSynchronization223370();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
+    private void checkSynchronization223370() throws InterruptedException {
+        final NbIO nbio = new NbIO("test223370");
+        final int[] nullOuts = new int[1];
+        final int[] nullIns = new int[1];
+        Thread t1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < 10000; i++) {
+                    OutputWriter out = nbio.getOut();
+                    Reader in = nbio.getIn();
+                    if (out == null) {
+                        synchronized (nullOuts) {
+                            nullOuts[0]++;
+                        }
+                    }
+                    if (in == null) {
+                        synchronized (nullIns) {
+                            nullIns[0]++;
+                        }
+                    }
+                }
+            }
+        });
+        Thread t2 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                for (int i = 0; i < 10000; i++) {
+                    nbio.closeInputOutput();
+                }
+            }
+        });
+        Thread t3 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(2);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                for (int i = 0; i < 10000; i++) {
+                    nbio.dispose();
+                }
+            }
+        });
+
+        t1.start();
+        t2.start();
+        t3.start();
+
+        t1.join();
+        t2.join();
+        t3.join();
+        synchronized (nullIns) {
+            assertEquals(0, nullIns[0]);
+        }
+        synchronized (nullOuts) {
+            assertEquals(0, nullOuts[0]);
+        }
+    }
 }

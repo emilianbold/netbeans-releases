@@ -221,6 +221,7 @@ class SftpSupport {
 
         @Override
         public Integer call() throws InterruptedException {
+            long time = System.currentTimeMillis();
             int rc = -1;
             try {                
                 Thread.currentThread().setName(PREFIX + ": " + getTraceName()); // NOI18N
@@ -259,8 +260,10 @@ class SftpSupport {
             } catch (ExecutionException ex) {
                 logException(ex);
                 rc = 7;
+            } finally {
+                time = System.currentTimeMillis() - time;
             }
-            LOG.log(Level.FINE, "{0}{1}", new Object[]{getTraceName(), rc == 0 ? " OK" : " FAILED"});
+            LOG.log(Level.FINE, "{0}{1} ({2} ms)", new Object[]{getTraceName(), rc == 0 ? " OK" : " FAILED", time});
             return rc;
         }
 

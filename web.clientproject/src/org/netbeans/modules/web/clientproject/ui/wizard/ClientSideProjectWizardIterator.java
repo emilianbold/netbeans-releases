@@ -176,6 +176,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     }
 
     @Override
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void initialize(WizardDescriptor wiz) {
         this.wizardDescriptor = wiz;
         index = 0;
@@ -188,14 +189,14 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
 
         //Compute steps from extenders
-        ArrayList<Panel<? extends WizardDescriptor>> extenderPanelsCol = new ArrayList();
+        ArrayList<Panel<? extends WizardDescriptor>> extenderPanelsCol = new ArrayList<Panel<? extends WizardDescriptor>>();
         for (ClientProjectExtender extender: extenders) {
             for (Panel<WizardDescriptor> panel: extender.createWizardPanels()) {
                 extenderPanelsCol.add(panel);
                 steps.add(panel.getComponent().getName());
             }
         }
-        
+
         extenderPanels = extenderPanelsCol.toArray(new Panel[0]);
        
         //Regular panels
@@ -276,10 +277,28 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
     @Override
     public WizardDescriptor.Panel<WizardDescriptor> current() {
+        setTitle();
         if (index>=panels.length) {
             return extenderPanels[index-panels.length];
         }
         return panels[index];
+    }
+
+    private void setTitle() {
+        if (wizardDescriptor != null) {
+            // wizard title
+            String title = null;
+            if (wizard instanceof NewProjectWizard) {
+                title = Bundle.ClientSideProjectWizardIterator_newProject_displayName();
+            } else if (wizard instanceof ExistingProjectWizard) {
+                title = Bundle.ClientSideProjectWizardIterator_existingProject_displayName();
+            } else {
+                assert false : "Unknown project wizard type: " + wizard.getClass().getName();
+            }
+            if (title != null) {
+                wizardDescriptor.putProperty("NewProjectWizard_Title", title); // NOI18N
+            }
+        }
     }
 
     // If nothing unusual changes in the middle of the wizard, simply:
@@ -320,7 +339,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         @Override
         public Panel<WizardDescriptor>[] createPanels() {
-            @SuppressWarnings("unchecked")
+            @SuppressWarnings({"rawtypes", "unchecked"})
             WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {
                 new NewClientSideProjectPanel(),
                 new SiteTemplateWizardPanel(),
@@ -452,7 +471,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         @Override
         public Panel<WizardDescriptor>[] createPanels() {
-            @SuppressWarnings("unchecked")
+            @SuppressWarnings({"unchecked", "rawtypes"})
             WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {
                 new ExistingClientSideProjectPanel(),
             };

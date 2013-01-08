@@ -865,6 +865,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         org.w3c.dom.Node layoutCodeNode = null;
         org.w3c.dom.Node subCompsNode = null;
         org.w3c.dom.Node constraintsNode = null;
+        boolean serialized = false;
 
         for (int i = 0; i < childNodes.getLength(); i++) {
             org.w3c.dom.Node childNode = childNodes.item(i);
@@ -896,7 +897,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 subCompsNode = childNode;
             }
             else if (XML_AUX_VALUES.equals(nodeName)) {
-                loadAuxValues(childNode, component);
+                if (!serialized) {
+                    loadAuxValues(childNode, component);
+                    if (JavaCodeGenerator.VALUE_SERIALIZE.equals(component.getAuxValue(JavaCodeGenerator.AUX_CODE_GENERATION))) {
+                        // Hack to overcome another flaw with the serialized components:
+                        // When the serialized instance is loaded and set, properties and events
+                        // loaded before that are lost. This is an attempt to load them again.
+                        i = -1;
+                        serialized = true;
+                    }
+                }
             }
             else if (XML_SYNTHETIC_PROPERTIES.equals(nodeName)) {
                 loadSyntheticProperties(childNode, component);

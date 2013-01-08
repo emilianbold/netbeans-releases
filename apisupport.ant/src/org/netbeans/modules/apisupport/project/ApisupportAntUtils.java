@@ -150,6 +150,31 @@ public class ApisupportAntUtils {
     }
     
     /**
+     * Check whether a given path can serve as a legal <ol>
+     * <li>File path name
+     * </ol>
+     */
+    public static boolean isValidFilePath(String name) {
+        if (name.length() == 0) {
+            return false;
+        }
+        name = name.substring(0, name.lastIndexOf("."));
+        StringTokenizer tk = new StringTokenizer(name,"/",true); //NOI18N
+        boolean delimExpected = false;
+        while (tk.hasMoreTokens()) {
+            String namePart = tk.nextToken();
+            if (delimExpected ^ namePart.equals("/")) { // NOI18N
+                return false;
+            }
+            if (!delimExpected && !Utilities.isJavaIdentifier(namePart)) {
+                return false;
+            }
+            delimExpected = !delimExpected;
+        }
+        return delimExpected;
+    }
+    
+    /**
      * Search for an appropriate localized bundle (i.e.
      * OpenIDE-Module-Localizing-Bundle) entry in the given
      * <code>manifest</code> taking into account branding and localization

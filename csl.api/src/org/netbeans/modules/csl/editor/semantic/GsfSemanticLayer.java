@@ -56,14 +56,19 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
-import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.api.ColoringAttributes.Coloring;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
-import org.openide.text.NbDocument;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.WeakListeners;
 
 /**
  * A highlight layer for semantic highlighting OffsetRange lists provided by language clients
@@ -81,6 +86,8 @@ public class GsfSemanticLayer extends AbstractHighlightsContainer implements Doc
     private List<Edit> edits;
     private Map<Language,Map<Coloring, AttributeSet>> CACHE = new HashMap<Language,Map<Coloring, AttributeSet>>();
     private Document doc;
+    private List<Lookup.Result> coloringResults = new ArrayList<Lookup.Result>(3);
+    private List<LookupListener> coloringListeners = new ArrayList<LookupListener>(3);
 
     public static GsfSemanticLayer getLayer(Class id, Document doc) {
         GsfSemanticLayer l = (GsfSemanticLayer) doc.getProperty(id);
@@ -151,14 +158,35 @@ public class GsfSemanticLayer extends AbstractHighlightsContainer implements Doc
         CACHE.clear();
     }
     
-    synchronized AttributeSet getColoring(Coloring c, Language language) {
+    private synchronized void clearLanguageColoring(Language mime) {
+        CACHE.remove(mime);
+        
+    }
+    
+    synchronized AttributeSet getColoring(Coloring c, final Language language) {
         AttributeSet a = null;
         Map<Coloring,AttributeSet> map = CACHE.get(language);
         if (map == null) {
+            final String mime = language.getMimeType();
             a = language.getColoringManager().getColoringImpl(c);
             map = new HashMap<Coloring,AttributeSet>();
             map.put(c, a);
             CACHE.put(language, map);
+            Lookup.Result<FontColorSettings> res = MimeLookup.getLookup(MimePath.get(mime)).lookupResult(FontColorSettings.class);
+            coloringResults.add(res);
+            LookupListener l;
+            
+            res.addLookupListener(
+                    WeakListeners.create(LookupListener.class, 
+                        l = new LookupListener() {
+                        @Override
+                        public void resultChanged(LookupEvent ev) {
+                            clearLanguageColoring(language);
+                            fireHighlightsChange(0, doc.getLength());
+                        }
+                    }, res)
+            );
+            coloringListeners.add(l);
         } else {
             a = map.get(c);
             if (a == null) {

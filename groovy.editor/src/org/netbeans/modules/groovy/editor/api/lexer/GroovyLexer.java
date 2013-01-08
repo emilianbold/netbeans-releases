@@ -64,32 +64,31 @@ import org.netbeans.spi.lexer.TokenFactory;
 
 /**
  * Lexer based on old coyote groovy lexer.
- * 
+ *
  * @todo cannot call lexerInput.readText() in some test, because it goes wrong on some EOFs
  * @todo curly braces in expression in gstring should be resolved as STRING_LITERAL?
- * 
+ *
  * @author Mila Metelka
  * @author Martin Adamek
  */
 public final class GroovyLexer implements Lexer<GroovyTokenId> {
-    
+
     private static final Logger LOG = Logger.getLogger(GroovyLexer.class.getName());
-    
+
     private DelegateLexer scanner;
     private LexerInput lexerInput;
     private MyCharBuffer myCharBuffer;
     private TokenFactory<GroovyTokenId> tokenFactory;
     private final GroovyRecognizer parser;
-    
+
     public GroovyLexer(LexerRestartInfo<GroovyTokenId> info) {
-        this.scanner = new DelegateLexer((LexerSharedInputState)null);
+        this.scanner = new DelegateLexer(null);
         scanner.setWhitespaceIncluded(true);
         parser = GroovyRecognizer.make(scanner);
         restart(info);
     }
-    
+
     private void restart(LexerRestartInfo<GroovyTokenId> info) {
-        
         tokenFactory = info.tokenFactory();
         this.lexerInput = info.input();
 
@@ -134,8 +133,8 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
                 int intId = antlrToken.getType();
 
                 int len = lexerInput.readLengthEOF() - myCharBuffer.getExtraCharCount();
-                if ( antlrToken.getText() != null ) {
-                    len = Math.max( len, antlrToken.getText().length() );
+                if (antlrToken.getText() != null) {
+                    len = Math.max(len, antlrToken.getText().length());
                     LOG.log(Level.FINEST, "Counting length from {0} and {1}", new Object[]{lexerInput.readLengthEOF(), myCharBuffer.getExtraCharCount()});
                 }
                 LOG.log(Level.FINEST, "Length of token to create: {0}", len);
@@ -146,19 +145,19 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
                     case GroovyTokenTypes.STRING_CTOR_END:
                         intId = GroovyTokenTypes.STRING_LITERAL;
                         break;
-                    case GroovyTokenTypes.EOF: 
+                    case GroovyTokenTypes.EOF:
                         if (lexerInput.readLength() > 0) {
                             return recovery();
                         }
                         return null;
                 }
-                
+
                 return createToken(intId, len);
 
             } else {
                 LOG.finest("Antlr token was null");
                 int scannerTextTokenLength = scanner.getText().length();
-                if ( scannerTextTokenLength > 0 ) {
+                if (scannerTextTokenLength > 0) {
                     return createToken(GroovyTokenTypes.WS, scannerTextTokenLength);
                 }
                 return null;  // no more tokens from tokenManager
@@ -191,30 +190,30 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
         }
         return tokenLength > 0 ? createToken(GroovyTokenId.ERROR.ordinal(), tokenLength) : null;
     }
-    
+
     private static class MyCharBuffer extends CharBuffer {
         public MyCharBuffer(Reader reader) {
-            super( reader );
+            super(reader);
             queue = new MyCharQueue(1);
         }
-        
+
         public int getExtraCharCount() {
             syncConsume();
-            return ( (MyCharQueue) queue ).getNbrEntries() ;
+            return ((MyCharQueue) queue).getNbrEntries();
         }
 
-    }     
-    
+    }
+
     private static class MyCharQueue extends CharQueue {
         public MyCharQueue(int minSize) {
             super(minSize);
         }
-        
+
         public int getNbrEntries() {
             return nbrEntries;
         }
     }
-    
+
     private static class LexerInputReader extends Reader {
         private LexerInput input;
 
@@ -229,7 +228,7 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
                 if (c == LexerInput.EOF) {
                     return -1;
                 }
-                buf[i + off] = (char)c;
+                buf[i + off] = (char) c;
             }
             return len;
         }
@@ -248,14 +247,14 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
         public DelegateLexer(LexerSharedInputState state) {
             super(state);
         }
-        
+
         public State getState() {
             if (stringCtorState > 0 || !parenLevelStack.isEmpty()) {
                 return new State(stringCtorState, parenLevelStack);
             }
             return null;
         }
-        
+
         public void setState(State d) {
             if (d != null) {
                 stringCtorState = d.stringCtorState;
@@ -263,14 +262,14 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
             }
         }
     }
-    
+
     /**
      * Holds state of lexer, which is needed to recover in incremental parsing
      * in expressions used in GStrings
      */
     @SuppressWarnings("unchecked")
     private static class State {
-        
+
         private final int stringCtorState;
         private final ArrayList parenLevelStack;
 
@@ -305,7 +304,7 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
             return hash;
         }
     }
-    
+
     private GroovyTokenId getTokenId(int token) {
         switch (token) {
             case GroovyTokenTypes.ABSTRACT:

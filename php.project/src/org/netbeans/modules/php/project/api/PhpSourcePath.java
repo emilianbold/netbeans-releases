@@ -144,6 +144,10 @@ public final class PhpSourcePath {
                 File phpStubs = new File(phpDir + File.separator + "phpstubs/phpruntime"); // NOI18N
                 if (phpStubs.exists()) {
                     phpStubsFolder = FileUtil.toFileObject(phpStubs);
+                } else {
+                    // avoid null
+                    phpStubsFolder = FileUtil.toFileObject(new File(phpDir));
+                    assert phpStubsFolder != null;
                 }
             }
         }

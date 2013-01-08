@@ -111,18 +111,6 @@ public final class ApplicationXmlVisualPanel1 extends JPanel {
         firePropertyChange("", null, null);
     }
 
-    private class FileObjectListCellRenderer extends DefaultListCellRenderer {
-        private static final long serialVersionUID = 1L;
-        
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if (value instanceof FileObject) {
-                FileObject fileObject = (FileObject) value;
-                setText(FileUtil.getFileDisplayName(fileObject));
-            }
-            return this;
-        }
-    }
-
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

@@ -373,7 +373,7 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
         MavenEmbedder embedder = EmbedderFactory.getProjectEmbedder();
         MavenExecutionRequest meReq = embedder.createMavenExecutionRequest();
         ProjectBuildingRequest req = meReq.getProjectBuildingRequest();
-        req.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_1); // currently enables just <reporting> warning
+        req.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_0); // 3.1 currently enables just <reporting> warning, see issue 223562 for details on why it's bad to show.
         req.setLocalRepository(embedder.getLocalRepository());
         List<ArtifactRepository> remoteRepos = RepositoryPreferences.getInstance().remoteRepositories(embedder);
         req.setRemoteRepositories(remoteRepos);

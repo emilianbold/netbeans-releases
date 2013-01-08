@@ -241,21 +241,33 @@ public final class ReferencesIndex implements SelfPersistent, Persistent {
         return new ReferencesIndex(stream);
     }
     
-    private static final Key INDEX_KEY = new ReferencesIndexKey();
     private static final class Holder {
-        private static final ReferencesIndex INSTANCE = read();
+        private static final ReferencesIndex INSTANCE = ENABLED ? read() : new ReferencesIndex();
+    }
+
+    private static final class KeyHolder {
+        private static final Key INDEX_KEY = new ReferencesIndexKey();
     }
 
     public static void shutdown() {
-        RepositoryUtils.closeUnit(INDEX_KEY, null, !TraceFlags.PERSISTENT_REPOSITORY);
+        if (ENABLED) {
+            RepositoryUtils.closeUnit(KeyHolder.INDEX_KEY, null, !TraceFlags.PERSISTENT_REPOSITORY);
+        }
     }
+    
+    public static void startup() {
+        if (ENABLED) {
+            RepositoryUtils.openUnit(KeyHolder.INDEX_KEY);
+        }
+    }
+    
     private static final boolean TRACE = Boolean.getBoolean("cnd.model.global.index") || Boolean.getBoolean("cnd.model.index.enabled");
     private static ReferencesIndex read() {
         if (TRACE) {
-            System.err.printf("Opening INDEX by key %s\n", INDEX_KEY); // NOI18N
+            System.err.printf("Opening INDEX by key %s\n", KeyHolder.INDEX_KEY); // NOI18N
         }
-        RepositoryUtils.openUnit(INDEX_KEY);
-        ReferencesIndex instance = (ReferencesIndex) RepositoryUtils.get(INDEX_KEY);
+        RepositoryUtils.openUnit(KeyHolder.INDEX_KEY);
+        ReferencesIndex instance = (ReferencesIndex) RepositoryUtils.get(KeyHolder.INDEX_KEY);
         if (instance == null) {
             if (TRACE) {
                 System.err.printf("NO REFERENCES INDEX IN REPOSITORY\n"); // NOI18N
@@ -375,7 +387,9 @@ public final class ReferencesIndex implements SelfPersistent, Persistent {
         } finally {
             lock.writeLock().unlock();
         }
-        RepositoryUtils.put(INDEX_KEY, this);
+        if (ENABLED) {
+            RepositoryUtils.put(KeyHolder.INDEX_KEY, this);
+        }
     }
     
     private static final boolean ENABLED = Boolean.getBoolean("cnd.model.global.index");
@@ -403,7 +417,7 @@ public final class ReferencesIndex implements SelfPersistent, Persistent {
         } finally {
             lock.writeLock().unlock();
         }
-        RepositoryUtils.put(INDEX_KEY, this);
+        RepositoryUtils.put(KeyHolder.INDEX_KEY, this);
     }    
 
     private Collection<CsmReference> getRefs(CsmUID<?> refedObject) {
@@ -440,7 +454,7 @@ public final class ReferencesIndex implements SelfPersistent, Persistent {
         lock.readLock().lock();
         try {
             if (TRACE) {
-                System.err.printf("writing REFERENCES INDEX [%s] with %d entries\n", INDEX_KEY, obj2refs.size()); // NOI18N
+                System.err.printf("writing REFERENCES INDEX [%s] with %d entries\n", KeyHolder.INDEX_KEY, obj2refs.size()); // NOI18N
             }
             out.writeInt(obj2refs.size());
             for (Map.Entry<CsmUID<?>, Collection<FileComponentReferences.ReferenceImpl>> entry : obj2refs.entrySet()) {

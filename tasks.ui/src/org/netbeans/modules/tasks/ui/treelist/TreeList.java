@@ -342,8 +342,11 @@ public class TreeList extends JList {
         public void actionPerformed(ActionEvent ae) {
             TreeListNode node = getSelectedTreeListNode();
 
-            if (null != node && node.isExpandable()) {
+            if (null != node && node.isExpandable() && node.isExpanded()) {
                 node.setExpanded(false);
+            } else if (node != null && node.getParent() != null){
+                node.getParent().setExpanded(false);
+                setSelectedValue(node.getParent(), true);
             }
         }
 
@@ -351,7 +354,7 @@ public class TreeList extends JList {
         public boolean isEnabled() {
             TreeListNode node = getSelectedTreeListNode();
 
-            return null != node && node.isExpandable();
+            return null != node;
         }
     }
 

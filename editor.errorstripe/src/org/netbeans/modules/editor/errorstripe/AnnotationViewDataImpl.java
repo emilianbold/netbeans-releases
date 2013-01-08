@@ -614,7 +614,7 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
                         }
 
                         if (annotations.getNumberOfAnnotations(line) > 1) {
-                            AnnotationDesc[] descriptions = annotations.getPasiveAnnotations(line);
+                            AnnotationDesc[] descriptions = annotations.getPassiveAnnotationsForLine(line);
 
                             if (descriptions != null) {
                                 remaining.addAll(Arrays.asList(descriptions));

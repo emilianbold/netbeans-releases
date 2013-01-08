@@ -204,6 +204,9 @@ public class PanelModuleDetectionVisual extends JPanel {
     
     private void addModuleToTable(final File moduleF) {
         String relPath = PropertyUtils.relativizeFile(eaLocation, moduleF);
+        if (relPath == null) {
+            return;
+        }
         for (Vector<String> module : modules) {
             if (relPath.equals(module.get(REL_PATH_INDEX))) {
                 // already added
@@ -360,8 +363,8 @@ public class PanelModuleDetectionVisual extends JPanel {
     private class ModuleTypeEditor extends JComboBox implements TableCellEditor {
         private static final long serialVersionUID = 1L;
         
-        protected EventListenerList listenerList = new EventListenerList();
-        protected ChangeEvent changeEvent = new ChangeEvent(this);
+        private EventListenerList myListenerList = new EventListenerList();
+        private ChangeEvent changeEvent = new ChangeEvent(this);
         
         ModuleTypeEditor() {
             for (ModuleType type : ModuleType.values()) {
@@ -374,17 +377,19 @@ public class PanelModuleDetectionVisual extends JPanel {
             });
         }
         
+        @Override
         public void addCellEditorListener(CellEditorListener listener) {
-            listenerList.add(CellEditorListener.class, listener);
+            myListenerList.add(CellEditorListener.class, listener);
         }
         
+        @Override
         public void removeCellEditorListener(CellEditorListener listener) {
-            listenerList.remove(CellEditorListener.class, listener);
+            myListenerList.remove(CellEditorListener.class, listener);
         }
         
         protected void fireEditingStopped() {
             CellEditorListener listener;
-            Object[] listeners = listenerList.getListenerList();
+            Object[] listeners = myListenerList.getListenerList();
             for (int i = 0; i < listeners.length; i++) {
                 if (listeners[i] == CellEditorListener.class) {
                     listener = (CellEditorListener) listeners[i + 1];
@@ -395,7 +400,7 @@ public class PanelModuleDetectionVisual extends JPanel {
         
         protected void fireEditingCanceled() {
             CellEditorListener listener;
-            Object[] listeners = listenerList.getListenerList();
+            Object[] listeners = myListenerList.getListenerList();
             for (int i = 0; i < listeners.length; i++) {
                 if (listeners[i] == CellEditorListener.class) {
                     listener = (CellEditorListener) listeners[i + 1];
@@ -404,27 +409,33 @@ public class PanelModuleDetectionVisual extends JPanel {
             }
         }
         
+        @Override
         public void cancelCellEditing() {
             fireEditingCanceled();
         }
         
+        @Override
         public boolean stopCellEditing() {
             fireEditingStopped();
             return true;
         }
         
+        @Override
         public boolean isCellEditable(EventObject event) {
             return true;
         }
         
+        @Override
         public boolean shouldSelectCell(EventObject event) {
             return true;
         }
         
+        @Override
         public Object getCellEditorValue() {
             return getSelectedItem();
         }
         
+        @Override
         public Component getTableCellEditorComponent(JTable table, Object value,
                 boolean isSelected, int row, int column) {
             String moduleType = (String) value;

@@ -116,7 +116,6 @@ public class TestJQuery extends GeneralJavaScript {
         eo.setCaretPositionToLine(1);
         type(eo, "$(\"\").");
 
-        eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(100);
 
         CompletionInfo completion = getCompletion();
@@ -126,7 +125,6 @@ public class TestJQuery extends GeneralJavaScript {
         completion.listItself.hideAll();
 
         type(eo, "add().");
-        eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(100);
 
         completion = getCompletion();
