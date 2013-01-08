@@ -203,4 +203,8 @@ public class HintsTest extends PHPHintsTestBase {
         checkHintsInStartEndFile(new UnreachableStatementHint(), "testUnreachableStatementHint_02.php");
     }
 
+    public void testParentConstructorCallHint() throws Exception {
+        checkHintsInStartEndFile(new ParentConstructorCallHint(), "testParentConstructorCallHint.php");
+    }
+
 }
