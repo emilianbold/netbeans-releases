@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+    <bean id="jacksonObjectMapper" class="com.tasktop.c2c.server.common.service.JacksonJsonObjectMapper"/>
+    <bean id="jacksonMessageConverter"
+              class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter">
+        <property name="objectMapper" ref="jacksonObjectMapper"/>
+        <property name="supportedMediaTypes">
+            <list>
+                <bean class="org.springframework.http.MediaType" >
+                    <constructor-arg value="application"/>
+                    <constructor-arg value="json"/>
+                </bean>
+                <bean class="org.springframework.http.MediaType" >
+                    <constructor-arg value="application"/>
+                    <constructor-arg value="javascript"/>
+                </bean>
+            </list>
+        </property>
+    </bean>
+</beans>

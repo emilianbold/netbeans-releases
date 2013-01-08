@@ -88,6 +88,8 @@ public class MylynUtils {
             logCredentials(repository, httpUser, httpPassword, "Setting http credentials: ");   // NOI18N
             authenticationCredentials = new AuthenticationCredentials(httpUser, new String(httpPassword));
             repository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
+        } else {
+            repository.setCredentials(AuthenticationType.HTTP, null, false);
         }
 
         URI uri = null;

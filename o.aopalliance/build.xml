@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="o.aopalliance" default="netbeans" basedir=".">
+    <import file="../nbbuild/templates/projectized.xml"/>
+    <target name="jar">
+        <jar jarfile="${cluster}/${module.jar}">
+            <zipfileset src="external/org.aopalliance-1.0.0.jar"/>
+            <manifest>
+                <attribute name="Bundle-SymbolicName" value="org.aopalliance"/>
+                <attribute name="Bundle-Version" value="1.0.0"/>
+                <attribute name="Export-Package" value="org.aopalliance.aop;version=&quot;1.0.0&quot;,org.aopalliance.intercept;version=&quot;1.0.0&quot;"/>
+            </manifest>
+        </jar>
+    </target>
+</project>

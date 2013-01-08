@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
+            <code-name-base>org.springframework.aop</code-name-base>
+            <module-dependencies>
+            </module-dependencies>
+            <public-packages/>
+            <class-path-extension>
+                <runtime-relative-path>org-springframework-aop.jar</runtime-relative-path>
+                <binary-origin>external/org.springframework.aop-3.1.1.RELEASE.jar</binary-origin>
+            </class-path-extension>
+        </data>
+    </configuration>
+</project>

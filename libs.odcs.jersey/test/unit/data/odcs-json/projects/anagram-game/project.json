@@ -1,0 +1,11 @@
+{
+    "name" : "Anagram game",
+    "organization" : null,
+    "identifier" : "anagram-game",    
+    "description" : "project description",
+    "numWatchers" : null,
+    "numCommiters" : null,
+    "accessibility" : "PUBLIC",
+    "projectPreferences" : null,
+    "id" : 1234
+}
