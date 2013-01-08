@@ -286,15 +286,17 @@ public abstract class AbstractOffsetGapList<E> extends GapList<E> {
         // check offset of the element at (index - 1)
         if (index > 0 && elementOffset(index - 1) > originalOffset) {
             // can't insert the element at this index, the list must remain sorted
+            String log = "[" + (index - 1) + "] = " + elementOffset(index - 1) + " > {" + index + "} = "+ originalOffset;
             detachElement(element);
-            throw new IllegalStateException("Can't insert element at index: " + index + "[" + (index - 1) + "] = " + elementOffset(index - 1) + " > {" + index + "} = "+ originalOffset); //NOI18N
+            throw new IllegalStateException("Can't insert element at index: " + index + log); //NOI18N
         }
 
         // check offset of the element at (index + 1)
         if (index + 1 < size() && elementOffset(index + 1) < originalOffset) {
             // can't insert the element at this index, the list must remain sorted
+            String log = "[" + (index + 1) + "] = " + elementOffset(index + 1) + " < {" + index + "} = "+ originalOffset;
             detachElement(element);
-            throw new IllegalStateException("Can't insert element at index: " + index + "[" + (index + 1) + "] = " + elementOffset(index + 1) + " < {" + index + "} = "+ originalOffset); //NOI18N
+            throw new IllegalStateException("Can't insert element at index: " + index + log); //NOI18N
         }
         
         // the index is valid for the element
