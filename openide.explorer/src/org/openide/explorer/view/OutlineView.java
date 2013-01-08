@@ -1417,11 +1417,18 @@ public class OutlineView extends JScrollPane {
             removeDefaultCutCopyPaste(getInputMap(WHEN_FOCUSED));
             removeDefaultCutCopyPaste(getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT));
             
-            KeyStroke ctrlSpace = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, KeyEvent.CTRL_DOWN_MASK, false);
+            KeyStroke ctrlSpace;
+            if (Utilities.isMac()) {
+                ctrlSpace = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, KeyEvent.META_MASK, false);
+            } else {
+                ctrlSpace = KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, KeyEvent.CTRL_DOWN_MASK, false);
+            }
             Object ctrlSpaceActionBind = getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).get(ctrlSpace);
-            getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(ctrlSpace, "invokeCustomEditor"); //NOI18N
-            Action invokeCustomEditorAction = new InvokeCustomEditorAction(ctrlSpaceActionBind);
-            getActionMap().put("invokeCustomEditor", invokeCustomEditorAction);
+            if (ctrlSpaceActionBind != null) {
+                getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(ctrlSpace, "invokeCustomEditor"); //NOI18N
+                Action invokeCustomEditorAction = new InvokeCustomEditorAction(ctrlSpaceActionBind);
+                getActionMap().put("invokeCustomEditor", invokeCustomEditorAction);
+            }
         }
         
         private void removeDefaultCutCopyPaste(InputMap map) {
