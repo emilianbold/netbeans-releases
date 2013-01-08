@@ -763,7 +763,8 @@ public final class VeryPretty extends JCTree.Visitor {
             boolean oldPrintingMethodParams = printingMethodParams;
             printingMethodParams = true;
             wrapTrees(tree.params, cs.wrapMethodParams(), cs.alignMultilineMethodParams()
-                    ? out.col : out.leftMargin + cs.getContinuationIndentSize());
+                    ? out.col : out.leftMargin + cs.getContinuationIndentSize(),
+                      true);
             printingMethodParams = oldPrintingMethodParams;
             if (cs.spaceWithinMethodDeclParens() && tree.params.nonEmpty())
                 needSpace();
@@ -771,7 +772,8 @@ public final class VeryPretty extends JCTree.Visitor {
             if (tree.thrown.nonEmpty()) {
                 wrap("throws ", cs.wrapThrowsKeyword());
                 wrapTrees(tree.thrown, cs.wrapThrowsList(), cs.alignMultilineThrows()
-                        ? out.col : out.leftMargin + cs.getContinuationIndentSize());
+                        ? out.col : out.leftMargin + cs.getContinuationIndentSize(),
+                          true);
             }
             if (tree.body != null) {
                 printBlock(tree.body, tree.body.stats, cs.getMethodDeclBracePlacement(), cs.spaceBeforeMethodDeclLeftBrace());
@@ -2346,15 +2348,22 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     private <T extends JCTree> void wrapTrees(List<T> trees, WrapStyle wrapStyle, int wrapIndent) {
+        wrapTrees(trees, wrapStyle, wrapIndent, false); //TODO: false for "compatibility", with the previous release, but maybe should be true for everyone?
+    }
+    
+    private <T extends JCTree> void wrapTrees(List<T> trees, WrapStyle wrapStyle, int wrapIndent, boolean wrapFirst) {
         boolean first = true;
         for (List < T > l = trees; l.nonEmpty(); l = l.tail) {
             if (!first) {
                 print(cs.spaceBeforeComma() ? " ," : ",");
+            }
+            
+            if (!first || wrapFirst) {
                 switch(wrapStyle) {
                 case WRAP_IF_LONG:
                     int rm = cs.getRightMargin();
                     if (widthEstimator.estimateWidth(l.head, rm - out.col) + out.col + 1 <= rm) {
-                        if (cs.spaceAfterComma())
+                        if (cs.spaceAfterComma() && !first)
                             print(' ');
                         break;
                     }
@@ -2363,7 +2372,7 @@ public final class VeryPretty extends JCTree.Visitor {
                     toColExactly(wrapIndent);
                     break;
                 case WRAP_NEVER:
-                    if (cs.spaceAfterComma())
+                    if (cs.spaceAfterComma() && !first)
                         print(' ');
                     break;
                 }

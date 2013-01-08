@@ -47,8 +47,11 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionStatementTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.SourcePositions;
 import java.io.File;
 import java.io.IOException;
 import java.util.EnumSet;
@@ -62,6 +65,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CodeStyle.WrapStyle;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -135,8 +139,52 @@ public class WrappingTest extends GeneratorTestMDRCompat {
         }, FmtOptions.wrapAssignOps, WrapStyle.WRAP_IF_LONG.name());
     }
     
+    public void testWrapMethod1() throws Exception {
+        String code = "package hierbas.del.litoral;\n\n" +
+            "import java.util.concurrent.atomic.AtomicBoolean;\n\n" +
+            "public class Test {\n" +
+            "}\n";
+        runWrappingTest(code, new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                ExpressionTree parsed = workingCopy.getTreeUtilities().parseExpression("new Object() { private void test(int a, int b, int c) throws java.io.FileNotFound, java.net.MalformedURLException { } }", new SourcePositions[1]);
+                parsed = GeneratorUtilities.get(workingCopy).importFQNs(parsed);
+                MethodTree method = (MethodTree) ((NewClassTree) parsed).getClassBody().getMembers().get(0);
+                workingCopy.rewrite(clazz, make.addClassMember(clazz, method));
+            }
+        },
+        FmtOptions.wrapMethodParams, WrapStyle.WRAP_IF_LONG.name(),
+        FmtOptions.wrapThrowsKeyword, WrapStyle.WRAP_IF_LONG.name(),
+        FmtOptions.wrapThrowsList, WrapStyle.WRAP_IF_LONG.name());
+    }
+    
+    public void testWrapMethod2() throws Exception {
+        String code = "package hierbas.del.litoral;\n\n" +
+            "import java.util.concurrent.atomic.AtomicBoolean;\n\n" +
+            "public class Test {\n" +
+            "}\n";
+        runWrappingTest(code, new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                ExpressionTree parsed = workingCopy.getTreeUtilities().parseExpression("new Object() { private void test(int a, int b, int c) throws java.io.FileNotFoundException, java.net.MalformedURLException { } }", new SourcePositions[1]);
+                parsed = GeneratorUtilities.get(workingCopy).importFQNs(parsed);
+                MethodTree method = (MethodTree) ((NewClassTree) parsed).getClassBody().getMembers().get(0);
+                workingCopy.rewrite(clazz, make.addClassMember(clazz, method));
+            }
+        },
+        FmtOptions.wrapMethodParams, WrapStyle.WRAP_ALWAYS.name(),
+        FmtOptions.wrapThrowsKeyword, WrapStyle.WRAP_ALWAYS.name(),
+        FmtOptions.wrapThrowsList, WrapStyle.WRAP_ALWAYS.name());
+    }
+    
     private void runWrappingTest(String code, Task<WorkingCopy> task, String... settings) throws Exception {
-        Map<String, String> originalSettings = alterSettings(FmtOptions.blankLinesAfterClassHeader, "0");
+        Map<String, String> originalSettings = alterSettings(FmtOptions.blankLinesAfterClassHeader, "0", FmtOptions.blankLinesBeforeMethods, "0");
         
         alterSettings(settings);
         
