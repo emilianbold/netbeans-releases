@@ -42,7 +42,6 @@
 package org.netbeans.modules.php.editor.codegen;
 
 import java.util.List;
-import org.netbeans.modules.php.editor.codegen.CGSGenerator.GenType.SinglePropertyMethodCreator;
 
 /**
  *
