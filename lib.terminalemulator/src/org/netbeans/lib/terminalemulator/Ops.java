@@ -117,4 +117,7 @@ interface Ops {
     public void op_time(boolean refresh);	// dump time into output &
 						// control refreshEnabled prop
     public void op_hyperlink(String url, String text);
+
+    public void logUnrecognizedSequence(String toString);
+    public void logCompletedSequence(String toString);
 }

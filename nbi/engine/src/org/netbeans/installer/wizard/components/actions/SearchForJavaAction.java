@@ -48,23 +48,18 @@ import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
-import org.netbeans.installer.utils.helper.ErrorLevel;
-import org.netbeans.installer.utils.ErrorManager;
-import org.netbeans.installer.utils.FileUtils;
-import org.netbeans.installer.utils.LogManager;
-import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.StringUtils;
-import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.*;
 import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.applications.JavaUtils.JavaInfo;
 import org.netbeans.installer.utils.exceptions.NativeException;
+import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.utils.system.WindowsNativeUtils;
 import org.netbeans.installer.utils.system.windows.WindowsRegistry;
-import static org.netbeans.installer.utils.system.windows.WindowsRegistry.HKLM;
 import static org.netbeans.installer.utils.system.windows.WindowsRegistry.HKCU;
+import static org.netbeans.installer.utils.system.windows.WindowsRegistry.HKLM;
 import org.netbeans.installer.wizard.components.WizardAction;
 import org.netbeans.installer.wizard.components.panels.JdkLocationPanel;
 
@@ -83,9 +78,11 @@ public class SearchForJavaAction extends WizardAction {
         setProperty(DESCRIPTION_PROPERTY, DEFAULT_DESCRIPTION);
     }
     
+    @Override
     public void execute() {        
         execute(new Progress());
     }
+    
     public void execute(Progress progress) {
         LogManager.logEntry("search for all java locations");
         getWizardUi().setProgress(progress);
@@ -113,10 +110,12 @@ public class SearchForJavaAction extends WizardAction {
         SystemUtils.sleep(200);
         LogManager.logExit("... end of search for all java locations");
     }
+    
     @Override
     public boolean canExecuteForward() {
-        return javaLocations.size() == 0;
+        return javaLocations.isEmpty();
     }
+    
      // private //////////////////////////////////////////////////////////////////////
     private static String getLabel(File javaHome) {
         JavaInfo javaInfo = JavaUtils.getInfo(javaHome);
@@ -203,10 +202,11 @@ public class SearchForJavaAction extends WizardAction {
         }
         
     }
+    
     public static void sortJavaLocations(){
         // sort the found java installations:
         //   1) by final/non-final
-        //   2) by version descending
+        //   2) by version descending (6 has priority over 7u9 and older)
         //   3) by path acending
         //   4) by vendor descending (so Sun comes first, hehe)
         for (int i = 0; i < javaLocations.size(); i++) {
@@ -219,27 +219,36 @@ public class SearchForJavaAction extends WizardAction {
                 
                 JavaInfo info1 = JavaUtils.getInfo(javaLocations.get(j));
                 JavaInfo info2 = JavaUtils.getInfo(javaLocations.get(j - 1));
-                
+                                               
                 if (info1.isNonFinal() == info2.isNonFinal()) {
-                    if (info1.getVersion().equals(info2.getVersion())) {
-                        if (file1.getPath().compareTo(file2.getPath()) == 0) {
-                            if (info1.getVendor().compareTo(info2.getVendor()) == 0) {
-                                continue;
-                            } else if (info1.getVendor().compareTo(info2.getVendor()) < 0) {
+                    if (JavaUtils.isRecommended(info1.getVersion()) == JavaUtils.isRecommended(info2.getVersion())) {                        
+                        if (info1.getVersion().equals(info2.getVersion())) {
+                            // better than compare directly archs is to compare if archs are both 64bit
+                            if (info1.getArch().endsWith("64") == info2.getArch().endsWith("64")) {                                                            
+                                if (file1.getPath().compareTo(file2.getPath()) == 0) {
+                                    if (info1.getVendor().compareTo(info2.getVendor()) == 0) {
+                                        continue;
+                                    } else if (info1.getVendor().compareTo(info2.getVendor()) < 0) {
+                                        switchNeighbours(j, file2, file1, label2, label1);
+                                    }
+                                } else if (file1.getPath().length() < file2.getPath().length()) {
+                                    switchNeighbours(j, file2, file1, label2, label1);
+                                }
+                            } else if (info1.getArch().endsWith("64") && !info2.getArch().endsWith("64")) {
                                 switchNeighbours(j, file2, file1, label2, label1);
                             }
-                        } else if (file1.getPath().length() < file2.getPath().length()) {
+                        } else if (info1.getVersion().newerThan(info2.getVersion())) {
                             switchNeighbours(j, file2, file1, label2, label1);
                         }
-                    } else if (info1.getVersion().newerThan(info2.getVersion())) {
+                    } else if (JavaUtils.isRecommended(info1.getVersion()) && !JavaUtils.isRecommended(info2.getVersion())) {
                         switchNeighbours(j, file2, file1, label2, label1);
-                    }
+                    }                    
                 } else if (!info1.isNonFinal() && info2.isNonFinal()) {
                     switchNeighbours(j, file2, file1, label2, label1);
                 }
             }
         }        
-    }
+    }        
 
     private static void switchNeighbours (int j, File file2, File file1, String label2, String label1) {
         javaLocations.set(j, file2);
@@ -265,6 +274,7 @@ public class SearchForJavaAction extends WizardAction {
             javaLabels.add(getLabel(javaHome));
         }
     }
+    
     public static List <File> getJavaLocations() {
         return javaLocations;
     }
@@ -328,6 +338,7 @@ public class SearchForJavaAction extends WizardAction {
                 final boolean isWindows = SystemUtils.isWindows();
                 final boolean isSolaris = SystemUtils.isSolaris();
                 final File[] children = parent.listFiles(new FileFilter() {
+                    @Override
                     public boolean accept(final File pathname) {
                         return pathname.isDirectory() && 
                                 (!isSolaris || !pathname.equals(new File("/export/sybase"))) && //workaround for #143292
@@ -463,6 +474,7 @@ public class SearchForJavaAction extends WizardAction {
             }
         }
     }
+        
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
     public static final String DEFAULT_TITLE =
@@ -536,8 +548,7 @@ public class SearchForJavaAction extends WizardAction {
         "/usr/java/jdk", // NOI18N
         "/usr/j2se", // NOI18N
         "/usr/j2sdk", // NOI18N
-        
-        
+               
         "/usr/local", // NOI18N
         "/usr/local/jdk", // NOI18N
         "/usr/local/jdk/instances", // NOI18N

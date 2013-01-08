@@ -1131,7 +1131,7 @@ public class Css3ParserTest extends CssTestBase {
         String source = ".box:nth-child(4n - 2) { } ";
         CssParserResult result = TestUtil.parse(source);
 
-        NodeUtil.dumpTree(result.getParseTree());
+//        NodeUtil.dumpTree(result.getParseTree());
         assertEquals(0, result.getDiagnostics().size());
         
     }
@@ -1145,7 +1145,7 @@ public class Css3ParserTest extends CssTestBase {
                 + "}";
 
         CssParserResult result = TestUtil.parse(source);
-        NodeUtil.dumpTree(result.getParseTree());
+//        NodeUtil.dumpTree(result.getParseTree());
         
         assertEquals(0, result.getDiagnostics().size());
         
@@ -1155,6 +1155,20 @@ public class Css3ParserTest extends CssTestBase {
         
         Node uri = NodeUtil.getChildTokenNode(term, CssTokenId.URI);
         assertNotNull(uri);
+        
+    }
+    
+     //Bug 223809 - Incorrect CSS syntax error highlighting when @-ms-viewport rule is added 
+    public void testVendorAtRuleInMedia() throws ParseException, BadLocationException {
+        String source = "@media screen and (max-width: 400px) {"
+                + "  @-ms-viewport { width: 320px; }"
+                + "  @-o-viewport {}"
+                + "}";
+        
+        CssParserResult result = TestUtil.parse(source);
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertEquals(0, result.getDiagnostics().size());
         
     }
 }

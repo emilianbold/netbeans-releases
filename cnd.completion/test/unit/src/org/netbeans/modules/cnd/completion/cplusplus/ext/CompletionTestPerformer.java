@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.completion.cplusplus.ext;
 import java.beans.PropertyVetoException;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
@@ -148,9 +149,10 @@ public class CompletionTestPerformer {
         CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false);
         assert csmFile != null : "Must be csmFile for document " + doc;        
         CsmCompletionQuery query = CsmCompletionProvider.getCompletionQuery(csmFile, this.queryScope, null);
-        CsmCompletionQuery.CsmCompletionResult res = query.query(editor, doc, caretOffset, tooltip, !unsorted, true, tooltip);
+        AtomicReference<CsmCompletionQuery.CsmCompletionResult> res = new AtomicReference<CsmCompletionQuery.CsmCompletionResult>();;
+        res.set(query.query(editor, doc, caretOffset, tooltip, !unsorted, true, tooltip));
         
-        CompletionItem[] array =  res == null ? new CompletionItem[0] : res.getItems().toArray(new CompletionItem[res.getItems().size()]);
+        CompletionItem[] array =  res.get() == null ? new CompletionItem[0] : res.get().getItems().toArray(new CompletionItem[res.get().getItems().size()]);
         assert array != null;
         return array;
     }

@@ -185,6 +185,7 @@ public class WSCompletionProvider implements CompletionProvider {
                 case ASSIGNMENT:
                     createAssignmentResults(controller,env);
                     break;
+                default:
             }
         }
         
@@ -248,7 +249,7 @@ public class WSCompletionProvider implements CompletionProvider {
                             if (var.getKind() == Kind.IDENTIFIER) {
                                 Name name = ((IdentifierTree)var).getName();
                                 if (!name.contentEquals("wsdlLocation") ||   //NOI18N 
-                                        jaxWsSupport!=null) 
+                                        jaxWsSupport==null) 
                                 {
                                     return;
                                 }
@@ -334,8 +335,7 @@ public class WSCompletionProvider implements CompletionProvider {
                                 hasErrors = true;
                                 return;
                             }
-                            if ( webParamEl!=null && controller.getTypes().
-                                            isSameType(el,webParamEl.asType())) 
+                            if ( controller.getTypes().isSameType(el,webParamEl.asType())) 
                             {
                                 for (String mode : BINDING_TYPES) {
                                     if (mode.startsWith(env.getPrefix())){ 
@@ -351,7 +351,7 @@ public class WSCompletionProvider implements CompletionProvider {
             }
         }
 
-        private class Env {
+        private static class Env {
             private int offset;
             private String prefix;
             private TreePath path;

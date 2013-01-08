@@ -272,8 +272,11 @@ public final class ProxyFileManager implements JavaFileManager {
                 throw new IllegalArgumentException("The apt-source-root requires folder.");    //NOI18N
             }
             final String sib = remains.next();
-            if(sib.length() != 0) {                
-                siblings.push(asURL(sib));
+            if(sib.length() != 0) {
+                final URL sibling = asURL(sib);
+                final boolean inSourceRoot =
+                    processorGeneratedFiles.findSibling(Collections.singleton(sibling)) != null;
+                siblings.push(sibling, inSourceRoot);
             } else {
                 siblings.pop();
             }
@@ -283,10 +286,12 @@ public final class ProxyFileManager implements JavaFileManager {
             if (remains.hasNext()) {
                 final Collection<? extends URL> urls = asURLs(remains);
                 URL sibling = processorGeneratedFiles.findSibling(urls);
+                boolean inSourceRoot = true;
                 if (sibling == null) {
                     sibling = siblings.getProvider().getSibling();
+                    inSourceRoot = siblings.getProvider().isInSourceRoot();
                 }
-                siblings.push(sibling);
+                siblings.push(sibling, inSourceRoot);
                 if (LOG.isLoggable(Level.INFO) && isSourceElement && urls.size() > 1) {
                     final StringBuilder sb = new StringBuilder();
                     for (URL url : urls) {
@@ -403,9 +408,9 @@ public final class ProxyFileManager implements JavaFileManager {
     }
 
     @SuppressWarnings("unchecked")
-    @NonNull
+    @CheckForNull
     private <T extends javax.tools.FileObject> T mark(
-            @NonNull final T result,
+            @NullAllowed final T result,
             @NonNull final JavaFileManager.Location l) throws MalformedURLException {
         ProcessorGenerated.Type type = null;
         if (l == StandardLocation.CLASS_OUTPUT) {
@@ -413,9 +418,9 @@ public final class ProxyFileManager implements JavaFileManager {
         } else if (l == StandardLocation.SOURCE_OUTPUT) {
             type = ProcessorGenerated.Type.SOURCE;
         }
-        final boolean hasSibling = siblings.getProvider().hasSibling();
-        final boolean write = processorGeneratedFiles.canWrite() || !hasSibling;
-        if (result != null && hasSibling) {
+        if (result != null &&
+            siblings.getProvider().hasSibling() &&
+            siblings.getProvider().isInSourceRoot()) {
             if (type == ProcessorGenerated.Type.SOURCE) {
                 processorGeneratedFiles.register(
                     siblings.getProvider().getSibling(),
@@ -433,7 +438,11 @@ public final class ProxyFileManager implements JavaFileManager {
                 }
             }
         }
-        return write ? result : (T) FileManagerTransaction.nullFileObject((InferableJavaFileObject)result);    //safe - NullFileObject subclass of both JFO and FO.
+        return result == null ?
+                null :
+                processorGeneratedFiles.canWrite() || !siblings.getProvider().hasSibling() ?
+                    result :
+                    (T) FileManagerTransaction.nullFileObject((InferableJavaFileObject)result);    //safe - NullFileObject subclass of both JFO and FO.
     }
 
     private JavaFileManager[] getFileManagers (final Location location) {

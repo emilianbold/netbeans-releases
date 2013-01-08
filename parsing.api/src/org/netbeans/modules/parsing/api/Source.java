@@ -49,6 +49,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -236,6 +237,20 @@ public final class Source {
      *   or <code>null</code> if no document has been loaded yet.
      */
     public Document getDocument (boolean forceOpen) {
+        if (preferFile.get()) {
+            if (!forceOpen) {
+                return null;
+            } else {
+                boolean ae = false;
+                assert  ae = true;
+                if (ae) {
+                    LOG.log(
+                       Level.INFO,
+                       "Calling Source.getDocument(forceOpen=true) for Source preferring files -> possible performance problem {0}",    //NOI18N
+                       Arrays.asList(Thread.currentThread().getStackTrace()));
+                }
+            }
+        }
         if (document != null) return document;
         EditorCookie ec = null;
 
@@ -293,7 +308,7 @@ public final class Source {
     public Snapshot createSnapshot () {
         final CharSequence [] text = new CharSequence [] {""}; //NOI18N
         final int [][] lineStartOffsets = new int [][] { new int [] { 0 } };
-        final Document doc = preferFile.get() ? null : getDocument (false);
+        final Document doc = getDocument (false);
         if (LOG.isLoggable(Level.FINER)) {
             LOG.log(Level.FINER, null, new Throwable("Creating snapshot: doc=" + doc + ", file=" + fileObject)); //NOI18N
         } else if (LOG.isLoggable(Level.FINE)) {

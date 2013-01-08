@@ -55,6 +55,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitException;
@@ -264,11 +265,14 @@ public final class Git {
     }
 
     /**
-     * Refreshes cached modification timestamp of the repository's metadata
-     * @param repository owner of the metadata to refresh
+     * Runs a given callable and disable listening for external repository events for the time the callable is running.
+     * Refreshes cached modification timestamp of metadata for the given git repository after.
+     * @param callable code to run
+     * @param repository
+     * @param commandName name of the git command if available
      */
-    public void refreshWorkingCopyTimestamp (File repository) {
-        getVCSInterceptor().refreshMetadataTimestamp(repository);
+    public <T> T runWithoutExternalEvents(File repository, String commandName, Callable<T> callable) throws Exception {
+        return getVCSInterceptor().runWithoutExternalEvents(repository, commandName, callable);
     }
 
     /**

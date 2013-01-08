@@ -82,7 +82,7 @@ public class OccurrencesSupport {
                     return occurrence;
                 }
             }
-            if (kind.isFunction()) {
+            if (kind.isFunction() || kind == JsElement.Kind.CATCH_BLOCK) {
                 for(JsObject param : ((JsFunction)object).getParameters()) {
                  result = findOccurrence(param, offset);
                     if (result != null) {
@@ -120,7 +120,7 @@ public class OccurrencesSupport {
 
             result = new OccurrenceImpl(object.getDeclarationName().getOffsetRange(), object);
         }
-        if (result == null && kind.isFunction()) {
+        if (result == null && (kind.isFunction() || kind == JsElement.Kind.CATCH_BLOCK)) {
              for(JsObject param : ((JsFunction)object).getParameters()) {
                  if (param.getDeclarationName().getOffsetRange().containsInclusive(offset)) {
                      result = new OccurrenceImpl(param.getDeclarationName().getOffsetRange(), object);

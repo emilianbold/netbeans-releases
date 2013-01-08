@@ -1,12 +1,33 @@
+#223337
+org.netbeans.modules.project.ui.actions.ShortcutManager
+org.netbeans.modules.project.ui.problems.BrokenProjectNotifier
+org.netbeans.modules.project.uiapi.Utilities$ProjectGroupAccessor
+org.netbeans.api.project.ui.ProjectGroup
+org.netbeans.api.project.ui.ProjectGroup$AccessorImpl
+org.netbeans.modules.project.libraries.LibraryAccessor
+org.netbeans.api.project.libraries.Library
+org.netbeans.api.project.libraries.LibraryManager
+
+#223335
+org.netbeans.modules.maven.NbMavenProjectFactory
+
+#223333
+org.netbeans.modules.css.visual.CssCaretAwareSourceTask
+org.netbeans.modules.css.visual.CssStylesTCController
+org.netbeans.modules.css.visual.Installer
+org.netbeans.modules.css.visual.PageInspectorListener
+org.netbeans.modules.css.visual.RuleEditorPanel
+
 #OK on Nov 22, 2012, was #218044
 org.netbeans.modules.javascript2.editor.ModuleInstaller
 
+#OK on Nov 22, 2012, was #210323 
+org.netbeans.modules.openide.nodes.NodesRegistrationSupport$BeanInfoRegistration
+
 #OK on Oct 29, 2012, was #220904
-org.netbeans.modules.openide.nodes.PERegistrationSupport
-org.netbeans.modules.openide.nodes.PERegistrationSupport$ClassReg
-org.netbeans.modules.openide.nodes.PERegistrationSupport$PEClassRegistration
-org.netbeans.modules.openide.nodes.PERegistrationSupport$PEPackageRegistration
-org.netbeans.modules.openide.nodes.PERegistrationSupport$PkgReg
+org.netbeans.modules.openide.nodes.NodesRegistrationSupport
+org.netbeans.modules.openide.nodes.NodesRegistrationSupport$PEClassRegistration
+org.netbeans.modules.openide.nodes.NodesRegistrationSupport$PEPackageRegistration
 
 #OK on Oct 31, 2012, needed because of enabled logging due to #220899
 org.eclipse.core.runtime.internal.adaptor.EclipseLogFactory
@@ -1015,6 +1036,9 @@ javax.accessibility.AccessibleSelection
 javax.accessibility.AccessibleValue
 javax.crypto.SecretKey
 javax.enterprise.deploy.shared.ModuleType
+javax.enterprise.deploy.shared.factories.DeploymentFactoryManager
+javax.enterprise.deploy.spi.DeploymentManager
+javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException
 javax.enterprise.deploy.spi.factories.DeploymentFactory
 javax.help.HelpSet
 javax.help.HelpSetException
@@ -1321,10 +1345,16 @@ org.ini4j.IniParser
 org.ini4j.IniParser$1XML2Ini
 org.ini4j.InvalidIniFormatException
 org.ini4j.ServiceFinder
+org.jdesktop.beans.AbstractBean
 org.jdesktop.layout.GroupLayout$Group
 org.jdesktop.layout.GroupLayout$ParallelGroup
 org.jdesktop.layout.GroupLayout$SequentialGroup
 org.jdesktop.layout.GroupLayout$Spring
+org.jdesktop.swingx.painter.AbstractPainter
+org.jdesktop.swingx.painter.AbstractPainter$Interpolation
+org.jdesktop.swingx.painter.BusyPainter
+org.jdesktop.swingx.painter.BusyPainter$Direction
+org.jdesktop.swingx.painter.Painter
 org.netbeans.CLIHandler
 org.netbeans.CLIHandler$Args
 org.netbeans.DuplicateException
@@ -5685,6 +5715,9 @@ sun.net.NetProperties
 sun.reflect.ConstructorAccessorImpl
 sun.reflect.MethodAccessorImpl
 javax.swing.plaf.ProgressBarUI
+javax.swing.plaf.ComboBoxUI
+javax.swing.text.DocumentFilter
+javax.swing.text.DocumentFilter$FilterBypass
 org.netbeans.core.NbKeymap$Binding
 org.netbeans.core.execution.SecMan$PrivilegedCheck
 org.netbeans.core.startup.ModuleList$ReadInitial

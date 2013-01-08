@@ -666,7 +666,10 @@ public class EjbJarProjectGenerator {
                                 EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                                 String finalPlatformName = platformName;
                                 if (finalPlatformName == null) {
-                                    finalPlatformName = PreferredProjectPlatform.getPreferredPlatform(JavaPlatform.getDefault().getSpecification().getName()).getDisplayName();
+                                    JavaPlatform platform = PreferredProjectPlatform.getPreferredPlatform(JavaPlatform.getDefault().getSpecification().getName());
+                                    if (platform != null) {
+                                        finalPlatformName = platform.getDisplayName();
+                                    }
                                 }
 
                                 PlatformUiSupport.storePlatform(ep, updateHelper, EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, finalPlatformName, sourceLevel != null ? new SpecificationVersion(sourceLevel) : null);

@@ -114,7 +114,7 @@ final class LibraryStartVisualPanel extends NewTemplateVisualPanel {
                 try {
                     new JarFile(fil); // just checking whether the jar is valid
                 } catch (IOException exc) {
-                    setError(getMessage("MSG_Invalid_Library_Path"));
+                    setError(getMessage("MSG_Selected_File_Is_Not_A_JAR"));
                     return;
                 }
                 String badOnes = populateProjectData(getData(), text, false);

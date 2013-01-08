@@ -44,16 +44,21 @@ package org.netbeans.modules.mercurial;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.versioning.core.VersioningManager;
+import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -203,6 +208,185 @@ public class ExternalChangesTest extends AbstractHgTestCase {
         waitForRefresh();
         assertCacheStatus(modifiedFile, FileInformation.STATUS_VERSIONED_UPTODATE);
     }
+    
+    public void testExternalCommandLoggedNoChanges () throws Exception {
+        Mercurial.getInstance().getMercurialInterceptor().pingRepositoryRootFor(workdir);
+        FileChangeAdapter fca = new FileChangeAdapter();
+        workdirFO.addRecursiveListener(fca);
+        FileUtil.refreshFor(workdir);
+        Thread.sleep(11000); // some time for initial scans to finish and event logger to settle down
+        File hgFolder = new File(workdir, ".hg");
+        final File lockFile = new File(hgFolder, "wlock");
+        Logger GESTURES_LOG = Logger.getLogger("org.netbeans.ui.vcs");
+        ExternalCommandUsageHandler h = new ExternalCommandUsageHandler();
+        GESTURES_LOG.addHandler(h);
+        lockFile.createNewFile();
+        FileUtil.refreshFor(workdir);
+        pause(); 
+        lockFile.delete();
+        FileUtil.refreshFor(workdir);
+        
+        h.waitForEvent();
+        assertNotNull(h.event);
+        assertEquals(1, h.numberOfEvents);
+        assertTrue(h.event.time > 0);
+        assertEquals("HG", h.event.vcs);
+        assertEquals("UNKNOWN", h.event.command);
+        assertTrue(h.event.external);
+        assertEquals(Long.valueOf(0), h.event.modifications);
+        GESTURES_LOG.removeHandler(h);
+        workdirFO.removeRecursiveListener(fca);
+    }
+    
+    public void testExternalCommandLoggedChanges () throws Exception {
+        Mercurial.getInstance().getMercurialInterceptor().pingRepositoryRootFor(workdir);
+        FileChangeAdapter fca = new FileChangeAdapter();
+        workdirFO.addRecursiveListener(fca);
+        File toAdd = new File(modifiedFile.getParentFile(), "toAdd");
+        File toDelete = new File(modifiedFile.getParentFile(), "toDelete");
+        toDelete.createNewFile();
+        FileUtil.refreshFor(workdir);
+        Thread.sleep(11000); // some time for initial scans to finish and event logger to settle down
+        File hgFolder = new File(workdir, ".hg");
+        final File lockFile = new File(hgFolder, "wlock");
+        Logger GESTURES_LOG = Logger.getLogger("org.netbeans.ui.vcs");
+        ExternalCommandUsageHandler h = new ExternalCommandUsageHandler();
+        GESTURES_LOG.addHandler(h);
+        createLockFile(lockFile);
+        FileUtil.refreshFor(workdir);
+        // modification
+        write(modifiedFile, "testExternalCommandLoggedChanges");
+        // delete
+        toDelete.delete();
+        // create
+        toAdd.createNewFile();
+        FileUtil.refreshFor(workdir);
+        pause();        
+        lockFile.delete();
+        FileUtil.refreshFor(workdir);
+        
+        h.waitForEvent();
+        assertNotNull(h.event);
+        assertEquals(1, h.numberOfEvents);
+        assertTrue(h.event.time > 0);
+        assertEquals("HG", h.event.vcs);
+        assertEquals("UNKNOWN", h.event.command);
+        assertTrue(h.event.external);
+        assertEquals(Long.valueOf(3), h.event.modifications);
+        GESTURES_LOG.removeHandler(h);
+        workdirFO.removeRecursiveListener(fca);
+    }
+    
+    public void testInternalCommandLoggedChanges () throws Exception {
+        Mercurial.getInstance().getMercurialInterceptor().pingRepositoryRootFor(workdir);
+        FileChangeAdapter fca = new FileChangeAdapter();
+        workdirFO.addRecursiveListener(fca);
+        final File toAdd = new File(modifiedFile.getParentFile(), "toAdd");
+        final File toDelete = new File(modifiedFile.getParentFile(), "toDelete");
+        toDelete.createNewFile();
+        FileUtil.refreshFor(workdir);
+        Thread.sleep(11000); // some time for initial scans to finish and event logger to settle down
+        File hgFolder = new File(workdir, ".hg");
+        final File lockFile = new File(hgFolder, "wlock");
+        Logger GESTURES_LOG = Logger.getLogger("org.netbeans.ui.vcs");
+        ExternalCommandUsageHandler h = new ExternalCommandUsageHandler();
+        GESTURES_LOG.addHandler(h);
+        Mercurial.getInstance().runWithoutExternalEvents(workdir, "MY_COMMAND", new Callable<Void>() {
+            @Override
+            public Void call () throws Exception {
+                createLockFile(lockFile);
+                FileUtil.refreshFor(workdir);
+                // modification
+                write(modifiedFile, "testExternalCommandLoggedChanges");
+                // delete
+                toDelete.delete();
+                // create
+                toAdd.createNewFile();
+                FileUtil.refreshFor(workdir);
+                pause();
+                lockFile.delete();
+                FileUtil.refreshFor(workdir);
+                return null;
+            }
+        });
+        h.waitForEvent();
+        assertNotNull(h.event);
+        assertEquals(1, h.numberOfEvents);
+        assertTrue(h.event.time > 0);
+        assertEquals("HG", h.event.vcs);
+        assertFalse(h.event.external);
+        assertEquals("MY_COMMAND", h.event.command);
+        assertEquals(Long.valueOf(3), h.event.modifications);
+        GESTURES_LOG.removeHandler(h);
+        workdirFO.removeRecursiveListener(fca);
+    }
+    
+    public void testInternalCommandLoggedChangesAfterUnlock () throws Exception {
+        Mercurial.getInstance().getMercurialInterceptor().pingRepositoryRootFor(workdir);
+        FileChangeAdapter fca = new FileChangeAdapter();
+        workdirFO.addRecursiveListener(fca);
+        final File toAdd = new File(modifiedFile.getParentFile(), "toAdd");
+        final File toDelete = new File(modifiedFile.getParentFile(), "toDelete");
+        toDelete.createNewFile();
+        FileUtil.refreshFor(workdir);
+        Thread.sleep(11000); // some time for initial scans to finish and event logger to settle down
+        File hgFolder = new File(workdir, ".hg");
+        final File lockFile = new File(hgFolder, "wlock");
+        Logger GESTURES_LOG = Logger.getLogger("org.netbeans.ui.vcs");
+        ExternalCommandUsageHandler h = new ExternalCommandUsageHandler();
+        GESTURES_LOG.addHandler(h);
+        Mercurial.getInstance().runWithoutExternalEvents(workdir, "MY_COMMAND", new Callable<Void>() {
+            @Override
+            public Void call () throws Exception {
+                // modification
+                write(modifiedFile, "testExternalCommandLoggedChanges");
+                // delete
+                toDelete.delete();
+                // create
+                toAdd.createNewFile();
+                FileUtil.refreshFor(workdir);
+                pause();
+                return null;
+            }
+        });
+        Thread.sleep(2000);
+        // coming with delay after some time
+        // still considered as part of internal command
+        createLockFile(lockFile);
+        FileUtil.refreshFor(workdir);
+        pause();
+        lockFile.delete();
+        FileUtil.refreshFor(workdir);
+        
+        h.waitForEvent();
+        assertNotNull(h.event);
+        assertEquals(1, h.numberOfEvents);
+        assertTrue(h.event.time > 0);
+        assertEquals("HG", h.event.vcs);
+        assertFalse(h.event.external);
+        assertEquals("MY_COMMAND", h.event.command);
+        assertEquals(Long.valueOf(3), h.event.modifications);
+        
+        Thread.sleep(9000);
+        // coming after some reasonable pause, now considered as part of next external command
+        createLockFile(lockFile);
+        FileUtil.refreshFor(workdir);
+        write(modifiedFile, "anotherchange");
+        FileUtil.refreshFor(workdir);
+        pause();        
+        lockFile.delete();
+        FileUtil.refreshFor(workdir);
+        h.event = null;
+        h.waitForEvent();
+        assertNotNull(h.event);
+        assertEquals(2, h.numberOfEvents);
+        assertEquals("HG", h.event.vcs);
+        assertTrue(h.event.external);
+        assertEquals("UNKNOWN", h.event.command);
+        assertEquals(Long.valueOf(1), h.event.modifications);
+        GESTURES_LOG.removeHandler(h);
+        workdirFO.removeRecursiveListener(fca);
+    }
 
     private void waitForRefresh () throws Exception {
         InterceptorRefreshHandler handler = new InterceptorRefreshHandler();
@@ -255,6 +439,23 @@ public class ExternalChangesTest extends AbstractHgTestCase {
         set.remove(command);
     }
 
+    private void createLockFile (File lockFile) throws Exception {
+        if (Utilities.isWindows()) {
+            lockFile.createNewFile();
+        } else {
+            ProcessBuilder pb = new ProcessBuilder().directory(lockFile.getParentFile()).command(new String[] { "ln", "-s", "AAA", lockFile.getName() });
+            pb.start().waitFor();
+            assertFalse(lockFile.exists());
+            assertTrue(Arrays.asList(lockFile.getParentFile().list()).contains(lockFile.getName()));
+//            assertNotNull(FileUtil.toFileObject(lockFile));
+        }
+    }
+
+    private void pause () throws InterruptedException {
+        // uncomment if events only about longer commands are logged
+//        Thread.sleep(3100); // only commands running longer than 3s are logged
+    }
+
     private class InterceptorRefreshHandler extends Handler {
         private boolean refreshed;
         private boolean refreshStarted;
@@ -281,6 +482,56 @@ public class ExternalChangesTest extends AbstractHgTestCase {
         @Override
         public void close() throws SecurityException {
         }
+
+    }
+    
+    private class ExternalCommandUsageHandler extends Handler {
+        
+        volatile CommandUsageEvent event;
+        volatile int numberOfEvents;
+        
+        @Override
+        public void publish(LogRecord record) {
+            String message = record.getMessage();
+            if ("USG_VCS_CMD".equals(message)) {
+                ++numberOfEvents;
+                event = new CommandUsageEvent();
+                event.vcs = (String) record.getParameters()[0];
+                event.time = (Long) record.getParameters()[1];
+                event.modifications = (Long) record.getParameters()[2];
+                event.command = (String) record.getParameters()[3];
+                event.external = "EXTERNAL".equals(record.getParameters()[4]);
+            }
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
+
+        private void waitForEvent () throws Exception {
+            for (int i = 0; i < 20; ++i) {
+                Thread.sleep(1000);
+                if (event != null) {
+                    break;
+                }
+            }
+            if (event == null) {
+                fail("no event logged");
+            }
+        }
+
+    }
+
+    static class CommandUsageEvent {
+        private boolean external;
+        private String command;
+        private Long modifications;
+        private Long time;
+        private String vcs;
 
     }
 }

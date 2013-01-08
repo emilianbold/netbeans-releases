@@ -32,6 +32,7 @@ package org.netbeans.modules.java.hints.errors;
 
 import com.sun.source.util.TreePath;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
 import org.netbeans.spi.editor.hints.Fix;
@@ -166,14 +167,40 @@ public class MagicSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
     }
 
     public void test200382() throws Exception {
+        UncaughtException.allowMagicSurround = true;
+        try {
         performFixTest("test/Test.java",
                        "package test; import java.io.*; import java.net.*; public class Test { public void getTestCase(URL url) { try { File tc = new File(url.toURI()); BufferedReader br = new BufferedReader(ne|w FileReader(tc)); } catch (URISyntaxException ex) { } } }",
                        "FixImpl",
-                       "package test; import java.io.*; import java.net.*;import java.util.logging.Level; import java.util.logging.Logger; public class Test { public void getTestCase(URL url) {BufferedReader br = null; try { File tc = new File(url.toURI());br = new BufferedReader(new FileReader(tc)); } catch (FileNotFoundException ex) { Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex); } catch (URISyntaxException ex) { } finally { try { br.close(); } catch (IOException ex) { Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex); } } } }");
+                       "package test; import java.io.*; import java.net.*;import java.util.logging.Level; import java.util.logging.Logger; public class Test { public void getTestCase(URL url) {BufferedReader br = null; try { File tc = new File(url.toURI());br = new BufferedReader(new FileReader(tc)); } catch (URISyntaxException ex) { } catch (FileNotFoundException ex) { Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex); } finally { try { br.close(); } catch (IOException ex) { Logger.getLogger(Test.class.getName()).log(Level.SEVERE, null, ex); } } } }");
+        } finally {
+            UncaughtException.allowMagicSurround = false;
+        }
+    }
+    
+    public void test207480() throws Exception {
+        prepareTest("test/Test.java",
+                    "package test; import java.io.*; public class Test { public void getTestCase(URL url) { try(Reader r = new FileReader(\"\")) { } } }");
+        
+        int pos = positionForErrors();
+        TreePath path = info.getTreeUtilities().pathFor(pos);
+        
+        List<Fix> fixes = computeFixes(info, pos, path);
+        
+        for (Fix e : fixes) {
+            if (e instanceof MagicSurroundWithTryCatchFix) {
+                fail ("Should not provide the MagicSurroundWithTryCatchFix!");
+            }
+        }
     }
 
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
         return new UncaughtException().run(info, null, pos, path, null);
+    }
+
+    @Override
+    protected Set<String> getSupportedErrorKeys() {
+        return new UncaughtException().getCodes();
     }
 
     @Override

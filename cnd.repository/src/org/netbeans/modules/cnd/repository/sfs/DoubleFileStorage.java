@@ -53,7 +53,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
-import org.netbeans.modules.cnd.repository.util.UnitCodec;
+import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
 import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**

@@ -150,9 +150,11 @@ public class ClientSideProject implements Project {
                         lastActiveConfiguration.deactivate();
                     }
                     lastActiveConfiguration = getProjectConfigurations().getActiveConfiguration();
-                    ClientSideProjectUtilities.logUsage(ClientSideProject.class, 
-                            "USG_PROJECT_HTML5_CONFIGURATION_CHANGE", // NOI18N
-                            new Object[] { lastActiveConfiguration.getBrowserId()});
+                    if (lastActiveConfiguration != null) {
+                        ClientSideProjectUtilities.logUsage(ClientSideProject.class,
+                                "USG_PROJECT_HTML5_CONFIGURATION_CHANGE", // NOI18N
+                                new Object[] { lastActiveConfiguration.getBrowserId()});
+                    }
                 }
             }
         });
@@ -383,7 +385,7 @@ public class ClientSideProject implements Project {
         }
     }
 
-    private final class RecommendedAndPrivilegedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
+    private static final class RecommendedAndPrivilegedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
 
         @Override
         public String[] getRecommendedTypes() {
@@ -426,8 +428,13 @@ public class ClientSideProject implements Project {
             project.getEvaluator().addPropertyChangeListener(this);
             addSiteRootListener();
             GlobalPathRegistry.getDefault().register(ClassPathProviderImpl.SOURCE_CP, new ClassPath[]{project.getSourceClassPath()});
+            String browserId = "";
+            ClientProjectConfigurationImplementation cfg = project.getProjectConfigurations().getActiveConfiguration();
+            if (cfg != null) {
+                browserId = cfg.getBrowserId();
+            }
             ClientSideProjectUtilities.logUsage(ClientSideProject.class, "USG_PROJECT_HTML5_OPEN", // NOI18N
-                    new Object[] { project.getProjectConfigurations().getActiveConfiguration().getBrowserId(),
+                    new Object[] { browserId,
                     project.getTestsFolder() != null && project.getTestsFolder().getChildren().length > 0 ? "YES" : "NO"}); // NOI18N
         }
 

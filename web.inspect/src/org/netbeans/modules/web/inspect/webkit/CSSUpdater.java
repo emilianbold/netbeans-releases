@@ -41,7 +41,8 @@
  */
 package org.netbeans.modules.web.inspect.webkit;
 
-import java.net.MalformedURLException;
+import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URL;
 import java.util.HashMap;
 import javax.swing.text.BadLocationException;
@@ -105,8 +106,20 @@ public class CSSUpdater {
         for (StyleSheetHeader header : webKit.getCSS().getAllStyleSheets()) {
             try {
                 //need to convert file:///
-                sheetsMap.put(new URL(header.getSourceURL()).toString(), header);
-            } catch (MalformedURLException ex) {
+                URL url = new URL(header.getSourceURL());
+                if (url.getQuery() != null) {
+                    // Remove query string, see issue 223858
+                    url = new URL(url.getProtocol(), url.getHost(), url.getPort(), url.getPath());
+                }
+                sheetsMap.put(url.toString(), header);
+                
+                //TODO: hack to workaround #221791
+                if (InetAddress.getLocalHost().equals(InetAddress.getByName(url.getHost()))) {
+                    sheetsMap.put(new URL(url.toExternalForm().replace(url.getHost(), "localhost")).toString(), header);
+                }
+                
+                
+            } catch (IOException ex) {
                 //ignore unknown sheets
             }
         }

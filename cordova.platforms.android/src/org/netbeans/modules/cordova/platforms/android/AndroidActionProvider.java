@@ -43,6 +43,10 @@ package org.netbeans.modules.cordova.platforms.android;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
@@ -57,6 +61,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -64,11 +69,13 @@ import org.openide.util.NbBundle;
  */
 @NbBundle.Messages({
     "ERR_Title=Error",
-    "LBL_CheckingDevice=Checking android device..."
+    "LBL_CheckingDevice=Checking android device...",
+    "ERR_WebDebug=Cannot connect to Chrome.\nPlease check if USB Web Debugging is enabled in Chrome on your mobile device."    
 })
 public class AndroidActionProvider implements ActionProvider {
 
     private final Project p;
+    private static final Logger LOGGER = Logger.getLogger(AndroidActionProvider.class.getName());
 
     public AndroidActionProvider(Project p) {
         this.p = p;
@@ -127,10 +134,30 @@ public class AndroidActionProvider implements ActionProvider {
                         }
                     }
                     if (build.isPhoneGapBuild(p)) {
-                        build.perform(build.RUN_ANDROID, p);
+                        build.perform(BuildPerformer.RUN_ANDROID, p);
                     } else {
                         PropertyProvider config = (PropertyProvider) p.getLookup().lookup(ProjectConfigurationProvider.class).getActiveConfiguration();
-                        config.getDevice().openUrl(build.getUrl(p));
+                        final Device device = config.getDevice();
+                        device.openUrl(build.getUrl(p));
+                        if (Browser.CHROME.getName().equals(config.getProperty(Device.BROWSER_PROP))) {
+                            try {
+                                Thread.sleep(5000);
+                            } catch (InterruptedException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                            try {
+                                build.startDebugging(device, p);
+                            } catch (IllegalStateException ex) {
+                                LOGGER.log(Level.INFO, ex.getMessage(), ex);
+                                SwingUtilities.invokeLater(new Runnable() {
+
+                                    @Override
+                                    public void run() {
+                                        JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(), Bundle.ERR_WebDebug());
+                                    }
+                                });
+                            }
+                        }
                     }
 
                 }

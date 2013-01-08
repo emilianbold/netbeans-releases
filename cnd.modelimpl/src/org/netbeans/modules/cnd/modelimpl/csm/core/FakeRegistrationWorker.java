@@ -60,13 +60,14 @@ import org.openide.util.RequestProcessor;
  * @author Alexander Simon
  */
 public class FakeRegistrationWorker {
-    private final RequestProcessor FAKE_REGISTRATION_WORKER = new RequestProcessor("Fake Registration Worker", CndUtils.getNumberCndWorkerThreads()); // NOI18N
+    private final RequestProcessor FAKE_REGISTRATION_WORKER;
     private final ProjectBase project;
     private final AtomicBoolean disposing;
 
     FakeRegistrationWorker(ProjectBase project, AtomicBoolean disposing) {
         this.project = project;
         this.disposing = disposing;
+        this.FAKE_REGISTRATION_WORKER = new RequestProcessor("Fake Registration Worker " + project.getDisplayName(), CndUtils.getNumberCndWorkerThreads()); // NOI18N
     }
 
     void fixFakeRegistration(boolean libsAlreadyParsed){

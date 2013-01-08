@@ -213,6 +213,14 @@ public class WizardUtils {
         }
         return MSG_WrongIconSize(real.width, real.height, expectedWidth, expectedHeight);
     }
+    
+    /**
+     * @param icon file representing icon
+     */
+    @Messages("MSG_IconAlreadyExists=Icon: {0} already exists in the project and will be replaced.")
+    public static String getIconAlreadyExistsWarning(String filename) {
+        return MSG_IconAlreadyExists(filename);
+    }
 
     /**
      * @param expectedWidth expected width

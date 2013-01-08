@@ -187,11 +187,22 @@ public class WebServiceGroup {
     @Override
     public boolean equals(Object o) {
         try {
+            if ( !(o instanceof WebServiceGroup)){
+                return false;
+            }
             WebServiceGroup g2 = (WebServiceGroup)o;
             return g2.getId().equals(getId());
         }catch (Exception ex) {
             Logger.getLogger(this.getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
             return false;
         }
+    }
+    
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        return getId().hashCode();
     }
 }

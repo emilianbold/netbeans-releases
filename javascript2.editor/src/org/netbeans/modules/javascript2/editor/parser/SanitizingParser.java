@@ -37,6 +37,7 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
+import jdk.nashorn.internal.ir.FunctionNode;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -83,7 +84,7 @@ public abstract class SanitizingParser extends Parser {
 
     protected abstract String getDefaultScriptName();
 
-    protected abstract com.oracle.nashorn.ir.FunctionNode parseSource(Snapshot snapshot, String name, String text, JsErrorManager errorManager) throws Exception;
+    protected abstract FunctionNode parseSource(Snapshot snapshot, String name, String text, JsErrorManager errorManager) throws Exception;
 
     private JsParserResult parseSource(Snapshot snapshot, SourceModificationEvent event,
             Sanitize sanitizing, JsErrorManager errorManager) throws Exception {
@@ -130,7 +131,7 @@ public abstract class SanitizingParser extends Parser {
         }
         
         JsErrorManager current = new JsErrorManager(context.getSnapshot(), language);
-        com.oracle.nashorn.ir.FunctionNode node = parseSource(context.getSnapshot(), context.getName(),
+        FunctionNode node = parseSource(context.getSnapshot(), context.getName(),
                 context.getSource(), current);
 
         if (copyErrors) {

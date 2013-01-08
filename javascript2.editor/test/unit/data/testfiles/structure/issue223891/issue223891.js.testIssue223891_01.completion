@@ -1,0 +1,9 @@
+Code completion result for source line:
+this.test.to|LocaleString();
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     toExponential(fractionDigits:   [PUBLIC]   stub_CORE_Number.js
+METHOD     toFixed(fractionDigits: Number  [PUBLIC]   stub_CORE_Number.js
+METHOD     toLocaleString(): String        [PUBLIC]   stub_CORE_Number.js
+METHOD     toPrecision(precision: Number)  [PUBLIC]   stub_CORE_Number.js
+METHOD     toString(): String              [PUBLIC]   stub_CORE_Number.js

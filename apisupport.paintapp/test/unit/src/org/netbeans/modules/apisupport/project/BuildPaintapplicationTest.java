@@ -135,7 +135,6 @@ public class BuildPaintapplicationTest extends TestBase {
     /**
      * Invokes build-jnlp target on paintapp
      */
-    @RandomlyFails // fails when running on JDK since version 1.6.0_37
     public void testBuildJNLP() throws Exception {
         int ret = runAntTargetsOnPaintapp(new String[] {"build-jnlp"});
         assertEquals("build-jnlp ant target should return zero - build successful", 0 , ret);

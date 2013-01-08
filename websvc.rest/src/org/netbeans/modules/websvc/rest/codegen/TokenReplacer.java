@@ -43,9 +43,12 @@
 package org.netbeans.modules.websvc.rest.codegen;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -80,8 +83,11 @@ public class TokenReplacer {
 
     public void replaceTokens(FileObject fo, Map<String, String> tokenMap) throws IOException {
         FileLock lock = fo.lock();
+        BufferedReader reader = null;
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(FileUtil.toFile(fo)));
+            reader = new BufferedReader( new InputStreamReader( 
+                    new FileInputStream((FileUtil.toFile(fo))), 
+                    Charset.forName("UTF-8")));         // NOI18N
             String line;
             StringBuffer sb = new StringBuffer();
             while ((line = reader.readLine()) != null) {
@@ -98,6 +104,9 @@ public class TokenReplacer {
             }
         } finally {
             lock.releaseLock();
+            if ( reader!= null ){
+                reader.close();
+            }
         }
     }
     

@@ -58,8 +58,6 @@ import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.web.project.*;
@@ -92,14 +90,12 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.common.FileSearchUtility;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
@@ -107,7 +103,6 @@ import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
-import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.netbeans.spi.java.project.support.PreferredProjectPlatform;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataFolder;
@@ -189,6 +184,7 @@ public class WebProjectUtilities {
         // create project in one FS atomic action:
         FileSystem fs = projectDir.getFileSystem();
         fs.runAtomicAction(new FileSystem.AtomicAction() {
+            @Override
             public void run() throws IOException {
                 AntProjectHelper helper = createProjectImpl(createData, projectDir);
                 h[0] = helper;
@@ -212,7 +208,10 @@ public class WebProjectUtilities {
         assert j2eeProfile != null: "Java EE version can't be null"; //NOI18N
         
         if (javaPlatformName == null) {
-            javaPlatformName = PreferredProjectPlatform.getPreferredPlatform(JavaPlatform.getDefault().getSpecification().getName()).getDisplayName();
+            JavaPlatform jp = PreferredProjectPlatform.getPreferredPlatform(JavaPlatform.getDefault().getSpecification().getName());
+            if (jp != null) {
+                javaPlatformName = jp.getDisplayName();
+            }
         }
         final boolean createBluePrintsStruct = SRC_STRUCT_BLUEPRINTS.equals(sourceStructure);
         final boolean createJakartaStructure = SRC_STRUCT_JAKARTA.equals(sourceStructure);
@@ -240,7 +239,7 @@ public class WebProjectUtilities {
             String manifestText = readResource(WebProjectUtilities.class.getResourceAsStream(RESOURCE_FOLDER + "MANIFEST.MF")); //NOI18N
             FileObject manifest = FileUtil.createData(confFolderFO, "MANIFEST.MF"); //NOI18N
             FileLock lock = manifest.lock();
-            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(manifest.getOutputStream(lock)));
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(manifest.getOutputStream(lock), FileEncodingQuery.getEncoding(manifest)));
             try {
                 bw.write(manifestText);
             } finally {
@@ -271,10 +270,11 @@ public class WebProjectUtilities {
         rootSrc.setAttribute("id",WebProjectProperties.SRC_DIR);   //NOI18N
         rootSrc.setAttribute("name",NbBundle.getMessage(WebProjectUtilities.class, "NAME_src.dir")); //NOI18N
         sourceRoots.appendChild(rootSrc);
-        if (createBluePrintsStruct)
+        if (createBluePrintsStruct) {
             ep.setProperty(WebProjectProperties.SRC_DIR, DEFAULT_SRC_FOLDER + "/" + DEFAULT_JAVA_FOLDER); // NOI18N
-        else
+        } else {
             ep.setProperty(WebProjectProperties.SRC_DIR, DEFAULT_SRC_FOLDER); // NOI18N
+        }
         
         data.appendChild(sourceRoots);
         Element testRoots = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
@@ -324,6 +324,7 @@ public class WebProjectUtilities {
         final ReferenceHelper refHelper = p.getReferenceHelper();
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
                 public Void run() throws Exception {
                     copyRequiredLibraries(h, refHelper, createData);
                     return null;
@@ -334,8 +335,9 @@ public class WebProjectUtilities {
         }
         
         ProjectWebModule pwm = (ProjectWebModule) p.getLookup().lookup(ProjectWebModule.class);
-        if (pwm != null) //should not be null
+        if (pwm != null) { //should not be null
             pwm.setContextPath(contextPath);
+        }
 
         ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
 
@@ -347,8 +349,9 @@ public class WebProjectUtilities {
 
         if (dd == null) {
             FileObject indexJsp = createIndexJSP(webRoot);
-            if (indexJsp != null)
+            if (indexJsp != null) {
                 resultSet.add(indexJsp);
+            }
             return resultSet;
         }
 
@@ -378,8 +381,9 @@ public class WebProjectUtilities {
     private static FileObject createIndexJSP(FileObject webFolder) throws IOException {
         FileObject jspTemplate = FileUtil.getConfigFile( "Templates/JSP_Servlet/JSP.jsp" ); // NOI18N
         
-        if (jspTemplate == null)
+        if (jspTemplate == null) {
             return null; // Don't know the template
+        }
         
         DataObject mt = DataObject.find(jspTemplate);
         DataFolder webDf = DataFolder.findFolder(webFolder);
@@ -450,6 +454,7 @@ public class WebProjectUtilities {
         // create project in one FS atomic action:
         FileSystem fs = projectDir.getFileSystem();
         fs.runAtomicAction(new FileSystem.AtomicAction() {
+            @Override
             public void run() throws IOException {
                 AntProjectHelper helper = importProjectImpl(createData, projectDir);
                 h[0] = helper;
@@ -501,6 +506,7 @@ public class WebProjectUtilities {
         final File[] testFolders = tstFolders;
         try {
             ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction<Void>() {
+                @Override
                 public Void run() throws Exception {
                     Element data = antProjectHelper.getPrimaryConfigurationData(true);
                     Document doc = data.getOwnerDocument();
@@ -563,9 +569,7 @@ public class WebProjectUtilities {
                 }
             });
         } catch (MutexException me ) {
-            IOException ex = new IOException("project creation failed");
-            ex.initCause(me);
-            throw ex;
+            throw new IOException("project creation failed", me);
         }
         
         if (libFolder != null) {
@@ -682,6 +686,7 @@ public class WebProjectUtilities {
         if (librariesDefinition != null && serverLibrary) {
             try {
                 serverLibraryName = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<String>() {
+                    @Override
                     public String run() throws Exception {
                         return SharabilityUtility.findOrCreateLibrary(
                                 PropertyUtils.resolveFile(FileUtil.toFile(projectDir), librariesDefinition),
@@ -707,10 +712,12 @@ public class WebProjectUtilities {
     }
     
     private static String relativePath(FileObject parent, FileObject child) {
-        if (child.equals(parent))
+        if (child.equals(parent)) {
             return ""; // NOI18N
-        if (!FileUtil.isParentOf(parent, child))
+        }
+        if (!FileUtil.isParentOf(parent, child)) {
             throw new IllegalArgumentException("Cannot find relative path, " + parent + " is not parent of " + child);
+        }
         return child.getPath().substring(parent.getPath().length() + 1);
     }
     
@@ -864,6 +871,7 @@ public class WebProjectUtilities {
             Boolean isFullRequired = Boolean.FALSE;
             try{
                 isFullRequired = project.getAPIEjbJar().getMetadataModel().runReadActionWhenReady(new MetadataModelAction<EjbJarMetadata, Boolean>() {
+                    @Override
                     public Boolean run(EjbJarMetadata metadata) {
                         org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = metadata.getRoot();
                         if (ejbJar != null) {
@@ -914,9 +922,9 @@ public class WebProjectUtilities {
 
     private static String readResource(InputStream is) throws IOException {
         // read the config from resource first
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         String lineSep = System.getProperty("line.separator"); // NOI18N
-        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        BufferedReader br = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
         try {
             String line = br.readLine();
             while (line != null) {

@@ -176,6 +176,11 @@ public class TestIndexFactoryImpl implements IndexFactoryImpl {
         }
 
         @Override
+        public void clear() throws IOException {
+            original.clear();
+        }
+
+        @Override
         public Collection<? extends IndexDocument> query(String fieldName, String value, Queries.QueryKind kind, String... fieldsToLoad) throws IOException, InterruptedException {
             return original.query(fieldName, value, kind, fieldsToLoad);
         }

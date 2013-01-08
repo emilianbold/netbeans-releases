@@ -243,13 +243,16 @@ public class ChatPanel extends javax.swing.JPanel {
     }
 
     private void insertLinkToIssue() {
-        IssueHandle[] issues;
-        if (muc==null) {
-            issues = KenaiIssueAccessor.getDefault().getRecentIssues();
-        } else {
-            issues = KenaiIssueAccessor.getDefault().getRecentIssues(getKenaiProject());
+        IssueHandle[] issues = null;
+        KenaiIssueAccessor issueAccessor = KenaiIssueAccessor.getDefault();
+        if (issueAccessor != null) {
+            if (muc==null) {
+                issues = issueAccessor.getRecentIssues();
+            } else {
+                issues = issueAccessor.getRecentIssues(getKenaiProject());
+            }
         }
-        if (issues.length >0) {
+        if (issues != null && issues.length >0) {
             new InsertLinkAction(issues[0], outbox, false).actionPerformed(null);
         }
     }
@@ -297,21 +300,22 @@ public class ChatPanel extends javax.swing.JPanel {
         } catch (KenaiException ex) {
             Exceptions.printStackTrace(ex);
         }
-        if (trackers.length == 0) { // No issue trackers found for the project
+        final KenaiIssueAccessor acc = KenaiIssueAccessor.getDefault();
+        if (acc == null || trackers.length == 0) { // No issue trackers found for the project
             return;
         }
         if (trackers[0].getService().equals(KenaiService.Names.JIRA)) {
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() { // issue ID format: PROJECT_NAME-123
-                    KenaiIssueAccessor.getDefault().open(proj, proj.getName().toUpperCase().replaceAll("-", "_") + "-" + issueNumber); // NOI18N
+                    acc.open(proj, proj.getName().toUpperCase().replaceAll("-", "_") + "-" + issueNumber); // NOI18N
                 }
             });
         } else if (trackers[0].getService().equals(KenaiService.Names.BUGZILLA)) {
             SwingUtilities.invokeLater(new Runnable() {
 
                 public void run() {
-                    KenaiIssueAccessor.getDefault().open(proj, issueNumber);
+                    acc.open(proj, issueNumber);
                 }
             });
         }
@@ -889,15 +893,18 @@ public class ChatPanel extends javax.swing.JPanel {
 
     private boolean isIssueRelated(TopComponent tc) {
         IssueHandle[] issues;
-        if (muc==null) {
-            issues = KenaiIssueAccessor.getDefault().getRecentIssues();
+        KenaiIssueAccessor accessor = KenaiIssueAccessor.getDefault();
+        if (accessor == null) {
+            return false;
+        } else if (muc==null) {
+            issues = accessor.getRecentIssues();
             if (issues.length<1) {
                 return false;
             }
             return issues[0].isShowing();
         } else {
-            issues = KenaiIssueAccessor.getDefault().getRecentIssues(getKenaiProject());
-            IssueHandle[] allIssues = KenaiIssueAccessor.getDefault().getRecentIssues();
+            issues = accessor.getRecentIssues(getKenaiProject());
+            IssueHandle[] allIssues = accessor.getRecentIssues();
             if (issues.length < 1) {
                 return false;
             }
@@ -959,13 +966,19 @@ public class ChatPanel extends javax.swing.JPanel {
         }
 
         IssueHandle[] issues;
-        if (muc==null) {
-            issues = KenaiIssueAccessor.getDefault().getRecentIssues();
+        KenaiIssueAccessor issueAccessor = KenaiIssueAccessor.getDefault();
+        if (issueAccessor == null) {
+            issues = null;
+        } else if (muc==null) {
+            issues = issueAccessor.getRecentIssues();
         } else {
-            issues = KenaiIssueAccessor.getDefault().getRecentIssues(getKenaiProject());
+            issues = issueAccessor.getRecentIssues(getKenaiProject());
+        }
+        if (issues == null) {
+            issues = new IssueHandle[0];
         }
 
-        for (int i=0;issues!=null&& i<3 && i< issues.length;i++) {
+        for (int i=0;i<3 && i< issues.length;i++) {
             Mode editor = WindowManager.getDefault().findMode("editor");//NOI18N
             TopComponent tc = editor.getSelectedTopComponent();
             dropDownMenu.add(new InsertLinkAction(issues[i], outbox, isIssueRelated(tc)));

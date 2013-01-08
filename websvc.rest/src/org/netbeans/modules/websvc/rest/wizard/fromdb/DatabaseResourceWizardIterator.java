@@ -143,7 +143,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
         FileObject configFilesFolder = PersistenceLocation.getLocation(project);
         helper = new RelatedCMPHelper(project, configFilesFolder, generator);
         wizard.putProperty(PROP_HELPER, helper);
-        wizard.putProperty(PROP_CMP, new Boolean(false));
+        wizard.putProperty(PROP_CMP, false);
 
         // Moved to getPanels()
         //String wizardBundleKey = "Templates/Persistence/RelatedCMP"; // NOI18N
@@ -561,7 +561,8 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
 
                     JComponent jc = (JComponent) c;
                     // Sets step number of a component
-                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i));
+                    jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 
+                            i);
                     // Sets steps names for a panel
                     jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
                     // Turn on subtitle creation on each step

@@ -205,8 +205,11 @@ made subject to such option by the copyright holder.
             depends="build-jnlp-nowar"
             description="Build JNLP files and signed JARs for all modules in the suite."
     >
-        <property name="jnlp.servlet.jar" location="${nbjdk.home}/sample/jnlp/servlet/jnlp-servlet.jar"/>
-        <fail message="Point -Djnlp.servlet.jar to your jnlp-servlet.jar, usually in $$JDKHOME/sample/jnlp/servlet/jnlp-servlet.jar">
+        <available file="${nbjdk.home}/sample/jnlp/servlet/jnlp-servlet.jar" property="jnlp.servlet.jar" 
+               value="${nbjdk.home}/sample/jnlp/servlet/jnlp-servlet.jar"
+        />
+        <property name="jnlp.servlet.jar" location="${harness.dir}/jnlp/jnlp-servlet.jar"/>
+        <fail message="Cannot find -Djnlp.servlet.jar pointing to ${jnlp.servlet.jar}">
             <condition>
                 <not>
                     <available file="${jnlp.servlet.jar}"/>

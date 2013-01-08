@@ -128,7 +128,7 @@ import org.openide.util.NbBundle;
 })
 public final class GroovyJUnitTestWizardIterator extends GroovyFileWizardIterator {
 
-    private static ResourceBundle bundle = NbBundle.getBundle(GroovyJUnitTestWizardIterator.class);
+    private static final ResourceBundle BUNDLE = NbBundle.getBundle(GroovyJUnitTestWizardIterator.class);
 
 
     private GroovyJUnitTestWizardIterator() {
@@ -142,6 +142,7 @@ public final class GroovyJUnitTestWizardIterator extends GroovyFileWizardIterato
             // Retrieve the source groups again, but now with a newly created /test/groovy folder
             groups = GroovySources.getGroovySourceGroups(ProjectUtils.getSources(project));
         }
+
         final List<SourceGroup> testSourceGroups = strategy.getOnlyTestSourceGroups(groups);
         if (!testSourceGroups.isEmpty()) {
             return testSourceGroups;
@@ -199,18 +200,18 @@ public final class GroovyJUnitTestWizardIterator extends GroovyFileWizardIterato
         JRadioButton radioButtonForJUnit3 = new JRadioButton();
         JRadioButton radioButtonForJUnit4 = new JRadioButton();
 
-        Mnemonics.setLocalizedText(radioButtonForJUnit3, bundle.getString("LBL_JUnit3_generator"));                       //NOI18N
-        Mnemonics.setLocalizedText(radioButtonForJUnit4, bundle.getString("LBL_JUnit4_generator"));                       //NOI18N
+        Mnemonics.setLocalizedText(radioButtonForJUnit3, BUNDLE.getString("LBL_JUnit3_generator"));                       //NOI18N
+        Mnemonics.setLocalizedText(radioButtonForJUnit4, BUNDLE.getString("LBL_JUnit4_generator"));                       //NOI18N
 
-        radioButtonForJUnit3.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_JUnit3_generator"));    //NOI18N
-        radioButtonForJUnit4.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_JUnit4_generator"));    //NOI18N
+        radioButtonForJUnit3.getAccessibleContext().setAccessibleDescription(BUNDLE.getString("AD_JUnit3_generator"));    //NOI18N
+        radioButtonForJUnit4.getAccessibleContext().setAccessibleDescription(BUNDLE.getString("AD_JUnit4_generator"));    //NOI18N
 
         ButtonGroup group = new ButtonGroup();
         group.add(radioButtonForJUnit3);
         group.add(radioButtonForJUnit4);
         radioButtonForJUnit4.setSelected(true);
 
-        JComponent msg = createMultilineLabel(bundle.getString("MSG_select_junit_version")); //NOI18N
+        JComponent msg = createMultilineLabel(BUNDLE.getString("MSG_select_junit_version")); //NOI18N
         JPanel choicePanel = new JPanel(new GridLayout(0, 1, 0, 3));
         choicePanel.add(radioButtonForJUnit3);
         choicePanel.add(radioButtonForJUnit4);
@@ -220,14 +221,14 @@ public final class GroovyJUnitTestWizardIterator extends GroovyFileWizardIterato
         panel.add(choicePanel, BorderLayout.CENTER);
 
         JButton button = new JButton();
-        Mnemonics.setLocalizedText(button, bundle.getString("LBL_Select"));     //NOI18N
+        Mnemonics.setLocalizedText(button, BUNDLE.getString("LBL_Select"));     //NOI18N
         button.getAccessibleContext().setAccessibleDescription("AD_Select");    //NOI18N
         button.getAccessibleContext().setAccessibleName("AN_Select");           //NOI18N
 
         Object answer = DialogDisplayer.getDefault().notify(
                 new DialogDescriptor(
                         wrapDialogContent(panel),
-                        bundle.getString("LBL_title_select_generator"),         //NOI18N
+                        BUNDLE.getString("LBL_title_select_generator"),         //NOI18N
                         true,
                         new Object[] {button, NotifyDescriptor.CANCEL_OPTION},
                         button,
@@ -266,7 +267,7 @@ public final class GroovyJUnitTestWizardIterator extends GroovyFileWizardIterato
         result.setLayout(new GridLayout());
         result.add(comp);
         result.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
-        result.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_title_select_generator")); //NOI18N
+        result.getAccessibleContext().setAccessibleDescription(BUNDLE.getString("AD_title_select_generator")); //NOI18N
         return result;
     }
 }

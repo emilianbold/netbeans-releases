@@ -500,7 +500,7 @@ public final class FolderList extends javax.swing.JPanel {
 
     }
 
-    private static class DNDHandle extends TransferHandler {
+    private class DNDHandle extends TransferHandler {
 
         private int[] indices = new int[0];
 
@@ -519,7 +519,7 @@ public final class FolderList extends javax.swing.JPanel {
             return new FileListTransferable(safeCopy(list.getSelectedValues(),File.class));
         }
 
-        private static<T> List<? extends T> safeCopy(Object[] data, Class<T> clazz) {
+        private <T> List<? extends T> safeCopy(Object[] data, Class<T> clazz) {
             final List<T> result = new ArrayList<T>(data.length);
             for (Object d : data) {
                 result.add(clazz.cast(d));
@@ -576,18 +576,41 @@ public final class FolderList extends javax.swing.JPanel {
             } catch (java.io.IOException e) {
                 return false;
             }
+
+            final List<File> validRoots = new ArrayList<File>();
+            final Set<File> invalidRoots = new HashSet<File>();
+            if (relatedFolderList != null && projectFolder != null) {
+                final File[] relatedFolders = support.getSourceDropActions() == MOVE ?
+                        new File[0]:
+                        relatedFolderList.getFiles();
+                for (File file : data) {
+                    if (!isValidRoot(file, relatedFolders, projectFolder)) {
+                        invalidRoots.add (file);
+                    } else {
+                        validRoots.add(file);
+                    }
+                }
+            } else {
+                validRoots.addAll(data);
+            }
+
             JList list = (JList)support.getComponent();
             DefaultListModel model = (DefaultListModel)list.getModel();
-            int[] indices = new int[data.size()];
-            for (int i=0; i< data.size(); i++,index++) {
-                model.insertElementAt(data.get(i), index);
+            int[] indices = new int[validRoots.size()];
+            for (int i=0; i< validRoots.size(); i++,index++) {
+                model.insertElementAt(validRoots.get(i), index);
                 indices[i]=index;
                 updateIndexes(index);
             }
-            Rectangle rect = list.getCellBounds(indices[0], indices[indices.length-1]);
-            list.scrollRectToVisible(rect);
-            list.setSelectedIndices(indices);
-            list.requestFocusInWindow();
+            if (!validRoots.isEmpty()) {
+                Rectangle rect = list.getCellBounds(indices[0], indices[indices.length-1]);
+                list.scrollRectToVisible(rect);
+                list.setSelectedIndices(indices);
+                list.requestFocusInWindow();
+            }
+            if (!invalidRoots.isEmpty()) {
+                SourceRootsUi.showIllegalRootsDialog(invalidRoots);
+            }
             return true;
         }
 

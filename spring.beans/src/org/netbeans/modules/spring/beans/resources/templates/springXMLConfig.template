@@ -6,12 +6,12 @@
 </#list>
 
 <#if springVersion3??>
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-${version}.xsd
 <#else>
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
 </#if>
 <#list namespaces as namespace>
-    <#if namespace.namespace != "http://www.springframework.org/schema/p">
+    <#if namespace.hasSchemeLocation()>
           ${namespace.namespace} ${namespace.namespace}/${namespace.fileName}
     </#if>
 </#list>">

@@ -227,6 +227,10 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
     protected void performAnalysisTest(String fileName, String code, int pos, String... golden) throws Exception {
         prepareTest(fileName, code);
         
+        if (pos == (-1)) {
+            pos = positionForErrors();
+        }
+        
         TreePath path = info.getTreeUtilities().pathFor(pos);
         
         List<Fix> fixes = computeFixes(info, pos, path);
@@ -264,20 +268,14 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
     protected void performFixTest(String fileName, String code, int pos, String fixCode, String goldenFileName, String golden) throws Exception {
         prepareTest(fileName, code);
         
-        if (pos == (-1)) {
-            Set<String> supportedErrorKeys = getSupportedErrorKeys();
-            for (Diagnostic<?> d : info.getDiagnostics()) {
-                if (d.getKind() == Diagnostic.Kind.ERROR && (supportedErrorKeys == null || supportedErrorKeys.contains(d.getCode()))) {
-                    if (pos == (-1)) {
-                        pos = (int) d.getPosition();
-                    } else {
-                        throw new IllegalStateException("More than one error: " + info.getDiagnostics().toString());
-                    }
-                }
-            }
-        }
+        TreePath path;
         
-        TreePath path = info.getTreeUtilities().pathFor(pos);
+        if (pos == (-1)) {
+            pos = positionForErrors();
+            path = info.getTreeUtilities().pathFor(pos + 1);
+        } else {
+            path = info.getTreeUtilities().pathFor(pos);
+        }
 
         List<Fix> fixes = computeFixes(info, pos, path);
         List<String> fixesNames = new LinkedList<String>();
@@ -319,5 +317,24 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
     
     protected Set<String> getSupportedErrorKeys() {
         return null;
+    }
+
+    protected final int positionForErrors() throws IllegalStateException {
+        Set<String> supportedErrorKeys = getSupportedErrorKeys();
+        Integer pos = null;
+        for (Diagnostic<?> d : info.getDiagnostics()) {
+            if (d.getKind() == Diagnostic.Kind.ERROR && (supportedErrorKeys == null || supportedErrorKeys.contains(d.getCode()))) {
+                if (pos == null) {
+                    pos = (int) d.getPosition();
+                } else {
+                    throw new IllegalStateException("More than one error: " + info.getDiagnostics().toString());
+                }
+            }
+        }
+        if (pos == null) {
+            throw new IllegalStateException("No error found: " + info.getDiagnostics().toString());
+        }
+        
+        return pos;
     }
 }

@@ -89,9 +89,10 @@ final class EstimatorFactory {
 
     static PositionEstimator catches(List<? extends Tree> oldL, 
                                      List<? extends Tree> newL,
+                                     boolean hasFinally,
                                      DiffContext diffContext)
     {
-        return new PositionEstimator.CatchesEstimator(oldL, newL, diffContext);
+        return new PositionEstimator.CatchesEstimator(oldL, newL, hasFinally, diffContext);
     }
     
     static PositionEstimator cases(List<? extends Tree> oldL, 

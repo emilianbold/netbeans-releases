@@ -43,8 +43,8 @@
 package org.netbeans.modules.php.project.connections.spi;
 
 import java.util.Set;
+import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.project.connections.ConfigManager;
-import org.netbeans.modules.php.project.validation.ValidationResult;
 import org.openide.windows.InputOutput;
 
 /**

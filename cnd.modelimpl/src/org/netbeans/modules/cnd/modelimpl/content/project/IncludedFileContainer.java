@@ -288,14 +288,14 @@ public final class IncludedFileContainer {
         public Storage(RepositoryDataInput aStream) throws IOException {
             super(aStream);
             fileSystem = PersistentUtils.readFileSystem(aStream);
-            FileContainer.readStringToFileEntryMap(fileSystem, getUnitId(), aStream, myFiles);
+            FileContainer.readStringToFileEntryMap(fileSystem, getIncludedUnitId(), aStream, myFiles);
         }
 
         @Override
         public void write(RepositoryDataOutput aStream) throws IOException {
             super.write(aStream);
             PersistentUtils.writeFileSystem(fileSystem, aStream);
-            FileContainer.writeStringToFileEntryMap(getUnitId(), aStream, myFiles);
+            FileContainer.writeStringToFileEntryMap(getIncludedUnitId(), aStream, myFiles);
         }
 
         @Override
@@ -312,6 +312,12 @@ public final class IncludedFileContainer {
             put();
         }
 
+        private int getIncludedUnitId() {
+            // see asserts in FileContainer.writeStringToFileEntryMap
+            if (true) return getUnitId();
+            IncludedFileStorageKey key = (IncludedFileStorageKey) getKey();
+            return key.getIncludedUnitIndex();
+        }
     }
     
     private static final class Entry {

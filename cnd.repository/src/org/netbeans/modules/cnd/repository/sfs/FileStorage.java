@@ -48,7 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import org.netbeans.modules.cnd.repository.disk.Storage;
-import org.netbeans.modules.cnd.repository.util.UnitCodec;
+import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
 
 /**
  *

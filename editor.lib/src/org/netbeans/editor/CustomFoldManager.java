@@ -481,7 +481,7 @@ final class CustomFoldManager implements FoldManager, Runnable {
 
     private FoldMarkInfo scanToken(Token token) throws BadLocationException {
         // ignore any token that is not comment
-        if (token.id().primaryCategory() != null && "comment".equals(token.id().primaryCategory())) { //NOI18N
+        if (token.id().primaryCategory() != null && token.id().primaryCategory().startsWith("comment")) { //NOI18N
             Matcher matcher = pattern.matcher(token.text());
             if (matcher.find()) {
                 if (matcher.group(1) != null) { // fold's start mark found

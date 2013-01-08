@@ -71,25 +71,25 @@ import org.openide.util.NbBundle;
  * @author Martin Janicek
  */
 public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCustomizer {
-    
+
     protected Project project;
     protected ModelHandle2 handle;
     protected CheckBoxUpdater deployOnSaveUpdater;
     protected ComboBoxUpdater<Wrapper> serverModelUpdater;
-    
+
 
     public BaseRunCustomizer(ModelHandle2 handle, Project project) {
         this.handle = handle;
         this.project = project;
     }
-    
+
     //mkleint: this method should only be run from within the ApplyChangesCustomizer.applyChanges() method
     protected void changeServer(JComboBox selectedServerComboBox) {
         SessionContent sc = project.getLookup().lookup(SessionContent.class);
         if (serverModelUpdater.getValue() != null) {
             sc.setServerInstanceId(null);
         }
-        
+
         Wrapper selectedServer = (Wrapper) selectedServerComboBox.getSelectedItem();
         // User is trying to set <No Server> option
         if (ExecutionChecker.DEV_NULL.equals(selectedServer.getServerInstanceID())) {
@@ -97,10 +97,10 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
             MavenProjectSupport.setServerInstanceID(project, null);
             MavenProjectSupport.setOldServerInstanceID(project, null);
         }
-        
+
         MavenProjectSupport.changeServer(project, false);
     }
-    
+
     protected void initDeployOnSaveComponent(final JCheckBox dosCheckBox, final JLabel dosDescription) {
         deployOnSaveUpdater = new CheckBoxUpdater(dosCheckBox) {
             @Override
@@ -108,15 +108,13 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
                 String s = handle.getRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, true);
                 if (s != null) {
                     return Boolean.valueOf(s);
-                } else {
-                    // null means no customization in nb-configuration.xml --> set default value which is true
-                    return Boolean.TRUE;
                 }
+                return null;
             }
 
             @Override
             public void setValue(Boolean value) {
-                handle.setRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, 
+                handle.setRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE,
                         value == null ? null : Boolean.toString(value), true);
             }
 
@@ -125,7 +123,7 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
                 return true;
             }
         };
-        
+
         addAncestorListener(new AncestorListener() {
 
             @Override
@@ -142,11 +140,11 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
             }
         });
     }
-    
+
     protected void initServerComponent(JComboBox serverComboBox, JLabel serverLabel) {
         serverModelUpdater = Wrapper.createComboBoxUpdater(handle, serverComboBox, serverLabel);
     }
-    
+
     private void updateDoSEnablement(JCheckBox dosCheckBox, JLabel dosDescription) {
         String cos = handle.getRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, true);
         boolean enabled = cos == null || "all".equalsIgnoreCase(cos) || "app".equalsIgnoreCase(cos); // NOI18N
@@ -159,7 +157,7 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
             dosDescription.setText(NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.dosDescriptionIfDisabled.text"));
         }
     }
-    
+
     protected void loadServerModel(JComboBox serverModel, J2eeModule.Type type, Profile profile) {
         String[] ids = Deployment.getDefault().getServerInstanceIDs(Collections.singleton(type), profile);
         Collection<Wrapper> col = new ArrayList<Wrapper>();

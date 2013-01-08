@@ -87,6 +87,7 @@ import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
+import org.netbeans.modules.bugzilla.query.QueryParameter.AllWordsTextFieldParameter;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.bugzilla.query.QueryParameter.CheckBoxParameter;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ComboParameter;
@@ -226,9 +227,9 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             tmParameter = null;
         }
 
-        createQueryParameter(TextFieldParameter.class, panel.summaryTextField, "short_desc");                       // NOI18N
-        createQueryParameter(TextFieldParameter.class, panel.commentTextField, "long_desc");                        // NOI18N
-        createQueryParameter(TextFieldParameter.class, panel.whiteboardTextField, "status_whiteboard");             // NOI18N
+        createQueryParameter(AllWordsTextFieldParameter.class, panel.summaryTextField, "short_desc");               // NOI18N
+        createQueryParameter(AllWordsTextFieldParameter.class, panel.commentTextField, "long_desc");                // NOI18N
+        createQueryParameter(AllWordsTextFieldParameter.class, panel.whiteboardTextField, "status_whiteboard");     // NOI18N
         createQueryParameter(TextFieldParameter.class, panel.keywordsTextField, "keywords");                        // NOI18N
         createQueryParameter(TextFieldParameter.class, panel.peopleTextField, "email1");                            // NOI18N
         createQueryParameter(CheckBoxParameter.class, panel.bugAssigneeCheckBox, "emailassigned_to1");              // NOI18N

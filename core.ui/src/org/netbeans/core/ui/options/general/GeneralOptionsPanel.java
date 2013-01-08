@@ -67,6 +67,7 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
+import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -409,6 +410,7 @@ private void editBrowserButtonActionPerformed(java.awt.event.ActionEvent evt) {/
                 }
             }
         });
+    dialogDesc.setHelpCtx( new HelpCtx("WebBrowsersManager") ); //NOI18N
     DialogDisplayer.getDefault().createDialog(dialogDesc).setVisible(true);
     if (dialogDesc.getValue().equals(DialogDescriptor.OK_OPTION)) {
         updateWebBrowsers();

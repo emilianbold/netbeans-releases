@@ -42,6 +42,8 @@
 package org.netbeans.core.windows.view.ui.tabcontrol.tabbedpane;
 
 import java.awt.BorderLayout;
+import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import javax.swing.Icon;

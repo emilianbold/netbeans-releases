@@ -94,25 +94,14 @@ import org.openide.ErrorManager;
                 }
                 parseUserMacros(line, pair.systemPreprocessorSymbolsList);
                 if (line.startsWith("#define ")) { // NOI18N
-                    int sepIdx = -1; // index of space separating macro name and body
-                    int parCount = 0; // parenthesis counter
-                    loop: for (int i = 8; i < line.length(); ++i) {
-                        switch (line.charAt(i)) {
-                            case '(':
-                                ++parCount;
-                                break;
-                            case ')':
-                                --parCount;
-                                break;
-                            case ' ':
-                                if (parCount == 0) {
-                                    sepIdx = i;
-                                    break loop;
-                                }
-                        }
-                    }
-                    if (sepIdx > 0) {
-                        String token = line.substring(8, sepIdx) + "=" + line.substring(sepIdx + 1); // NOI18N
+                   String[] macro = CCCCompiler.getMacro(line.substring(8).trim());
+                   if (CCCCompiler.isValidMacroName(macro[0])) {
+                       String token;
+                       if (macro[1] != null) {
+                            token = macro[0] + "=" + macro[1]; // NOI18N
+                       } else {
+                           token = macro[0];
+                       }
                         addUnique(pair.systemPreprocessorSymbolsList, token);
                     }
                 }

@@ -274,6 +274,7 @@ public class DiffAction extends NodeAction {
                         }
                     };
                     fsdp.putClientProperty(TopComponent.class, dtc);
+                    fsdp.activateNodes();
                     dtc.open();
                     dtc.requestActive();
                 }

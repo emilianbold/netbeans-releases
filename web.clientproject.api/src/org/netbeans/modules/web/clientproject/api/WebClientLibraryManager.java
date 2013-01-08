@@ -76,22 +76,22 @@ public final class WebClientLibraryManager {
     /**
      * Library TYPE.
      */
-    public static String TYPE = "javascript"; // NOI18N
+    public static final String TYPE = "javascript"; // NOI18N
 
     /**
      * Volume for regular JS files.
      */
-    public static String VOL_REGULAR = "regular"; // NOI18N
+    public static final String VOL_REGULAR = "regular"; // NOI18N
 
     /**
      * Volume for minified JS files.
      */
-    public static String VOL_MINIFIED = "minified"; // NOI18N
+    public static final String VOL_MINIFIED = "minified"; // NOI18N
 
     /**
      * Volume for documented JS files.
      */
-    public static String VOL_DOCUMENTED = "documented"; // NOI18N
+    public static final String VOL_DOCUMENTED = "documented"; // NOI18N
 
     /**
      * Real name of the library, that is without CND source prefix .

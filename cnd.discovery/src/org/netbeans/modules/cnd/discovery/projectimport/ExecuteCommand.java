@@ -423,9 +423,12 @@ public class ExecuteCommand {
                     outputListener.flush();
                     outputListener.close();
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    ex.printStackTrace(System.err);
                 }
                 outputListener = null;
+            }
+            if (lineConvertor instanceof ChangeListener) {
+                ((ChangeListener)lineConvertor).stateChanged(new ChangeEvent(this));
             }
         }
 

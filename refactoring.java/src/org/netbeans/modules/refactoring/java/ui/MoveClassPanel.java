@@ -106,9 +106,10 @@ public final class MoveClassPanel extends JPanel implements ActionListener, Docu
     private String startPackage;
     private String newName;
     private String bypassLine;
+    private final boolean toType;
     
     public MoveClassPanel(final ChangeListener parent, String startPackage, String headLine, String bypassLine, FileObject f, boolean disable, Vector nodes) {
-        this(parent, startPackage, headLine, bypassLine, f);
+        this(parent, startPackage, headLine, bypassLine, f, null, false);
         setCombosEnabled(!disable);
         JList list = new JList(nodes);
         list.setCellRenderer(new NodeRenderer()); 
@@ -120,13 +121,15 @@ public final class MoveClassPanel extends JPanel implements ActionListener, Docu
         JLabel listOf = new JLabel();
         Mnemonics.setLocalizedText(listOf, NbBundle.getMessage(MoveClassesUI.class, "LBL_ListOfClasses"));
         bottomPanel.add(listOf, BorderLayout.NORTH);
+        typeCheckBox.setVisible(false);
+        typeCombobox.setVisible(false);
     }
     
     public MoveClassPanel(final ChangeListener parent, String startPackage, String headLine, String bypassLine, FileObject f) {
-        this(parent, startPackage, headLine, bypassLine, f, null);
+        this(parent, startPackage, headLine, bypassLine, f, null, true);
     }
     
-    public MoveClassPanel(final ChangeListener parent, String startPackage, String headLine, String bypassLine, FileObject f, String newName) {
+    public MoveClassPanel(final ChangeListener parent, String startPackage, String headLine, String bypassLine, FileObject f, String newName, boolean toType) {
         this.fo = f;
         this.parent = parent;
         this.newName = newName;
@@ -150,6 +153,7 @@ public final class MoveClassPanel extends JPanel implements ActionListener, Docu
             labelNewName.setVisible(false);
             newNameField.setVisible(false);
         }
+        this.toType = toType;
     }
 
     private String getBypassLine() {
@@ -585,6 +589,8 @@ private void bypassRefactoringCheckBoxItemStateChanged(java.awt.event.ItemEvent 
         rootComboBox.setEnabled(enabled);
         projectsComboBox.setEnabled(enabled);
         bypassRefactoringCheckBox.setVisible(!enabled);
+        typeCheckBox.setVisible(toType && enabled);
+        typeCombobox.setVisible(toType && enabled);
         this.setEnabled(enabled);
     }
 

@@ -406,7 +406,7 @@ public final class Debugger {
         JSONObject params = new JSONObject();
         params.put("nodeId", node.getNodeId());
         params.put("type", type);
-        Response resp = transport.sendBlockingCommand(new Command(COMMAND_REMOVE_BRKP_DOM, params));
+        transport.sendBlockingCommand(new Command(COMMAND_REMOVE_BRKP_DOM, params));
     }
     
     public Breakpoint addXHRBreakpoint(String urlSubstring) {
@@ -433,7 +433,7 @@ public final class Debugger {
     public void removeXHRBreakpoint(String urlSubstring) {
         JSONObject params = new JSONObject();
         params.put("url", urlSubstring);
-        Response resp = transport.sendBlockingCommand(new Command(COMMAND_REMOVE_BRKP_XHR, params));
+        transport.sendBlockingCommand(new Command(COMMAND_REMOVE_BRKP_XHR, params));
     }
     
     public static final String DOM_BREAKPOINT_SUBTREE = "subtree-modified";
@@ -464,7 +464,7 @@ public final class Debugger {
     public void removeEventBreakpoint(String event) {
         JSONObject params = new JSONObject();
         params.put("eventName", event);
-        Response resp = transport.sendBlockingCommand(new Command(COMMAND_REMOVE_BRKP_EVENT, params));
+        transport.sendBlockingCommand(new Command(COMMAND_REMOVE_BRKP_EVENT, params));
     }
     
     public boolean areBreakpointsActive() {
@@ -478,7 +478,7 @@ public final class Debugger {
             if (oldActive != active) {
                 JSONObject params = new JSONObject();
                 params.put("active", active);
-                Response resp = transport.sendBlockingCommand(new Command(COMMAND_SET_BRKPS_ACTIVE, params));
+                transport.sendBlockingCommand(new Command(COMMAND_SET_BRKPS_ACTIVE, params));
                 breakpointsActive = active;
                 lastBreakpointsActive = active;
             }

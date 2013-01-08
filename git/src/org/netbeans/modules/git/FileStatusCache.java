@@ -102,12 +102,16 @@ public class FileStatusCache {
     private static final FileInformation FILE_INFORMATION_UNKNOWN = new FileInformation(EnumSet.of(Status.UNKNOWN), false);
 
     private static final Map<File, File> SYNC_REPOSITORIES = new WeakHashMap<File, File>(5);
+    private final IgnoredFilesHandler ignoredFilesHandler;
+    private final RequestProcessor.Task ignoredFilesHandlerTask;
 
     public FileStatusCache() {
         cachedFiles = new HashMap<File, FileInformation>();
         conflictedFiles = createCacheIndex();
         modifiedFiles = createCacheIndex();
         ignoredFiles = createCacheIndex();
+        ignoredFilesHandler = new IgnoredFilesHandler();
+        ignoredFilesHandlerTask = rp.create(ignoredFilesHandler);
     }
 
     /**
@@ -703,26 +707,50 @@ public class FileStatusCache {
      * @param files set of files to be ignore-tested.
      */
     private void handleIgnoredFiles(final Set<File> files) {
-        Runnable async = new Runnable() {
-            @Override
-            public void run() {
-                for (File f : files) {
-                    if (GitUtils.isIgnored(f, true)) {
-                        // refresh status for this file
-                        boolean isDirectory = f.isDirectory();
-                        boolean exists = f.exists();
-                        if (!exists) {
-                            // remove from cache
-                            refreshFileStatus(f, FILE_INFORMATION_UNKNOWN);
-                        } else {
-                            // add to cache as ignored
-                            refreshFileStatus(f, isDirectory ? new FileInformation(EnumSet.of(Status.NOTVERSIONED_EXCLUDED), true) : FILE_INFORMATION_EXCLUDED);
-                        }
+        boolean changed;
+        synchronized (ignoredFilesHandler.toHandle) {
+            changed = ignoredFilesHandler.toHandle.addAll(files);
+        }
+        if (changed) {
+            ignoredFilesHandlerTask.schedule(0);
+        }
+    }
+    
+    private class IgnoredFilesHandler implements Runnable {
+        
+        private final Set<File> toHandle = new LinkedHashSet<File>();
+        
+        @Override
+        public void run() {
+            File f;
+            while ((f = getNextFile()) != null) {
+                if (GitUtils.isIgnored(f, true)) {
+                    // refresh status for this file
+                    boolean isDirectory = f.isDirectory();
+                    boolean exists = f.exists();
+                    if (!exists) {
+                        // remove from cache
+                        refreshFileStatus(f, FILE_INFORMATION_UNKNOWN);
+                    } else {
+                        // add to cache as ignored
+                        refreshFileStatus(f, isDirectory ? new FileInformation(EnumSet.of(Status.NOTVERSIONED_EXCLUDED), true) : FILE_INFORMATION_EXCLUDED);
                     }
                 }
             }
-        };
-        rp.post(async);
+        }
+
+        private File getNextFile() {
+            File nextFile = null;
+            synchronized (toHandle) {
+                Iterator<File> it = toHandle.iterator();
+                if (it.hasNext()) {
+                    nextFile = it.next();
+                    it.remove();
+                }
+            }
+            return nextFile;
+        }
+        
     }
 
     private static File getSyncRepository (File repository) {

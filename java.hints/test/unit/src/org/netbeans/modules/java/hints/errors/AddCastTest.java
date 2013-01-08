@@ -37,6 +37,7 @@ import java.util.Set;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
 import org.netbeans.spi.editor.hints.Fix;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -145,7 +146,29 @@ public class AddCastTest extends ErrorHintsTestBase {
                        "[AddCastFix:...new Object(...):B]",
                        "package test; public class Test { static void C(B data) { C((B) new Object()); } class A<T> { public void method(T data) {} } class B extends A<Test> {} }");
     }
+    
+    public void test223022() throws Exception {
+        //#223022: position set manually intentionally (to check that a NPE is not thrown):
+        performAnalysisTest("test/Test.java",
+                            "package test; public class Test { static int C() { retur|n ; } }");
+    }
 
+    public void test214835a() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test; public class Test { private static void x(long l) { t(l); } void t(byte b) {} void t(int i) {} void t(String s) {} }",
+                            -1,
+                            "[AddCastFix:...l:byte]",
+                            "[AddCastFix:...l:int]");
+    }
+    
+    public void test214835b() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test { private static void x(long l) { t(l); } void t(byte b) {} void t(int i) {} void t(String s) {} }",
+                       -1,
+                       "[AddCastFix:...l:byte]",
+                       "package test; public class Test { private static void x(long l) { t((byte) l); } void t(byte b) {} void t(int i) {} void t(String s) {} }");
+    }
+    
     @Override
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
         return new AddCast().run(info, null, pos, path, null);
@@ -153,16 +176,16 @@ public class AddCastTest extends ErrorHintsTestBase {
 
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
-        if (f instanceof AddCastFix) {
-            return ((AddCastFix) f).toDebugString();
-        }
-        
-        return super.toDebugString(info, f);
+        return f.getText();
     }
 
     @Override
     protected Set<String> getSupportedErrorKeys() {
         return new AddCast().getCodes();
+    }
+    
+    static {
+        NbBundle.setBranding("test");
     }
     
 }

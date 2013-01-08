@@ -354,7 +354,7 @@ public class ManagerUtil {
         if(null == inString) {
             throw new IllegalArgumentException("Null string passed!");
         }
-        String returnString =  new String(inString);
+        String returnString =  inString;
         String firstCharacter = returnString.substring(0,1);
         returnString = firstCharacter.toUpperCase() + returnString.substring(1);
         
@@ -366,7 +366,6 @@ public class ManagerUtil {
      * "ThreatCfc"
      */
     public static String getProperPortName(String inPortName) {
-        String returnString = "";
         /**
          * parse the string by ".", uppercase each piece, and put them back together
          */
@@ -376,18 +375,18 @@ public class ManagerUtil {
          * return it.
          */
         if(inPortName.indexOf(".") == -1) {
-            returnString = ManagerUtil.upperCaseFirstChar(inPortName);
-            return returnString;
+            return  ManagerUtil.upperCaseFirstChar(inPortName);
         }
         
         StringTokenizer tokenizer = new StringTokenizer(inPortName,".");
+        StringBuilder builder = new StringBuilder();
         while(tokenizer.hasMoreTokens()) {
             String currentToken = tokenizer.nextToken();
-            returnString += ManagerUtil.upperCaseFirstChar(currentToken);
+            builder.append( ManagerUtil.upperCaseFirstChar(currentToken));
             
         }
         
-        return returnString;
+        return builder.toString();
         
     }
     
@@ -585,6 +584,9 @@ public class ManagerUtil {
         type = ClassPath.COMPILE;
         ClassPath cp = ClassPath.getClassPath(getSourceRoot(project), type);
 
+        if ( cp== null){
+            return false;
+        }
         return cp.contains(obj);
     }
     
@@ -704,6 +706,9 @@ public class ManagerUtil {
         type = ClassPath.COMPILE;
         ClassPath cp = ClassPath.getClassPath(getSourceRoot(project), type);
 
+        if ( cp==null){
+            return false;
+        }
         return cp.contains(obj);
     }
     

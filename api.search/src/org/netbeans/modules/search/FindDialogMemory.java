@@ -147,6 +147,7 @@ public final class FindDialogMemory {
     private String resultsColumnWidths;
     private String resultsColumnWidthsDetails;
     private String resultsColumnWidthsReplacing;
+    private int replaceResultsDivider;
 
     /** Tree or flat result view mode. */
     private String resultsViewMode;
@@ -178,6 +179,7 @@ public final class FindDialogMemory {
     private static final String PROP_RESULTS_COLUMN_WIDTHS = "results_column_widths"; //NOI18N
     private static final String PROP_RESULTS_COLUMN_WIDTHS_DETAILS = "results_column_widths_details"; //NOI18N
     private static final String PROP_RESULTS_COLUMN_WIDTHS_REPLACING = "results_column_widths_replacing"; //NOI18N
+    private static final String PROP_REPLACE_RESULTS_DIVIDER = "replace_results_divider"; //NOI18N
     private static final String PROP_RESULTS_VIEW_MODE = "results_view_mode"; //NOI18N
     private static final String PROP_PROVIDER = "provider"; //NOI18N
     private static final String PROP_OPEN_IN_NEW_TAB = "open_in_new_tab"; //NOI18N
@@ -220,6 +222,7 @@ public final class FindDialogMemory {
                 "100:-1:-1:-1:-1:|0:");                                 //NOI18N
         resultsColumnWidthsReplacing = prefs.get(PROP_RESULTS_COLUMN_WIDTHS_REPLACING,
                 "100:-1:-1:-1:-1:|0:");                                 //NOI18N
+        replaceResultsDivider = prefs.getInt(PROP_REPLACE_RESULTS_DIVIDER, -1);
         resultsViewMode = prefs.get(PROP_RESULTS_VIEW_MODE, null);
         provider = prefs.get(PROP_PROVIDER, null);
         openInNewTab = prefs.getBoolean(PROP_OPEN_IN_NEW_TAB, true);
@@ -450,6 +453,15 @@ public final class FindDialogMemory {
         this.resultsColumnWidthsReplacing = resultsColumnWidthsReplacing;
         prefs.put(PROP_RESULTS_COLUMN_WIDTHS_REPLACING,
                 resultsColumnWidthsReplacing);
+    }
+
+    public int getReplaceResultsDivider() {
+        return replaceResultsDivider;
+    }
+
+    public void setReplaceResultsDivider(int splitDividerLocation) {
+        this.replaceResultsDivider = splitDividerLocation;
+        prefs.putDouble(PROP_REPLACE_RESULTS_DIVIDER, splitDividerLocation);
     }
 
     public String getResultsViewMode() {

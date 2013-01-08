@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2007, 2009 Oracle and/or its affiliates. All rights reserved.
+Copyright &copy; 2007, 2009, 2012 Oracle and/or its affiliates. All rights reserved.
  -->
 <html>
   <head>
@@ -52,12 +52,12 @@ Copyright &copy; 2007, 2009 Oracle and/or its affiliates. All rights reserved.
         paths. Auto mode stores paths as relative to project root if inside project, othervise as
         absolute path.
       </li>
-      <li>
+      <!-- <li>
         <b>Save All Modified Files Before Running Make.</b> If selected, saves all unsaved files in
         the IDE before running make. It is recommended to leave this property selected because
         modifications to files in the IDE are not recognized by make unless they are first saved to
         disk.
-      </li>
+      </li> -->
       <li>
         <b>Reuse Output Tabs from Finished Processes.</b> If selected, writes make output to a
         single Output window tab, deleting the output from the previous process. If not selected,
@@ -76,11 +76,17 @@ Copyright &copy; 2007, 2009 Oracle and/or its affiliates. All rights reserved.
       <li>
         <b>Show warning dialog about missing makefiles due to mismatched platforms.</b> If
         selected, the IDE will warn you if you attempt to run a project that was created on a
-        platform that is not the same as your current development host's platform. If you use
+        platform that is not the same as your current build host's platform. If you use
         project configurations to build on multiple platforms, you might want to disable the
         missing makefiles warning.
       </li>
-   
+      <li>
+        <b>Rebuild entire project if project properties have changed.</b> If selected, the IDE
+        rebuilds the project if you change any project properties, even ones that should have no
+        effect on build products. By default, this is not selected because dependency checking
+        should ensure most required rebuilds. You might want to enable this option if you are using
+        GNU tools and changing compiler or linker options does not cause a rebuild.
+      </li>
   
     </ul>
     <table>

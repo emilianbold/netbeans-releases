@@ -44,11 +44,10 @@ package org.netbeans.modules.cnd.toolchain.compilers;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
+import static org.netbeans.modules.cnd.toolchain.compilers.CCCCompiler.addUnique;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
@@ -172,12 +171,14 @@ import org.openide.util.NbBundle;
                    continue;
                }
                if (line.startsWith("#define ")) { // NOI18N
-                   int i = line.indexOf(' ', 8);
-                   if (i > 0) {
-                       String token = line.substring(8, i) + "=" + line.substring(i+1); // NOI18N
-                       addUnique(pair.systemPreprocessorSymbolsList, token);
-                   } else {
-                       String token = line.substring(8) + "="; // NOI18N
+                   String[] macro = CCCCompiler.getMacro(line.substring(8).trim());
+                   if (CCCCompiler.isValidMacroName(macro[0])) {
+                       String token;
+                       if (macro[1] != null) {
+                            token = macro[0] + "=" + macro[1]; // NOI18N
+                       } else {
+                           token = macro[0];
+                       }
                        addUnique(pair.systemPreprocessorSymbolsList, token);
                    }
                } else {

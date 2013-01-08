@@ -182,7 +182,7 @@ public class IntroduceSuggestion extends AbstractSuggestion {
                 clzName = (clzName != null && clzName.trim().length() > 0) ? clzName : null;
                 ElementQuery.Index index = model.getIndexScope().getIndex();
                 Set<ClassElement> classes = Collections.emptySet();
-                if (clzName != null) {
+                if (StringUtils.hasText(clzName)) {
                     classes = index.getClasses(NameKind.exact(clzName));
                 }
                 if (clzName != null && classes.isEmpty()) {
@@ -199,7 +199,7 @@ public class IntroduceSuggestion extends AbstractSuggestion {
         public void visit(MethodInvocation methodInvocation) {
             if (isInside(methodInvocation.getStartOffset(), lineBegin, lineEnd)) {
                 String methName = CodeUtils.extractFunctionName(methodInvocation.getMethod());
-                if (methName != null) {
+                if (StringUtils.hasText(methName)) {
                     Collection<? extends TypeScope> allTypes = ModelUtils.resolveType(model, methodInvocation);
                     if (allTypes.size() == 1) {
                         TypeScope type = ModelUtils.getFirst(allTypes);
@@ -224,7 +224,7 @@ public class IntroduceSuggestion extends AbstractSuggestion {
                 String methName = CodeUtils.extractFunctionName(methodInvocation.getMethod());
                 String clzName = CodeUtils.extractUnqualifiedClassName(methodInvocation);
 
-                if (clzName != null) {
+                if (clzName != null && StringUtils.hasText(methName)) {
                     Collection<? extends TypeScope> allTypes = ModelUtils.resolveType(model, methodInvocation);
                     if (allTypes.size() == 1) {
                         TypeScope type = ModelUtils.getFirst(allTypes);
@@ -276,7 +276,7 @@ public class IntroduceSuggestion extends AbstractSuggestion {
                 String clzName = CodeUtils.extractUnqualifiedClassName(fieldAccess);
                 if (clzName != null) {
                     String fieldName = CodeUtils.extractVariableName(field);
-                    if (fieldName == null) {
+                    if (!StringUtils.hasText(fieldName)) {
                         return;
                     }
                     if (fieldName.startsWith("$")) { //NOI18N
@@ -311,19 +311,17 @@ public class IntroduceSuggestion extends AbstractSuggestion {
                 String constName = staticConstantAccess.getConstant().getName();
                 String clzName = CodeUtils.extractUnqualifiedClassName(staticConstantAccess);
 
-                if (clzName != null) {
-                    if (constName != null) {
-                        Collection<? extends TypeScope> allTypes = ModelUtils.resolveType(model, staticConstantAccess);
-                        if (allTypes.size() == 1) {
-                            TypeScope type = ModelUtils.getFirst(allTypes);
-                            ElementQuery.Index index = model.getIndexScope().getIndex();
-                            Set<TypeConstantElement> allConstants = ElementFilter.forName(NameKind.exact(constName)).filter(index.getAllTypeConstants(type));
-                            if (allConstants.isEmpty()) {
-                                FileObject fileObject = type.getFileObject();
-                                BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, false) : null;
-                                if (document != null && fileObject.canWrite()) {
-                                    fix = new IntroduceClassConstantFix(document, staticConstantAccess, (TypeScope) type);
-                                }
+                if (clzName != null && StringUtils.hasText(constName)) {
+                    Collection<? extends TypeScope> allTypes = ModelUtils.resolveType(model, staticConstantAccess);
+                    if (allTypes.size() == 1) {
+                        TypeScope type = ModelUtils.getFirst(allTypes);
+                        ElementQuery.Index index = model.getIndexScope().getIndex();
+                        Set<TypeConstantElement> allConstants = ElementFilter.forName(NameKind.exact(constName)).filter(index.getAllTypeConstants(type));
+                        if (allConstants.isEmpty()) {
+                            FileObject fileObject = type.getFileObject();
+                            BaseDocument document = fileObject != null ? GsfUtilities.getDocument(fileObject, false) : null;
+                            if (document != null && fileObject.canWrite()) {
+                                fix = new IntroduceClassConstantFix(document, staticConstantAccess, (TypeScope) type);
                             }
                         }
                     }

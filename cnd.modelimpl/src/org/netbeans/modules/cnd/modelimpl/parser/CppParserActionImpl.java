@@ -165,12 +165,28 @@ public class CppParserActionImpl implements CppParserActionEx {
     
     @Override
     public boolean type_specifier_already_present(TokenStream input) {
-        if(builderContext.getSimpleDeclarationBuilderIfExist() != null) {
-            if(builderContext.getSimpleDeclarationBuilderIfExist().hasTypeSpecifier()) {
+        SimpleDeclarationBuilder simpleDeclarationBuilder = builderContext.getSimpleDeclarationBuilderIfExist();
+        if(simpleDeclarationBuilder == null) {
+            CsmObjectBuilder builder = builderContext.top();
+            if(builder instanceof TypeBuilder) {
+                CsmObjectBuilder builder2 = builderContext.top(1);
+                if(builder2 instanceof SimpleDeclarationBuilder) {
+                    simpleDeclarationBuilder = (SimpleDeclarationBuilder)builder2;
+                }
+            }
+        }
+        if(simpleDeclarationBuilder != null) {
+            if(simpleDeclarationBuilder.hasTypeSpecifier()) {
                 return false;
             }
-            if(!builderContext.getSimpleDeclarationBuilderIfExist().isInDeclSpecifiers() && builderContext.getSimpleDeclarationBuilderIfExist().hasTypedefSpecifier()) {
+            
+            if(!simpleDeclarationBuilder.isInDeclSpecifiers() && simpleDeclarationBuilder.hasTypedefSpecifier()) {
                 return false;
+            }
+            if(simpleDeclarationBuilder.isInDeclSpecifiers() && 
+                    simpleDeclarationBuilder.hasTypedefSpecifier() &&
+                    !simpleDeclarationBuilder.hasTypeSpecifier()) {
+                return true;
             }
         }
         int index = input.index();
@@ -467,6 +483,8 @@ public class CppParserActionImpl implements CppParserActionEx {
             classBuilder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());        
             classBuilder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
         }
+        declBuilder.setTypeSpecifier();
+        
         builderContext.push(classBuilder);
     }
 
@@ -1582,6 +1600,7 @@ public class CppParserActionImpl implements CppParserActionEx {
             builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());        
             builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
         }        
+        declBuilder.setTypeSpecifier();
         builderContext.push(builder);
         builderContext.push(new NameBuilder());
     }

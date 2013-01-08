@@ -588,7 +588,7 @@ public class Utilities {
     
     private static Reference<Map<ModuleInfo, Set<UpdateElement>>> cachedInfo2RequestedReference = null;            
     
-    public static Set<UpdateElement> handleBackwardCompatability4ModuleInfo (ModuleInfo mi, Set<ModuleInfo> forInstall, Set<Dependency> brokenDependencies, boolean aggressive) {
+    private static Set<UpdateElement> handleBackwardCompatability4ModuleInfo (ModuleInfo mi, Set<ModuleInfo> forInstall, Set<Dependency> brokenDependencies, boolean aggressive) {
         if (cachedInfo2RequestedReference != null && cachedInfo2RequestedReference.get() != null) {
             Set<UpdateElement> requested = cachedInfo2RequestedReference.get().get(mi);
             if (requested != null) {
@@ -673,7 +673,7 @@ public class Utilities {
     private static Reference<Set<ModuleInfo>> cachedInfosReference = null;            
     private static Reference<Set<UpdateElement>> cachedResultReference = null;
     
-    public static Set<UpdateElement> handleBackwardCompatability (Set<ModuleInfo> forInstall, Set<Dependency> brokenDependencies, boolean aggressive) {
+    private static Set<UpdateElement> handleBackwardCompatability (Set<ModuleInfo> forInstall, Set<Dependency> brokenDependencies, boolean aggressive) {
         if (cachedInfosReference != null && cachedInfosReference.get() != null && cachedInfosReference.get().equals(forInstall)) {
             if (cachedResultReference != null && cachedResultReference.get() != null) {
                 return cachedResultReference.get();

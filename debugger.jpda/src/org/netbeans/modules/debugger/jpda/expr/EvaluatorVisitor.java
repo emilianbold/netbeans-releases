@@ -177,7 +177,9 @@ import org.netbeans.modules.debugger.jpda.expr.EvaluationContext.ScriptVariable;
 import org.netbeans.modules.debugger.jpda.expr.EvaluationContext.VariableInfo;
 import org.netbeans.modules.debugger.jpda.jdi.ArrayTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ValueWrapper;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
@@ -296,6 +298,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         List<? extends TypeMirror> paramTypes = null;
         String enclosingClass = null;
+        boolean isVarArgs = false;
         if (elm != null) {
             TypeMirror typeMirror = elm.asType();
             TypeKind kind = typeMirror.getKind();
@@ -306,6 +309,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     Assert.error(arg0, "noSuchMethod", elm.getSimpleName().toString(), elm.getEnclosingElement().getSimpleName().toString());
                 }
                 ExecutableElement methodElement = (ExecutableElement) elm;
+                isVarArgs = methodElement.isVarArgs();
                 ExecutableType execTypeMirror = (ExecutableType) typeMirror;
                 paramTypes = execTypeMirror.getParameterTypes();
                 isStatic = methodElement.getModifiers().contains(Modifier.STATIC);
@@ -436,9 +440,74 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         if (method == null) {
             method = getConcreteMethodAndReportProblems(arg0, type, methodName, null, paramTypes, argTypes);
         }
+        if (isVarArgs) {
+            transformVarArgsValues(argVals, paramTypes, evaluationContext);
+        }
         return invokeMethod(arg0, method, isStatic, cType, objectReference, argVals, evaluationContext, preferredType != null);
     }
 
+    /**
+     * Transform the var-arg arguments to an array.
+     * @param argVals The arguments, where the last items are replaced with an array.
+     * @param paramTypes Appropriate parameter types.
+     * @param evaluationContext
+     * @return The created array, with disabled collection, which needs to get enabled collection after it's use.
+     */
+    private ArrayReference transformVarArgsValues(List<Value> argVals, List<? extends TypeMirror> paramTypes, EvaluationContext evaluationContext) {
+        int varIndex = paramTypes.size() - 1;
+        TypeMirror tm = paramTypes.get(varIndex);
+        if (tm.getKind() != TypeKind.ARRAY) {
+            return null;
+        }
+        VirtualMachine vm = evaluationContext.getDebugger().getVirtualMachine();
+        if (vm == null) {
+            return null;
+        }
+        String typeName = getTypeName(((javax.lang.model.type.ArrayType) tm).getComponentType());
+        int length = argVals.size() - varIndex;
+        ArrayType at = (ArrayType) getOrLoadClass(vm, typeName+"[]", evaluationContext);
+        if (length == 1) {
+            Value varArg = argVals.get(varIndex);
+            if (varArg instanceof ArrayReference) {
+                if (dimension(at) == dimension((ArrayType) ((ArrayReference) varArg).type())) {
+                    // The argument is already an array corresponding to vararg
+                    return null;
+                }
+            }
+        }
+        ArrayReference array = createArrayMirrorWithDisabledCollection(at, length, evaluationContext);
+        List<Value> elements = new ArrayList<Value>(length);
+        for (int i = 0; i < length; i++) {
+            elements.add(argVals.get(varIndex + i));
+        }
+        autoboxElements(null, at, elements, evaluationContext);
+        try {
+            array.setValues(elements);
+        } catch (InvalidTypeException ex) {
+            throw new IllegalStateException("ArrayType "+at+" can not have "+elements+" elements.");
+        } catch (ClassNotLoadedException ex) {
+            throw new IllegalStateException(ex);
+        }
+        for (int i = argVals.size() - 1; i >= varIndex; i--) {
+            argVals.remove(i);
+        }
+        argVals.add(array);
+        return array;
+    }
+    
+    // Find out the array dimension
+    private static int dimension(ArrayType at) {
+        int d = 1;
+        Type ct;
+        try {
+            while ((ct = at.componentType()) instanceof ArrayType) {
+                d++;
+                at = (ArrayType) ct;
+            }
+        } catch (ClassNotLoadedException ex) {}
+        return d;
+    }
+    
     /*private Method getConcreteMethod(ReferenceType type, String methodName, List<? extends ExpressionTree> typeArguments) {
         List<Method> methods = type.methodsByName(methodName);
         String signature = createSignature(typeArguments);
@@ -450,7 +519,12 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         return null;
     }*/
 
-    private ReferenceType findEnclosingTypeWithMethod(ReferenceType type, String enclosingClass, String methodName, List<? extends TypeMirror> paramTypes, List<? extends Type> argTypes, Method[] methodPtr) {
+    private ReferenceType findEnclosingTypeWithMethod(ReferenceType type,
+                                                      String enclosingClass,
+                                                      String methodName,
+                                                      List<? extends TypeMirror> paramTypes,
+                                                      List<? extends Type> argTypes,
+                                                      Method[] methodPtr) {
         ReferenceType etype = findEnclosingType(type, enclosingClass);
         if (etype == null) {
             return null;
@@ -473,7 +547,12 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
     }
 
-    private static Method getConcreteMethodAndReportProblems(Tree arg0, ReferenceType type, String methodName, String firstParamSignature, List<? extends TypeMirror> paramTypes, List<? extends Type> argTypes) {
+    private static Method getConcreteMethodAndReportProblems(Tree arg0,
+                                                             ReferenceType type,
+                                                             String methodName,
+                                                             String firstParamSignature,
+                                                             List<? extends TypeMirror> paramTypes,
+                                                             List<? extends Type> argTypes) {
         Method method;
         try {
             if (paramTypes != null) {
@@ -519,7 +598,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         return getConcreteMethod(type, methodName, null, typeArguments);
     }
 
-    private static Method getConcreteMethod(ReferenceType type, String methodName, String firstParamSignature, List<? extends TypeMirror> typeArguments) throws UnsuitableArgumentsException {
+    private static Method getConcreteMethod(ReferenceType type, String methodName,
+                                            String firstParamSignature,
+                                            List<? extends TypeMirror> typeArguments) throws UnsuitableArgumentsException {
         List<Method> methods = type.methodsByName(methodName);
         String signature = createSignature(firstParamSignature, typeArguments);
         boolean constructor = "<init>".equals(methodName);
@@ -1265,6 +1346,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                         v = l * r; isBoolean = false; break;
                     case PLUS:
                         v = l + r; isBoolean = false; break;
+                    case REMAINDER:
+                        v = l % r; isBoolean = false; break;
                     case EQUAL_TO:
                         b = l == r; break;
                     case GREATER_THAN:
@@ -1302,6 +1385,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                         v = l * r; isBoolean = false; break;
                     case PLUS:
                         v = l + r; isBoolean = false; break;
+                    case REMAINDER:
+                        v = l % r; isBoolean = false; break;
                     case EQUAL_TO:
                         b = l == r; break;
                     case GREATER_THAN:
@@ -2397,6 +2482,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         }
         TreePath currentPath = getCurrentPath();
         TypeMirror cType;
+        boolean isVarArgs = false;
         if (currentPath != null) {
             TreePath identifierPath = TreePath.getPath(currentPath, arg0);
             if (identifierPath == null) {
@@ -2412,6 +2498,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     }
                     ExecutableElement cElem = (ExecutableElement) elm;
                     cType = cElem.asType();
+                    isVarArgs = cElem.isVarArgs();
                 }
             } else {
                 // Unresolved class
@@ -2499,6 +2586,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             }
             evaluationContext.methodToBeInvoked();
             Method constructorMethod = getConcreteMethodAndReportProblems(arg0, classType, "<init>", firstParamSignature, paramTypes, argTypes);
+            if (isVarArgs) {
+                transformVarArgsValues(argVals, paramTypes, evaluationContext);
+            }
             ObjectReference o = classType.newInstance(evaluationContext.getFrame().thread(),
                                                       constructorMethod,
                                                       argVals,

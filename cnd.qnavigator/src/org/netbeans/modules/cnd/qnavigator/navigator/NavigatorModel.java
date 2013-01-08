@@ -183,6 +183,9 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
             if (CsmModelAccessor.getModelState() != CsmModelState.ON) {
                 return;
             }
+            if (csmFile == null || !csmFile.isValid()) {
+                return;
+            }
             if (busyListener != null) {
                 busyListener.busyStart();
             }
@@ -327,6 +330,9 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
 
     @Override
     public void projectLoaded(CsmProject project) {
+        if (!project.isValid()) {
+            return;
+        }
         CsmFileModel.logger.log(Level.FINE, "projectLoaded {0}", project); // NOI18N
         CsmFile file = getCsmFile();
         if( file != null && project.equals(file.getProject()) ) {

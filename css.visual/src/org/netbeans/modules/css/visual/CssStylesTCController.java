@@ -48,8 +48,6 @@ import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.css.visual.api.CssStylesTC;
 import org.openide.filesystems.FileObject;
@@ -67,7 +65,6 @@ import org.openide.windows.WindowManager;
 public class CssStylesTCController implements PropertyChangeListener {
 
     private static final RequestProcessor RP = new RequestProcessor(CssStylesTCController.class);
-    private static final Logger LOG = RuleEditorPanel.LOG;
     
     /**
      * Which mimetypes should cause the CssStyles window to be activated.
@@ -122,10 +119,7 @@ public class CssStylesTCController implements PropertyChangeListener {
 
                     //slow IO, do not run in EDT
                     final FileObject file = getFileObject(activated);
-                    if(file == null) {
-                        return ;
-                    }
-                    final boolean supported = isSupportedFileType(file);
+                    final boolean supported = file != null && isSupportedFileType(file);
 
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override

@@ -331,7 +331,7 @@ final class RootNode extends AbstractNode {
         case 3:
             return MSG_TestResultSummary2(messageList.get(0), messageList.get(1), messageList.get(2));
         case 4:
-            return MSG_TestResultSummary3(messageList.get(0), messageList.get(1), messageList.get(2), messageList.get(4));
+            return MSG_TestResultSummary3(messageList.get(0), messageList.get(1), messageList.get(2), messageList.get(3));
         case 5:
             return MSG_TestResultSummary4(messageList.get(0), messageList.get(1), messageList.get(2), messageList.get(3), messageList.get(4));
         default:

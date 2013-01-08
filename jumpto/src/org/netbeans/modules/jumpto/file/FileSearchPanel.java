@@ -438,16 +438,12 @@ private void resultListMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST
 }//GEN-LAST:event_resultListMouseReleased
 
 private void resultListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_resultListValueChanged
-        Object svObject = resultList.getSelectedValue();
-        if ( svObject != null && svObject instanceof FileDescriptor ) {
-            FileDescriptor selectedValue = (FileDescriptor)svObject;
-            FileObject fo = selectedValue.getFileObject();
-            if(fo != null) {
-                jTextFieldLocation.setText(FileUtil.getFileDisplayName(fo));
-            }
-            return;
+        final Object svObject = resultList.getSelectedValue();
+        if ( svObject instanceof FileDescriptor ) {
+            jTextFieldLocation.setText(((FileDescriptor)svObject).getFileDisplayPath());
+        } else {
+            jTextFieldLocation.setText(""); //NOI18N
         }
-        jTextFieldLocation.setText("");
 }//GEN-LAST:event_resultListValueChanged
 
     private void fileNameTextFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_fileNameTextFieldKeyPressed

@@ -48,6 +48,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -64,7 +65,7 @@ import org.openide.util.Exceptions;
 
 /**
  * Returns libraries from http://cdnjs.com based on the snapshot of their sources.
- * Snapshot can be updated by running "ant -f web.clientproject/build.xml get-cdnjs-jar"
+ * Snapshot can be updated by running "ant -f web.clientproject.api/build.xml get-cdnjs-jar"
  * and is stored in resources/cdnjs.zip file.
  */
 //@ServiceProvider(service = org.netbeans.spi.project.libraries.LibraryProvider.class)
@@ -135,7 +136,7 @@ public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementa
 
     private void addLibrary(List<LibraryImplementation> libs, ZipInputStream str, 
             Map<String, List<String>> versions) throws ParseException, IOException {
-        Reader r = new InputStreamReader(str);
+        Reader r = new InputStreamReader(str, Charset.forName("UTF-8"));
         JSONObject desc = (JSONObject)JSONValue.parseWithException(r);
         String name = (String)desc.get("name"); // NOI18N
         String version = (String)desc.get("version"); // NOI18N
@@ -150,7 +151,7 @@ public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementa
             return;
         }
         for (String v : vers) {
-            if (v.equals(version) || v == null) {
+            if (v == null || v.equals(version)) {
                 continue;
             }
             libs.add(createLibrary(name, v, file, homepage, description));

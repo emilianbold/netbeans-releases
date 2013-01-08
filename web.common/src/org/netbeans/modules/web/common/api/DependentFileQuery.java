@@ -63,7 +63,7 @@ public class DependentFileQuery {
             return true;
         }
         for (DependentFileQueryImplementation impl : lookup.allInstances()) {
-            if (Boolean.TRUE.equals(impl.isDependent(master, dependent))) {
+            if (impl.isDependent(master, dependent) == DependentFileQueryImplementation.Dependency.YES) {
                 return true;
             }
         }

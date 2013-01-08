@@ -51,6 +51,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -227,12 +228,14 @@ public class MavenProjectRestSupport extends WebRestSupport {
     public String getBaseURL() throws IOException {
         WebApp webApp = getWebApp();
         if (webApp != null) {
-            String servletNames = "";
-            String urlPatterns = "";
+            StringBuilder servletNames = new StringBuilder();
+            StringBuilder urlPatterns = new StringBuilder();
             int i=0;
             for (ServletMapping mapping : webApp.getServletMapping()) {
-                servletNames+=(i>0 ? ",":"")+mapping.getServletName();
-                urlPatterns+= (i>0 ? ",":"")+mapping.getUrlPattern();
+                servletNames.append(i>0 ? ",":"");
+                servletNames.append(mapping.getServletName());
+                urlPatterns.append(i>0 ? ",":"");
+                urlPatterns.append(mapping.getUrlPattern());
                 i++;
             }
             http://localhost:8084/mavenprojectWeb3/||ServletAdaptor||resources/*
@@ -409,9 +412,11 @@ public class MavenProjectRestSupport extends WebRestSupport {
         try {
             lock = fo.lock();
             OutputStream os = fo.getOutputStream(lock);
-            writer = new BufferedWriter(new OutputStreamWriter(os));
+            writer = new BufferedWriter(new OutputStreamWriter(os, 
+                    Charset.forName("UTF-8")));         // NOI18N
             InputStream is = RestSupport.class.getResourceAsStream("resources/"+name);
-            reader = new BufferedReader(new InputStreamReader(is));
+            reader = new BufferedReader(new InputStreamReader(is, 
+                    Charset.forName("UTF-8")));         // NOI18N
             String line;
             String lineSep = "\n";//Unix
             if(File.separatorChar == '\\')//Windows

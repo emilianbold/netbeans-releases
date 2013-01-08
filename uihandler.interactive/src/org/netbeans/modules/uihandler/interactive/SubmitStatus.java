@@ -30,7 +30,6 @@
  */
 package org.netbeans.modules.uihandler.interactive;
 
-import org.netbeans.modules.uihandler.*;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Component;
@@ -57,7 +56,6 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusLineElementProvider;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -70,6 +68,7 @@ public class SubmitStatus implements StatusLineElementProvider {
     public SubmitStatus() {
     }
 
+    @Override
     public Component getStatusLineElement() {
         return new NrLabel(SubmitAction.get(SubmitAction.class));
     }
@@ -102,16 +101,19 @@ public class SubmitStatus implements StatusLineElementProvider {
             adjustSize();
         }
     
+        @Override
         public void addNotify() {
             adjustSize();
             super.addNotify();
             adjustSize();
         }
         
+        @Override
         public void propertyChange(PropertyChangeEvent arg0) {
             SwingUtilities.invokeLater(this);
         }
         
+        @Override
         public void run() {
             setIcon(tachoOk);
             timer.restart();
@@ -119,26 +121,40 @@ public class SubmitStatus implements StatusLineElementProvider {
             adjustSize();
         }
     
+        @Override
         public void actionPerformed(ActionEvent arg0) {
             setIcon(tacho);
             timer.stop();
         }
 
-        @SuppressWarnings("deprecated")
         private void adjustSize() {
+            LRUtil.invokeWithLogRecordsCount(new LRUtil.LRRun() {
+                @Override
+                public void run(int logRecordsCount) {
+                    adjustSize(logRecordsCount);
+                }
+            });
+        }
+        
+        private void adjustSize(int logRecordsCount) {
             String msg;
             if (Controller.getDefault().isAutomaticSubmit()) {
-                msg = NbBundle.getMessage(SubmitAction.class, "MSG_ShowHints", Controller.getDefault().getLogRecordsCount());
+                msg = NbBundle.getMessage(SubmitAction.class, "MSG_ShowHints", logRecordsCount);
             } else {
-                msg = NbBundle.getMessage(SubmitAction.class, "MSG_SubmitAction", Controller.getDefault().getLogRecordsCount());
+                msg = NbBundle.getMessage(SubmitAction.class, "MSG_SubmitAction", logRecordsCount);
             }
             setToolTipText(msg); // NOI18N
-            resize(0, 16);
+            resize(0, 16, logRecordsCount);
+        }
+        
+        @Deprecated
+        @Override
+        public void resize(int w, int h) {
+            resize(w, h, -1);
         }
         
         @SuppressWarnings("deprecated")
-        @Deprecated
-        public void resize(int w, int h) {
+        private void resize(int w, int h, int logRecordsCount) {
             boolean ignore = Boolean.getBoolean("netbeans.full.hack"); // NOI18N
             if (ignore) {
                 super.resize(0, 16);
@@ -155,16 +171,30 @@ public class SubmitStatus implements StatusLineElementProvider {
             }
             
             // regular mode
-            if (Controller.getDefault().getLogRecordsCount() < 800) {
-                //&& Installer.timesSubmitted() == 0) {
-                super.resize(0, 16);
+            if (logRecordsCount < 0) {
+                LRUtil.invokeWithLogRecordsCount(new LRUtil.LRRun() {
+                    @Override
+                    public void run(int logRecordsCount) {
+                        if (logRecordsCount < 800) {
+                            //&& Installer.timesSubmitted() == 0) {
+                            NrLabel.super.resize(0, 16);
+                        } else {
+                            NrLabel.super.resize(16, 16);
+                        }
+                    }
+                });
             } else {
-                super.resize(16, 16);
+                if (logRecordsCount < 800) {
+                    //&& Installer.timesSubmitted() == 0) {
+                    super.resize(0, 16);
+                } else {
+                    super.resize(16, 16);
+                }
             }
         }
         
         @Override
-        public void setIcon(Icon original) {
+        public void setIcon(final Icon original) {
             if (original == null) {
                 super.setIcon(original);
                 return;
@@ -174,39 +204,45 @@ public class SubmitStatus implements StatusLineElementProvider {
                 return;
             }
             
-            int size = 16;
+            final int size = 16;
             
-            BufferedImage img = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D imgG = (Graphics2D) img.getGraphics();
-            imgG.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            LRUtil.invokeWithLogRecordsCount(new LRUtil.LRRun() {
+                @Override
+                public void run(int logRecordsCount) {
+                    BufferedImage img = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+                    Graphics2D imgG = (Graphics2D) img.getGraphics();
+                    imgG.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-            imgG.drawImage(((ImageIcon)original).getImage(), 0, 0, size, size, null);
-            
-            int half = size / 2;
-            final Arc2D bigger = new Arc2D.Double();
-            bigger.setArcByCenter(half, half, half, 90, -(360.0 / 1000.0) * Controller.getDefault().getLogRecordsCount(), Arc2D.PIE);
-            final Arc2D smaller = new Arc2D.Double();
-            smaller.setArcByCenter(half, half, size == 24 ? 5.0 : 3.0, 0, 360, Arc2D.PIE);
-              
-            int s = Controller.getDefault().getLogRecordsCount();
-            if (s < 800) {
-                imgG.setColor(Color.RED.darker().darker());
-            } else if (s < 990) {
-                imgG.setColor(Color.ORANGE);
-            } else {
-                imgG.setColor(Color.RED);
-            }
-            imgG.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
-            
-            Area minus = new Area(bigger);
-            minus.subtract(new Area(smaller));
-            imgG.fill(minus);
-            
-            super.setIcon(new ImageIcon(img));
-            
-            adjustSize();
+                    imgG.drawImage(((ImageIcon)original).getImage(), 0, 0, size, size, null);
+
+                    int half = size / 2;
+                    final Arc2D bigger = new Arc2D.Double();
+                    bigger.setArcByCenter(half, half, half, 90, -(360.0 / 1000.0) * logRecordsCount, Arc2D.PIE);
+                    final Arc2D smaller = new Arc2D.Double();
+                    smaller.setArcByCenter(half, half, size == 24 ? 5.0 : 3.0, 0, 360, Arc2D.PIE);
+
+                    int s = logRecordsCount;
+                    if (s < 800) {
+                        imgG.setColor(Color.RED.darker().darker());
+                    } else if (s < 990) {
+                        imgG.setColor(Color.ORANGE);
+                    } else {
+                        imgG.setColor(Color.RED);
+                    }
+                    imgG.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
+
+                    Area minus = new Area(bigger);
+                    minus.subtract(new Area(smaller));
+                    imgG.fill(minus);
+
+                    NrLabel.super.setIcon(new ImageIcon(img));
+
+                    adjustSize(logRecordsCount);
+                }
+            });
         }
 
+        @Override
         public void mouseClicked(MouseEvent e) {
             URL hint = Controller.getDefault().getHintsURL();
             if (hint == null || e.isPopupTrigger()) {
@@ -216,15 +252,19 @@ public class SubmitStatus implements StatusLineElementProvider {
             }
         }
 
+        @Override
         public void mousePressed(MouseEvent e) {
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
         }
 
+        @Override
         public void mouseEntered(MouseEvent e) {
         }
 
+        @Override
         public void mouseExited(MouseEvent e) {
         }
     } // end of NrButton

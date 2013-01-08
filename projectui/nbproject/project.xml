@@ -279,6 +279,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.team.ui</friend>
                 <friend>org.netbeans.modules.welcome</friend>
                 <package>org.netbeans.modules.project.ui.api</package>
+                <package>org.netbeans.modules.project.ui.spi</package>
             </friend-packages>
         </data>
     </configuration>

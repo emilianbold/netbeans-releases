@@ -55,6 +55,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.plaf.UIResource;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
@@ -126,7 +127,7 @@ public class CompilePanel extends javax.swing.JPanel {
         initValues();
     }
 
-    private String valueToLabel(String value) {
+    private String valueToLabel(@NullAllowed String value) {
         for (int i = 0; i < VALUES.length; i++) {
             if (VALUES[i].equalsIgnoreCase(value)) {
                 return LABELS[i];
@@ -178,18 +179,15 @@ public class CompilePanel extends javax.swing.JPanel {
             public String getValue() {
                 String val = modifiedValue;
                 if (val == null) {
-                    Properties props = handle.getPOMModel().getProject().getProperties();
+                    val = handle.getRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, true);
+                }
+                if (val == null) {
+                    java.util.Properties props = handle.getProject().getProperties();
                     if (props != null) {
                         val = props.getProperty(Constants.HINT_COMPILE_ON_SAVE);
                     }
-                }
-                if (val == null) {
-                    val = handle.getRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, true);
-                }
-                if (val != null) {
-                    return valueToLabel(val);
-                }
-                return LABELS[getDefaultCOSValue()];
+                }             
+                return valueToLabel(val);
             }
 
             @Override
@@ -214,8 +212,8 @@ public class CompilePanel extends javax.swing.JPanel {
                 }
 
                 boolean hasConfig = handle.getRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, true) != null;
-
-                if (handle.getProject().getProperties().containsKey(Constants.HINT_COMPILE_ON_SAVE)) {
+                org.netbeans.modules.maven.model.pom.Project p = handle.getPOMModel().getProject();
+                if (p.getProperties() != null && p.getProperties().getProperty(Constants.HINT_COMPILE_ON_SAVE) != null) {
                     modifiedValue = value;
                     handle.addPOMModification(operation);
                     if (hasConfig) {

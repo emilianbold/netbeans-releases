@@ -60,6 +60,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.SourceVersion;
@@ -332,6 +333,14 @@ public class UnusedImports {
                     }
                 } else {
                     handleUnresolvableImports(decl, methodInvocation, true);
+                    
+                    for (Entry<Element, ImportTree> e : element2Import.entrySet()) {
+                        if (importedBySingleImport.contains(e.getKey())) continue;
+                        
+                        if (e.getKey().getSimpleName().equals(decl.getSimpleName())) {
+                            import2Highlight.remove(e.getValue());
+                        }
+                    }
                 }
             }
         }

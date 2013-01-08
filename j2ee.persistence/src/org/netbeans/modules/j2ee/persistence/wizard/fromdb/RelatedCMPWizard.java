@@ -188,12 +188,12 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
                         new DatabaseTablesPanel.WizardPanel(wizardTitle),
                         new EntityClassesPanel.WizardPanel(),};
         } else {
-            boolean showPUStep = false;
-            try {
-                showPUStep = !ProviderUtil.persistenceExists(project);
-            } catch (InvalidPersistenceXmlException ex) {
-                //it's handled one more time in appropriate panel, need nothing to do
-            }
+//            boolean showPUStep = false;
+//            try {
+//                showPUStep = !ProviderUtil.persistenceExists(project);
+//            } catch (InvalidPersistenceXmlException ex) {
+//                //it's handled one more time in appropriate panel, need nothing to do
+//            }
 //            if(showPUStep){
 //                return new WizardDescriptor.Panel[] {
 //                        new DatabaseTablesPanel.WizardPanel(wizardTitle),
@@ -216,12 +216,12 @@ public class RelatedCMPWizard implements TemplateWizard.Iterator {
                         NbBundle.getMessage(RelatedCMPWizard.class, "LBL_DatabaseTables"),
                         NbBundle.getMessage(RelatedCMPWizard.class, isCMP() ? "LBL_EntityBeansLocation" : "LBL_EntityClasses"),};
         } else {
-            boolean showPUStep = false;
-            try {
-                showPUStep = !ProviderUtil.persistenceExists(project);
-            } catch (InvalidPersistenceXmlException ex) {
-                //it's handled one more time in appropriate panel, need nothing to do
-            }
+//            boolean showPUStep = false;
+//            try {
+//                showPUStep = !ProviderUtil.persistenceExists(project);
+//            } catch (InvalidPersistenceXmlException ex) {//TODO add schema2bean exception
+//                //it's handled one more time in appropriate panel, need nothing to do
+//            }
 //            if(showPUStep){
 //                 return new String[] {
 //                        NbBundle.getMessage(RelatedCMPWizard.class, "LBL_DatabaseTables"),

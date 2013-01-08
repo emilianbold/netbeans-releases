@@ -59,7 +59,7 @@ public class WebServicesProxy implements Webservices {
     private Webservices webSvc;
     private String version;
     private java.util.List listeners;
-    public boolean writing = false;
+    private boolean writing = false;
     private org.xml.sax.SAXParseException error;
     private int ddStatus;
 
@@ -114,7 +114,8 @@ public class WebServicesProxy implements Webservices {
     public void setStatus(int value) {
         if (ddStatus != value) {
             java.beans.PropertyChangeEvent evt = 
-                new java.beans.PropertyChangeEvent(this, PROPERTY_STATUS, new Integer(ddStatus), new Integer(value));
+                new java.beans.PropertyChangeEvent(this, PROPERTY_STATUS, 
+                        ddStatus, value);
             ddStatus = value;
             for (int i=0;i<listeners.size();i++) {
                 ((java.beans.PropertyChangeListener)listeners.get(i)).propertyChange(evt);

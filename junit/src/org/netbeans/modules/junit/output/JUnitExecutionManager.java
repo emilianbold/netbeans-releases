@@ -170,7 +170,7 @@ public class JUnitExecutionManager implements RerunHandler{
 		className = test.getName();
 	    }
             String prev = className == null ? null : toTest.get(className);
-            toTest.put(test.getClassName(), prev == null ? test.getName() : prev + "," + test.getName()); //NOI18N
+            toTest.put(className, prev == null ? test.getName() : prev + "," + test.getName()); //NOI18N
             if (someTestFO == null && test instanceof JUnitTestcase){
                 someTestFO = ((JUnitTestcase)test).getClassFileObject();
             }

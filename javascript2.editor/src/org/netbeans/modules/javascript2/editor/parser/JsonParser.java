@@ -37,10 +37,12 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
-import com.oracle.nashorn.ir.FunctionNode;
-import com.oracle.nashorn.ir.Node;
-import com.oracle.nashorn.runtime.JSException;
+import jdk.nashorn.internal.ir.FunctionNode;
+import jdk.nashorn.internal.ir.Node;
+import jdk.nashorn.internal.runtime.Source;
+import jdk.nashorn.internal.runtime.options.Options;
 import java.util.Collections;
+import jdk.nashorn.internal.runtime.ParserException;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;
 
@@ -60,31 +62,32 @@ public class JsonParser extends SanitizingParser {
     }
 
     @Override
-    protected com.oracle.nashorn.ir.FunctionNode parseSource(Snapshot snapshot, String name, String text, JsErrorManager errorManager) throws Exception {
-        com.oracle.nashorn.runtime.Source source = new com.oracle.nashorn.runtime.Source(name, text);
-        com.oracle.nashorn.runtime.options.Options options = new com.oracle.nashorn.runtime.options.Options("nashorn");
+    protected FunctionNode parseSource(Snapshot snapshot, String name, String text, JsErrorManager errorManager) throws Exception {
+        Source source = new Source(name, text);
+        Options options = new Options("nashorn");
         options.process(new String[] {
             "--parse-only=true", // NOI18N
             "--empty-statements=true", // NOI18N
             "--debug-lines=false"}); // NOI18N
 
         errorManager.setLimit(0);
-        com.oracle.nashorn.runtime.Context contextN = new com.oracle.nashorn.runtime.Context(options, errorManager);
-        com.oracle.nashorn.runtime.Context.setContext(contextN);
-        com.oracle.nashorn.codegen.Compiler compiler = new com.oracle.nashorn.codegen.Compiler(source, contextN);
-        com.oracle.nashorn.parser.JsonParser parser = new com.oracle.nashorn.parser.JsonParser(source, errorManager, contextN._strict);
+        jdk.nashorn.internal.runtime.Context nashornContext = new jdk.nashorn.internal.runtime.Context(options, errorManager);
+        // XXX
+        //jdk.nashorn.internal.runtime.Context.setContext(nashornContext);
+        jdk.nashorn.internal.codegen.Compiler compiler = jdk.nashorn.internal.codegen.Compiler.compiler(source, nashornContext);
+        jdk.nashorn.internal.parser.JSONParser parser = new jdk.nashorn.internal.parser.JSONParser(source, errorManager, nashornContext._strict);
 
-        com.oracle.nashorn.ir.Node objectNode = null;
+        Node objectNode = null;
         try {
             objectNode = parser.parse();
-        } catch (JSException ex) {
+        } catch (ParserException ex) {
             // JSON parser has no recovery
-            errorManager.error(ex.getMessage(), ex.getToken());
+            errorManager.error(ex);
         }
 
         // we are doing this as our infrusture requires function node on top
         // TODO we may get rid of such dep later
-        com.oracle.nashorn.ir.FunctionNode node = null;
+        FunctionNode node = null;
         if (objectNode != null) {
             node = new FunctionNode(source, 0, text.length(), compiler, null, null, "runScript"); // NOI18N
             node.setKind(FunctionNode.Kind.SCRIPT);

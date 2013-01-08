@@ -120,6 +120,10 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
      * Wrapper for the lookup of the current view.
      */
     private MatchedRulesLookup lookup;
+    /**
+     * Determines whether the view is active or not.
+     */
+    private boolean active = true;
     
     private static final RequestProcessor RP = new RequestProcessor(CssStylesPanelProviderImpl.class);
 
@@ -244,12 +248,14 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
     }
 
     void activateView() {
+        active = true;
         if (currentPageModel != null) {
             currentPageModel.getCSSStylesView().activated();
         }
     }
 
     void deactivateView() {
+        active = false;
         if (currentPageModel != null) {
             currentPageModel.getCSSStylesView().deactivated();
         }
@@ -273,9 +279,18 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
         };
     }
 
-    private void update(PageModel pageModel) {
+    private void update(final PageModel pageModel) {
         currentPageModel = pageModel;
         if (pageModel instanceof WebKitPageModel) {
+            if (EventQueue.isDispatchThread()) {
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        update(pageModel);
+                    }
+                });
+                return;
+            }
             final WebKitPageModel webKitPageModel = (WebKitPageModel)pageModel;
             FileObject fob = inspectedFileObject(webKitPageModel, true);
             webKitPageModel.addPropertyChangeListener(new PropertyChangeListener() {
@@ -295,6 +310,12 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
             });
             if (fob != null) {
                 inspectedFileObject = fob;
+            }
+            PageModel.CSSStylesView view = webKitPageModel.getCSSStylesView();
+            if (active) {
+                view.activated();
+            } else {
+                view.deactivated();
             }
         }
         update();
@@ -423,23 +444,28 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
             //rule selected in document view...
             final PageModel pageModel = PageInspectorImpl.getDefault().getPage();
             if (pageModel != null && (pageModel instanceof WebKitPageModel)) {
-                WebKitPageModel wkPageModel = (WebKitPageModel) pageModel;
-                FileObject file = inspectedFileObject(wkPageModel, false);
-                if (file != null) {
-                    final Model model = rule.getModel();
-                    model.runReadTask(new Model.ModelTask() {
-                        @Override
-                        public void run(StyleSheet styleSheet) {
-                            final String elementSource = model.getElementSource(rule.getSelectorsGroup()).toString();
-                            RP.post(new Runnable() {
+                final WebKitPageModel wkPageModel = (WebKitPageModel) pageModel;
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        FileObject file = inspectedFileObject(wkPageModel, false);
+                        if (file != null) {
+                            final Model model = rule.getModel();
+                            model.runReadTask(new Model.ModelTask() {
                                 @Override
-                                public void run() {
-                                    pageModel.setSelectedSelector(elementSource);
+                                public void run(StyleSheet styleSheet) {
+                                    final String elementSource = model.getElementSource(rule.getSelectorsGroup()).toString();
+                                    RP.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            pageModel.setSelectedSelector(elementSource);
+                                        }
+                                    });
                                 }
                             });
                         }
-                    });
-                }
+                    }
+                });
             }
         }
 

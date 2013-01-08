@@ -27,9 +27,12 @@ enterprise/modules/ext/jsf-2_1                                        CDDL-1.0 (
 enterprise/modules/ext/jstl.jar                                       Apache-2.0
 enterprise/modules/ext/metro/webservices-rt.jar                       CDDL-1.0, incl. Apache-2.0
 enterprise/modules/ext/metro/webservices-tools.jar                    CDDL-1.0, incl. Apache-2.0
-enterprise/modules/ext/primefaces/primefaces-3.2.jar                  Apache-2.0
+enterprise/modules/ext/primefaces/primefaces-3.4.jar                  Apache-2.0
 enterprise/modules/ext/rest/asm-3.1.jar                               BSD-ASM
-enterprise/modules/ext/rest/jackson-core-asl-1.7.1.jar                Apache-2.0
+enterprise/modules/ext/rest/jackson-core-asl-1.9.2.jar                Apache-2.0
+enterprise/modules/ext/rest/jackson-jaxrs-1.9.2.jar                   Apache-2.0
+enterprise/modules/ext/rest/jackson-mapper-asl-1.9.2.jar              Apache-2.0
+enterprise/modules/ext/rest/jackson-xc-1.9.2.jar                      Apache-2.0
 enterprise/modules/ext/rest/jettison-1.1.jar                          Apache-2.0
 enterprise/modules/ext/spring/spring-webmvc-2.5.6.SEC03.jar           Apache-2.0
 enterprise/modules/ext/standard.jar                                   Apache-2.0
@@ -59,6 +62,7 @@ ide/docs/css21-spec.zip                                               W3C (the o
 ide/docs/css3-spec.zip                                                W3C (the original at http://www.w3.org/Style/CSS/current-work)
 ide/docs/html-4.01.zip                                                W3C (the original at http://www.w3.org/TR/1999/REC-html401-19991224/)
 ide/docs/html5doc.zip                                                 HTML5DOC
+ide/docs/jquery-api.xml                                               MIT-jquery
 ide/modules/dict/ispell-enwl-3.1.20.zip                               BSD-ispell-enwl
 ide/modules/ext/antlr-runtime-3.4.jar                                 BSD-antlr-runtime
 ide/modules/org-apache-commons-codec.jar                              Apache-2.0
@@ -67,7 +71,7 @@ ide/modules/org-apache-commons-httpclient.jar                         Apache-2.0
 ide/modules/org-apache-commons-io.jar                                 Apache-2.0
 ide/modules/org-apache-commons-lang.jar                               Apache-2.0
 ide/modules/org-apache-commons-logging.jar                            Apache-2.0
-ide/modules/ext/commons-net-3.0.1.jar                                 Apache-2.0
+ide/modules/ext/commons-net-3.1.jar                                   Apache-2.0
 ide/modules/org-apache-ws-commons-util.jar                            Apache-2.0
 ide/modules/org-apache-xmlrpc.jar                                     Apache-2.0
 ide/modules/ext/freemarker-2.3.8.jar                                  freemarker
@@ -79,6 +83,7 @@ ide/modules/ext/io-xml-util.jar                                       Apache-2.0
 ide/modules/ext/iri.jar                                               BSD-iri
 ide/modules/ext/isorelax20041111.jar                                  MIT-isorelax
 ide/modules/ext/jaxb/jaxb1-impl.jar                                   CDDL-1.0, incl. MIT (iso-relax) and BSD (RelaxNG)
+ide/modules/ext/jaxb/jaxb-xjc.jar                                     CDDL-1.0, incl. MIT (iso-relax) and BSD (RelaxNG)
 ide/modules/ext/jing.jar                                              BSD-jing
 ide/modules/com-jcraft-jsch.jar                                       BSD-jsch
 ide/modules/ext/js.jar                                                MPL-1.1
@@ -118,14 +123,14 @@ ide/modules/ext/saxon9B.jar                                           MPL-1.0
 ide/modules/ext/servlet-2.2.jar                                       Apache-1.1
 ide/modules/ext/smack.jar                                             Apache-2.0
 ide/modules/ext/smackx.jar                                            Apache-2.0
-ide/modules/ext/sqljet-1.1.4.jar                                      TMate
-ide/modules/ext/svnClientAdapter-javahl-1.8.14.jar                    Apache-2.0
-ide/modules/ext/svnClientAdapter-main-1.8.14.jar                      Apache-2.0
-ide/modules/ext/svnClientAdapter-svnkit-1.8.14.jar                    Apache-2.0
-ide/modules/ext/svnjavahl-1.7.5.jar                                   Subversion
-ide/modules/ext/svnkit-1.7.5.jar                                      TMate
+ide/modules/ext/sqljet.jar                                            TMate
+ide/modules/ext/svnClientAdapter-javahl.jar                           Apache-2.0
+ide/modules/ext/svnClientAdapter-main.jar                             Apache-2.0
+ide/modules/ext/svnClientAdapter-svnkit.jar                           Apache-2.0
+ide/modules/ext/svnjavahl.jar                                         Subversion
+ide/modules/ext/svnkit.jar                                            TMate
 ide/modules/ext/swingx-all-1.6.4.jar                                  LGPL-2.1
-ide/modules/ext/trilead.ssh2_1.0.0.jar                                TRILEAD-LICENSE
+ide/modules/ext/trilead.ssh2.jar                                      TRILEAD-LICENSE
 ide/modules/ext/validator.jar                                         MIT-validator
 ide/modules/ext/webserver.jar                                         Apache-1.1
 ide/modules/ext/winp-1.14-patched.jar                                 MIT
@@ -148,14 +153,20 @@ java/modules/ext/eclipselink/org.eclipse.persistence.jpa.jpql_1.0.1.jar  EPL-v10
 java/modules/ext/hibernate                                            LGPL-2.1, incl. BSD, Apache-2.0 (see also Hibernate 3.2.5 at http://hibernate.org)
 java/modules/ext/jaxws22/woodstox-core-asl.jar                        Apache-2.0
 java/modules/ext/jaxws22/stax2-api.jar                                BSD-woodstox
-java/modules/ext/maven/indexer-artifact-5.0.0.jar                     Apache-2.0
-java/modules/ext/maven/indexer-core-5.0.0.jar                         Apache-2.0
+java/modules/ext/maven/indexer-artifact-5.1.0.jar                     Apache-2.0
+java/modules/ext/maven/indexer-core-5.1.0.jar                         Apache-2.0
 java/modules/ext/maven/jdom-1.0.jar                                   Apache-JDOM
 java/modules/ext/maven/lucene-core-3.6.1.jar                          Apache-2.0
 java/modules/ext/maven/lucene-highlighter-3.6.1.jar                   Apache-2.0
 java/modules/ext/maven/maven-dependency-tree-2.0.jar                  Apache-2.0
 java/modules/ext/spring-3.0/spring-aop-3.1.1.RELEASE.jar              Apache-2.0
+java/modules/ext/spring-3.0/spring-asm-3.1.1.RELEASE.jar              Apache-2.0
 java/modules/ext/spring-3.0/spring-aspects-3.1.1.RELEASE.jar          Apache-2.0
+java/modules/ext/spring-3.0/spring-beans-3.1.1.RELEASE.jar            Apache-2.0
+java/modules/ext/spring-3.0/spring-context-3.1.1.RELEASE.jar          Apache-2.0
+java/modules/ext/spring-3.0/spring-context-support-3.1.1.RELEASE.jar  Apache-2.0
+java/modules/ext/spring-3.0/spring-core-3.1.1.RELEASE.jar             Apache-2.0
+java/modules/ext/spring-3.0/spring-expression-3.1.1.RELEASE.jar       Apache-2.0
 java/modules/ext/spring-3.0/spring-instrument-3.1.1.RELEASE.jar       Apache-2.0
 java/modules/ext/spring-3.0/spring-instrument-tomcat-3.1.1.RELEASE.jar   Apache-2.0
 java/modules/ext/spring-3.0/spring-jdbc-3.1.1.RELEASE.jar             Apache-2.0
@@ -165,17 +176,10 @@ java/modules/ext/spring-3.0/spring-oxm-3.1.1.RELEASE.jar              Apache-2.0
 java/modules/ext/spring-3.0/spring-struts-3.1.1.RELEASE.jar           Apache-2.0
 java/modules/ext/spring-3.0/spring-test-3.1.1.RELEASE.jar             Apache-2.0
 java/modules/ext/spring-3.0/spring-tx-3.1.1.RELEASE.jar               Apache-2.0
+java/modules/ext/spring-3.0/spring-web-3.1.1.RELEASE.jar              Apache-2.0
 java/modules/ext/spring-3.0/spring-webmvc-3.1.1.RELEASE.jar           Apache-2.0
 java/modules/ext/spring-3.0/spring-webmvc-portlet-3.1.1.RELEASE.jar   Apache-2.0
 java/modules/ext/spring/spring-2.5.6.SEC03.jar                        Apache-2.0
-java/modules/org-springframework-asm.jar                              Apache-2.0
-java/modules/org-springframework-beans.jar                            Apache-2.0
-java/modules/org-springframework-context.jar                          Apache-2.0
-java/modules/org-springframework-context-support.jar                  Apache-2.0
-java/modules/org-springframework-core.jar                             Apache-2.0
-java/modules/org-springframework-expression.jar                       Apache-2.0
-java/modules/org-springframework-web.jar                              Apache-2.0
-java/modules/javax-servlet.jar                                        Apache-2.0
 mobility/modules/docs/jmunit-1.2.1-api.zip                            Apache-2.0
 mobility/modules/ext/ant-contrib-1.0b3.jar                            Apache-2.0
 mobility/modules/ext/commons-httpclient-3.0.1.jar                     Apache-2.0
@@ -1773,6 +1777,31 @@ The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+===
+======
+======================== MIT-jquery ===========================
+
+
+Copyright (c) 2011 John Resig, http://jquery.com/
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this
+software and associated documentation files (the "Software"), to deal in the
+Software without restriction, including without limitation the rights to use, copy,
+modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
+and to permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF  ANY KIND, EXPRESS OR IMPLIED,
 INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
 PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
 LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,

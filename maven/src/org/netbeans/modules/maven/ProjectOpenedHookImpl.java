@@ -110,7 +110,6 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
     private final Project proj;
     private TransientRepositories transRepos;
     private final List<URI> uriReferences = new ArrayList<URI>();
-    private CopyResourcesOnSave copyResourcesOnSave;
 
     // ui logging
     static final String UI_LOGGER_NAME = "org.netbeans.ui.maven.project"; //NOI18N
@@ -149,6 +148,7 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
     
     public ProjectOpenedHookImpl(Project proj) {
         this.proj = proj;
+        assert checkIssue224012(proj);
     }
 
     @Messages("UI_MAVEN_PROJECT_OPENED=A Maven project was opened. Appending the project's packaging type.")
@@ -164,9 +164,11 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
         //registerCoordinates() doesn't attach listeners
         MavenFileOwnerQueryImpl.getInstance().attachProjectListener(project);
         Set<URI> uris = getProjectExternalSourceRoots(project);
-        for (URI uri : uris) {
-            FileOwnerQuery.markExternalOwner(uri, proj, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-            uriReferences.add(uri);
+        synchronized (uriReferences) {
+            for (URI uri : uris) {
+                FileOwnerQuery.markExternalOwner(uri, proj, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+                uriReferences.add(uri);
+            }
         }
         NbMavenProject watcher = project.getProjectWatcher();
         //XXX: is there an ordering problem? should this be done first right after the project changes, instead of ordinary listener?
@@ -198,8 +200,7 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
         }
         transRepos.register();
 
-        copyResourcesOnSave = new CopyResourcesOnSave(watcher, proj);
-        copyResourcesOnSave.opened();
+        project.getCopyOnSaveResources().opened();
 
         //only check for the updates of index, if the indexing was already used.
         if (checkedIndices.compareAndSet(false, true) && existsDefaultIndexLocation()) {
@@ -285,10 +286,7 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
         GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
         GlobalPathRegistry.getDefault().unregister(ClassPath.EXECUTE, cpProvider.getProjectClassPaths(ClassPath.EXECUTE));
         BatchProblemNotifier.closed(project);
-        if (copyResourcesOnSave != null) {
-            copyResourcesOnSave.closed();
-        }
-        copyResourcesOnSave = null;
+        project.getCopyOnSaveResources().closed();
 
         if (transRepos != null) { // XXX #212555 projectOpened was not called first?
             transRepos.unregister();
@@ -473,6 +471,14 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
             }
             registerWithSubmodules(FileUtilities.resolveFilePath(basedir, module), registered);
         }
+    }
+
+    private boolean checkIssue224012(Project project) {
+        if (project instanceof NbMavenProjectImpl) { //unfortunately cannot use lookup here, rendering the assert useless for ergonomics turned on..
+            NbMavenProjectImpl im = (NbMavenProjectImpl)project;
+            return im.setIssue224012(this, new Exception("Thread:" + Thread.currentThread().getName() + " at " + System.currentTimeMillis()));
+        }
+        return true;
     }
 
 }
