@@ -835,31 +835,18 @@ public final class VeryPretty extends JCTree.Visitor {
         }
     }
 
-    public void printVarInit(JCVariableDecl tree) {
+    public void printVarInit(final JCVariableDecl tree) {
         int col = out.col;
         if (!ERROR.contentEquals(tree.name))
             col -= tree.name.getByteLength();
         if (cs.spaceAroundAssignOps())
             print(' ');
         print('=');
-        int rm = cs.getRightMargin();
-        switch(cs.wrapAssignOps()) {
-        case WRAP_IF_LONG:
-            if (widthEstimator.estimateWidth(tree.init, rm - out.col) + out.col <= cs.getRightMargin()) {
-                if(cs.spaceAroundAssignOps())
-                    print(' ');
-                break;
+        wrapTree(cs.wrapAssignOps(), cs.spaceAroundAssignOps(), cs.alignMultilineAssignment() ? col : out.leftMargin + cs.getContinuationIndentSize(), new Runnable() {
+            @Override public void run() {
+                printNoParenExpr(tree.init);
             }
-        case WRAP_ALWAYS:
-            newline();
-            toColExactly(cs.alignMultilineAssignment() ? col : out.leftMargin + cs.getContinuationIndentSize());
-            break;
-        case WRAP_NEVER:
-            if(cs.spaceAroundAssignOps())
-                print(' ');
-            break;
-        }
-        printNoParenExpr(tree.init);
+        });
     }
 
     @Override
@@ -2049,39 +2036,14 @@ public final class VeryPretty extends JCTree.Visitor {
                 printBlock(tree, cs.getOtherBracePlacement(), spaceBeforeLeftBrace);
                 return;
             }
-            int old = indent();
-            switch(wrapStat) {
-            case WRAP_NEVER:
-                if (spaceBeforeLeftBrace)
-                    needSpace();
-                printStat(tree);
-                undent(old);
-                return;
-            case WRAP_IF_LONG:
-                int oldhm = out.harden();
-                int oldc = out.col;
-                int oldu = out.used;
-                int oldm = out.leftMargin;
-                try {
-                    if (spaceBeforeLeftBrace)
-                        needSpace();
-                    printStat(tree);
+            final int old = indent();
+            final JCTree toPrint = tree;
+            wrapTree(wrapStat, spaceBeforeLeftBrace, out.leftMargin, new Runnable() {
+                @Override public void run() {
+                    printStat(toPrint);
                     undent(old);
-                    out.restore(oldhm);
-                    return;
-                } catch(Throwable t) {
-                    out.restore(oldhm);
-                    out.col = oldc;
-                    out.used = oldu;
-                    out.leftMargin = oldm;
                 }
-            case WRAP_ALWAYS:
-                if (out.col > 0)
-                    newline();
-                toLeftMargin();
-                printStat(tree);
-                undent(old);
-            }
+            });
 	}
     }
 
@@ -2408,6 +2370,38 @@ public final class VeryPretty extends JCTree.Visitor {
             }
             printNoParenExpr(l.head);
             first = false;
+        }
+    }
+    
+    private void wrapTree(WrapStyle wrapStyle, boolean needsSpaceBefore, int colAfterWrap, Runnable print) {
+        switch(wrapStyle) {
+        case WRAP_NEVER:
+            if (needsSpaceBefore)
+                needSpace();
+            print.run();
+            return;
+        case WRAP_IF_LONG:
+            int oldhm = out.harden();
+            int oldc = out.col;
+            int oldu = out.used;
+            int oldm = out.leftMargin;
+            try {
+                if (needsSpaceBefore)
+                    needSpace();
+                print.run();
+                out.restore(oldhm);
+                return;
+            } catch(Throwable t) {
+                out.restore(oldhm);
+                out.col = oldc;
+                out.used = oldu;
+                out.leftMargin = oldm;
+            }
+        case WRAP_ALWAYS:
+            if (out.col > 0)
+                newline();
+            toColExactly(colAfterWrap);
+            print.run();
         }
     }
 
