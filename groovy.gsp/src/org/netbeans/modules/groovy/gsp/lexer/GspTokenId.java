@@ -89,7 +89,9 @@ public enum GspTokenId implements TokenId {
 
     // Page directive
     PAGE_DIRECTIVE_START("start-delimiter"),         // <%@  ...
-    PAGE_DIRECTIVE_CONTENT("directive"),             // <%@page import ... %> or <%@page contentType ... %>
+    PAGE_DIRECTIVE_NAME("directive"),                // <%@page import ... %> or <%@page contentType ... %>
+    PAGE_ATTRIBUTE_NAME("attribute-name"),           // <%@page someAttribute=
+    PAGE_ATTRIBUTE_VALUE("attribute-value"),         // <%@page someAttribute="value"
     PAGE_DIRECTIVE_END("end-delimiter"),             // <%@  ... %>
 
     // Scriptlet output value

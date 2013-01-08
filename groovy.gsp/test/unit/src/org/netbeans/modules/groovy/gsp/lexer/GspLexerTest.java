@@ -216,11 +216,13 @@ public class GspLexerTest extends TestCase {
 
     public void testGspDirective() {
         String text =
-                "<%@ page import=\"org.grails.bookmarks.*\" %>";
+                "<%@page import=\"org.grails.bookmarks.*\" %>";
         TokenSequence<?> sequence = createTokenSequence(text);
 
         checkNext(sequence, GspTokenId.PAGE_DIRECTIVE_START, "<%@");
-        checkNext(sequence, GspTokenId.PAGE_DIRECTIVE_CONTENT, " page import=\"org.grails.bookmarks.*\" ");
+        checkNext(sequence, GspTokenId.PAGE_DIRECTIVE_NAME, "page");
+        checkNext(sequence, GspTokenId.PAGE_ATTRIBUTE_NAME, " import=");
+        checkNext(sequence, GspTokenId.PAGE_ATTRIBUTE_VALUE, "\"org.grails.bookmarks.*\" ");
         checkNext(sequence, GspTokenId.PAGE_DIRECTIVE_END, "%>");
     }
 
@@ -275,7 +277,9 @@ public class GspLexerTest extends TestCase {
         checkNext(sequence, GspTokenId.COMMENT_HTML_STYLE_END, "-->");
         checkNext(sequence, GspTokenId.WHITESPACE, "\n");
         checkNext(sequence, GspTokenId.PAGE_DIRECTIVE_START, "<%@");
-        checkNext(sequence, GspTokenId.PAGE_DIRECTIVE_CONTENT, " page contentType=\"text/html;charset=UTF-8\" ");
+        checkNext(sequence, GspTokenId.PAGE_DIRECTIVE_NAME, " page");
+        checkNext(sequence, GspTokenId.PAGE_ATTRIBUTE_NAME, " contentType=");
+        checkNext(sequence, GspTokenId.PAGE_ATTRIBUTE_VALUE, "\"text/html;charset=UTF-8\" ");
         checkNext(sequence, GspTokenId.PAGE_DIRECTIVE_END, "%>");
         checkNext(sequence, GspTokenId.HTML, "<html>");
         checkNext(sequence, GspTokenId.HTML, "<body>");

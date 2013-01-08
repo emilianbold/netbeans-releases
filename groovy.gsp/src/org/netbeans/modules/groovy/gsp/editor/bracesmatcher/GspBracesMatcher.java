@@ -142,6 +142,7 @@ public class GspBracesMatcher implements BracesMatcher {
     }
 
     private boolean isIndependentTag(TokenSequence<GspTokenId> tokenSequence) {
+        INFINITE_LOOP:
         while (true) {
             if (MatcherContext.isTaskCanceled()) {
                 break;
@@ -156,7 +157,7 @@ public class GspBracesMatcher implements BracesMatcher {
                     return false;
                 default:
                     if (!tokenSequence.moveNext()) {
-                        break;
+                        break INFINITE_LOOP;
                     }
             }
 

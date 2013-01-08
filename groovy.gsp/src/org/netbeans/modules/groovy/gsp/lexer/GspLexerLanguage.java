@@ -101,7 +101,6 @@ public final class GspLexerLanguage extends LanguageHierarchy<GspTokenId> {
                               LanguagePath languagePath, InputAttributes inputAttributes) {
         switch(token.id()) {
             case HTML:
-            case PAGE_DIRECTIVE_CONTENT:
                 return LanguageEmbedding.create(HTMLTokenId.language(), 0, 0, true);
 
             case GSTRING_CONTENT:

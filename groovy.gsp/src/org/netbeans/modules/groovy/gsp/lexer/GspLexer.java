@@ -67,62 +67,69 @@ public final class GspLexer implements Lexer<GspTokenId> {
         // to the next valid state)
 
         INIT,                            // nothing read yet, nothing expected
-        LT,                              // after '<'            expecting %, g, / or !
+        LT,                              // after '<'             expecting %, g, / or !
 
         // Groovy expression
-        DL,                              // after '$'            expecting {
-        GEXPRESSION,                     // after '${ ...'       expecting }
+        DL,                              // after '$'             expecting {
+        GEXPRESSION,                     // after '${ ...'        expecting }
 
         // Opening GTag states
-        LT_G,                            // after '<g'           expecting :
-        GSTART_TAG,                      // after '<g:   ...'    expecting > or tag name
-        GSTART_TAG_WITH_NAME,            // after '<g:if ...'    expecting /, > or some attribute name with = at the end
-        GSTART_TAG_WITH_NAME_ATTR,       // after '<g:if attr='  expecting /, >, ", space or some attribute value
-        GSTART_TAG_WITH_NAME_ATTR_VALUE, // after '<g:if attr="' expecting ", /, $ or \
-        GSTART_TAG_EXPR,                 // after '<g:if ... $'  expecting {
-        GSTART_TAG_EXPR_PC,              // after '<g:if ... ${' expecting }
-        GSTART_TAG_BACKSLASH,            // after '<g:if ... \'  expecting $
-        GSTART_TAG_BACKSLASH_EXPR,       // after '<g:if ... \$' expecting {
-        GINDEPENDENT_TAG,                // after '<g:   ... /'  expecting >
-        GINDEPENDENT_TAG_WITH_NAME,      // after '<g:if ... /'  expecting >
+        LT_G,                            // after '<g'            expecting :
+        GSTART_TAG,                      // after '<g:   ...'     expecting > or tag name
+        GSTART_TAG_WITH_NAME,            // after '<g:if ...'     expecting /, > or some attribute name with = at the end
+        GSTART_TAG_WITH_NAME_ATTR,       // after '<g:if attr='   expecting /, >, ", space or some attribute value
+        GSTART_TAG_WITH_NAME_ATTR_VALUE, // after '<g:if attr="'  expecting ", /, $ or \
+        GSTART_TAG_EXPR,                 // after '<g:if ... $'   expecting {
+        GSTART_TAG_EXPR_PC,              // after '<g:if ... ${'  expecting }
+        GSTART_TAG_BACKSLASH,            // after '<g:if ... \'   expecting $
+        GSTART_TAG_BACKSLASH_EXPR,       // after '<g:if ... \$'  expecting {
+        GINDEPENDENT_TAG,                // after '<g:   ... /'   expecting >
+        GINDEPENDENT_TAG_WITH_NAME,      // after '<g:if ... /'   expecting >
 
         // Closing GTag states
-        LT_BS,                           // after '</'           expecting g
-        LT_BS_G,                         // after '</g'          expecting :
-        GEND_TAG,                        // after '</g:  ...'    expecting > or tag name
-        GEND_TAG_WITH_NAME,              // after '</g:if...'    expecting >
+        LT_BS,                           // after '</'            expecting g
+        LT_BS_G,                         // after '</g'           expecting :
+        GEND_TAG,                        // after '</g:  ...'     expecting > or tag name
+        GEND_TAG_WITH_NAME,              // after '</g:if...'     expecting >
 
         // GSP style comment states
-        PC,                              // after '%'            expecting {
-        PC_CB,                           // after '%{'           expecting -
-        PC_CB_DASH,                      // after '%{-'          expecting -
-        PC_CB_DOUBLE_DASH,               // after '%{--'         expecting -
-        PC_CB_TRIPLE_DASH,               // after '%{-- ... -'   expecting -
-        PC_CB_QUADRUPLE_DASH,            // after '%{-- ... --'  expecting }
-        PC_CB_QUADRUPLE_DASH_CB,         // after '%{-- ... --}' expecting %
+        PC,                              // after '%'             expecting {
+        PC_CB,                           // after '%{'            expecting -
+        PC_CB_DASH,                      // after '%{-'           expecting -
+        PC_CB_DOUBLE_DASH,               // after '%{--'          expecting -
+        PC_CB_TRIPLE_DASH,               // after '%{-- ... -'    expecting -
+        PC_CB_QUADRUPLE_DASH,            // after '%{-- ... --'   expecting }
+        PC_CB_QUADRUPLE_DASH_CB,         // after '%{-- ... --}'  expecting %
 
         // HTML style comment states
-        LT_EM,                           // after '<!'           expecting -
-        LT_EM_DASH,                      // after '<!-'          expecting -
-        LT_EM_DOUBLE_DASH,               // after '<!--'         expecting -
-        LT_EM_TRIPLE_DASH,               // after '<!-- ... -'   expecting -
-        LT_EM_QUADRUPLE_DASH,            // after '<!-- ... --'  expecting >
+        LT_EM,                           // after '<!'            expecting -
+        LT_EM_DASH,                      // after '<!-'           expecting -
+        LT_EM_DOUBLE_DASH,               // after '<!--'          expecting -
+        LT_EM_TRIPLE_DASH,               // after '<!-- ... -'    expecting -
+        LT_EM_QUADRUPLE_DASH,            // after '<!-- ... --'   expecting >
 
         // JSP style comment states
-        LT_PC_DASH,                      // after '<%-'          expecting -
-        LT_PC_DOUBLE_DASH,               // after '<%--'         expecting -
-        LT_PC_TRIPLE_DASH,               // after '<%-- ... -'   expecting -
-        LT_PC_QUADRUPLE_DASH,            // after '<%-- ... --'  expecting %
-        LT_PC_QUADRUPLE_DASH_PC,         // after '<%-- ... --%' expecting >
+        LT_PC_DASH,                      // after '<%-'           expecting -
+        LT_PC_DOUBLE_DASH,               // after '<%--'          expecting -
+        LT_PC_TRIPLE_DASH,               // after '<%-- ... -'    expecting -
+        LT_PC_QUADRUPLE_DASH,            // after '<%-- ... --'   expecting %
+        LT_PC_QUADRUPLE_DASH_PC,         // after '<%-- ... --%'  expecting >
 
-        // Scriptlets, GStrings, Page directives
-        LT_PC,                           // after '<%'           expecting =, @, %, -
-        JSCRIPT,                         // after '<% ...'       expecting %
-        JSCRIPT_PC,                      // after '<% ... %'     expecting >
-        JEXPR,                           // after '<%= ...'      expecting %
-        JEXPR_PC,                        // after '<%= ... %'    expecting >
-        PAGE_DIRECTIVE,                  // after '<%@ ...'      expecting %
-        PAGE_DIRECTIVE_PC,               // after '<%@ ... %'    expecting >
+        // Page directives
+        PAGE_DIRECTIVE,                  // after '<%@ ...'       expecting 'p'
+        PAGE_DIRECTIVE_P,                // after '<%@ p'         expecting 'a'
+        PAGE_DIRECTIVE_PA,               // after '<%@ pa'        expecting 'g'
+        PAGE_DIRECTIVE_PAG,              // after '<%@ pag'       expecting 'e'
+        PAGE_DIRECTIVE_WITH_NAME,        // after '<%@page ...'   expecting some attribute name with = at the end
+        PAGE_DIRECTIVE_WITH_NAME_ATTR,   // after '<%@page attr=' expecting some attribute value
+        PAGE_DIRECTIVE_PC,               // after '<%@ ... %'     expecting >
+
+        // Scriptlets, GStrings
+        LT_PC,                           // after '<%'            expecting =, @, %, -
+        JSCRIPT,                         // after '<% ...'        expecting %
+        JSCRIPT_PC,                      // after '<% ... %'      expecting >
+        JEXPR,                           // after '<%= ...'       expecting %
+        JEXPR_PC,                        // after '<%= ... %'     expecting >
     }
 
     private final TokenFactory<GspTokenId> tokenFactory;
@@ -505,12 +512,72 @@ public final class GspLexer implements Lexer<GspTokenId> {
                             break;
                     }
                     break;
-                case PAGE_DIRECTIVE: // <%@ ... %>
+                case PAGE_DIRECTIVE: // after <%@ ...
                     switch (actChar) {
+                        case 'p':
+                            state = LexerState.PAGE_DIRECTIVE_P;
+                            break;
                         case '%':
                             state = LexerState.PAGE_DIRECTIVE_PC;
                             break;
                         default:
+                            state = LexerState.PAGE_DIRECTIVE;
+                            break;
+                    }
+                    break;
+                case PAGE_DIRECTIVE_P: // after <%@ p ...
+                    switch (actChar) {
+                        case 'a':
+                            state = LexerState.PAGE_DIRECTIVE_PA;
+                            break;
+                        default:
+                            state = LexerState.PAGE_DIRECTIVE;
+                            break;
+                    }
+                    break;
+                case PAGE_DIRECTIVE_PA: // after <%@ pa ...
+                    switch (actChar) {
+                        case 'g':
+                            state = LexerState.PAGE_DIRECTIVE_PAG;
+                            break;
+                        default:
+                            state = LexerState.PAGE_DIRECTIVE;
+                            break;
+                    }
+                    break;
+                case PAGE_DIRECTIVE_PAG: // after <%@ pag ...
+                    switch (actChar) {
+                        case 'e':
+                            state = LexerState.PAGE_DIRECTIVE_WITH_NAME;
+                            return GspTokenId.PAGE_DIRECTIVE_NAME;
+                        default:
+                            state = LexerState.PAGE_DIRECTIVE;
+                            break;
+                    }
+                    break;
+                case PAGE_DIRECTIVE_WITH_NAME: // <%@ page ...
+                    switch (actChar) {
+                        case '=':
+                            state = LexerState.PAGE_DIRECTIVE_WITH_NAME_ATTR;
+                            return GspTokenId.PAGE_ATTRIBUTE_NAME;
+                        case '%':
+                            state = LexerState.PAGE_DIRECTIVE_PC;
+                            break;
+                        case '>':
+                            state = LexerState.INIT;
+                            return GspTokenId.PAGE_DIRECTIVE_END;
+                        default:
+                            state = LexerState.PAGE_DIRECTIVE_WITH_NAME;
+                            break;
+                    }
+                    break;
+                case PAGE_DIRECTIVE_WITH_NAME_ATTR: // <%@page attr=...
+                    switch (actChar) {
+                        case ' ':
+                            state = LexerState.PAGE_DIRECTIVE_WITH_NAME;
+                            return GspTokenId.PAGE_ATTRIBUTE_VALUE;
+                        case '%':
+                            state = LexerState.PAGE_DIRECTIVE_PC;
                             break;
                     }
                     break;
@@ -518,8 +585,8 @@ public final class GspLexer implements Lexer<GspTokenId> {
                     switch (actChar) {
                         case '>':
                             if (isContentRead(2)) {
-                                state = LexerState.PAGE_DIRECTIVE;
-                                return GspTokenId.PAGE_DIRECTIVE_CONTENT;
+                                state = LexerState.PAGE_DIRECTIVE_WITH_NAME_ATTR;
+                                return GspTokenId.PAGE_ATTRIBUTE_VALUE;
                             } else {
                                 state = LexerState.INIT;
                                 return GspTokenId.PAGE_DIRECTIVE_END;
@@ -728,6 +795,7 @@ public final class GspLexer implements Lexer<GspTokenId> {
         switch (state) {
             case JSCRIPT: return GspTokenId.GSTRING_CONTENT;
             case GEXPRESSION: return GspTokenId.GSTRING_CONTENT;
+            case PAGE_DIRECTIVE: return GspTokenId.PAGE_DIRECTIVE_START;
             case LT_EM_DOUBLE_DASH: return GspTokenId.COMMENT_HTML_STYLE_START;
             case LT_PC_DOUBLE_DASH: return GspTokenId.COMMENT_JSP_STYLE_START;
             case PC_CB_DOUBLE_DASH: return GspTokenId.COMMENT_GSP_STYLE_START;
