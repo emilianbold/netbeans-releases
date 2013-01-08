@@ -69,6 +69,9 @@ public class ConstantPool {
     private static final byte TAG_METHODREF = 10;
     private static final byte TAG_INTERFACEREF = 11;
     private static final byte TAG_NAMETYPE = 12;
+    private static final byte TAG_METHODHANDLE = 15;
+    private static final byte TAG_METHODTYPE = 16;
+    private static final byte TAG_INVOKEDYNAMIC = 18; 
 
     private final List<ConstantPool.Entry> entries;
 
@@ -147,6 +150,16 @@ public class ConstantPool {
                     case TAG_INTERFACEREF:
                         entry = new EntryFieldMethodRef(tagByte, in.readShort(), in.readShort());
                         break;
+                    case TAG_METHODHANDLE:
+                        entry = new EntryMethodHandle(in);
+                        break;
+                    case TAG_METHODTYPE:
+                        entry = new EntryMethodType(in);
+                        break;
+                    case TAG_INVOKEDYNAMIC:
+                        entry = new EntryInvokeDynamic(in);
+                        break; 
+                    case 0:
                     default:
                         Logger.getLogger(ConstantPool.class.getName()).warning("Unknown tag byte: "+tagByte);
                         entry = new EntryNULL();
@@ -313,4 +326,41 @@ public class ConstantPool {
             this.nameAndTypeIndex = nameAndTypeIndex;
         }
     }
+    
+    public static class BytesEntry extends Entry {
+        
+        protected final byte[] bytes;
+        
+        public BytesEntry(byte type, DataInputStream in, int length) throws IOException {
+            super(type);
+            byte[] b = new byte[length];
+            int l = in.read(b, 0, length);
+            while (l < length) {
+                l += in.read(b, l, length - l);
+            }
+            bytes = b;
+        }
+    }
+    
+    public static class EntryMethodHandle extends BytesEntry {
+        
+        public EntryMethodHandle(DataInputStream in) throws IOException {
+            super(TAG_METHODHANDLE, in, 3);
+        }
+    }
+    
+    public static class EntryMethodType extends BytesEntry {
+        
+        public EntryMethodType(DataInputStream in) throws IOException {
+            super(TAG_METHODTYPE, in, 2);
+        }
+    }
+    
+    public static class EntryInvokeDynamic extends BytesEntry {
+        
+        public EntryInvokeDynamic(DataInputStream in) throws IOException {
+            super(TAG_INVOKEDYNAMIC, in, 4);
+        }
+    }
+    
 }
