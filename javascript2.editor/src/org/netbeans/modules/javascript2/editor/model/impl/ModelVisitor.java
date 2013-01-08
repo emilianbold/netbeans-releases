@@ -735,9 +735,18 @@ public class ModelVisitor extends PathNodeVisitor {
                     fqName.add(new IdentifierImpl("UNKNOWN", //NOI18N
                             ModelUtils.documentOffsetRange(parserResult, objectNode.getStart(), objectNode.getFinish())));
                 }
-                JsObjectImpl objectScope = varNode != null
-                        ? modelBuilder.getCurrentObject()
-                        : ModelElementFactory.create(parserResult, objectNode, fqName, modelBuilder, isDeclaredInParent);
+                JsObjectImpl objectScope;
+                if (varNode != null) {
+                    objectScope = modelBuilder.getCurrentObject();
+                } else {
+                    JsObject alreadyThere = ModelUtils.getJsObjectByName(modelBuilder.getCurrentDeclarationFunction(), fqName.get(fqName.size() - 1).getName());
+                    objectScope = ModelElementFactory.create(parserResult, objectNode, fqName, modelBuilder, isDeclaredInParent);
+                    if(alreadyThere != null && objectScope != null) {
+                        for(Occurrence occurrence :alreadyThere.getOccurrences()) {
+                            objectScope.addOccurrence(occurrence.getOffsetRange());
+                        }
+                    }
+                }
                 if (objectScope != null) {
                     objectScope.setJsKind(JsElement.Kind.OBJECT_LITERAL);
                     modelBuilder.setCurrentObject(objectScope);
