@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.editor.actions;
 
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 
 import javax.swing.Action;
@@ -82,6 +83,6 @@ public class MoveCodeElementAction extends AbstractEditorAction {
                 return;
             }
         }
-        component.getToolkit().beep();
+        Toolkit.getDefaultToolkit().beep();
     }
 }

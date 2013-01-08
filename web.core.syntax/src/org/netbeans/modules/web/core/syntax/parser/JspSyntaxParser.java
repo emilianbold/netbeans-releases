@@ -112,6 +112,12 @@ public final class JspSyntaxParser {
                 ts.offset() + ts.token().length()));
     }
     
+    private void scriptlet() {
+        elements.add(new JspSyntaxElement.Scripting(source,
+                start, 
+                ts.offset() + ts.token().length()));
+    }
+    
     private void tag(boolean emptyTag) {
         List<JspSyntaxElement.Attribute> attributes = new ArrayList<JspSyntaxElement.Attribute>();
             for(int i = 0; i < attr_keys.size(); i++) {
@@ -250,6 +256,9 @@ public final class JspSyntaxParser {
     private static final int S_DIR_ATTR = 15;
     private static final int S_DIR_VALUE = 16;
     private static final int S_DIR_AFTER_NAME = 19;
+    
+    private static final int S_SCRIPTLET_OPEN_SYMBOL = 20;
+    private static final int S_SCRIPTLET_INSIDE = 21;
 
     private int state;
     private int start;
@@ -296,6 +305,11 @@ public final class JspSyntaxParser {
                                 start = ts.offset();
                                 state = S_COMMENT;
                                 break;
+                            case SYMBOL2:
+                                //scriptlet delimiter: <%
+                                start = ts.offset();
+                                state = S_SCRIPTLET_OPEN_SYMBOL;
+                                break;
                             default:
                                 //everything else is just a text
                                 start = ts.offset();
@@ -303,7 +317,40 @@ public final class JspSyntaxParser {
                                 break;
                         }
                         break;
+                        
+                    case S_SCRIPTLET_OPEN_SYMBOL:
+                        switch(id) {
+                            case SCRIPTLET:
+                                state = S_SCRIPTLET_INSIDE;
+                                break;
+                            default:
+                                error();
+                                state = S_INIT;
+                                start = -1;
+                                break;
+                        }
+                        break;
 
+                    case S_SCRIPTLET_INSIDE:
+                        switch(id) {
+                            case SYMBOL2:
+                                //closing scriptlet symbol: %>
+                                scriptlet();
+                                state = S_INIT;
+                                start = -1;
+                                break;
+                                
+                            case SCRIPTLET:
+                                break; //SCRIPTLET tokens may? repeat possibly
+                                
+                            default:
+                                error();
+                                state = S_INIT;
+                                start = -1;
+                                break; 
+                        }
+                        break;
+                        
                     case S_TEXT:
                         switch(id) {
                             case TEXT:
