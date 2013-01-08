@@ -41,10 +41,12 @@
  */
 package org.netbeans.modules.editor.bookmarks;
 
-import java.net.URL;
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.lib.editor.util.ArrayUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 
@@ -53,37 +55,48 @@ import org.openide.filesystems.URLMapper;
  *
  * @author Miloslav Metelka
  */
-public class FileBookmarks {
+public final class FileBookmarks {
     
-    private final ProjectBookmarks projectBookmarks; // Useful when a source file was moved between projects
+    private final ProjectBookmarks projectBookmarks;
 
-    private final URL url;
-    
-    private FileObject fileObject;
+    private URI relativeURI;
     
     private List<BookmarkInfo> bookmarks; // Sorted by line number
     
-    FileBookmarks(ProjectBookmarks projectBookmarks, URL url, FileObject fileObject, List<BookmarkInfo> bookmarks) {
+    private FileObject fileObject;
+    
+    FileBookmarks(ProjectBookmarks projectBookmarks, URI relativeURI) {
         this.projectBookmarks = projectBookmarks;
-        this.url = url;
-        this.fileObject = fileObject;
-        this.bookmarks = new ArrayList<BookmarkInfo>(bookmarks);
-        for (BookmarkInfo bookmark : bookmarks) {
-            bookmark.setFileBookmarks(this);
-        }
+        this.relativeURI = relativeURI;
+        this.bookmarks = new ArrayList<BookmarkInfo>();
     }
 
     public ProjectBookmarks getProjectBookmarks() {
         return projectBookmarks;
     }
 
-    public URL getUrl() {
-        return url;
+    public URI getRelativeURI() {
+        return relativeURI;
     }
 
+    /**
+     * Get file object for relative URI of this file bookmarks.
+     * 
+     * @return valid file object or null if e.g. file for URI does not exist.
+     */
     public FileObject getFileObject() {
         if (fileObject == null) {
-            fileObject = URLMapper.findFileObject(url);
+            URI fileURI;
+            if (projectBookmarks != null) {
+                fileURI = projectBookmarks.getProjectURI().resolve(relativeURI);
+            } else {
+                fileURI = relativeURI;
+            }
+            try {
+                fileObject = URLMapper.findFileObject(fileURI.toURL());
+            } catch (MalformedURLException ex) {
+                // Leave null
+            }
         }
         return fileObject;
     }
@@ -96,16 +109,29 @@ public class FileBookmarks {
         return bookmarks;
     }
     
-    public void add(BookmarkInfo bookmark) {
+    void add(BookmarkInfo bookmark) {
         bookmarks.add(bookmark);
+        bookmark.setFileBookmarks(this);
         Collections.sort(bookmarks, BookmarkInfo.CURRENT_LINE_COMPARATOR);
     }
 
-    public boolean remove(BookmarkInfo bookmark) {
-        if (!projectBookmarks.isReleased()) {
-            return bookmarks.remove(bookmark);
+    boolean remove(BookmarkInfo bookmark) {
+        return bookmarks.remove(bookmark);
+    }
+
+    StringBuilder appendInfo(StringBuilder sb, int indent) {
+        sb.append("uri=").append(relativeURI); // NOI18N
+        sb.append(", bookmarkCount=").append(bookmarks.size()).append('\n'); // NOI18N
+        for (BookmarkInfo bookmark : bookmarks) {
+            ArrayUtilities.appendSpaces(sb, indent + 4);
+            sb.append(bookmark).append('\n');
         }
-        return false;
+        return sb;
+    }
+
+    @Override
+    public String toString() {
+        return appendInfo(new StringBuilder(100), 0).toString();
     }
 
 }

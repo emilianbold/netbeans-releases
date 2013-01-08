@@ -41,92 +41,41 @@
  */
 package org.netbeans.modules.editor.bookmarks;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
- * Change of a particular bookmark.
+ * Change in a file bookmarks.
  *
  * @author Miloslav Metelka
  */
-public final class BookmarkChange {
+public class FileBookmarksChange {
     
-    private static final int ADDED = 1;
+    private final FileBookmarks fileBookmarks;
     
-    private static final int REMOVED = 2;
-    
-    private static final int FILE_CHANGED = 4; // File to which bookmark belongs has changed
-    
-    private static final int NAME_CHANGED = 8;
-    
-    private static final int LINE_INDEX_CHANGED = 16;
-    
-    private static final int KEY_CHANGED = 32;
-    
-    private final BookmarkInfo bookmark;
-    
-    private int statusBits;
-    
-    BookmarkChange(BookmarkInfo bookmark) {
-        this.bookmark = bookmark;
-    }
-    
-    /**
-     * Return affected bookmark.
-     *
-     * @return non-null bookmark.
-     */
-    public BookmarkInfo getBookmark() {
-        return bookmark;
+    private final Map<BookmarkInfo,BookmarkChange> bookmarkChanges;
+
+    public FileBookmarksChange(FileBookmarks fileBookmarks) {
+        this.fileBookmarks = fileBookmarks;
+        this.bookmarkChanges = new HashMap<BookmarkInfo,BookmarkChange>();
     }
 
-    public boolean isAdded() {
-        return (statusBits & ADDED) != 0;
+    public FileBookmarks getFileBookmarks() {
+        return fileBookmarks;
     }
     
-    public boolean isRemoved() {
-        return (statusBits & REMOVED) != 0;
-    }
-    
-    public boolean isFileChanged() {
-        return (statusBits & FILE_CHANGED) != 0;
-    }
-    
-    public boolean isNameChanged() {
-        return (statusBits & NAME_CHANGED) != 0;
-    }
-    
-    public boolean isLineIndexChanged() {
-        return (statusBits & LINE_INDEX_CHANGED) != 0;
-    }
-    
-    public boolean isKeyChanged() {
-        return (statusBits & KEY_CHANGED) != 0;
-    }
-    
-    public boolean isNameKeyOrLineIndexChanged() {
-        return (statusBits & (NAME_CHANGED | LINE_INDEX_CHANGED | KEY_CHANGED)) != 0;
+    public BookmarkChange getBookmarkChange(BookmarkInfo bookmark) {
+        return bookmarkChanges.get(bookmark);
     }
 
-    void markAdded() {
-        statusBits |= ADDED;
+    public Collection<BookmarkChange> getBookmarkChanges() {
+        return bookmarkChanges.values();
     }
     
-    void markRemoved() {
-        statusBits |= REMOVED;
+    void addChange(BookmarkChange change) {
+        assert (bookmarkChanges.put(change.getBookmark(), change) == null)
+                : "BookmarkChange already present: " + change; // NOI18N
     }
-    
-    void markFileChanged() {
-        statusBits |= FILE_CHANGED;
-    }
-    
-    void markNameChanged() {
-        statusBits |= NAME_CHANGED;
-    }
-    
-    void markLineIndexChanged() {
-        statusBits |= LINE_INDEX_CHANGED;
-    }
-    
-    void markKeyChanged() {
-        statusBits |= KEY_CHANGED;
-    }
-    
+
 }
