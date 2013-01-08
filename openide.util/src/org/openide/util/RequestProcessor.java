@@ -51,7 +51,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -1077,29 +1076,7 @@ outer:  do {
 
     private List<Item> getQueue() {
         assert Thread.holdsLock(processorLock);
-        assert isNotHuge(queue);
         return queue;
-    }
-    
-    private boolean isNotHuge(List<Item> arr) {
-        if (arr.size() > 500) {
-            logger.log(Level.WARNING, "Huge amount ({0}) of pending tasks in {1} request processor", new Object[]{arr.size(), name});
-            Map<Class,int[]> histo = new HashMap<Class, int[]>();
-            for (Item i : arr) {
-                Task t = i.getTask();
-                if (t != null && t.run != null) {
-                    int[] cnt = histo.get(t.run.getClass());
-                    if (cnt == null) {
-                        histo.put(t.run.getClass(), cnt = new int[1]);
-                    }
-                    cnt[0]++;
-                }
-            }
-            for (Map.Entry<Class, int[]> e : histo.entrySet()) {
-                logger.log(Level.INFO, " {0} occurences of {1}", new Object[] { e.getValue()[0], e.getKey().getName() });
-            }
-        }
-        return true;
     }
     
     /**

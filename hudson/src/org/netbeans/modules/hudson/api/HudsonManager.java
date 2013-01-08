@@ -89,7 +89,7 @@ public class HudsonManager {
         HudsonInstanceProperties props = new HudsonInstanceProperties(name, url, Integer.toString(sync));
         props.put(INSTANCE_PERSISTED, persistence.isPersistent() ? TRUE : FALSE);
         HudsonInstanceImpl nue = HudsonInstanceImpl.createHudsonInstance(
-                props, true, persistence.getInfo(null));
+                props, true, persistence);
         HudsonManagerImpl.getDefault().addInstance(nue);
         return nue;
     }

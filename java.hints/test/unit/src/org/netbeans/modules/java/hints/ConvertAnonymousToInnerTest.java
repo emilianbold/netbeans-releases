@@ -558,8 +558,8 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                     "    public static void method() {\n" +
                     "        new Runnable() {\n" +
                     "            //aslkdjflakjdsflkjaskldfj\n" +
-                    "            public void run() {" +
-                    "                //adsfadsfaasdf\n" +
+                    "            public void run() { //adsfadsfaasdf\n" +
+                    "                //2\n" +
                     "                return ;\n" +
                     "                //alskjdflkasjdlfkasdf\n" +
                     "            }\n" +
@@ -576,8 +576,8 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                     "        public RunnableImpl() {\n" +
                     "        }\n" +
                     "        //aslkdjflakjdsflkjaskldfj\n" +
-                    "        public void run() {" +
-                    "            //adsfadsfaasdf\n" +
+                    "        public void run() { //adsfadsfaasdf\n" +
+                    "            //2\n" +
                     "            return ;\n" +
                     "            //alskjdflkasjdlfkasdf\n" +
                     "        }\n" +

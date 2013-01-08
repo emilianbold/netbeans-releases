@@ -104,7 +104,12 @@ public class AndroidDebugTransport extends MobileDebugTransport {
             JSONArray array = (JSONArray) obj;
             for (int i=0; i<array.size(); i++) {
                 JSONObject object = (JSONObject) array.get(i);
-                if (getConnectionURL().toString().equals(object.get("url"))) {
+                String urlFromBrowser = object.get("url").toString();
+                int hash = urlFromBrowser.indexOf("#");
+                if (hash != -1) {
+                    urlFromBrowser = urlFromBrowser.substring(0, hash); 
+                }
+                if (getConnectionURL().toString().equals(urlFromBrowser)) {
                     return new URI(object.get("webSocketDebuggerUrl").toString());
                 }
             }

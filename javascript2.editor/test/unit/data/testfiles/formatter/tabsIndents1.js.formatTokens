@@ -196,9 +196,11 @@ FormattingToken{kind=TEXT, offset=284, text=white}
 FormattingToken{kind=TEXT, offset=289, text='}
 FormattingToken{kind=TEXT, offset=290, text=:}
 FormattingToken{kind=AFTER_CASE, offset=-1, text=null}
+FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=291, text=
 }
 FormattingToken{kind=WHITESPACE, offset=292, text=    }
+FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=296, text=case}
 FormattingToken{kind=WHITESPACE, offset=300, text= }
 FormattingToken{kind=TEXT, offset=301, text='}

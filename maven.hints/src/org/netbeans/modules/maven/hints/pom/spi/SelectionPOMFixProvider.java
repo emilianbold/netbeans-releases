@@ -52,6 +52,14 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  */
 public interface SelectionPOMFixProvider extends POMErrorFixBase {
 
+    /**
+     * 
+     * @param model
+     * @param prj can be null
+     * @param selectionStart
+     * @param selectionEnd
+     * @return 
+     */
     List<ErrorDescription> getErrorsForDocument(POMModel model, Project prj,
             int selectionStart, int selectionEnd);
 }

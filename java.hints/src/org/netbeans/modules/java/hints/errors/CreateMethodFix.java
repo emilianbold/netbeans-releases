@@ -34,7 +34,9 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
@@ -295,8 +297,17 @@ public final class CreateMethodFix implements Fix {
         TypeElement targetClazz = (TypeElement)wc.getTrees().getElement(targetTree);
         StatementTree st = tu.parseStatement("{class ${abstract " + (returnType != null ? returnType.toString() : "void") + " " + ("<init>".equals(name) ? targetClazz.getSimpleName() : name) + "();}}", new SourcePositions[1]); //NOI18N
         Trees trees = wc.getTrees();
-        tu.attributeTree(st, trees.getScope(targetTree));
-        ExecutableElement ee = (ExecutableElement) wc.getTrees().getElement(new TreePath(targetTree, ((ClassTree)((BlockTree)st).getStatements().get(0)).getMembers().get(1)));
+        List<? extends Tree> members = ((ClassTree) targetTree.getLeaf()).getMembers();
+        Scope scope = members.isEmpty() ? trees.getScope(targetTree) : trees.getScope(new TreePath(targetTree, members.get(0)));
+        tu.attributeTree(st, scope);
+        Tree first = null;
+        for(Tree t : ((ClassTree)((BlockTree)st).getStatements().get(0)).getMembers()) {
+            if (t.getKind() == Tree.Kind.METHOD && !"<init>".contentEquals(((MethodTree)t).getName())) { //NOI19N
+                first = t;
+                break;
+            }
+        }
+        ExecutableElement ee = (ExecutableElement) wc.getTrees().getElement(new TreePath(targetTree, first));
         return GeneratorUtilities.get(wc).createAbstractMethodImplementation(targetClazz, ee).getBody();
     }
 }

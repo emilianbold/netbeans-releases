@@ -162,8 +162,7 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
             ProjectProblem problem = ProjectProblem.createError(
                     Bundle.ProjectPropertiesProblemProvider_invalidConfigDir_title(),
                     Bundle.ProjectPropertiesProblemProvider_invalidConfigDir_description(invalidDirectory.getAbsolutePath()),
-                    new DirectoryProblemResolver(project, ClientSideProjectConstants.PROJECT_CONFIG_FOLDER,
-                            Bundle.ProjectPropertiesProblemProvider_invalidConfigDir_dialog_title(project.getName())));
+                    new CustomizerProblemResolver(project, CompositePanelProviderImpl.SOURCES, ClientSideProjectConstants.PROJECT_CONFIG_FOLDER));
             currentProblems.add(problem);
         }
     }

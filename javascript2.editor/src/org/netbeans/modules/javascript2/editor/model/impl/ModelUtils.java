@@ -41,19 +41,19 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import com.oracle.nashorn.ir.AccessNode;
-import com.oracle.nashorn.ir.BinaryNode;
-import com.oracle.nashorn.ir.CallNode;
-import com.oracle.nashorn.ir.FunctionNode;
-import com.oracle.nashorn.ir.IdentNode;
-import com.oracle.nashorn.ir.IndexNode;
-import com.oracle.nashorn.ir.LiteralNode;
-import com.oracle.nashorn.ir.Node;
-import com.oracle.nashorn.ir.ObjectNode;
-import com.oracle.nashorn.ir.ReferenceNode;
-import com.oracle.nashorn.ir.UnaryNode;
-import com.oracle.nashorn.parser.Lexer;
-import com.oracle.nashorn.parser.TokenType;
+import jdk.nashorn.internal.ir.AccessNode;
+import jdk.nashorn.internal.ir.BinaryNode;
+import jdk.nashorn.internal.ir.CallNode;
+import jdk.nashorn.internal.ir.FunctionNode;
+import jdk.nashorn.internal.ir.IdentNode;
+import jdk.nashorn.internal.ir.IndexNode;
+import jdk.nashorn.internal.ir.LiteralNode;
+import jdk.nashorn.internal.ir.Node;
+import jdk.nashorn.internal.ir.ObjectNode;
+import jdk.nashorn.internal.ir.ReferenceNode;
+import jdk.nashorn.internal.ir.UnaryNode;
+import jdk.nashorn.internal.parser.Lexer;
+import jdk.nashorn.internal.parser.TokenType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -109,7 +109,7 @@ public class ModelUtils {
             }
         }
         if (tmpObject == null) {
-            DeclarationScope scope = builder.getCurrentDeclarationScope();
+            DeclarationScope scope = builder.getCurrentDeclarationFunction();
             while (scope != null && tmpObject == null && scope.getInScope() != null) {
                 tmpObject = ((JsFunction)scope).getParameter(firstName);
                 scope = scope.getInScope();
@@ -217,7 +217,7 @@ public class ModelUtils {
         return result;
     }
     
-    private static DeclarationScope getDeclarationScope(DeclarationScope scope, int offset) {
+    public static DeclarationScope getDeclarationScope(DeclarationScope scope, int offset) {
         DeclarationScopeImpl dScope = (DeclarationScopeImpl)scope;
         DeclarationScope result = null;
         DeclarationScope function = null;
@@ -1075,7 +1075,7 @@ public class ModelUtils {
 
         @Override
         public Node enter(UnaryNode uNode) {
-            if (com.oracle.nashorn.parser.Token.descType(uNode.getToken()) == TokenType.NEW) {
+            if (jdk.nashorn.internal.parser.Token.descType(uNode.getToken()) == TokenType.NEW) {
                 if (uNode.rhs() instanceof CallNode
                     && ((CallNode)uNode.rhs()).getFunction() instanceof IdentNode) {
                         IdentNode iNode = ((IdentNode)((CallNode)uNode.rhs()).getFunction());
