@@ -74,20 +74,20 @@ import org.openide.util.NbBundle;
  */
 public final class CGSGenerator implements CodeGenerator {
 
-    static final String START_OF_GETTER = "get";    //NOI18N
-    static final String START_OF_SETTER = "set";    //NOI18N
-    static final String NEW_LINE = System.getProperty("line.separator");    //NOI18N
+    static final String START_OF_GETTER = "get"; //NOI18N
+    static final String START_OF_SETTER = "set"; //NOI18N
+    static final String NEW_LINE = System.getProperty("line.separator"); //NOI18N
     static final String UNDERSCORED_METHOD_NAME = "${UNDERSCORED_METHOD_NAME}"; //NOI18N
     static final String ACCESSOR = "${ACCESSOR}"; //NOI18N
-    static final String PROPERTY = "${PROPERTY}";                           //NOI18N
+    static final String PROPERTY = "${PROPERTY}"; //NOI18N
     static final String PARAM_NAME = "${PARAM_NAME}"; //NOI18N
-    static final String UP_FIRST_LETTER_PROPERTY = "${UpFirstLetterProperty}";  //NOI18N
-    static final String UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE = "${UpFirstLetterPropertyWithoutUnderscore}";  //NOI18N
-    static final String ASSIGNMENT_TEMPLATE = NEW_LINE + ACCESSOR + PROPERTY + " = $" + PARAM_NAME + ";";          //NOI18N
-    private static final String CURSOR = "${cursor}";                           //NOI18N
-    private static final String PROPERTY_WITHOUT_UNDERSCORE = "${PropertyWithoutUnderscore}";  //NOI18N
-    private static final String PARAMS = "${PARAMS}";                               //NOI18N
-    private static final String ASSIGNMENTS = "${ASSIGNMENT}";                       //NOI18N
+    static final String UP_FIRST_LETTER_PROPERTY = "${UpFirstLetterProperty}"; //NOI18N
+    static final String UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE = "${UpFirstLetterPropertyWithoutUnderscore}"; //NOI18N
+    static final String ASSIGNMENT_TEMPLATE = NEW_LINE + ACCESSOR + PROPERTY + " = $" + PARAM_NAME + ";"; //NOI18N
+    private static final String CURSOR = "${cursor}"; //NOI18N
+    private static final String PROPERTY_WITHOUT_UNDERSCORE = "${PropertyWithoutUnderscore}"; //NOI18N
+    private static final String PARAMS = "${PARAMS}"; //NOI18N
+    private static final String ASSIGNMENTS = "${ASSIGNMENT}"; //NOI18N
     private static final String CONSTRUCTOR_TEMPLATE = "function __construct(" + PARAMS + ") {" + ASSIGNMENTS  + CURSOR + NEW_LINE + "}" + NEW_LINE;    //NOI18N
 
     public enum GenType {
@@ -103,7 +103,7 @@ public final class CGSGenerator implements CodeGenerator {
                 final DefaultComboBoxModel result = new DefaultComboBoxModel();
                 for (CGSGenerator.GenWay way : CGSGenerator.GenWay.values()) {
                     if (!way.equals(CGSGenerator.GenWay.WITH_UNDERSCORE)) {
-                        result.addElement(new ComboBoxModelElement(way.getSimpleDescription() + ": " + way.getConstructorExample(propertyName), way));
+                        result.addElement(new ComboBoxModelElement(way.getSimpleDescription() + ": " + way.getConstructorExample(propertyName), way)); //NOI18N
                     }
                 }
                 return result;
@@ -133,12 +133,12 @@ public final class CGSGenerator implements CodeGenerator {
                         if (type != null && !type.isEmpty()) {
                             params.append(property.getTypeForTemplate());
                         }
-                        params.append("$").append(paramName);        //NOI18N
+                        params.append("$").append(paramName); //NOI18N
                         assignments.append(ASSIGNMENT_TEMPLATE.replace(PROPERTY, name).replace(PARAM_NAME, paramName).replace(ACCESSOR, property.getAccessor()));
                     }
                 }
                 if (params.length() == 0) {
-                    params.append(", ");                                        //NOI18N
+                    params.append(", "); //NOI18N
                 }
                 return CONSTRUCTOR_TEMPLATE.replace(PARAMS, params.toString().substring(2)).replace(ASSIGNMENTS, assignments);
             }
@@ -155,7 +155,7 @@ public final class CGSGenerator implements CodeGenerator {
             public ComboBoxModel getModel(final String propertyName) {
                 final DefaultComboBoxModel result = new DefaultComboBoxModel();
                 for (CGSGenerator.GenWay way : CGSGenerator.GenWay.values()) {
-                    result.addElement(new ComboBoxModelElement(way.getSimpleDescription() + ": " + way.getGetterExample(propertyName), way));
+                    result.addElement(new ComboBoxModelElement(way.getSimpleDescription() + ": " + way.getGetterExample(propertyName), way)); //NOI18N
                 }
                 return result;
             }
@@ -219,8 +219,10 @@ public final class CGSGenerator implements CodeGenerator {
             public ComboBoxModel getModel(final String propertyName) {
                 final DefaultComboBoxModel result = new DefaultComboBoxModel();
                 for (CGSGenerator.GenWay way : CGSGenerator.GenWay.values()) {
-                    result.addElement(
-                            new ComboBoxModelElement(way.getSimpleDescription() + ": " + way.getGetterExample(propertyName) + ", " + way.getSetterExample(propertyName), way));
+                    result.addElement(new ComboBoxModelElement(
+                            way.getSimpleDescription()
+                            + ": " + way.getGetterExample(propertyName)
+                            + ", " + way.getSetterExample(propertyName), way)); //NOI18N
                 }
                 return result;
             }
@@ -432,7 +434,7 @@ public final class CGSGenerator implements CodeGenerator {
     private final GenType genType;
     private final CGSInfo cgsInfo;
 
-    private static final String GETTER_SETTER_PROJECT_PROPERTY = "getter.setter.method.name.generation";
+    private static final String GETTER_SETTER_PROJECT_PROPERTY = "getter.setter.method.name.generation"; //NOI18N
     private static final String FLUENT_SETTER_PROJECT_PROPERTY = "fluent.setter.project.property"; //NOI18N
 
     private CGSGenerator(CGSInfo cgsInfo, GenType type) {
