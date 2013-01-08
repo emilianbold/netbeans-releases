@@ -123,10 +123,11 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
             boolean onlyWatched) {
         ODCSPasswordAuthorizer.ProjectHandleRegistry.registerProjectHandle(
                 projectHandle);
+        Persistence pers = Persistence.tranzient(Bundle.MSG_from_odcs_project(),
+                getNewBuildAction(projectHandle));
         HudsonInstance hi = HudsonManager.addInstance(
                 projectHandle.getDisplayName(),
-                projectHandle.getTeamProject().getBuildUrl(),
-                1, Persistence.tranzient(Bundle.MSG_from_odcs_project()));
+                projectHandle.getTeamProject().getBuildUrl(), 1, pers);
         if (hi == null) {
             return Collections.emptyList();
         }
