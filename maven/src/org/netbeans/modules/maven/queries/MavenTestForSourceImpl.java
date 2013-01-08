@@ -47,6 +47,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -75,7 +76,7 @@ public class MavenTestForSourceImpl implements MultipleRootsUnitTestForSourceQue
         try {
             String str = project.getLookup().lookup(NbMavenProject.class).getMavenProject().getBuild().getTestSourceDirectory();
             if (str != null) {
-                File fl = FileUtil.normalizeFile(new File(str));
+                File fl = FileUtilities.convertStringToFile(str);
                 File param = FileUtil.toFile(fileObject);
                 if (fl.equals(param)) {
                     return null;
@@ -98,7 +99,7 @@ public class MavenTestForSourceImpl implements MultipleRootsUnitTestForSourceQue
         try {
             String str = project.getLookup().lookup(NbMavenProject.class).getMavenProject().getBuild().getSourceDirectory();
             if (str != null) {
-                File fl = FileUtil.normalizeFile(new File(str));
+                File fl = FileUtilities.convertStringToFile(str);
                 File param = FileUtil.toFile(fileObject);
                 if (fl.equals(param)) {
                     return null;

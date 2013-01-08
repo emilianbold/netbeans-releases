@@ -41,8 +41,39 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import com.oracle.nashorn.ir.*;
-import com.oracle.nashorn.ir.visitor.NodeVisitor;
+import jdk.nashorn.internal.ir.AccessNode;
+import jdk.nashorn.internal.ir.BinaryNode;
+import jdk.nashorn.internal.ir.Block;
+import jdk.nashorn.internal.ir.BreakNode;
+import jdk.nashorn.internal.ir.CallNode;
+import jdk.nashorn.internal.ir.CaseNode;
+import jdk.nashorn.internal.ir.CatchNode;
+import jdk.nashorn.internal.ir.ContinueNode;
+import jdk.nashorn.internal.ir.DoWhileNode;
+import jdk.nashorn.internal.ir.ExecuteNode;
+import jdk.nashorn.internal.ir.ForNode;
+import jdk.nashorn.internal.ir.FunctionNode;
+import jdk.nashorn.internal.ir.IdentNode;
+import jdk.nashorn.internal.ir.IfNode;
+import jdk.nashorn.internal.ir.IndexNode;
+import jdk.nashorn.internal.ir.LabelNode;
+import jdk.nashorn.internal.ir.LineNumberNode;
+import jdk.nashorn.internal.ir.LiteralNode;
+import jdk.nashorn.internal.ir.Node;
+import jdk.nashorn.internal.ir.ObjectNode;
+import jdk.nashorn.internal.ir.PropertyNode;
+import jdk.nashorn.internal.ir.ReferenceNode;
+import jdk.nashorn.internal.ir.ReturnNode;
+import jdk.nashorn.internal.ir.RuntimeNode;
+import jdk.nashorn.internal.ir.SwitchNode;
+import jdk.nashorn.internal.ir.TernaryNode;
+import jdk.nashorn.internal.ir.ThrowNode;
+import jdk.nashorn.internal.ir.TryNode;
+import jdk.nashorn.internal.ir.UnaryNode;
+import jdk.nashorn.internal.ir.VarNode;
+import jdk.nashorn.internal.ir.WhileNode;
+import jdk.nashorn.internal.ir.WithNode;
+import jdk.nashorn.internal.ir.visitor.NodeVisitor;
 import java.util.ArrayList;
 import java.util.List;
 

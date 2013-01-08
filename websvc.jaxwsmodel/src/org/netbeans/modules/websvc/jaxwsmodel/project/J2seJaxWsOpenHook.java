@@ -45,8 +45,12 @@
 package org.netbeans.modules.websvc.jaxwsmodel.project;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -72,6 +76,12 @@ public class J2seJaxWsOpenHook extends ProjectOpenedHook {
     /** Creates a new instance of J2seJaxWsOpenHook */
     public J2seJaxWsOpenHook(Project prj) {
         this.prj = prj;
+        try {
+            Class.forName(WSUtils.class.getName());
+        }
+        catch (ClassNotFoundException e) {
+            assert false;
+        }
     }
     
     @Override
@@ -120,7 +130,9 @@ public class J2seJaxWsOpenHook extends ProjectOpenedHook {
                         FileObject project_xml,
                         final AntBuildExtender ext) throws IOException {
 
-        BufferedReader br = new BufferedReader(new FileReader(FileUtil.toFile(project_xml)));
+        BufferedReader br = new BufferedReader(new InputStreamReader( 
+                new FileInputStream(FileUtil.toFile(project_xml)),
+                    Charset.forName("UTF-8")));                         // NOI18N
         String line = null;
         boolean isOldVersion = false;
         while ((line = br.readLine()) != null) {

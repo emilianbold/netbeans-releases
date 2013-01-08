@@ -129,9 +129,11 @@ public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
     
     @Override
     protected void setUp() throws Exception {
+        String name = getName()+" at "+Calendar.getInstance().getTime();
+        Thread.currentThread().setName("Test "+name);
         super.setUp();
         if (TRACE_START_STOP) {
-            System.err.println("Start "+getName()+" at "+Calendar.getInstance().getTime());
+            System.err.println("Start " + name);
         }
         
         Logger.getLogger("org.netbeans.modules.editor.settings.storage.Utils").setLevel(Level.SEVERE);

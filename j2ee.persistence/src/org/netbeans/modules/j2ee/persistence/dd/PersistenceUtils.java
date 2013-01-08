@@ -47,7 +47,7 @@ package org.netbeans.modules.j2ee.persistence.dd;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -84,6 +84,7 @@ import org.openide.util.Parameters;
 public class PersistenceUtils {
 
     private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.j2ee.persistence"); // NOI18N
+    private static final Logger LOG = Logger.getLogger(PersistenceUtils.class.getName());
 
     public static EntityMappings getEntityMappings(FileObject documentFO) {
         Project project = FileOwnerQuery.getOwner(documentFO);
@@ -141,9 +142,14 @@ public class PersistenceUtils {
         
         List<PersistenceUnit> result = new ArrayList<PersistenceUnit>();
         for (PersistenceScope persistenceScope : getPersistenceScopes(project)) {
-            Persistence persistence = PersistenceMetadata.getDefault().getRoot(persistenceScope.getPersistenceXml());
-            for (PersistenceUnit persistenceUnit : persistence.getPersistenceUnit()) {
-                result.add(persistenceUnit);
+            Persistence persistence = null;
+            try{
+                persistence = PersistenceMetadata.getDefault().getRoot(persistenceScope.getPersistenceXml());
+            } catch (RuntimeException ex) {// must catch RTE (thrown by schema2beans when document is not valid)
+                LOG.log(Level.INFO, null, ex);
+            }
+            if(persistence != null) {
+                result.addAll(Arrays.asList(persistence.getPersistenceUnit()));
             }
         }
         

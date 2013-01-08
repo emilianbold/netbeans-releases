@@ -110,6 +110,7 @@ public class ShortcutProvider {
         KeyEvent.VK_SLASH,
         KeyEvent.VK_MINUS,
         KeyEvent.VK_EQUALS,
+        KeyEvent.VK_SPACE,
 
         Utilities.isMac() ? KeyEvent.VK_HELP : KeyEvent.VK_INSERT,
         KeyEvent.VK_HOME,

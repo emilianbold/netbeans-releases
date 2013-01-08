@@ -86,6 +86,7 @@ import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -628,11 +629,19 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         });
     }
     
-    private void openElement(int selected){
+    private void openElement(final int selected){
         if (baseProject != null && baseProject.isValid()) {
-            ErrorFilesModel m = (ErrorFilesModel)rightList.getModel();
-            CsmOffsetable error = m.getFailedDirective(selected);
-            CsmUtilities.openSource(error);
+            final String taskName = "Open include"; //NOI18N
+            Runnable run = new Runnable() {
+
+                @Override
+                public void run() {
+                    ErrorFilesModel m = (ErrorFilesModel)rightList.getModel();
+                    CsmOffsetable error = m.getFailedDirective(selected);
+                    CsmUtilities.openSource(error);
+                }
+            };
+            CsmModelAccessor.getModel().enqueue(run, taskName);
         }
     }
     

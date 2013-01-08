@@ -448,6 +448,7 @@ public class CsmUtilities {
                 // put standalone files into separate collection
                 List<CsmFile> saFiles = new ArrayList<CsmFile>();
                 NativeFileItemSet set = dobj.getLookup().lookup(NativeFileItemSet.class);
+                boolean hasNormalFiles = false;
                 if (set != null && !set.isEmpty()) {
                     for (NativeFileItem item : set.getItems()) {
                         CsmProject csmProject = CsmModelAccessor.getModel().getProject(item.getNativeProject());
@@ -457,6 +458,7 @@ public class CsmUtilities {
                                 if (item.getClass().getName().contains("StandaloneFileProvider")) { // NOI18N
                                     saFiles.add(file);
                                 } else {
+                                    hasNormalFiles = true;
                                     files.add(file);
                                 }
                             }
@@ -486,7 +488,7 @@ public class CsmUtilities {
                                 if (CsmModelAccessor.getModelState() == CsmModelState.ON) {
                                     CndUtils.assertTrueInConsole(false, "FILE " + csmFile + " from invalid PROJECT " + csmProject); // NOI18N
                                 }
-                            } else if (platformProject.getClass().getName().contains("StandaloneFileProvider")) { // NOI18N
+                            } else if (hasNormalFiles && platformProject.getClass().getName().contains("StandaloneFileProvider")) { // NOI18N
                                 if (i == 0 && files.size() > 1) {
                                     if (CsmModelAccessor.getModelState() == CsmModelState.ON) {
                                         CndUtils.assertTrue(false, "!!! STANDALONE FILE " + csmFile + "\nTOOK PRIORITY OVER OTHER FILES " + files); // NOI18N

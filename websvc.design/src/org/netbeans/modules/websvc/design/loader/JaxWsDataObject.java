@@ -80,6 +80,8 @@ import org.openide.windows.CloneableOpenSupport;
 
 public final class JaxWsDataObject extends MultiDataObject {
     
+    private static final long serialVersionUID = -2635172073868722799L;
+
     public static final String CLASS_GIF = "org/netbeans/modules/websvc/design/resources/class.gif";
     
     private transient JaxWsJavaEditorSupport jes;    

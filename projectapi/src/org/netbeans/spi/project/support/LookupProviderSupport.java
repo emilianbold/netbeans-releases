@@ -259,7 +259,7 @@ public final class LookupProviderSupport {
             if (found) {
                 return false;
             } else {
-                throw new IllegalArgumentException(command);
+                throw new IllegalArgumentException("Misimplemented command '" + command + "' in " + Arrays.toString(lkpResult.allInstances().toArray()));
             }
         }
 

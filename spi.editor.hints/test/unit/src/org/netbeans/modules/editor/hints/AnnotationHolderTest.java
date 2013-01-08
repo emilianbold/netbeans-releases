@@ -242,12 +242,12 @@ public class AnnotationHolderTest extends NbTestCase {
         
         class AttacherImpl implements Attacher {
             private ParseErrorAnnotation annotation;
-            public void attachAnnotation(Position line, ParseErrorAnnotation a) throws BadLocationException {
+            public void attachAnnotation(Position line, ParseErrorAnnotation a, boolean synchronous) throws BadLocationException {
                 if (line.getOffset() == 0) {
                     this.annotation = a;
                 }
             }
-            public void detachAnnotation(ParseErrorAnnotation a) {}
+            public void detachAnnotation(ParseErrorAnnotation a, boolean synchronous) {}
         }
         
         AttacherImpl impl = new AttacherImpl();
@@ -305,6 +305,25 @@ public class AnnotationHolderTest extends NbTestCase {
         performTypingTest(4, 1, "", new int[] {8, 9}, new int[] {7, 8});
     }
     
+    public void test205675() throws Exception {
+        doc.remove(0, doc.getLength());
+        doc.insertString(0, "a\nb\nc\nd\ne\n", null);
+        
+        ErrorDescription ed0 = ErrorDescriptionFactory.createErrorDescription(Severity.ERROR, "0", file, 0, 1);
+        ErrorDescription ed1 = ErrorDescriptionFactory.createErrorDescription(Severity.ERROR, "1", file, 2, 3);
+        ErrorDescription ed2 = ErrorDescriptionFactory.createErrorDescription(Severity.ERROR, "2", file, 4, 5);
+        AnnotationHolder ah = AnnotationHolder.getInstance(file);
+        
+        ah.setErrorDescriptions("test", Arrays.asList(ed0, ed1, ed2));
+        
+        assertEquals(Arrays.asList(ed0), ah.getErrorsGE(0));
+        assertEquals(Arrays.asList(ed1), ah.getErrorsGE(1));
+        assertEquals(Arrays.asList(ed1), ah.getErrorsGE(2));
+        assertEquals(Arrays.asList(ed2), ah.getErrorsGE(3));
+        assertEquals(Arrays.asList(ed2), ah.getErrorsGE(4));
+        assertEquals(Arrays.asList(), ah.getErrorsGE(5));
+    }
+    
     private void performTypingTest(int index, String insertWhat, int[] highlightSpans) throws Exception {
         performTypingTest(index, insertWhat, new int[] {21, 32}, highlightSpans);
     }
@@ -320,8 +339,8 @@ public class AnnotationHolderTest extends NbTestCase {
         
         //these tests currently ignore annotations:
         class AttacherImpl implements Attacher {
-            public void attachAnnotation(Position line, ParseErrorAnnotation a) throws BadLocationException {}
-            public void detachAnnotation(ParseErrorAnnotation a) {}
+            public void attachAnnotation(Position line, ParseErrorAnnotation a, boolean synchronous) throws BadLocationException {}
+            public void detachAnnotation(ParseErrorAnnotation a, boolean synchronous) {}
         }
         
         AnnotationHolder.getInstance(file).attacher = new AttacherImpl();

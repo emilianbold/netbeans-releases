@@ -156,10 +156,10 @@ public class GeneratorUtils {
                     ERR.log(ErrorManager.INFORMATIONAL, "ee=" + ee);
                     ERR.log(ErrorManager.INFORMATIONAL, "thisElement = " + thisElement);
                     ERR.log(ErrorManager.INFORMATIONAL, "classes.subList(0, thisElement + 1)=" + classes.subList(0, thisElement + 1));
-                    ERR.log(ErrorManager.INFORMATIONAL, "isOverriden(info, ee, classes.subList(0, thisElement + 1))=" + isOverriden(info, ee, classes.subList(0, thisElement + 1)));
+                    ERR.log(ErrorManager.INFORMATIONAL, "isOverridden(info, ee, classes.subList(0, thisElement + 1))=" + isOverridden(info, ee, classes.subList(0, thisElement + 1)));
                 }
                 
-                if (!isOverriden(info, ee, classes.subList(0, thisElement + 1))) {
+                if (!isOverridden(info, ee, classes.subList(0, thisElement + 1))) {
                     overridable.add(ee);
                 }
             }
@@ -541,9 +541,9 @@ public class GeneratorUtils {
         return result;
     }
     
-    private static boolean isOverriden(CompilationInfo info, ExecutableElement methodBase, List<TypeElement> classes) {
+    private static boolean isOverridden(CompilationInfo info, ExecutableElement methodBase, List<TypeElement> classes) {
         if (ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-            ERR.log(ErrorManager.INFORMATIONAL, "isOverriden(" + info + ", " + methodBase + ", " + classes + ")");
+            ERR.log(ErrorManager.INFORMATIONAL, "isOverridden(" + info + ", " + methodBase + ", " + classes + ")");
         }
         
         for (TypeElement impl : classes) {

@@ -296,15 +296,19 @@ public class RESTResourcesPanel extends javax.swing.JPanel {
         jComboBox1.setEnabled(securityDefault);
         
         if (wizardPanel == null) {
-            if (!nameChangedByUser || jTextField2.getText().trim().length() == 0) {
-                if (resourceNode != null) {
-                    if (saasResource != null) {
-                        jTextField2.setText(Wadl2JavaHelper.getClientClassName(saasResource));
-                    } else {
-                        RestServiceDescription restServiceDesc = resourceNode.getLookup().lookup(RestServiceDescription.class);
-                        if (restServiceDesc != null) {
-                            jTextField2.setText(restServiceDesc.getName()+"_JerseyClient"); //NOI18N
-                        }
+            if (!nameChangedByUser
+                    || jTextField2.getText().trim().length() == 0)
+            {
+                if (saasResource != null) {
+                    jTextField2.setText(Wadl2JavaHelper
+                            .getClientClassName(saasResource));
+                }
+                else {
+                    RestServiceDescription restServiceDesc = resourceNode
+                            .getLookup().lookup(RestServiceDescription.class);
+                    if (restServiceDesc != null) {
+                        jTextField2.setText(restServiceDesc.getName()
+                                + "_JerseyClient"); // NOI18N
                     }
                 }
             }

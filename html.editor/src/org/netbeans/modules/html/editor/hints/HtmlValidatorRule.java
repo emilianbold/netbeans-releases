@@ -41,11 +41,13 @@
  */
 package org.netbeans.modules.html.editor.hints;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.NbBundle;
@@ -64,6 +66,7 @@ public abstract class HtmlValidatorRule extends HtmlRule {
     @Override
     protected void run(HtmlRuleContext context, List<Hint> result) {
         Snapshot snapshot = context.getSnapshot();
+        int snapshotLen = snapshot.getText().length();
 
         List<? extends Error> diagnostics = context.getLeftDiagnostics();
         ListIterator<? extends Error> itr = diagnostics.listIterator();
@@ -75,12 +78,17 @@ public abstract class HtmlValidatorRule extends HtmlRule {
             }
 
             itr.remove(); //remove the processed element so the other rules won't see it
-
+            OffsetRange errorOffsetRange = EmbeddingUtil.getErrorOffsetRange(e, snapshot); //document offset range
+            
+            int from = e.getStartPosition(); //use the embedded offset!
+            boolean valid = from >= 0 && from < snapshotLen;
+            boolean isFirstHintForPosition = valid ? context.isFirstHintForPosition(from) : true;
+            
             Hint h = new Hint(this,
                     getModifiedErrorMessage(e.getDescription()),
                     e.getFile(),
-                    EmbeddingUtil.getErrorOffsetRange(e, snapshot),
-                    context.getDefaultFixes(),
+                    errorOffsetRange,
+                    isFirstHintForPosition ? context.getDefaultFixes() : Collections.<HintFix>emptyList(),
                     20);
 
             if (isEnabled) {

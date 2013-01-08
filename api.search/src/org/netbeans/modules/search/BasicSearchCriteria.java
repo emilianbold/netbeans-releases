@@ -226,7 +226,8 @@ public final class BasicSearchCriteria {
      */
     private boolean validateReplacePattern() {
         if (searchPattern.isRegExp() && textPatternValid
-                && textPatternSpecified) {
+                && textPatternSpecified && replaceExpr != null
+                && !replaceExpr.isEmpty()) {
             int groups = getTextPattern().matcher("").groupCount();
             String tmpSearch = "";
             for (int i = 1; i <= groups; i++) {
@@ -424,6 +425,7 @@ public final class BasicSearchCriteria {
         this.replaceExpr = replaceExpr;
         this.replaceString = null;
         this.replacePatternValid = validateReplacePattern();
+        updateUsability(false);
     }
 
     //--------------------------------------------------------------------------
@@ -442,7 +444,8 @@ public final class BasicSearchCriteria {
     }
 
     private boolean isInvalid() {
-        return isTextPatternInvalid() || isFileNamePatternInvalid();
+        return isTextPatternInvalid() || isFileNamePatternInvalid()
+                || isReplacePatternInvalid();
     }
 
     void setUsabilityChangeListener(ChangeListener l) {

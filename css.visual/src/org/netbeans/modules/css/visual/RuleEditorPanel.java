@@ -68,6 +68,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.model.api.Declaration;
+import org.netbeans.modules.css.model.api.Declarations;
+import org.netbeans.modules.css.model.api.Element;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelUtils;
 import org.netbeans.modules.css.model.api.Rule;
@@ -132,8 +134,7 @@ import org.openide.util.actions.Presenter;
 })
 public class RuleEditorPanel extends JPanel {
 
-    private static final String RULE_EDITOR_LOGGER_NAME = "rule.editor"; //NOI18N
-    public static final Logger LOG = Logger.getLogger(RULE_EDITOR_LOGGER_NAME);
+    static final Logger LOG = Logger.getLogger("rule.editor"); //NOI18N
     
     static RequestProcessor RP = new RequestProcessor(CssCaretAwareSourceTask.class);
     
@@ -155,6 +156,7 @@ public class RuleEditorPanel extends JPanel {
     private boolean addPropertyMode;
    
     private Declaration createdDeclaration;
+    private Declaration editedDeclaration;
     private List<String> createdDeclarationsIdsList = new ArrayList<String>();
     
     private PropertyChangeListener MODEL_LISTENER = new PropertyChangeListener() {
@@ -173,31 +175,9 @@ public class RuleEditorPanel extends JPanel {
                         northWestPanel.revalidate();
                         northWestPanel.repaint();
 
-                        //re-set the css model as the CssCaretAwareSourceTask won't work 
-                        //if the modified file is not opened in editor
-                        Model model = getModel();
-                        if (model != null) {
-                            Document doc = model.getLookup().lookup(Document.class);
-                            if (doc != null) {
-                                try {
-                                    Source source = Source.create(doc);
-                                    ParserManager.parse(Collections.singleton(source), new UserTask() {
-                                        @Override
-                                        public void run(ResultIterator resultIterator) throws Exception {
-                                            resultIterator = WebUtils.getResultIterator(resultIterator, "text/css");
-                                            if (resultIterator != null) {
-                                                CssParserResult result = (CssParserResult) resultIterator.getParserResult();
-                                                final Model model = Model.getModel(result);
-                                                LOG.log(Level.FINE, "Model.CHANGES_APPLIED_TO_DOCUMENT event handler - setting new model {0}", model);
-                                                setModel(model);
-                                            }
-                                        }
-                                    });
-                                } catch (ParseException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
-                            }
-                        }
+                        //XXX this should not be called in EDT, but due to the current "increment support" design it has to.                        
+                        refreshModel();
+                        
                     } else if (Model.MODEL_WRITE_TASK_FINISHED.equals(evt.getPropertyName())) {
                         if (createdDeclaration != null) {
                             //select & edit the property corresponding to the created declaration
@@ -338,6 +318,34 @@ public class RuleEditorPanel extends JPanel {
        
     }
     
+    /**
+     * Explicitly refreshes the CSS Source Model.
+     */
+    public void refreshModel() {
+        if (model != null) {
+            Document doc = model.getLookup().lookup(Document.class);
+            if (doc != null) {
+                try {
+                    Source source = Source.create(doc);
+                    ParserManager.parse(Collections.singleton(source), new UserTask() {
+                        @Override
+                        public void run(ResultIterator resultIterator) throws Exception {
+                            resultIterator = WebUtils.getResultIterator(resultIterator, "text/css");
+                            if (resultIterator != null) {
+                                CssParserResult result = (CssParserResult) resultIterator.getParserResult();
+                                final Model model = Model.getModel(result);
+                                LOG.log(Level.FINE, "Model.CHANGES_APPLIED_TO_DOCUMENT event handler - setting new model {0}", model);
+                                setModel(model);
+                            }
+                        }
+                    });
+                } catch (ParseException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+    }
+    
     //called fro the containing TC's componentDeactivated();
     public void componentDeactivated() {
         //Support for clearing the "created declarations list".
@@ -348,6 +356,7 @@ public class RuleEditorPanel extends JPanel {
         //alphabetical order - lets do that when the TopComponent containing
         //rhe RuleEditor panel lost focus.
         createdDeclarationsIdsList.clear();
+        createdDeclaration = null;
         node.fireContextChanged(true);
     }
     
@@ -357,9 +366,34 @@ public class RuleEditorPanel extends JPanel {
     
     void setCreatedDeclaration(Rule rule, Declaration declaration) {
         createdDeclaration = declaration;
-        
         String declarationId = PropertyUtils.getDeclarationId(rule, declaration);
         createdDeclarationsIdsList.add(declarationId);
+    }
+    
+    /**
+     * User used "Add Property" item to add a new property, but then in the value, 
+     * pressed esc.
+     * 
+     * So we need to remove the latest declaration from the model as it has no value.
+     * 
+     */
+    public void disposeEditedDeclaration() {
+       final Declaration remove = editedDeclaration;
+       if(remove != null) {
+           //1.remove from model
+           model.runWriteTask(new Model.ModelTask() {
+               @Override
+               public void run(StyleSheet styleSheet) {
+                   Declarations parent = (Declarations)remove.getParent();
+                   parent.removeDeclaration(remove);
+               }
+           });
+           node.fireContextChanged(true);
+       }
+    }
+    
+    public void editingFinished() {
+        editedDeclaration = null;
     }
     
     Declaration getCreatedDeclaration() {
@@ -372,17 +406,18 @@ public class RuleEditorPanel extends JPanel {
     
     private void editCreatedDeclaration() {
         DeclarationProperty descriptor = node.getDeclarationProperty(createdDeclaration);
-        assert descriptor != null;
-        
-        sheet.requestFocus();
-//        sheet.select(descriptor, true);
-        try {
-            call_PropertySheet_select(sheet, descriptor, true);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+        if(descriptor != null) {
+            sheet.requestFocus();
+    //        sheet.select(descriptor, true);
+            try {
+                call_PropertySheet_select(sheet, descriptor, true);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            editedDeclaration = createdDeclaration;
+            createdDeclaration = null;
         }
-        
-        createdDeclaration = null;
     }
     
     private void call_PropertySheet_select(PropertySheet sheet, FeatureDescriptor descriptor, boolean edit) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {

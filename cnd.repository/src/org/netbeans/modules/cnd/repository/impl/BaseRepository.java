@@ -41,14 +41,15 @@
  */
 package org.netbeans.modules.cnd.repository.impl;
 
-import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.disk.FilesAccessStrategy;
 import org.netbeans.modules.cnd.repository.disk.FilesAccessStrategyImpl;
 import org.netbeans.modules.cnd.repository.disk.StorageAllocator;
 import org.netbeans.modules.cnd.repository.translator.RepositoryTranslatorImpl;
-import org.netbeans.modules.cnd.repository.util.UnitCodec;
+import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
 
 /**
  *
@@ -58,29 +59,47 @@ public abstract class BaseRepository implements Repository, UnitCodec {
     
     public static final int REPO_DENOM = 100000;
     
-    private final int id;
+    private final UnitCodecImpl codec;
     private final CacheLocation cacheLocation;
     private final RepositoryTranslatorImpl translator;
     private final StorageAllocator storageAllocator;
     private final FilesAccessStrategy filesAccessStrategy;
-    
+
+    private final Map<Integer, Object> unitLocks = new HashMap<Integer, Object>();    
+    private static final class UnitLock {}
+    private final Object mainUnitLock = new UnitLock();
 
     protected BaseRepository(int id, CacheLocation cacheLocation) {
-        this.id = id;
+        this.codec = new UnitCodecImpl(id);
         this.cacheLocation = cacheLocation;
         this.storageAllocator = new StorageAllocator(cacheLocation);
         this.filesAccessStrategy = new FilesAccessStrategyImpl(storageAllocator, this);
         this.translator = new RepositoryTranslatorImpl(storageAllocator, this);
     }
 
+    public final Object getUnitLock(int unitId) {
+        synchronized (mainUnitLock) {
+            Object lock = unitLocks.get(unitId);
+            if (lock == null) {
+                lock = new NamedLock("unitId=" + unitId); // NOI18N
+                unitLocks.put(unitId, lock);
+            }
+            return lock;
+        }
+    }
+   
+    UnitCodec getUnitCodec() {
+        return codec;
+    }
+    
     @Override
-    public int removeRepositoryID(int unitId) {
-        return unitId % REPO_DENOM; // write it *without* repository ID
+    public int unmaskRepositoryID(int unitId) {
+        return codec.unmaskRepositoryID(unitId);
     }
 
     @Override
-    public int addRepositoryID(int unitId) {
-        return id * REPO_DENOM + (unitId % REPO_DENOM); // add repository ID
+    public int maskByRepositoryID(int unitId) {
+        return codec.maskByRepositoryID(unitId);
     }
 
     public final RepositoryTranslatorImpl getTranslation() {
@@ -101,6 +120,84 @@ public abstract class BaseRepository implements Repository, UnitCodec {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + ' ' + id + ' ' + cacheLocation;
+        return getClass().getSimpleName() + ' ' + codec.id + ' ' + cacheLocation;
+    }
+    
+    private static final class NamedLock {
+
+        private final String name;
+
+        public NamedLock(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return this.name;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final NamedLock other = (NamedLock) obj;
+            if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 97 * hash + (this.name != null ? this.name.hashCode() : 0);
+            return hash;
+        }
+    }   
+    
+    private static final class UnitCodecImpl implements UnitCodec {
+        private final int id;
+
+        public UnitCodecImpl(int repositoryID) {
+            this.id = repositoryID;            
+        }
+
+        @Override
+        public int unmaskRepositoryID(int clientUnitId) {
+            return clientUnitId % REPO_DENOM; // write it *without* repository ID
+        }
+
+        @Override
+        public int maskByRepositoryID(int internalUnitId) {
+            return id * REPO_DENOM + (internalUnitId % REPO_DENOM); // add repository ID
+        }
+        
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 97 * hash + this.id;
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final UnitCodecImpl other = (UnitCodecImpl) obj;
+            return this.id == other.id;
+        }
+
+        @Override
+        public String toString() {
+            return "UnitCodecImpl{" + "id=" + id + '}'; // NOI18N
+        }
     }
 }

@@ -66,7 +66,6 @@ public class JaxWsHandlerCreatorProvider implements HandlerCreatorProvider {
     }
     
     public HandlerCreator getHandlerCreator(Project project, WizardDescriptor wiz) {
-        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         ProjectInfo projectInfo = new ProjectInfo(project);
         int projectType = projectInfo.getProjectType();
         if ((projectType == ProjectInfo.JSE_PROJECT_TYPE && Util.isSourceLevel16orHigher(project)) ||

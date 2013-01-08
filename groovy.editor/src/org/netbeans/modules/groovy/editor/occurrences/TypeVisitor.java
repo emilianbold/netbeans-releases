@@ -72,7 +72,7 @@ public class TypeVisitor extends ClassCodeVisitorSupport {
     protected final int cursorOffset;
     private final boolean visitOtherClasses;
 
-    
+
     public TypeVisitor(SourceUnit sourceUnit, AstPath path, BaseDocument doc,
             int cursorOffset, boolean visitOtherClasses) {
         this.sourceUnit = sourceUnit;
@@ -92,11 +92,11 @@ public class TypeVisitor extends ClassCodeVisitorSupport {
         // FIXME use snapshot TH
         doc.readLock();
         try {
-            TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, cursorOffset);
+            TokenSequence<GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, cursorOffset);
             if (ts == null) {
                 return;
             }
-            Token<? extends GroovyTokenId> token = ts.token();
+            Token<GroovyTokenId> token = ts.token();
             if (token == null) {
                 return;
             }
@@ -178,7 +178,7 @@ public class TypeVisitor extends ClassCodeVisitorSupport {
     /**
      * Children can override this if it has special requirement on selected token.
      */
-    protected boolean isValidToken(Token<? extends GroovyTokenId> currentToken, Token<? extends GroovyTokenId> previousToken) {
+    protected boolean isValidToken(Token<GroovyTokenId> currentToken, Token<GroovyTokenId> previousToken) {
         return true;
     }
 

@@ -4,82 +4,103 @@ Copyright &copy; 2009, 2012 Oracle and/or its affiliates. All rights reserved.
  -->
 <html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <link href="/org/netbeans/modules/usersguide/ide.css" type="text/css" rel="StyleSheet">
-        <title>Overview of C/C++ Remote Development</title>
-    </head>
-    <body>
-        <h2>Overview of C/C++ Remote Development
-        </h2>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+    <link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    <meta name="generator" content="Helen">
+    <title>Overview of C/C++ Remote Development</title>
+  </head>
+  <body>
+    <h2>
+       Overview of C/C++ Remote Development
+    </h2>
     <p>
        <small><a href="#seealso">See Also</a>&nbsp;</small>
-        </p>
-        <p>Remote development enables you to run the IDE locally in your familiar desktop
-            environment, while using the compute power and developer tools of a remote server
-            to build your applications.</p>
-        <p>Once the remote host is configured and connected, you can build, run, and debug projects
-            as you normally do on your local system.  The IDE runs the remote host's tools
-            on your project files, enabling you to build binaries for the remote server platform.
-            The remote host might also have more advanced hardware, such as multicore processors to enable
-            fast parallel processing of your builds.</p>
-
-        <p>When you use a remote build host, the project files
-            must be accessible from both systems. You can set up the remote host
-            to obtain access to project files though a shared file system, or by
-            copying the project files to the remote system. When you use the secure copy
-            option, the IDE manages the project files in both locations, so you do not
-            need to transfer any files yourself. If a remotely
-            built project generates files that are dependencies for the project, the IDE
-            prompts you to download the generated files to the local system.</p>
-
-        <p>To use remote hosts for developing C, C++, or Fortran projects, you
-            should perform the following tasks.</p>
-        <ol>
-            <li><a href="RemoteDevelopmentConfigureHost.html">Configure a remote host.</a></li>
-            <li><a href="RemoteDevelopmentProjects.html">Set up a local project to use the remote host.</a></li>
-            <li><a href="../CandC++ProjectBasics/BuildingCorC++Project.html">Build and run your code as you normally do.</a></li>
-            <li><a href="RemoteDevelopmentHostProperties.html">Optionally change remote host properties.</a></li>
-        </ol>
-
-       
-        <table cellpadding=2 cellspacing=2>
-            <tr>
-        <th colspan="2" align="left">
-          <a name="seealso">See also</a>
-                </th>
-            </tr>
-            <tr>
+    </p>
+    <p>
+       Remote development enables you to run the IDE locally in your familiar desktop environment,
+      while using the compute power and developer tools of a remote server to build your
+      applications.
+    </p>
+    <p>
+       Once the remote build host is configured and connected through the IDE, you can build, run,
+      and debug projects as you normally do on your local system. The IDE runs the remote host's
+      tools on your project files, enabling you to build binaries for the remote server platform.
+      The remote host might also have more advanced hardware, such as multicore processors to
+      enable fast parallel processing of your builds.
+    </p>
+    <p>
+       When you use a remote build host, the local and remote hosts both need to access the project files. This can be accomplished through file sharing or securely copying the files.  Before the IDE can use file sharing between the local and remote systems, the shared file system or folder must be set up and accessible to both systems. Remote files are accessed through SFTP or another file sharing mechanism available in the operating system the host is running, for example, Network File System (NFS), Samba, or WebDAV.
+    </p>
+    <p>
+      If file sharing is not possible, you can use Automatic Copying option to copy the files to the server using SSH.  The IDE manages the project files in both locations, so you do not need to transfer any files yourself. If a remotely built project generates files that are dependencies for the project, the IDE prompts you to download the generated files to the local system.
+    </p>
+    <p>
+       To use remote hosts for developing C, C++, or Fortran projects, you should perform the
+      following tasks.
+    </p>
+    <ol>
+      <li>
+        <a href="RemoteDevelopmentConfigureHost.html">Configure a remote build host.</a>
+      </li>
+      <li>
+        <a href="RemoteDevelopmentProjects.html">Set up a local project to use the remote build
+        host.</a>
+      </li>
+      <li>
+        <a href="../CandC++ProjectBasics/BuildingCorC++Project.html">Build and run your code as you
+        normally do.</a>
+      </li>
+      <li>
+        <a href="RemoteDevelopmentHostProperties.html">Optionally change remote host
+        properties.</a>
+      </li>
+    </ol>
+    <ul class="note"> 
+    <li>The tool bar has shortcuts to make it easy to <a href="RemoteDevelopmentToolbar.html">Work with projects on remote hosts</a>.</li>
+  </ul>
+    <table cellpadding="2" cellspacing="2">
+      <tr>
+        <th align="left" colspan="2">
+          <a name="seealso">See also</a> 
+        </th>
+      </tr>
+      <tr>
         <td width="23">
           &nbsp;
-                </td>
-                <td>
-                    <a href="RemoteDevelopmentConfigureHost.html">Configuring a Remote Build Host</a><br>
-                    <a href="ConfiguringBuildTools.html">Configuring Build Tools for C/C++/Fortran Projects</a><br>
-                    <a href="ProjectPropsBuild.html">C/C++ Project Properties Dialog Box: Build</a><br>
-                    <a href="RemoteDevelopmentFileSharing.html">Sharing Files With Remote Build Hosts</a><br>
-                    <a href="RemoteDevelopmentTerminal.html">Opening a Terminal Window for a Build Host</a><br>
-                    <a href="RemoteDevelopmentManaging.html">Managing Build Hosts</a>
-                </td>
-            </tr>
-        </table>
-        <hr>
+        </td>
+        <td>
+          <a href="RemoteDevelopmentConfigureHost.html">Configuring a Remote Build Host</a><br>
+           <a href="ConfiguringBuildTools.html">Configuring Build Tools for C/C++/Fortran
+          Projects</a><br>
+           <a href="ProjectPropsBuild.html">C/C++ Project Properties Dialog Box: Build</a><br>
+           <a href="RemoteDevelopmentFileSharing.html">Sharing Files With Remote Build
+          Hosts</a><br>
+           <a href="RemoteDevelopmentTerminal.html">Opening a Terminal Window for a Build
+          Host</a><br>
+           <a href="RemoteDevelopmentManaging.html">Managing Build Hosts</a> 
+        </td>
+      </tr>
+    </table>
+    <hr>
+    <p>
        <small><a href="../credits.html">Legal Notices</a></small>
+    </p>
     <table border="0" cellpadding="20">
-            <tr>
-                <td>
+      <tr>
+        <td>
           &nbsp;
-                </td>
-            </tr>
-            <tr>
-                <td>
+        </td>
+      </tr>
+      <tr>
+        <td>
           &nbsp;
-                </td>
-            </tr>
-            <tr>
-                <td>
+        </td>
+      </tr>
+      <tr>
+        <td>
           &nbsp;
-                </td>
-            </tr>
-        </table>
-    </body>
+        </td>
+      </tr>
+    </table>
+  </body>
 </html>

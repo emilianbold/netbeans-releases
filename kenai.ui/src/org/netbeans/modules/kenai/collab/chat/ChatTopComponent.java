@@ -109,7 +109,7 @@ public class ChatTopComponent extends TopComponent {
     };
 
     public void reconnect(final KenaiConnection kec) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        Utilities.getRequestProcessor().post(new Runnable() {
 
             public void run() {
                 synchronized (kec) {
@@ -610,7 +610,7 @@ public class ChatTopComponent extends TopComponent {
             if (!Utilities.isChatSupported(kenai)) {
                 JOptionPane.showMessageDialog(retryLink, NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.ChatNotAvailable", kenai.getName()));
              } else {
-                RequestProcessor.getDefault().post(new Runnable() {
+                Utilities.getRequestProcessor().post(new Runnable() {
 
                     public void run() {
                         try {

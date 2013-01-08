@@ -1919,8 +1919,8 @@ public final class FileImpl implements CsmFile,
         return new CndTextIndexKey(getUnitId(), getFileId());
     }
     
-    private int getFileId() {
-        return KeyUtilities.getProjectFileIndex(((KeyBasedUID)uid).getKey());
+    public int getFileId() {
+        return KeyUtilities.getProjectFileIndex(((KeyBasedUID)getUID()).getKey());
     }
 
     public int getUnitId() {

@@ -24,7 +24,7 @@ var MyObj = {
  * @return {Number} 
  */
 function martion () {
-    return MyObj.getVersion;
+    return MyObj.getVersion();
 }
 
 MyObj.create().getInfo().big();

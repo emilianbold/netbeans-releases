@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.lexer;
 import java.io.File;
 import java.io.FileReader;
 import java.nio.CharBuffer;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -114,14 +115,22 @@ public class CppLexerPerformanceTestCase extends NbTestCase {
         ModificationTextDocument doc = new ModificationTextDocument();
         doc.insertString(0, text, null);
         doc.putProperty(Language.class, CppTokenId.languageC());
-        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        TokenSequence<?> ts = hi.tokenSequence();
+        final TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         long tm = System.currentTimeMillis();
-        int tokenCount = 0;
+        final AtomicInteger tokenCount = new AtomicInteger(0);
         // Force all the tokens to be initialized
-        while (ts.moveNext()) { tokenCount++; }
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                TokenSequence<?> ts = hi.tokenSequence();
+                while (ts.moveNext()) {
+                    tokenCount.incrementAndGet();
+                }
+            }
+        };
+        doc.render(runnable);
         tm = System.currentTimeMillis() - tm;
-        System.err.println("TH over Swing Document: " + tokenCount + " tokens created in " + tm
+        System.err.println("TH over Swing Document: " + tokenCount.intValue() + " tokens created in " + tm
                 + " ms over document with " + doc.getLength() + " chars; prepareTokenCount="
                 + prepareTokenCount + ".");
     }
@@ -138,11 +147,20 @@ public class CppLexerPerformanceTestCase extends NbTestCase {
         ModificationTextDocument doc = new ModificationTextDocument();
         doc.insertString(0, text, null);
         doc.putProperty(Language.class, CppTokenId.languageC());
-        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        TokenSequence<?> ts = hi.tokenSequence();
-        int tokenCount = 0;
-        while (ts.moveNext()) { tokenCount++; }
-        return tokenCount;
+        final TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        final AtomicInteger tokenCount = new AtomicInteger(0);
+        // Force all the tokens to be initialized
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                TokenSequence<?> ts = hi.tokenSequence();
+                while (ts.moveNext()) {
+                    tokenCount.incrementAndGet();
+                }
+            }
+        };
+        doc.render(runnable);
+        return tokenCount.intValue();
     }
 
     private String readFile() throws Exception {

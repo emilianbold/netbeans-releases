@@ -63,6 +63,10 @@ import org.json.simple.JSONObject;
 import org.netbeans.modules.extbrowser.plugins.ExtensionManager;
 import org.netbeans.modules.extbrowser.plugins.ExtensionManager.ExtensitionStatus;
 import org.netbeans.modules.extbrowser.plugins.ExtensionManagerAccessor;
+import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin;
+import org.netbeans.modules.extbrowser.plugins.Message;
+import org.netbeans.modules.extbrowser.plugins.Message.MessageType;
+import org.netbeans.modules.extbrowser.plugins.MessageListener;
 import org.netbeans.modules.extbrowser.plugins.Utils;
 
 
@@ -154,7 +158,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                 return ExtensionManager.ExtensitionStatus.MISSING;
             }
             JSONObject settings = (JSONObject)extensions.get("settings");
-            if (extensions == null) {
+            if (settings == null) {
                 return ExtensionManager.ExtensitionStatus.MISSING;
             }
             for (Object item : settings.entrySet()) {
@@ -367,9 +371,14 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                     new Object[]{continueButton, 
                             DialogDescriptor.CANCEL_OPTION}, continueButton, 
                             DialogDescriptor.DEFAULT_ALIGN, null, null);
+            InstallInfoReceiver receiver = new InstallInfoReceiver();
+            ExternalBrowserPlugin.getInstance().addMessageListener(receiver);
             while (true) {
                 Object result = DialogDisplayer.getDefault().notify(descriptor);
                 if (result == continueButton) {
+                    if ( receiver.isInstalled() ){
+                        return true;
+                    }
                     ExtensitionStatus status = isInstalled();
                     if ( status!= ExtensitionStatus.INSTALLED){
                         continue;
@@ -413,6 +422,9 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                         
                         @Override
                         public void run() {
+                            InstallInfoReceiver receiver = new InstallInfoReceiver();
+                            ExternalBrowserPlugin.getInstance().
+                                addMessageListener(receiver);
                             try {
                                 HtmlBrowser.URLDisplayer.getDefault().showURL(
                                     URI.create(PLUGIN_PAGE).toURL());
@@ -423,7 +435,8 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                             }
                             dialogs[0].setVisible(false);
                             dialogs[0].dispose();
-                            result[0] = createReRun(currentStatus, extensionFile);
+                            result[0] = createReRun(currentStatus, extensionFile,
+                                    receiver);
                         }
                     }, new Runnable() {
                         
@@ -448,7 +461,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
         
         private boolean createReRun(final 
                 ExtensionManager.ExtensitionStatus currentStatus,
-                final File extensionFile)
+                final File extensionFile, final InstallInfoReceiver receiver)
         {
             final Dialog[] dialogs = new Dialog[1];
             final boolean result[] = new boolean[1];
@@ -458,12 +471,13 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                         @Override
                         public void run() {
                             ExtensitionStatus status = isInstalled();
-                            if ( status!= ExtensitionStatus.INSTALLED){
-                                return;
+                            if ( receiver.isInstalled() || 
+                                    status== ExtensitionStatus.INSTALLED)
+                            {
+                                result[0] = true;
+                                dialogs[0].setVisible(false);
+                                dialogs[0].dispose();
                             }
-                            result[0] = true;
-                            dialogs[0].setVisible(false);
-                            dialogs[0].dispose();
                         }
                     }, new Runnable() {
                         
@@ -540,5 +554,24 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
             private String myName;
             private boolean isCaseSensitive;
         }
+    }
+    
+    static class InstallInfoReceiver implements MessageListener {
+
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.extbrowser.plugins.MessageListener#messageReceived(org.netbeans.modules.extbrowser.plugins.Message)
+         */
+        @Override
+        public void messageReceived( Message message ) {
+            if ( message.getType()==MessageType.READY){
+                isInstalled = true;
+            }
+        }
+        
+        public boolean isInstalled(){
+            return isInstalled;
+        }
+        
+        private volatile boolean isInstalled;
     }
 }

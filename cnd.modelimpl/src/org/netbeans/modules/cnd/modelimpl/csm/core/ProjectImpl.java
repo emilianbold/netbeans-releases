@@ -100,6 +100,13 @@ public final class ProjectImpl extends ProjectBase {
                 DiagnosticExceptoins.register(e);
             }
         }
+        if (instance != null && !(instance instanceof ProjectImpl)) {
+            DiagnosticExceptoins.register(new IllegalStateException(
+                    "Expected " + ProjectImpl.class.getName() + //NOI18N
+                    " but restored from repository " + instance.getClass().getName())); //NOI18N
+            cleanRepository(fs, platformProject, false);
+            instance = null;
+        }
         if (instance == null) {
             instance = new ProjectImpl(model, fs, platformProject, name);
         }

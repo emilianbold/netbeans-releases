@@ -997,6 +997,43 @@ public class AnnotationTest extends GeneratorTestBase {
         assertEquals(golden, res);
     }
     
+    public void testFirstAnnotationWithImport() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        String code = "package hierbas.del.litoral;\n" +
+                      "\n" +
+                      "public class Test {\n" +
+                      "}\n";
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.lang.annotation.Retention;\n" +
+            "\n" +
+            "@Retention\n" +
+            "public class Test {\n" +
+            "}\n";
+
+        TestUtilities.copyStringToFile(testFile, code);
+
+        JavaSource src = getJavaSource(testFile);
+        Task task = new Task<WorkingCopy>() {
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                ModifiersTree mods = clazz.getModifiers();
+                TreeMaker make = workingCopy.getTreeMaker();
+                workingCopy.rewrite(mods,
+                                    make.addModifiersAnnotation(mods,
+                                                                make.Annotation(make.Type("java.lang.annotation.Retention"),
+                                                                                Collections.<ExpressionTree>emptyList())));
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     String getGoldenPckg() {
         return "";
     }

@@ -61,7 +61,7 @@ import org.openide.util.WeakSet;
  */
 final class DeepListener extends WeakReference<FileChangeListener>
 implements FileChangeListener, Runnable, Callable<Boolean>, FileFilter {
-    private static final Logger LOG = Logger.getLogger(DeepListener.class.getName());
+    static final Logger LOG = Logger.getLogger(FileUtil.class.getName() + ".recursive");
     private final File path;
     private FileObject watching;
     private boolean removed;
@@ -80,8 +80,8 @@ implements FileChangeListener, Runnable, Callable<Boolean>, FileFilter {
     
     final void init() {
         keep.add(this);
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.log(Level.FINE, null, new Throwable("listening to " + path));
+        if (LOG.isLoggable(Level.FINER)) {
+            LOG.log(Level.FINER, null, new Throwable("listening to " + path));
         }
         relisten();
     }

@@ -58,8 +58,7 @@ import org.openide.util.lookup.InstanceContent;
  * @author mkuchtiak
  */
 public class PortNode extends AbstractNode {
-    WsdlPort port;
-    FileObject srcRoot;
+    //WsdlPort port;
     
     public PortNode(WsdlPort port) {
         this(port, new InstanceContent());
@@ -67,7 +66,7 @@ public class PortNode extends AbstractNode {
     
     private PortNode(WsdlPort port, InstanceContent content) {
         super(new PortChildren(port),new AbstractLookup(content));
-        this.port=port;
+        //this.port=port;
         setName(port.getName());
         setDisplayName(port.getName());
         content.add(port);

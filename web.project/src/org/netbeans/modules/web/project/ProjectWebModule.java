@@ -555,7 +555,9 @@ public final class ProjectWebModule extends J2eeModuleProvider
     public void uncacheDescriptors() {
         // this.getConfigSupport().resetStorage();
         // reset timeout when closing the project
-        notificationTimeout = 0;
+        synchronized (this) {
+            notificationTimeout = 0;
+        }
     }
 
     // TODO MetadataModel: rewrite when MetadataModel is ready    

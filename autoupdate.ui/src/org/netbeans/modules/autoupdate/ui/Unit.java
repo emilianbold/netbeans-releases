@@ -115,9 +115,13 @@ public abstract class Unit {
             return isVisible;
         }
         this.filter = filter;
+        isVisible = filter.length () == 0;
+        if (isVisible) {
+            return isVisible;
+        }
         Iterable<String> iterable = details ();
         for (String detail : iterable) {
-            isVisible = filter.length () == 0 || detail.toLowerCase ().contains (filter);
+            isVisible = detail.toLowerCase ().contains (filter);
             if (isVisible) {
                 break;
             }
@@ -133,7 +137,7 @@ public abstract class Unit {
                     int step = 0;
                     @Override
                     public boolean hasNext () {
-                        return step <= 7;
+                        return step <= 6;
                     }
                     
                     @Override
@@ -154,8 +158,6 @@ public abstract class Unit {
                             next = getAuthor ();break;
                         case 6:
                             next = getHomepage ();break;
-                        case 7:
-                            next = getSource ();break;
                         }
                         return next != null ? next : "";//NOI18N
                     }

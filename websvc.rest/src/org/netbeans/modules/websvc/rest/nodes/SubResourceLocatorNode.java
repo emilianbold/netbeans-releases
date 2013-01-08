@@ -64,7 +64,6 @@ public class SubResourceLocatorNode extends AbstractNode{
     private String methodName;
     private String uriTemplate;
     private String returnType;
-    private MetadataModel<RestServicesMetadata> model;
     
     public SubResourceLocatorNode(Project project, String className, SubResourceLocator method) {
         this(project, className, method, new InstanceContent());

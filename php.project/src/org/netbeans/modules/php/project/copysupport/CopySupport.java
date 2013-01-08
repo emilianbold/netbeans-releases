@@ -44,10 +44,12 @@ package org.netbeans.modules.php.project.copysupport;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.List;
 import java.util.Queue;
 import java.util.Stack;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -56,6 +58,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectValidator;
@@ -287,7 +290,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
                     FileUtil.removeRecursiveListener(fileChangeListener, FileUtil.toFile(sources));
                     LOGGER.log(Level.FINE, "\t-> RECURSIVE listener unregistered for project {0}", project.getName());
                 } catch (IllegalArgumentException ex) {
-                    LOGGER.log(Level.WARNING,
+                    LOGGER.log(Level.INFO,
                             "If this happens to you reliably, report issue with steps to reproduce and attach IDE log (http://netbeans.org/community/issues.html).", ex);
                     FileObject originalSources = ((SourcesFileChangeListener) fileChangeListener).getSources();
                     LOGGER.log(Level.INFO,
@@ -479,19 +482,44 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
 
     private static class ProxyOperationFactory extends FileOperationFactory {
 
+        static final int SHOW_FAILED_FILES_DELAY = 3000;
+
         final FileOperationFactory localFactory;
         final FileOperationFactory remoteFactory;
+        final List<String> localFailedFiles = new CopyOnWriteArrayList<String>();
+        final List<String> remoteFailedFiles = new CopyOnWriteArrayList<String>();
+        final RequestProcessor.Task showFailedFilesTask;
 
-        ProxyOperationFactory(PhpProject project) {
+        // failed files (local and remote copying)
+        volatile boolean userAskedLocalCopying = false;
+        volatile boolean userAskedRemoteCopying = false;
+
+
+        ProxyOperationFactory(final PhpProject project) {
             super(project);
             this.localFactory = new LocalOperationFactory(project);
             this.remoteFactory = new RemoteOperationFactory(project);
+            showFailedFilesTask = COPY_SUPPORT_RP.create(new Runnable() {
+                @Override
+                public void run() {
+                    if (!localFailedFiles.isEmpty()) {
+                        FailedFilesPanel.local(ProjectUtils.getInformation(project).getDisplayName(), localFailedFiles);
+                        localFailedFiles.clear();
+                    }
+                    if (!remoteFailedFiles.isEmpty()) {
+                        FailedFilesPanel.remote(ProjectUtils.getInformation(project).getDisplayName(), remoteFailedFiles);
+                        remoteFailedFiles.clear();
+                    }
+                }
+            }, true);
         }
 
         @Override
         protected void resetInternal() {
             localFactory.reset();
             remoteFactory.reset();
+            userAskedLocalCopying = false;
+            userAskedRemoteCopying = false;
         }
 
         @Override
@@ -511,30 +539,30 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
 
         @Override
         protected Callable<Boolean> createInitHandlerInternal(FileObject source) {
-            return createHandler(localFactory.createInitHandler(source), remoteFactory.createInitHandler(source));
+            return createHandler(source, localFactory.createInitHandler(source), remoteFactory.createInitHandler(source));
         }
 
         @Override
         protected Callable<Boolean> createCopyHandlerInternal(FileObject source, FileEvent fileEvent) {
-            return createHandler(localFactory.createCopyHandler(source, fileEvent), remoteFactory.createCopyHandler(source, fileEvent));
+            return createHandler(source, localFactory.createCopyHandler(source, fileEvent), remoteFactory.createCopyHandler(source, fileEvent));
         }
 
         @Override
         protected Callable<Boolean> createRenameHandlerInternal(FileObject source, String oldName, FileRenameEvent fileRenameEvent) {
-            return createHandler(localFactory.createRenameHandler(source, oldName, fileRenameEvent), remoteFactory.createRenameHandler(source, oldName, fileRenameEvent));
+            return createHandler(source, localFactory.createRenameHandler(source, oldName, fileRenameEvent), remoteFactory.createRenameHandler(source, oldName, fileRenameEvent));
         }
 
         @Override
         protected Callable<Boolean> createDeleteHandlerInternal(FileObject source, FileEvent fileEvent) {
-            return createHandler(localFactory.createDeleteHandler(source, fileEvent), remoteFactory.createDeleteHandler(source, fileEvent));
+            return createHandler(source, localFactory.createDeleteHandler(source, fileEvent), remoteFactory.createDeleteHandler(source, fileEvent));
         }
 
-        private Callable<Boolean> createHandler(Callable<Boolean> localHandler, Callable<Boolean> remoteHandler) {
+        private Callable<Boolean> createHandler(FileObject source, Callable<Boolean> localHandler, Callable<Boolean> remoteHandler) {
             if (localHandler == null && remoteHandler == null) {
                 LOGGER.fine("No handler given");
                 return null;
             }
-            return new ProxyHandler(localHandler, remoteHandler);
+            return new ProxyHandler(source, localHandler, remoteHandler);
         }
 
         @Override
@@ -543,10 +571,14 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
         }
 
         private final class ProxyHandler implements Callable<Boolean> {
+
+            private final FileObject source;
             private final Callable<Boolean> localHandler;
             private final Callable<Boolean> remoteHandler;
 
-            public ProxyHandler(Callable<Boolean> localHandler, Callable<Boolean> remoteHandler) {
+
+            public ProxyHandler(FileObject source, Callable<Boolean> localHandler, Callable<Boolean> remoteHandler) {
+                this.source = source;
                 this.localHandler = localHandler;
                 this.remoteHandler = remoteHandler;
             }
@@ -556,6 +588,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
             public Boolean call() throws Exception {
                 Boolean localRetval = callLocal();
                 Boolean remoteRetval = callRemote();
+                showFailedFilesTask.schedule(SHOW_FAILED_FILES_DELAY);
                 if (localRetval == null && remoteRetval == null) {
                     return null;
                 }
@@ -589,12 +622,20 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
                     }
                 }
                 if (localRetval != null && !localRetval) {
-                    if (askUser(NbBundle.getMessage(CopySupport.class, "LBL_Copy_Support_Fail", project.getName()))) {
-                        localFactory.invalidate();
-                        LOGGER.log(Level.INFO, String.format("LOCAL copying for project %s disabled by user", project.getName()), localExc);
-                    } else {
-                        LOGGER.log(Level.INFO, String.format("LOCAL copying for project %s failed but not disabled by user => resetting", project.getName()), localExc);
-                        localFactory.reset();
+                    String pathInfo = getPathInfo(source);
+                    if (pathInfo != null) {
+                        localFailedFiles.add(pathInfo);
+                    }
+                    if (!userAskedLocalCopying) {
+                        userAskedLocalCopying = true;
+                        if (askUser(NbBundle.getMessage(CopySupport.class, "LBL_Copy_Support_Fail", project.getName()))) {
+                            localFactory.invalidate();
+                            localFailedFiles.clear();
+                            LOGGER.log(Level.INFO, String.format("LOCAL copying for project %s disabled by user", project.getName()), localExc);
+                        } else {
+                            LOGGER.log(Level.INFO, String.format("LOCAL copying for project %s failed but not disabled by user => resetting", project.getName()), localExc);
+                            localFactory.reset();
+                        }
                     }
                 }
                 return localRetval;
@@ -620,18 +661,42 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
                         progress.finish();
                     }
                     if (remoteRetval != null && !remoteRetval) {
-                        if (askUser(NbBundle.getMessage(CopySupport.class, "LBL_Remote_On_Save_Fail", project.getName()))) {
-                            remoteFactory.invalidate();
-                            LOGGER.log(Level.INFO, String.format("REMOTE copying for project %s disabled by user", project.getName()), remoteExc);
-                        } else {
+                        String pathInfo = getPathInfo(source);
+                        if (pathInfo != null) {
+                            remoteFailedFiles.add(pathInfo);
+                        }
+                        if (!userAskedRemoteCopying) {
+                            userAskedRemoteCopying = true;
                             // disconnect remote client
-                            LOGGER.log(Level.INFO, String.format("REMOTE copying for project %s failed but not disabled by user => resetting", project.getName()), remoteExc);
                             remoteFactory.reset();
+                            if (askUser(NbBundle.getMessage(CopySupport.class, "LBL_Remote_On_Save_Fail", project.getName()))) {
+                                // invalidate factory
+                                remoteFactory.invalidate();
+                                remoteFailedFiles.clear();
+                                LOGGER.log(Level.INFO, String.format("REMOTE copying for project %s disabled by user", project.getName()), remoteExc);
+                            } else {
+                                LOGGER.log(Level.INFO, String.format("REMOTE copying for project %s failed but not disabled by user => resetting", project.getName()), remoteExc);
+                            }
                         }
                     }
                 }
                 return remoteRetval;
             }
+
+            private String getPathInfo(FileObject file) {
+                FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(project);
+                if (sources == null) {
+                    // broken project
+                    return null;
+                }
+                String relativePath = FileUtil.getRelativePath(sources, file);
+                if (relativePath != null) {
+                    return relativePath;
+                }
+                assert false : "Should be able to get relative path for copied file";
+                return file.getNameExt();
+            }
+
         }
     }
 

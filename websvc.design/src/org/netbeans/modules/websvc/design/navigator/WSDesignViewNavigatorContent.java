@@ -109,7 +109,7 @@ public class WSDesignViewNavigatorContent extends JPanel
         repaint();
     }
     
-    public class WSChildFactory extends ChildFactory<MethodModel>{
+    public static class WSChildFactory extends ChildFactory<MethodModel>{
         DataObject implClass;
         public WSChildFactory(DataObject implClass){
             this.implClass = implClass;

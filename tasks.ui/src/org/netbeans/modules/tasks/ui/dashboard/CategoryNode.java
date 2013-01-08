@@ -97,8 +97,8 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
         List<Issue> tasks = Collections.emptyList();
         try {
             tasks = new ArrayList<Issue>(category.getTasks());
-        } catch (Exception ex) {
-            handleError(ex.getMessage());
+        } catch (Throwable throwable) {
+            handleError(throwable);
         }
         return tasks;
     }

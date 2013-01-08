@@ -1,0 +1,4 @@
+function |>METHOD:F<|() {
+    var A = 1;
+    |>GLOBAL:window<|.|>FIELD:A<| = A;
+}

@@ -331,7 +331,8 @@ public class OriginResourceIterator implements
                 Panel panel = myPanels[i];
                 JComponent component = (JComponent)panel.getComponent();
                 component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
-                component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i));
+                component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX,
+                        i);
             }
         }
     }

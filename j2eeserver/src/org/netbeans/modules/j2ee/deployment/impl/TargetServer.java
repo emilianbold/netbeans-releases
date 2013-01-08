@@ -459,8 +459,9 @@ public class TargetServer {
             // no longer a deployed module on server
             if (tmID == null) {
                 Target target = targetModules[i].findTarget();
-                if (target != null)
+                if (target != null) {
                     distributeTargets.add(target);
+                }
             } else {
                 targetModules[i].initDelegate(tmID);
                 toRedeploy.add(targetModules[i]);
@@ -877,6 +878,9 @@ public class TargetServer {
             } catch (DatasourceAlreadyExistsException ex) {
                 LOGGER.log(Level.INFO, null, ex);
                 return DeployOnSaveManager.DeploymentState.DEPLOYMENT_FAILED;
+            } catch (ConfigurationException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+                return DeployOnSaveManager.DeploymentState.DEPLOYMENT_FAILED;
             }
 
             DeploymentChangeDescriptor changes = distributeChangesOnSave(targetModule, artifacts);
@@ -899,10 +903,7 @@ public class TargetServer {
             }
             return DeployOnSaveManager.DeploymentState.MODULE_UPDATED;
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            return DeployOnSaveManager.DeploymentState.DEPLOYMENT_FAILED;
-        }  catch (ConfigurationException ex) {
-            Exceptions.printStackTrace(ex);
+            LOGGER.log(Level.WARNING, null, ex);
             return DeployOnSaveManager.DeploymentState.DEPLOYMENT_FAILED;
         } finally {
             ui.finish();

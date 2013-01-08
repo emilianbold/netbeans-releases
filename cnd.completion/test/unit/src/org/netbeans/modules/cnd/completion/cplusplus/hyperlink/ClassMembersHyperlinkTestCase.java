@@ -1059,6 +1059,23 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 217994 - default method parameter construct isn't handled properly
         performTest("bug217994.cpp", 17, 32, "bug217994.cpp", 3, 5);
     }    
+
+    public void testIZ223046_overloads() throws Exception {
+        // Bug 217994 - default method parameter construct isn't handled properly
+        performTest("iz223046.cpp", 29, 12, "iz223046.cpp", 17, 5);
+        performTest("iz223046.cpp", 30, 20, "iz223046.cpp", 17, 5);
+        performTest("iz223046.cpp", 31, 24, "iz223046.cpp", 17, 5);
+
+        performTest("iz223046.cpp", 33, 13, "iz223046.cpp", 16, 5);
+        performTest("iz223046.cpp", 34, 17, "iz223046.cpp", 16, 5);
+        performTest("iz223046.cpp", 35, 25, "iz223046.cpp", 16, 5);
+    }
+
+    public void testIZ223966_overloads_template_spec() throws Exception {
+        // Bug 217994 - default method parameter construct isn't handled properly
+        performTest("iz_223966_overloads_template_spec.cpp", 14, 7, "iz_223966_overloads_template_spec.cpp", 9, 1);
+        performTest("iz_223966_overloads_template_spec.cpp", 15, 7, "iz_223966_overloads_template_spec.cpp", 9, 1);
+    }    
     
     public static class Failed extends HyperlinkBaseTestCase {
 

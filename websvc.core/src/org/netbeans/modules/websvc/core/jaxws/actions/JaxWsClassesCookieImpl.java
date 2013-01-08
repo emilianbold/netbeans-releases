@@ -79,6 +79,7 @@ public class JaxWsClassesCookieImpl implements JaxWsClassesCookie {
         this.implClassFO = implClassFO;
     }
     
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     @Override
     public void addOperation(final MethodTree method) {
         JavaSource targetSource = JavaSource.forFileObject(implClassFO);

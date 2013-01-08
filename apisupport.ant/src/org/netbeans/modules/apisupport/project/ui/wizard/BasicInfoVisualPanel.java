@@ -318,10 +318,14 @@ public class BasicInfoVisualPanel extends NewTemplateVisualPanel
         int counter = 0;
         switch (getData().getWizardType()) {
             case SUITE:
-            case APPLICATION:
                 counter = ModuleUISettings.getDefault().getNewSuiteCounter() + 1;
                 bundlekey = "TXT_Suite"; //NOI18N
                 getData().setSuiteCounter(counter);
+                break;
+            case APPLICATION:
+                counter = ModuleUISettings.getDefault().getNewApplicationCounter() + 1;
+                bundlekey = "TXT_Application"; //NOI18N
+                getData().setApplicationCounter(counter);
                 break;
             case MODULE:
             case SUITE_COMPONENT:

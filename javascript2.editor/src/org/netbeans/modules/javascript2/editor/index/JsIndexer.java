@@ -45,9 +45,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
@@ -60,9 +57,7 @@ import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
-import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -91,7 +86,9 @@ public class JsIndexer extends EmbeddingIndexer {
 
         JsObject globalObject = model.getGlobalObject();
         for(JsObject object : globalObject.getProperties().values()) {
-            storeObject(object, support, indexable);
+            if (object.getParent() != null) {
+                storeObject(object, support, indexable);
+            }
         }
     }
 

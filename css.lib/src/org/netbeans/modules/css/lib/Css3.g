@@ -347,7 +347,7 @@ importItem
 media
     : MEDIA_SYM ws? mediaQueryList
         LBRACE ws?
-            ( ( rule | page | fontFace ) ws?)*
+            ( ( rule | page | fontFace | vendorAtRule ) ws?)*
          RBRACE
     ;
 
@@ -535,7 +535,7 @@ declarations
     :
         //Allow empty rule. Allows? multiple semicolons
         //http://en.wikipedia.org/wiki/CSS_filter#Star_hack
-        (STAR? declaration)? (SEMI ws? (STAR? declaration)?)*
+        (declaration)? (SEMI ws? (declaration)?)*
     ;
     
 selectorsGroup
@@ -669,7 +669,7 @@ pseudo
 declaration
     : 
     //syncToIdent //recovery: this will sync the parser the identifier (property) if there's a gargabe in front of it
-    property COLON ws? propertyValue prio?
+    STAR? property COLON ws? propertyValue prio?
     ;
     catch[ RecognitionException rce] {
         reportError(rce);

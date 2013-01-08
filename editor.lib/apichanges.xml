@@ -107,6 +107,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="pasive.corrected.to.passive">
+            <summary>Spelling error in the API corrected</summary>
+            <version major="3" minor="33"/>
+            <date day="17" month="12" year="2012"/>
+            <author login="dstrupl"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible"
+                addition="yes"/>
+            <description>
+                <p>
+                    Two methods containing the word "pasive" were renamed to contain "passive".
+                </p>
+            </description>
+            <class name="Annotations" package="org.netbeans.editor"/>
+            <issue number="197623"/>
+        </change>
         <change id="removing-find">
             <summary>Removing old deprecatted find implementations</summary>
             <version major="3" minor="30"/>

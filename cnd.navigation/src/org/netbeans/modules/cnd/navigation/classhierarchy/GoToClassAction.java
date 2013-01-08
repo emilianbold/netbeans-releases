@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.navigation.classhierarchy;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.util.NbBundle;
@@ -70,6 +71,14 @@ public class GoToClassAction extends AbstractAction {
         if (delegate != null){
             delegate.actionPerformed(e);
         }
-        CsmUtilities.openSource(csmObject);
+        final String taskName = "Open class"; //NOI18N
+        Runnable run = new Runnable() {
+
+            @Override
+            public void run() {
+                CsmUtilities.openSource(csmObject);
+            }
+        };
+        CsmModelAccessor.getModel().enqueue(run, taskName);
     }
 }

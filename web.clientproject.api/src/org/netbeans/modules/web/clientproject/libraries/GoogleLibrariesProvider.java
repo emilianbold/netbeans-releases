@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.*;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
@@ -67,7 +68,7 @@ public class GoogleLibrariesProvider implements LibraryProvider<LibraryImplement
     public LibraryImplementation[] getLibraries() {
         List<LibraryImplementation> libs = new ArrayList<LibraryImplementation>();
         BufferedReader is = new BufferedReader(new InputStreamReader(
-                GoogleLibrariesProvider.class.getResourceAsStream("resources/googlecdn.txt"))); // NOI18N
+                GoogleLibrariesProvider.class.getResourceAsStream("resources/googlecdn.txt"), Charset.forName("UTF-8"))); // NOI18N
         try {
             String line;
             String dispName = "", name = "", versions = "", path = "", pathu = "", site = ""; // NOI18N

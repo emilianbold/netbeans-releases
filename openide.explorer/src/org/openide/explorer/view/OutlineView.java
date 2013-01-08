@@ -487,7 +487,7 @@ public class OutlineView extends JScrollPane {
     }
     
     /**
-     * Getter for the embeded table component.
+     * Getter for the embedded table component.
      */
     public Outline getOutline() {
         return outline;
@@ -943,7 +943,7 @@ public class OutlineView extends JScrollPane {
     }
     
     /**
-     * Deinitializes listeners.
+     * De-initializes listeners.
      */
     @Override
     public void removeNotify () {
@@ -1222,7 +1222,7 @@ public class OutlineView extends JScrollPane {
     /** Actions constants comes from {@link java.awt.dnd.DnDConstants}.
     * All actions are allowed by default.
     * @return int representing set of actions which are allowed when dropping
-    * into the asociated component.
+    * into the associated component.
     */
     public int getAllowedDropActions() {
         return allowedDropActions;
@@ -1231,7 +1231,7 @@ public class OutlineView extends JScrollPane {
     /** Actions constants from {@link java.awt.dnd.DnDConstants}.
     * @param t The transferable for which the allowed drop actions are requested
     * @return int representing set of actions which are allowed when dropping
-    * into the asociated component. By default it returns {@link #getAllowedDropActions()}.
+    * into the associated component. By default it returns {@link #getAllowedDropActions()}.
     */
     protected int getAllowedDropActions(Transferable t) {
         return getAllowedDropActions();
@@ -1270,7 +1270,7 @@ public class OutlineView extends JScrollPane {
         getOutline().collapsePath(treePath);
     }
 
-    /** Expandes the node in the tree.
+    /** Expands the node in the tree.
     *
     * @param n node
     */
@@ -1840,7 +1840,7 @@ public class OutlineView extends JScrollPane {
         private void setPreferredTreeWidth(int row, int width) {
             if (isHScrollingEnabled) {
                 if (row >= rowWidths.length) {
-                    rowWidths = Arrays.copyOf(rowWidths, row);
+                    rowWidths = Arrays.copyOf(rowWidths, row + 1);
                 }
                 if (rowWidths[row] != width) {
                     rowWidths[row] = width;
@@ -1862,6 +1862,10 @@ public class OutlineView extends JScrollPane {
             }
             int r2 = rowAtPoint(new Point(0, visibleRect.y + visibleRect.height));
             if (r2 < 0) r2 = getRowCount() - 1;
+            if (r2 >= rowWidths.length) {
+                // some rows were added, but not rendered yet, thus their width is unknown.
+                r2 = rowWidths.length - 1;
+            }
             int width = 0;
             for (int r = r1; r <= r2; r++) {
                 if (rowWidths[r] > width) {

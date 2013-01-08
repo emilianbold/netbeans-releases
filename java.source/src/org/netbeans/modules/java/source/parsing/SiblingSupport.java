@@ -46,6 +46,8 @@ import java.net.URL;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.java.source.usages.Pair;
 
 /**
  *
@@ -55,29 +57,31 @@ public final class SiblingSupport implements SiblingSource {
 
     private static final Logger LOG = Logger.getLogger(SiblingSupport.class.getName());
 
-    private final Stack<URL> siblings = new Stack<URL>();
+    private final Stack<Pair<URL,Boolean>> siblings = new Stack<Pair<URL,Boolean>>();
     private final SiblingProvider provider = new Provider();
 
     private SiblingSupport() {
     }
 
     @Override
-    public void push(URL sibling) {
+    public void push(
+            @NonNull final URL sibling,
+            final boolean inSourceRoot) {
         assert sibling != null;
-        siblings.push(sibling);
+        siblings.push(Pair.<URL,Boolean>of(sibling,inSourceRoot));
         LOG.log(Level.FINE, "Pushed sibling: {0} size: {1}", new Object[]{sibling, siblings.size()});    //NOI18N
     }
 
     @Override
     public URL pop() {
-        final URL removed = siblings.pop();
+        final Pair<URL, Boolean> removed = siblings.pop();
         if (LOG.isLoggable(Level.FINEST)) {
             StackTraceElement[] td = Thread.currentThread().getStackTrace();
             LOG.log(Level.FINEST, "Poped sibling: {0} size: {1} caller:\n{2}", new Object[] {removed, siblings.size(), formatCaller(td)});     //NOI18N
         } else {
             LOG.log(Level.FINE, "Poped sibling: {0} size: {1}", new Object[] {removed, siblings.size()});     //NOI18N
         }
-        return removed;
+        return removed.first;
     }
 
     @Override
@@ -95,9 +99,15 @@ public final class SiblingSupport implements SiblingSource {
 
         @Override
         public URL getSibling() {
-            final URL result = siblings.peek();
-            LOG.log(Level.FINER, "Returns sibling: {0}", new Object[] {result});  //NOI18N
-            return result;
+            final Pair<URL,Boolean> result = siblings.peek();
+            LOG.log(
+                Level.FINER,
+                "Returns sibling: {0} in source root? {1}",    //NOI18N
+                new Object[] {
+                    result.first,
+                    result.second
+                });
+            return result.first;
         }
 
         @Override
@@ -105,6 +115,11 @@ public final class SiblingSupport implements SiblingSource {
             boolean result = !siblings.isEmpty();
             LOG.log(Level.FINER, "Has sibling: {0}", new Object[] {result});  //NOI18N
             return result;
+        }
+
+        @Override
+        public boolean isInSourceRoot() {
+            return siblings.peek().second;
         }
     }
 

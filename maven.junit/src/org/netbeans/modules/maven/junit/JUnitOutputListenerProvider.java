@@ -194,6 +194,9 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
 			    RunConfig brc = RunUtils.cloneRunConfig(config);
 			    StringBuilder tst = new StringBuilder();
 			    Map<String, Collection<String>> methods = new HashMap<String, Collection<String>>();
+                            //#222776 calculate the approximate space the failed tests will occupy on the cmd line.
+                            //important on windows which places a limit on the length.
+                            int windowslimitcount = 0;
 			    for (Testcase tc : tests) {
 				//TODO just when is the classname null??
 				if (tc.getClassName() != null) {
@@ -201,13 +204,25 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
 				    if (lst == null) {
 					lst = new ArrayList<String>();
 					methods.put(tc.getClassName(), lst);
+                                        windowslimitcount = windowslimitcount + tc.getClassName().length() + 1; // + 1 for ,
 				    }
 				    lst.add(tc.getName());
+                                    windowslimitcount = windowslimitcount + tc.getName().length() + 1; // + 1 for # or +
 				}
 			    }
+                            boolean exceedsWindowsLimit = Utilities.isWindows() && windowslimitcount > 6000; //just be conservative here, the limit is more (8000+)
 			    for (Map.Entry<String, Collection<String>> ent : methods.entrySet()) {
 				tst.append(",");
-				tst.append(ent.getKey());
+                                if (exceedsWindowsLimit) {
+                                    String clazzName = ent.getKey();
+                                    int lastDot = ent.getKey().lastIndexOf(".");
+                                    if (lastDot > -1) {
+                                        clazzName = clazzName.substring(lastDot + 1);
+                                    }
+                                    tst.append(clazzName);
+                                } else {
+                                    tst.append(ent.getKey());
+                                }
 
 				//#name only in surefire > 2.7.2 and junit > 4.0 or testng
 				// bug works with the setting also for junit 3.x
@@ -332,7 +347,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
 
     
     private void generateTest() {
-        String reportNameSuffix = PluginPropertyUtils.getPluginProperty(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE, "reportNameSuffix", null);
+        String reportNameSuffix = PluginPropertyUtils.getPluginProperty(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE, "reportNameSuffix", "test", "surefire.reportNameSuffix");
         String suffix = reportNameSuffix;
         if (suffix == null) {
             suffix = "";

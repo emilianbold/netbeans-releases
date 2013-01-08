@@ -58,8 +58,7 @@ import org.openide.util.lookup.InstanceContent;
  * @author mkuchtiak
  */
 public class ServiceNode extends AbstractNode {
-    WsdlService service;
-    FileObject srcRoot;
+    //WsdlService service;
     
     public ServiceNode(WsdlService service) {
         this(service, new InstanceContent());
@@ -67,7 +66,7 @@ public class ServiceNode extends AbstractNode {
     
     private ServiceNode(WsdlService service, InstanceContent content) {
         super(new ServiceChildren(service),new AbstractLookup(content));
-        this.service=service;
+        //this.service=service;
         setName(service.getName());
         setDisplayName(service.getName());
         content.add(service);

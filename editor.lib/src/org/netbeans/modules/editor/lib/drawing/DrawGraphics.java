@@ -577,7 +577,7 @@ public interface DrawGraphics {
                 fillRectImpl(startX, startY, x - startX);
             }
             
-            // #33165 - for each fragment getPasiveAnnotations() was called
+            // #33165 - for each fragment getPassiveAnnotationsForLine() was called
             // but it can done just once per line.
             if (lastDrawnAnnosY != y) {
                 lastDrawnAnnosY = y;

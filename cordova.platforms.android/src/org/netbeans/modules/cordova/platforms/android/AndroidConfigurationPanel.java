@@ -82,6 +82,12 @@ public class AndroidConfigurationPanel extends javax.swing.JPanel {
         debuggerCheckBox.setVisible(false);
         deviceLabel.setVisible(false);
         deviceCombo.setVisible(false);
+        
+        String property = config.getProperty(Device.BROWSER_PROP);
+        if (property!=null && property.equals(Browser.CHROME.getName())) {
+            browserCombo.setSelectedIndex(1);
+        }
+        
         validate();
     }
 
@@ -193,6 +199,8 @@ public class AndroidConfigurationPanel extends javax.swing.JPanel {
         avdCombo = new javax.swing.JComboBox();
         avdLabel = new javax.swing.JLabel();
         debuggerCheckBox = new javax.swing.JCheckBox();
+        jLabel1 = new javax.swing.JLabel();
+        browserCombo = new javax.swing.JComboBox();
 
         deviceLabel.setLabelFor(deviceCombo);
         org.openide.awt.Mnemonics.setLocalizedText(deviceLabel, org.openide.util.NbBundle.getMessage(AndroidConfigurationPanel.class, "AndroidConfigurationPanel.deviceLabel.text")); // NOI18N
@@ -229,6 +237,15 @@ public class AndroidConfigurationPanel extends javax.swing.JPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(AndroidConfigurationPanel.class, "AndroidConfigurationPanel.jLabel1.text")); // NOI18N
+
+        browserCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Default Browser", "Chrome" }));
+        browserCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                browserComboActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -237,18 +254,21 @@ public class AndroidConfigurationPanel extends javax.swing.JPanel {
                 .add(0, 0, 0)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(deviceLabel)
-                            .add(avdLabel))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(deviceCombo, 0, 181, Short.MAX_VALUE)
-                            .add(avdCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(manageButton))
-                    .add(layout.createSequentialGroup()
                         .add(debuggerCheckBox)
-                        .add(0, 0, Short.MAX_VALUE)))
+                        .add(0, 0, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(jLabel1)
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                .add(deviceLabel)
+                                .add(avdLabel)))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(deviceCombo, 0, 174, Short.MAX_VALUE)
+                            .add(avdCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(browserCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(manageButton)))
                 .add(0, 0, 0))
         );
         layout.setVerticalGroup(
@@ -263,6 +283,10 @@ public class AndroidConfigurationPanel extends javax.swing.JPanel {
                     .add(avdCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(manageButton)
                     .add(avdLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel1)
+                    .add(browserCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(debuggerCheckBox)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -311,12 +335,18 @@ public class AndroidConfigurationPanel extends javax.swing.JPanel {
         config.putProperty("debug.enabled", Boolean.toString(debuggerCheckBox.isSelected())); //NOI18N
     }//GEN-LAST:event_debuggerCheckBoxActionPerformed
 
+    private void browserComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browserComboActionPerformed
+        config.putProperty(Device.BROWSER_PROP, browserCombo.getSelectedIndex() == 0 ? Browser.DEFAULT.getName():Browser.CHROME.getName());
+    }//GEN-LAST:event_browserComboActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox avdCombo;
     private javax.swing.JLabel avdLabel;
+    private javax.swing.JComboBox browserCombo;
     private javax.swing.JCheckBox debuggerCheckBox;
     private javax.swing.JComboBox deviceCombo;
     private javax.swing.JLabel deviceLabel;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JButton manageButton;
     // End of variables declaration//GEN-END:variables
 }

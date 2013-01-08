@@ -146,7 +146,7 @@ public class Call {
     @SuppressWarnings("unchecked")
     @NonNull
     public static Call getCallType(BaseDocument doc, TokenHierarchy<Document> th, int offset) {
-        TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(th, offset);
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
 
         if (ts == null) {
             return Call.NONE;
@@ -167,7 +167,7 @@ public class Call {
             ts.movePrevious();
         }
 
-        Token<?extends GroovyTokenId> token = ts.token();
+        Token<GroovyTokenId> token = ts.token();
 
         if (token != null) {
             TokenId id = token.id();

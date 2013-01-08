@@ -122,6 +122,8 @@ public class ImportExecutable implements PropertyChangeListener {
     private String sourcesPath;
     private boolean addSourceRoot;
     private List<String> dependencies;
+    private CsmModel model;
+    private IteratorExtension extension;
 
     public ImportExecutable(Map<String, Object> map, Project lastSelectedProject, ProjectKind projectKind) {
         this.map = map;
@@ -235,6 +237,8 @@ public class ImportExecutable implements PropertyChangeListener {
             } else {
                 map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, lastSelectedProject.getProjectDirectory().getPath()); // NOI18N
             }
+            model = CsmModelAccessor.getModel();
+            extension = Lookup.getDefault().lookup(IteratorExtension.class);
             OpenProjects.getDefault().open(new Project[]{lastSelectedProject}, false);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -253,7 +257,6 @@ public class ImportExecutable implements PropertyChangeListener {
                 if (lastSelectedProject == null) {
                     return;
                 }
-                IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
                 if (extension != null) {
                     process((DiscoveryExtension)extension);
                 }
@@ -262,7 +265,7 @@ public class ImportExecutable implements PropertyChangeListener {
     }
 
     public void process(final DiscoveryExtension extension){
-        switchModel(false, lastSelectedProject);
+        switchModel(model, false, lastSelectedProject);
         Runnable run = new Runnable() {
 
             @Override
@@ -298,7 +301,7 @@ public class ImportExecutable implements PropertyChangeListener {
                                 try {
                                     extension.apply(map, lastSelectedProject);
                                     discoverScripts(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getBuildResult());
-                                    DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(lastSelectedProject, false);
+                                    DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(lastSelectedProject, null);
                                     if (projectKind == ProjectKind.CreateDependencies && (additionalDependencies == null || additionalDependencies.isEmpty())) {
                                         cd = new CreateDependencies(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getDependencies(), dependencies,
                                                 DiscoveryWizardDescriptor.adaptee(map).getSearchPaths(), DiscoveryWizardDescriptor.adaptee(map).getBuildResult());
@@ -352,7 +355,7 @@ public class ImportExecutable implements PropertyChangeListener {
                         }
 
                     }
-                    switchModel(true, lastSelectedProject);
+                    switchModel(model, true, lastSelectedProject);
                     String main = open ? "main": null;  // NOI18N
                     onProjectParsingFinished(main, lastSelectedProject);
                 } catch (Throwable ex) {
@@ -524,7 +527,6 @@ public class ImportExecutable implements PropertyChangeListener {
                     if (entry.getValue() != null) {
                         if (!checkedDll.contains(entry.getValue())) {
                             checkedDll.add(entry.getValue());
-                            final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
                             final Map<String, Object> extMap = new HashMap<String, Object>();
                             extMap.put("DW:buildResult", entry.getValue()); // NOI18N
                             if (extension != null) {
@@ -625,8 +627,7 @@ public class ImportExecutable implements PropertyChangeListener {
         }
     }
 
-    static void switchModel(boolean state, Project makeProject) {
-        CsmModel model = CsmModelAccessor.getModel();
+    static void switchModel(CsmModel model, boolean state, Project makeProject) {
         if (model instanceof ModelImpl && makeProject != null) {
             NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
             if (state) {
@@ -772,7 +773,7 @@ public class ImportExecutable implements PropertyChangeListener {
             return null;
         }
         if (root.isDiskFolder()) {
-            String AbsRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), root.getRoot());
+            String AbsRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDirFileObject(), root.getRoot());
             return RemoteFileUtil.normalizeAbsolutePath(AbsRootPath, configurationDescriptor.getProject());
         }
         List<String> candidates = new ArrayList<String>();

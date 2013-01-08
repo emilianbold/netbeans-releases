@@ -42,6 +42,7 @@
 package org.netbeans.modules.cloud.oracle.ui;
 
 import java.awt.Image;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -185,7 +186,7 @@ public class OracleJ2EEInstanceNode extends AbstractNode {
         }
     }
     
-    private static final class Comp implements Comparator<Application> {
+    private static final class Comp implements Comparator<Application>, Serializable {
         @Override
         public int compare(Application o1, Application o2) {
             String ap1 = o1.getApplicationName();

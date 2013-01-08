@@ -241,6 +241,7 @@ public class ZoomManager {
      * @param  percent  the percent value (e.g. 50 for half-size,
      *                  200 for double-size).
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     public void setZoom(int percent) {
         JScrollPane pane = (JScrollPane) SwingUtilities.getAncestorOfClass(
                 JScrollPane.class, scene.getView());

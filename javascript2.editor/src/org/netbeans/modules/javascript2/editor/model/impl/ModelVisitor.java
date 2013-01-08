@@ -42,10 +42,30 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 
-import com.oracle.nashorn.ir.*;
-import com.oracle.nashorn.parser.Token;
-import com.oracle.nashorn.parser.TokenType;
-import java.util.*;
+import jdk.nashorn.internal.ir.AccessNode;
+import jdk.nashorn.internal.ir.BinaryNode;
+import jdk.nashorn.internal.ir.CallNode;
+import jdk.nashorn.internal.ir.CatchNode;
+import jdk.nashorn.internal.ir.FunctionNode;
+import jdk.nashorn.internal.ir.IdentNode;
+import jdk.nashorn.internal.ir.IndexNode;
+import jdk.nashorn.internal.ir.LiteralNode;
+import jdk.nashorn.internal.ir.Node;
+import jdk.nashorn.internal.ir.ObjectNode;
+import jdk.nashorn.internal.ir.PropertyNode;
+import jdk.nashorn.internal.ir.ReferenceNode;
+import jdk.nashorn.internal.ir.ReturnNode;
+import jdk.nashorn.internal.ir.TernaryNode;
+import jdk.nashorn.internal.ir.UnaryNode;
+import jdk.nashorn.internal.ir.VarNode;
+import jdk.nashorn.internal.parser.Token;
+import jdk.nashorn.internal.parser.TokenType;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.doc.DocumentationUtils;
@@ -54,9 +74,16 @@ import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
-import org.netbeans.modules.javascript2.editor.model.*;
+import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
+import org.netbeans.modules.javascript2.editor.model.JsFunction;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.Model;
+import org.netbeans.modules.javascript2.editor.model.Occurrence;
+import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
-import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -93,7 +120,7 @@ public class ModelVisitor extends PathNodeVisitor {
         if (!(node != null && node.tokenType() == TokenType.ASSIGN)) {
             if (accessNode.getBase() instanceof IdentNode && "this".equals(((IdentNode)accessNode.getBase()).getName())) { //NOI18N
                 IdentNode iNode = (IdentNode)accessNode.getProperty();
-                JsObject current = modelBuilder.getCurrentDeclarationScope();
+                JsObject current = modelBuilder.getCurrentDeclarationFunction();
                 JsObject property = current.getProperty(iNode.getName());
                 if (property == null && current.getParent() != null && (current.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
                         || current.getParent().getJSKind() == JsElement.Kind.OBJECT)) {
@@ -124,7 +151,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 if (name != null) {
                     List<Identifier> fqname = new ArrayList<Identifier>();
                     fqname.add(name); 
-                    Collection<? extends JsObject> variables = ModelUtils.getVariables(modelBuilder.getCurrentDeclarationScope());
+                    Collection<? extends JsObject> variables = ModelUtils.getVariables(modelBuilder.getCurrentDeclarationFunction());
                     fromAN = null;
                     for(JsObject variable : variables) {
                         if (variable.getName().equals(name.getName())) {
@@ -138,7 +165,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     fromAN.addOccurrence(name.getOffsetRange());
                 }
             } else {
-                JsObject current = modelBuilder.getCurrentDeclarationScope();
+                JsObject current = modelBuilder.getCurrentDeclarationFunction();
                 JsObject property = current.getProperty(accessNode.getProperty().getName());
                 if (property == null && current.getParent() != null && (current.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
                         || current.getParent().getJSKind() == JsElement.Kind.OBJECT
@@ -201,7 +228,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 && !(binaryNode.rhs() instanceof ReferenceNode || binaryNode.rhs() instanceof ObjectNode)
                 && (binaryNode.lhs() instanceof AccessNode || binaryNode.lhs() instanceof IdentNode)) {
             // TODO probably not only assign
-            JsObjectImpl parent = modelBuilder.getCurrentDeclarationScope();
+            JsObjectImpl parent = modelBuilder.getCurrentDeclarationFunction();
             if (binaryNode.lhs() instanceof AccessNode) {
                 AccessNode aNode = (AccessNode)binaryNode.lhs();
                 JsObjectImpl property = null;
@@ -212,7 +239,13 @@ public class ModelVisitor extends PathNodeVisitor {
                         (parent.getParent() instanceof JsFunctionImpl
                             || isInPropertyNode() 
                             || parent instanceof JsFunctionImpl)) {
-                        parent = (JsObjectImpl)parent.getParent();
+                        if (isInPropertyNode() || !(parent.getParent() instanceof JsFunction)
+                                || (parent instanceof JsFunctionImpl && !parent.getModifiers().contains(Modifier.PRIVATE))) {
+                            parent = (JsObjectImpl)parent.getParent();
+                        }
+                        if ("prototype".equals(parent.getName())) {
+                            parent = (JsObjectImpl)parent.getParent();
+                        }
                     }
                     property = (JsObjectImpl)parent.getProperty(fieldName);
                     if(property == null) {
@@ -220,21 +253,28 @@ public class ModelVisitor extends PathNodeVisitor {
                         if (identifier != null) {
                             property = new JsObjectImpl(parent, identifier, identifier.getOffsetRange(), true);
                             parent.addProperty(fieldName, property);
+                            JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
+                            if (docHolder != null) {
+                                property.setDocumentation(docHolder.getDocumentation(aNode));
+                                property.setDeprecated(docHolder.isDeprecated(aNode));
+                            }
                         }
                     }
                 } else {
                     // probably a property of an object
                     List<Identifier> fqName = getName(aNode);
-                    property = ModelUtils.getJsObject(modelBuilder, fqName, true);
-                    if (property.getParent().getJSKind().isFunction() && !property.getModifiers().contains(Modifier.STATIC)) {
-                        property.getModifiers().add(Modifier.STATIC);
+                    if (fqName != null) {
+                        property = ModelUtils.getJsObject(modelBuilder, fqName, true);
+                        if (property.getParent().getJSKind().isFunction() && !property.getModifiers().contains(Modifier.STATIC)) {
+                            property.getModifiers().add(Modifier.STATIC);
+                        }
                     }
                 }
                 if (property != null) {
                     String parameter = null;
                     if(binaryNode.rhs() instanceof IdentNode) {
                         IdentNode rhs = (IdentNode)binaryNode.rhs();
-                        JsFunction function = (JsFunction)modelBuilder.getCurrentDeclarationScope();
+                        JsFunction function = (JsFunction)modelBuilder.getCurrentDeclarationFunction();
                         if(/*function.getProperty(rhs.getName()) == null &&*/ function.getParameter(rhs.getName()) != null) {
                             parameter = "@param;" + ModelUtils.createFQN(function) + ":" + rhs.getName();
                         }
@@ -309,7 +349,8 @@ public class ModelVisitor extends PathNodeVisitor {
             if (binaryNode.rhs() instanceof IdentNode) {
                 addOccurence((IdentNode)binaryNode.rhs(), false);
             }
-        } else if(binaryNode.tokenType() != TokenType.ASSIGN) {
+        } else if(binaryNode.tokenType() != TokenType.ASSIGN
+                || (binaryNode.tokenType() == TokenType.ASSIGN && binaryNode.lhs() instanceof IndexNode)) {
             if (binaryNode.lhs() instanceof IdentNode) {
                 addOccurence((IdentNode)binaryNode.lhs(), true);
             }
@@ -335,12 +376,32 @@ public class ModelVisitor extends PathNodeVisitor {
     }
 
     @Override
+    public Node enter(CatchNode catchNode) {
+        Identifier exception = ModelElementFactory.create(parserResult, catchNode.getException());
+        DeclarationScopeImpl inScope = modelBuilder.getCurrentDeclarationScope();
+        CatchBlockImpl catchBlock  = new CatchBlockImpl(inScope, exception,
+                ModelUtils.documentOffsetRange(parserResult, catchNode.getStart(), catchNode.getFinish()));
+        inScope.addDeclaredScope(catchBlock);
+        modelBuilder.setCurrentObject(catchBlock);
+        return super.enter(catchNode);
+    }
+
+    @Override
+    public Node leave(CatchNode catchNode) {
+        modelBuilder.reset();
+        return super.leave(catchNode);
+    }
+
+    
+    @Override
     public Node enter(IdentNode identNode) {
         Node previousVisited = getPath().get(getPath().size() - 1);
         if(!(previousVisited instanceof AccessNode
                 || previousVisited instanceof VarNode
                 || previousVisited instanceof BinaryNode
-                || previousVisited instanceof PropertyNode)) {
+                || previousVisited instanceof PropertyNode
+                || previousVisited instanceof CatchNode)) {
+            //boolean declared = previousVisited instanceof CatchNode;
             addOccurence(identNode, false);
         }
         return super.enter(identNode);
@@ -354,12 +415,31 @@ public class ModelVisitor extends PathNodeVisitor {
             if (base instanceof AccessNode) {
                 parent = fromAN;
             } else if (base instanceof IdentNode) {
-                Identifier parentName = ModelElementFactory.create(parserResult, (IdentNode)base);
-                if (parentName != null) {
-                    List<Identifier> fqName = new ArrayList<Identifier>();
-                    fqName.add(parentName);
-                    parent = ModelUtils.getJsObject(modelBuilder, fqName, false);
-                    parent.addOccurrence(parentName.getOffsetRange());
+                IdentNode iNode = (IdentNode)base;
+                if (!"this".equals(iNode.getName())) {
+                    Identifier parentName = ModelElementFactory.create(parserResult, iNode);
+                    if (parentName != null) {
+                        List<Identifier> fqName = new ArrayList<Identifier>();
+                        fqName.add(parentName);
+                        parent = ModelUtils.getJsObject(modelBuilder, fqName, false);
+                        parent.addOccurrence(parentName.getOffsetRange());
+                    }
+                } else {
+                    JsObject current = modelBuilder.getCurrentDeclarationFunction();
+                    JsObject property = current.getProperty(iNode.getName());
+                    if (property == null && current.getParent() != null && (current.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
+                            || current.getParent().getJSKind() == JsElement.Kind.OBJECT
+                            || current.getParent().getJSKind() == JsElement.Kind.OBJECT_LITERAL)) {
+                        Node previous = getPreviousFromPath(2);
+                        // check whether is not a part of method in constructor
+                        if (!(previous instanceof BinaryNode && ((BinaryNode)previous).rhs() instanceof ReferenceNode)) {
+                            current = current.getParent();
+                            if (current.getName().equals("prototype")) {
+                                current = current.getParent();
+                            }
+                        }
+                    }
+                    fromAN = (JsObjectImpl)current;
                 }
             }
             if (parent != null && indexNode.getIndex() instanceof LiteralNode) {
@@ -443,10 +523,10 @@ public class ModelVisitor extends PathNodeVisitor {
         }
         functionStack.add(functions);
 
-        JsFunctionImpl fncScope = (JsFunctionImpl)modelBuilder.getCurrentDeclarationScope();
+        JsFunctionImpl fncScope = (JsFunctionImpl)modelBuilder.getCurrentDeclarationFunction();
         if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
             // create the function object
-            DeclarationScopeImpl scope = modelBuilder.getCurrentDeclarationScope();
+            DeclarationScopeImpl scope = modelBuilder.getCurrentDeclarationFunction();
             boolean isAnonymous = false;
             if (getPreviousFromPath(2) instanceof ReferenceNode) {
                 Node node = getPreviousFromPath(3);
@@ -478,6 +558,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 modelBuilder.setCurrentObject((JsObjectImpl)fncScope);
             }
         }
+        JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
         // create variables that are declared in the function
         // They has to be created here for tracking occurrences
         for (VarNode varNode : functionNode.getDeclarations()) {
@@ -495,6 +576,11 @@ public class ModelVisitor extends PathNodeVisitor {
             }
             variable.addOccurrence(varName.getOffsetRange());
             modelBuilder.getCurrentObject().addProperty(varName.getName(), variable);
+            if (docHolder != null) {
+                variable.setDocumentation(docHolder.getDocumentation(varNode));
+                variable.setDeprecated(docHolder.isDeprecated(varNode));
+            }
+            
         }
                 
         for (FunctionNode fn : functions) {
@@ -516,7 +602,7 @@ public class ModelVisitor extends PathNodeVisitor {
 
         if (fncScope != null) {
             // check parameters and return types of the function.
-             JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
+            fncScope.setDeprecated(docHolder.isDeprecated(functionNode));
             List<Type> types = docHolder.getReturnType(functionNode);
             if (types != null && !types.isEmpty()) {
                 for(Type type : types) {
@@ -547,9 +633,26 @@ public class ModelVisitor extends PathNodeVisitor {
             }
 
             // mark constructors
-            if (docHolder.isClass(functionNode)) {
+            if (functionNode.getKind() != FunctionNode.Kind.SCRIPT && docHolder.isClass(functionNode)) {
                 fncScope.setJsKind(JsElement.Kind.CONSTRUCTOR);
             }
+//            Set<JsModifier> modifiers = docHolder.getModifiers(functionNode);
+//            for(JsModifier modifier : modifiers) {
+//                switch(modifier) {
+//                    case PUBLIC:
+//                        fncScope.getModifiers().add(Modifier.PUBLIC);
+//                        fncScope.getModifiers().remove(Modifier.PRIVATE);
+//                        break;
+//                    case PRIVATE:
+//                        fncScope.getModifiers().add(Modifier.PRIVATE);
+//                        fncScope.getModifiers().remove(Modifier.PUBLIC);
+//                        break;
+//                    case STATIC:
+//                        fncScope.getModifiers().add(Modifier.STATIC);
+//                        break;
+//                }
+//                
+//            }
         }
 
         for (FunctionNode fn : functions) {
@@ -595,7 +698,7 @@ public class ModelVisitor extends PathNodeVisitor {
             if ( lastVisited instanceof VarNode) {
                 fqName = getName((VarNode)lastVisited);
                 isDeclaredInParent = true;
-                JsObject declarationScope = modelBuilder.getCurrentDeclarationScope();
+                JsObject declarationScope = modelBuilder.getCurrentDeclarationFunction();
                 varNode = (VarNode)lastVisited;
                 if (fqName.size() == 1 && !ModelUtils.isGlobal(declarationScope)) {
                     isPrivate = true;
@@ -632,9 +735,18 @@ public class ModelVisitor extends PathNodeVisitor {
                     fqName.add(new IdentifierImpl("UNKNOWN", //NOI18N
                             ModelUtils.documentOffsetRange(parserResult, objectNode.getStart(), objectNode.getFinish())));
                 }
-                JsObjectImpl objectScope = varNode != null
-                        ? modelBuilder.getCurrentObject()
-                        : ModelElementFactory.create(parserResult, objectNode, fqName, modelBuilder, isDeclaredInParent);
+                JsObjectImpl objectScope;
+                if (varNode != null) {
+                    objectScope = modelBuilder.getCurrentObject();
+                } else {
+                    JsObject alreadyThere = ModelUtils.getJsObjectByName(modelBuilder.getCurrentDeclarationFunction(), fqName.get(fqName.size() - 1).getName());
+                    objectScope = ModelElementFactory.create(parserResult, objectNode, fqName, modelBuilder, isDeclaredInParent);
+                    if(alreadyThere != null && objectScope != null) {
+                        for(Occurrence occurrence :alreadyThere.getOccurrences()) {
+                            objectScope.addOccurrence(occurrence.getOffsetRange());
+                        }
+                    }
+                }
                 if (objectScope != null) {
                     objectScope.setJsKind(JsElement.Kind.OBJECT_LITERAL);
                     modelBuilder.setCurrentObject(objectScope);
@@ -755,7 +867,7 @@ public class ModelVisitor extends PathNodeVisitor {
         if(types.isEmpty()) {
            types.add(new TypeUsageImpl(Type.UNRESOLVED, LexUtilities.getLexerOffset(parserResult, returnNode.getStart()), true));
         }
-        JsFunctionImpl function = (JsFunctionImpl)modelBuilder.getCurrentDeclarationScope();
+        JsFunctionImpl function = modelBuilder.getCurrentDeclarationFunction();
         function.addReturnType(types);
         return super.enter(returnNode);
     }
@@ -802,8 +914,11 @@ public class ModelVisitor extends PathNodeVisitor {
 
     @Override
     public Node enter(VarNode varNode) {
-        if (!(varNode.getInit() instanceof ObjectNode || varNode.getInit() instanceof ReferenceNode)) {
+         if (!(varNode.getInit() instanceof ObjectNode || varNode.getInit() instanceof ReferenceNode)) {
             JsObject parent = modelBuilder.getCurrentObject();
+            if (parent instanceof CatchBlockImpl) {
+                parent = parent.getParent();
+            } 
             JsObjectImpl variable = (JsObjectImpl)parent.getProperty(varNode.getName().getName());
             Identifier name = ModelElementFactory.create(parserResult, varNode.getName());
             if (name != null) {
@@ -844,6 +959,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     variable = newVariable;
                 }
                 JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
+                variable.setDeprecated(docHolder.isDeprecated(varNode));
                 variable.setDocumentation(docHolder.getDocumentation(varNode));
                 modelBuilder.setCurrentObject(variable);
                 if (varNode.getInit() instanceof IdentNode) {
@@ -865,7 +981,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
             }
         } else if(varNode.getInit() instanceof ObjectNode) {
-            JsObjectImpl function = modelBuilder.getCurrentDeclarationScope();
+            JsObjectImpl function = modelBuilder.getCurrentDeclarationFunction();
             Identifier name = ModelElementFactory.create(parserResult, varNode.getName());
             if (name != null) {
                 JsObjectImpl variable = (JsObjectImpl)function.getProperty(name.getName());
@@ -938,7 +1054,13 @@ public class ModelVisitor extends PathNodeVisitor {
         } else if (lhs instanceof IndexNode) {
             IndexNode indexNode = (IndexNode)lhs;
             if (indexNode.getBase() instanceof AccessNode) {
-                name.addAll(getName((AccessNode)indexNode.getBase()));
+                List<Identifier> aName = getName((AccessNode)indexNode.getBase());
+                if (aName != null) {
+                    name.addAll(getName((AccessNode)indexNode.getBase()));
+                }
+                else {
+                    return null;
+                }
             }
             if (indexNode.getIndex() instanceof LiteralNode) {
                 LiteralNode lNode = (LiteralNode)indexNode.getIndex();
@@ -958,15 +1080,19 @@ public class ModelVisitor extends PathNodeVisitor {
             name.add(new IdentifierImpl(aNode.getProperty().getName(),
                     ModelUtils.documentOffsetRange(parserResult, aNode.getProperty().getStart(), aNode.getProperty().getFinish())));
         }
-        if (name.size() > 0 && aNode.getBase() instanceof IdentNode) {
-            IdentNode ident = (IdentNode) aNode.getBase();
-            if (!"this".equals(ident.getName())) {
-                name.add(new IdentifierImpl(ident.getName(),
-                        ModelUtils.documentOffsetRange(parserResult, ident.getStart(), ident.getFinish())));
+        if (aNode.getBase() instanceof IdentNode) {
+            if (name.size() > 0 && aNode.getBase() instanceof IdentNode) {
+                IdentNode ident = (IdentNode) aNode.getBase();
+                if (!"this".equals(ident.getName())) {
+                    name.add(new IdentifierImpl(ident.getName(),
+                            ModelUtils.documentOffsetRange(parserResult, ident.getStart(), ident.getFinish())));
+                }
             }
+            Collections.reverse(name);
+            return name;
+        } else {
+            return null;
         }
-        Collections.reverse(name);
-        return name;
     }
 
     /**

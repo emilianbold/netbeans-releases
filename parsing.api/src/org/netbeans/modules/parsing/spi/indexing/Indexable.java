@@ -45,6 +45,7 @@ package org.netbeans.modules.parsing.spi.indexing;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -188,6 +189,35 @@ public final class Indexable {
                     cancelRequest,
                     logContext);
         }
+    
+        @Override
+        @NonNull
+        public Context createContext(
+                @NonNull final Callable<FileObject> indexFolderFactory,
+                @NonNull final URL rootURL,
+                @NonNull final String indexerName,
+                int indexerVersion,
+                @NullAllowed final IndexFactoryImpl factory,
+                boolean followUpJob,
+                boolean checkForEditorModifications,
+                boolean sourceForBinaryRoot,
+                @NonNull final SuspendStatus suspendedStatus,
+                @NullAllowed final CancelRequest cancelRequest,
+                @NullAllowed final LogContext logContext) throws IOException {
+            return new Context(
+                indexFolderFactory,
+                rootURL,
+                indexerName,
+                indexerVersion,
+                factory,
+                followUpJob,
+                checkForEditorModifications,
+                sourceForBinaryRoot,
+                suspendedStatus,
+                cancelRequest,
+                logContext);
+        }
+
 
         @NonNull
         @Override

@@ -73,7 +73,7 @@ public class JavaScriptLibraryTypeProvider implements LibraryTypeProvider {
 
     @Override
     public String[] getSupportedVolumeTypes() {
-        return VOLUMES;
+        return VOLUMES.clone();
     }
 
     @Override

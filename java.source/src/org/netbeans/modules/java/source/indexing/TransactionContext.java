@@ -232,7 +232,7 @@ public final class TransactionContext {
                 ProcessorGenerated.create(root)).
             register(
                 PersistentIndexTransaction.class, 
-                PersistentIndexTransaction.create()).
+                PersistentIndexTransaction.create(root)).
             register(
                 CacheAttributesTransaction.class,
                 CacheAttributesTransaction.create(root, srcIndex, allFilesIndexing)).

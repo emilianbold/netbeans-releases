@@ -48,6 +48,7 @@ import org.netbeans.modules.javascript2.editor.JsTestBase;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.DescriptionElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElementType;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.NamedParameterElement;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 
@@ -125,6 +126,41 @@ public class JsDocParserTest extends JsTestBase {
         assertEquals("The `angular.module` @stop is a global place for creating and registering Angular modules. All\n"
                 + "  modules (angular core or 3rd party) that should be available to an application must be\n"
                 + "  registered using this mechanism.", ((DescriptionElement) tags.get(0)).getDescription());
+    }
+
+    public void testIssue224205() throws Exception {
+        Source source = getTestSource(getTestFile("testfiles/jsdoc/parser/issue224205.js"));
+        List<? extends JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();
+        assertEquals(JsDocElementType.PARAM, tags.get(0).getType());
+        assertTrue(tags.get(0) instanceof NamedParameterElement);
+        NamedParameterElement namedParameter = (NamedParameterElement) tags.get(0);
+        assertEquals(1, namedParameter.getParamTypes().size());
+        assertEquals("function(department,calls)", namedParameter.getParamTypes().get(0).getType());
+        assertEquals(15, namedParameter.getParamTypes().get(0).getOffset());
+        assertEquals("onSuccess", namedParameter.getParamName().getName());
+        assertEquals(44, namedParameter.getParamName().getOffset());
+    }
+
+    public void testIssue224265() throws Exception {
+        Source source = getTestSource(getTestFile("testfiles/jsdoc/parser/issue224265.js"));
+        List<? extends JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();
+        assertEquals(JsDocElementType.PARAM, tags.get(0).getType());
+        assertTrue(tags.get(0) instanceof NamedParameterElement);
+        NamedParameterElement namedParameter = (NamedParameterElement) tags.get(0);
+        assertEquals(1, namedParameter.getParamTypes().size());
+        assertEquals("uri:user", namedParameter.getParamTypes().get(0).getType());
+        assertEquals(15, namedParameter.getParamTypes().get(0).getOffset());
+        assertEquals("user", namedParameter.getParamName().getName());
+        assertEquals(25, namedParameter.getParamName().getOffset());
+        assertEquals("the user", namedParameter.getParamDescription());
+    }
+
+    public void testIssue224552() throws Exception {
+        // Unfinished param type shouldn't lead to AIOOBE
+        Source source = getTestSource(getTestFile("testfiles/jsdoc/parser/issue224552.js"));
+        List<? extends JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();
+        assertEquals(JsDocElementType.PARAM, tags.get(0).getType());
+        assertTrue(tags.get(0) instanceof NamedParameterElement);
     }
 
     private void checkElementTypes(String filePath) {

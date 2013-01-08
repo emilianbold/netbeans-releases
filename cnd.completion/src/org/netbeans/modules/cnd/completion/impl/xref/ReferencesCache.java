@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.openide.text.NbDocument;
 import org.netbeans.cnd.api.lexer.TokenItem;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 
 /**
  *
@@ -94,6 +95,10 @@ public class ReferencesCache {
                             entry.put(token, null);
                             out = null;
                         }
+                    } else if (!CsmBaseUtilities.isValid(out)) {
+                        // clean cache if remembered object become invalid
+                        entry.put(token, null);
+                        out = null;
                     }
                 }
             }
@@ -176,9 +181,13 @@ public class ReferencesCache {
                 printOut.printf("-----------------------\n"); // NOI18N
                 printOut.printf("file %s version=%d, class=%s\n", file.getAbsolutePath(), CsmFileInfoQuery.getDefault().getFileVersion(file), file.getClass().getName()); // NOI18N
                 SortedMap<TokenItem<TokenId>, CacheEntry> unresolved = new TreeMap<TokenItem<TokenId>, CacheEntry>();
+                SortedMap<TokenItem<TokenId>, CacheEntry> invalid = new TreeMap<TokenItem<TokenId>, CacheEntry>();
                 for (Map.Entry<TokenItem<TokenId>, CacheEntry> entry1 : entry.getValue().entrySet()) {
-                    if (entry1.getValue().csmObject == UNRESOLVED) {
+                    CsmObject csmObject = entry1.getValue().csmObject;
+                    if (csmObject == UNRESOLVED) {
                         unresolved.put(entry1.getKey(), entry1.getValue());
+                    } else if (!CsmBaseUtilities.isValid(csmObject)) {
+                        invalid.put(entry1.getKey(), entry1.getValue());
                     }
                 }
                 if (unresolved.isEmpty()) {
@@ -192,6 +201,18 @@ public class ReferencesCache {
                         }
                     }
                 }
+                if (invalid.isEmpty()) {
+                    printOut.printf("no INVALID \n");// NOI18N
+                } else {
+                    for (Map.Entry<TokenItem<TokenId>, CacheEntry> entry1 : invalid.entrySet()) {
+                        CsmObject csmObject = entry1.getValue().csmObject;
+                        printOut.printf("INVALID [%s] version=%d %s\n", getPosition(entry1.getKey(), file), entry1.getValue().fileVersion, csmObject);// NOI18N
+                        CsmObject checkAgain = ReferencesSupport.findDeclaration(file, ReferencesSupport.getDocument(file), entry1.getKey(), entry1.getKey().offset());
+                        if (checkAgain != csmObject) {
+                            printOut.printf("\t ERROR: invalid resolved as [%s]\n", checkAgain);// NOI18N
+                        }
+                    }
+                }                
             }
             printOut.printf("-----------------------\n");// NOI18N
         }

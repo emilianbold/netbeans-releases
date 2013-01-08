@@ -262,7 +262,7 @@ public class RestConfigurationAction extends NodeAction  {
         FileObject srcRoot = WebRestSupport.findSourceRoot(project);
         if (srcRoot != null) {
             ClassPath cp = ClassPath.getClassPath(srcRoot, ClassPath.COMPILE);
-            if (cp.findResource(classResource) != null) {
+            if (cp != null && cp.findResource(classResource) != null) {
                 return true;
             }
         }

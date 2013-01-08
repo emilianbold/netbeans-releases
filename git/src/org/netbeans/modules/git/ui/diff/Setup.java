@@ -51,6 +51,7 @@ import org.netbeans.api.diff.DiffController;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileInformation.Mode;
+import org.netbeans.modules.git.ui.commit.GitFileNode;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.diff.AbstractDiffSetup;
 import org.openide.util.NbBundle;
@@ -75,14 +76,13 @@ class Setup extends AbstractDiffSetup {
 
     private String    title;
 
-    public Setup (DiffNode node, Mode mode) {
-        this.node = node;
+    public Setup (GitFileNode node, Mode mode) {
         this.baseFile = node.getFile();
 
         ResourceBundle loc = NbBundle.getBundle(Setup.class);
         String firstTitle;
         String secondTitle;
-        info = node.getFileNode().getInformation();
+        info = node.getInformation();
         File originalFile = null;
         if (info != null && (info.isCopied() || info.isRenamed())) {
             originalFile = info.getOldFile();
@@ -217,6 +217,11 @@ class Setup extends AbstractDiffSetup {
     @Override
     public StreamSource getSecondSource() {
         return secondSource;
+    }
+
+    void setNode (DiffNode node) {
+        assert this.node == null;
+        this.node = node;
     }
 
     DiffNode getNode() {

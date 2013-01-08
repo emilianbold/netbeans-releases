@@ -379,12 +379,11 @@ public class AmazonInstance {
                     withDescription(NbBundle.getMessage(AmazonInstance.class, "MSG_DEPLOY_NB")).
                     withAutoCreateApplication(Boolean.FALSE).
                     withSourceBundle(slocation);
-            CreateApplicationVersionResult res = client.createApplicationVersion(newApp);
-            //ApplicationVersionDescription verDesc = res.getApplicationVersion();
+            client.createApplicationVersion(newApp);
 
             UpdateEnvironmentRequest updateReq = new UpdateEnvironmentRequest().
                     withEnvironmentId(environmentId).
-                    withVersionLabel(/*verDesc.getVersionLabel()*/label);
+                    withVersionLabel(label);
             try {
                 UpdateEnvironmentResult result = client.updateEnvironment(updateReq);
                 url[0] = "http://"+result.getEndpointURL(); // NOI18N

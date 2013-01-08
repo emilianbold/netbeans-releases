@@ -1129,7 +1129,7 @@ public final class GeneratorUtilities {
         boolean isAbstract = element.getModifiers().contains(Modifier.ABSTRACT);
         String bodyTemplate = null;
         try {
-            bodyTemplate = "{" + readFromTemplate(isAbstract ? GENERATED_METHOD_BODY : OVERRIDEN_METHOD_BODY, createBindings(clazz, element)) + "\n}"; //NOI18N
+            bodyTemplate = "{" + readFromTemplate(isAbstract ? GENERATED_METHOD_BODY : OVERRIDDEN_METHOD_BODY, createBindings(clazz, element)) + "\n}"; //NOI18N
         } catch (Exception e) {
             bodyTemplate = "{}"; //NOI18N
         }
@@ -1140,6 +1140,9 @@ public final class GeneratorUtilities {
         } else {
             Trees trees = copy.getTrees();
             TreePath path = trees.getPath(clazz);
+            if (path == null) {
+                path = new TreePath(copy.getCompilationUnit());
+            }
             Scope s = trees.getScope(path);
             BlockTree body = method.getBody();
             copy.getTreeUtilities().attributeTree(body, s);
@@ -1385,7 +1388,7 @@ public final class GeneratorUtilities {
     
     /**
      * Tags first method in the list, in order to select it later inside editor
-     * @param methods list of methods to be implemented/overriden
+     * @param methods list of methods to be implemented/overridden
      */
     private void tagFirst(List<MethodTree> methods) {
         //tag first method body, if any
@@ -1411,7 +1414,7 @@ public final class GeneratorUtilities {
     }
     
     private static final String GENERATED_METHOD_BODY = "Templates/Classes/Code/GeneratedMethodBody"; //NOI18N
-    private static final String OVERRIDEN_METHOD_BODY = "Templates/Classes/Code/OverridenMethodBody"; //NOI18N
+    private static final String OVERRIDDEN_METHOD_BODY = "Templates/Classes/Code/OverriddenMethodBody"; //NOI18N
     private static final String METHOD_RETURN_TYPE = "method_return_type"; //NOI18N
     private static final String DEFAULT_RETURN_TYPE_VALUE = "default_return_value"; //NOI18N
     private static final String SUPER_METHOD_CALL = "super_method_call"; //NOI18N

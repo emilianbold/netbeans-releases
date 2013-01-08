@@ -80,6 +80,10 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
         }, true);
     }
 
+    static void postSetVisibleAction(Runnable r) {
+        LOAD_NODES_RP.post(r, WAIT_DELAY);
+    }
+
     protected final MakeProject getProject() {
         return provider.getProject();
     }

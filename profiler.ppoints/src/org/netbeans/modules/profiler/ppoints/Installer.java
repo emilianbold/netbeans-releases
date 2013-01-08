@@ -51,6 +51,7 @@ import org.openide.modules.OnStop;
 public class Installer implements Runnable {
     @Override
     public void run() {
-        ProfilingPointsManager.getDefault().ideClosing(); // TODO: dirty profiling points should be persisted on document save!
+        if (ProfilingPointsManager.hasDefault())
+            ProfilingPointsManager.getDefault().ideClosing(); // TODO: dirty profiling points should be persisted on document save!
     }
 }

@@ -195,15 +195,16 @@ public class ExportZIP extends JPanel {
     }
 
     @Messages({"# {0} - subdirectory", "MSG_searching=Searching in {0}"})
-    private static void scanForFiles(File root, List<String> files, String prefix, ProgressHandle handle, AtomicBoolean canceled, boolean mixedSharability) throws IOException {
+    private static boolean scanForFiles(File root, List<String> files, String prefix, ProgressHandle handle, AtomicBoolean canceled, boolean mixedSharability) throws IOException {
         File[] kids = root.listFiles();
         if (kids == null) {
             throw new IOException("could not list " + root);
         }
         Arrays.sort(kids);
+        boolean atLeastOneIncluded = false;
         for (File kid : kids) {
             if (canceled.get()) {
-                return;
+                return false;
             }
             if (!VisibilityQuery.getDefault().isVisible(kid)) {
                 continue;
@@ -226,11 +227,17 @@ public class ExportZIP extends JPanel {
             String prefixN = prefix + n;
             if (kid.isFile()) {
                 files.add(prefixN);
+                atLeastOneIncluded = true;
             } else if (kid.isDirectory()) {
                 handle.progress(MSG_searching(prefixN));
-                scanForFiles(kid, files, prefixN + '/', handle, canceled, kidMixed);
+                atLeastOneIncluded = scanForFiles(kid, files, prefixN + '/', handle, canceled, kidMixed);
             } // else symlink etc.?
         }
+        if (!atLeastOneIncluded && prefix.endsWith("/")) {
+            files.add(prefix); //ends with /
+            atLeastOneIncluded = true;
+        }
+        return atLeastOneIncluded;
     }
 
     private static void writeEntry(String name, Set<String> written, ZipOutputStream zos, File f) throws IOException, FileNotFoundException {

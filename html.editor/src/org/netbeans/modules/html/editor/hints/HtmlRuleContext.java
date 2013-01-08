@@ -43,8 +43,11 @@ package org.netbeans.modules.html.editor.hints;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
+import javax.swing.text.BadLocationException;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.Error;
@@ -55,7 +58,9 @@ import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
+import org.netbeans.modules.web.common.api.Lines;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -69,14 +74,34 @@ public class HtmlRuleContext {
     private List<? extends Error> leftDiagnostics;
     private CssIndex cssIndex;
     private DependenciesGraph cssDependencies;
+    private final Lines lines;
+    private Collection<Integer> linesWithHints;
 
     public HtmlRuleContext(HtmlParserResult parserResult, SyntaxAnalyzerResult syntaxAnalyzerResult, List<HintFix> defaultFixes) {
         this.parserResult = parserResult;
         this.syntaxAnalyzerResult = syntaxAnalyzerResult;
         this.defaultFixes = defaultFixes;
         this.leftDiagnostics = new ArrayList<Error>(parserResult.getDiagnostics(EnumSet.allOf(Severity.class)));
+        this.lines = new Lines(parserResult.getSnapshot().getText());
+        this.linesWithHints = new HashSet<Integer>();
     }
 
+    public boolean isFirstHintForPosition(int offset) {
+        try {
+            int lineIndex = lines.getLineIndex(offset);
+            if(linesWithHints.contains(lineIndex)) {
+                return false;
+            } else {
+                linesWithHints.add(lineIndex);
+                return true;
+            }
+            
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return true;
+    }
+    
     public HtmlParserResult getHtmlParserResult() {
         return parserResult;
     }
@@ -105,7 +130,7 @@ public class HtmlRuleContext {
         if (cssIndex == null) {
             Project project = FileOwnerQuery.getOwner(getFile());
             if (project != null) {
-                cssIndex = CssIndex.create(project);
+                cssIndex = CssIndex.get(project);
             }
         }
         return cssIndex;

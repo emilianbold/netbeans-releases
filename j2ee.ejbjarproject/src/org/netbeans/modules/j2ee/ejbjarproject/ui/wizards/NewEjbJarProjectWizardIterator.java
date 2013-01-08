@@ -104,11 +104,13 @@ public class NewEjbJarProjectWizardIterator implements WizardDescriptor.Progress
         };
     }
 
+    @Override
     public Set instantiate() throws IOException {
         assert false : "This method cannot be called if the class implements WizardDescriptor.ProgressInstantiatingIterator.";
         return null;
     }
         
+    @Override
     public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
         handle.start(3);
         handle.progress(NbBundle.getMessage(NewEjbJarProjectWizardIterator.class, "LBL_NewEjbJarProjectWizardIterator_WizardProgress_CreatingProject"), 1);
@@ -173,12 +175,15 @@ public class NewEjbJarProjectWizardIterator implements WizardDescriptor.Progress
     private transient WizardDescriptor.Panel[] panels;
     private transient WizardDescriptor wiz;
     
+    @Override
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         index = 0;
         panels = createPanels();
         Utils.setSteps(panels, STEPS);
     }
+
+    @Override
     public void uninitialize(WizardDescriptor wiz) {
         this.wiz.putProperty(ProjectLocationWizardPanel.PROJECT_DIR,null);
         this.wiz.putProperty(ProjectLocationWizardPanel.NAME,null);
@@ -186,36 +191,49 @@ public class NewEjbJarProjectWizardIterator implements WizardDescriptor.Progress
         panels = null;
     }
     
+    @Override
     public String name() {
-        return MessageFormat.format(
-                NbBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_WizardStepsCount"), //NOI18N
-                (new Integer(index + 1)).toString(), (new Integer(panels.length)).toString());
+        return NbBundle.getMessage(NewEjbJarProjectWizardIterator.class,
+                "LBL_WizardStepsCount", //NOI18N
+                index + 1, panels.length);
     }
     
+    @Override
     public boolean hasNext() {
         return index < panels.length - 1;
     }
+
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
+
+    @Override
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
         index++;
     }
+
+    @Override
     public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
         }
         index--;
     }
+
+    @Override
     public WizardDescriptor.Panel current() {
         return panels[index];
     }
     
     // If nothing unusual changes in the middle of the wizard, simply:
+    @Override
     public final void addChangeListener(ChangeListener l) {}
+
+    @Override
     public final void removeChangeListener(ChangeListener l) {}
     
 }

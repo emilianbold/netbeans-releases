@@ -57,6 +57,7 @@ public class ModuleUISettings {
     private static final String LAST_USED_NB_PLATFORM_LOCATION = "lastUsedNbPlatformLocation"; // NOI18N
     private static final String NEW_MODULE_COUNTER = "newModuleCounter";  //NOI18N
     private static final String NEW_SUITE_COUNTER = "newSuiteCounter";  //NOI18N
+    private static final String NEW_APPLICATION_COUNTER = "newApplicationCounter";  //NOI18N
     private static final String CONFIRM_RELOAD_IN_IDE = "confirmReloadInIDE"; // NOI18N
     private static final String LAST_USED_PLATFORM_ID = "lastUsedPlatformID"; // NOI18N
     private static final String HARNESSES_UPGRADED = "harnessesUpgraded"; // NOI18N
@@ -84,6 +85,14 @@ public class ModuleUISettings {
 
     public void setNewSuiteCounter(int count) {
         prefs().putInt(NEW_SUITE_COUNTER, count);
+    }
+    
+    public int getNewApplicationCounter() {
+        return prefs().getInt(NEW_APPLICATION_COUNTER, 0);
+    }
+
+    public void setNewApplicationCounter(int count) {
+        prefs().putInt(NEW_APPLICATION_COUNTER, count);
     }
 
     public String getLastUsedNbPlatformLocation() {

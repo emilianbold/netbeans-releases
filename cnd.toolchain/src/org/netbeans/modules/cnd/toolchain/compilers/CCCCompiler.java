@@ -330,6 +330,9 @@ public abstract class CCCCompiler extends AbstractCompiler {
                         reader.close();
                     }
                 }
+                process.waitFor();
+                startedProcess = null;
+                errorTask = null;
             }
         } catch (IOException ex) {
             throw ex;
@@ -380,7 +383,7 @@ public abstract class CCCCompiler extends AbstractCompiler {
 	return false;
     }
 
-    protected void parseUserMacros(final String line, final List<String> preprocessorList) {
+    static void parseUserMacros(final String line, final List<String> preprocessorList) {
         List<String> list = scanCommandLine(line);
         for(String s : list) {
             if (s.startsWith("\"") && s.endsWith("\"") || // NOI18N
@@ -392,9 +395,75 @@ public abstract class CCCCompiler extends AbstractCompiler {
             if (s.startsWith("-D")) { // NOI18N
                 String token = s.substring(2);
                 if (token.length() > 0) {
-                    addUnique(preprocessorList, token);
+                    String name = token;
+                    int i = token.indexOf('=');
+                    if (i >= 0) {
+                        name = token.substring(0,i);
+                    }
+                    if (isValidMacroName(name)) {
+                        addUnique(preprocessorList, token);
+                    }
                 }
             }
+        }
+    }
+
+    static boolean isValidMacroName(String macroName) {
+        boolean par = false;
+        for (int i = 0; i < macroName.length(); i++) {
+            char c = macroName.charAt(i);
+            if (c == '_') {
+                continue;
+            } else if (c >= 'A' && c <= 'Z') {
+                continue;
+            } else if (c >= 'a' && c <= 'z') {
+                continue;
+            } else if (c >= '0' && c <= '9' && i > 0) {
+                continue;
+            } else if (c == '(' && i > 0) {
+                if (par) {
+                    return false;
+                }
+                par = true;
+            } else if (c == ')') {
+                if (!par) {
+                    return false;
+                }
+                return i == macroName.length() - 1;
+            } else if (c == ' ' || c == ',' || c == '.') {
+                if (!par) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    static String[] getMacro(String line) {
+        int sepIdx = -1; // index of space separating macro name and body
+        int parCount = 0; // parenthesis counter
+        loop:
+        for (int i = 0; i < line.length(); ++i) {
+            switch (line.charAt(i)) {
+                case '(':
+                    ++parCount;
+                    break;
+                case ')':
+                    --parCount;
+                    break;
+                case ' ':
+                    if (parCount == 0) {
+                        sepIdx = i;
+                        break loop;
+                    }
+            }
+        }
+        if (sepIdx > 0) {
+            return new String[] {line.substring(0, sepIdx),line.substring(sepIdx + 1).trim()};
+        } else {
+            return new String[] {line, null};
         }
     }
     
@@ -475,16 +544,6 @@ public abstract class CCCCompiler extends AbstractCompiler {
                     ExecutionEnvironmentFactory.toUniqueID(getExecutionEnvironment()).hashCode() + getPath().hashCode() + "."; // NOI18N
         }
     }
-
-//    private void dumpLists() {
-//        System.out.println("==================================" + getDisplayName()); // NOI18N
-//        for (int i = 0; i < compilerDefinitions.systemIncludeDirectoriesList.size(); i++) {
-//            System.out.println("-I" + compilerDefinitions.systemIncludeDirectoriesList.get(i)); // NOI18N
-//        }
-//        for (int i = 0; i < compilerDefinitions.systemPreprocessorSymbolsList.size(); i++) {
-//            System.out.println("-D" + compilerDefinitions.systemPreprocessorSymbolsList.get(i)); // NOI18N
-//        }
-//    }
 
     protected static void addUnique(List<String> list, String element) {
         String pattern = element;

@@ -163,7 +163,7 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
         SourceGroup[] groups = getSourceGroups(project, Templates.getTemplate(descriptor));
         WizardDescriptor.Panel<WizardDescriptor> simpleTargetChooserPanel = Templates.buildSimpleTargetChooser(project, groups).create();
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings({"unchecked", "rawtypes"})
         WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {simpleTargetChooserPanel};
         return panels;
     }

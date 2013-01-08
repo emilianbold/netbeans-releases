@@ -268,9 +268,6 @@ public class PreviewMultiViewDesc extends Object implements MultiViewDescription
                     String tempTestDestpath = tempdir + constPart + serviceName + suffix + ".wsdl";
                     // File object for generated WSDL file
                     File wsdl = new File(tempTestDestpath);
-                    if (wsdl == null) {
-                        wsdl = new File(tempdir + constPart + serviceName + ".wsdl");
-                    }
                     wsdlFile = FileUtil.toFileObject(FileUtil.normalizeFile(wsdl));
                 }
                 if (wsdlFile != null) {

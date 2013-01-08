@@ -256,7 +256,11 @@ final class JavaParsingContext {
             fqn2Files.store();
         }
         if (sa != null) {
-            sa.store();
+            try {
+                sa.store();
+            } catch (IOException ioe) {
+                throw new BrokenIndexException(ioe);
+            }
         }
     }
 
@@ -300,6 +304,12 @@ final class JavaParsingContext {
     private static void registerVirtualSources(final ClasspathInfo cpInfo, final Collection<? extends CompileTuple> virtualSources) {
         for (CompileTuple compileTuple : virtualSources) {
             ClasspathInfoAccessor.getINSTANCE().registerVirtualSource(cpInfo, compileTuple.jfo);
+        }
+    }
+
+    static class BrokenIndexException extends IOException {
+        private BrokenIndexException (final IOException cause) {
+            super(cause);
         }
     }
 }

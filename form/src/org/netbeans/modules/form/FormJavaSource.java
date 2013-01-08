@@ -139,7 +139,7 @@ public final class FormJavaSource {
         }
     }
 
-    public String getFormClassName() {
+    private String getFormClassName() {
         if (!validJavaSource) {
             return null;
         }
@@ -163,10 +163,6 @@ public final class FormJavaSource {
                     break;
                 }
             }
-        }
-        if (className == null) { // fallback
-            className = ClassPath.getClassPath(file, ClassPath.SOURCE)
-                        .getResourceName(file, '.', false);
         }
         filePath = file.getPath();
         return className;
@@ -211,17 +207,21 @@ public final class FormJavaSource {
         }) : null;
     }
 
-    public void modifyInterfaces(final Collection<String> toAdd, final Collection<String> toRemove) {
+    public boolean modifyInterfaces(final Collection<String> toAdd, final Collection<String> toRemove) {
         final String cls = getFormClassName();
+        Boolean ret;
         if (cls != null) {
-            update(new Function<Updates, Boolean>() {
+            ret = update(new Function<Updates, Boolean>() {
                 @Override
                 public Boolean apply(final Updates updates) throws QueryException {
                     updates.modifyInterfaces(cls, toAdd, toRemove);
                     return true;
                 }
             });
+        } else {
+            ret = null;
         }
+        return Boolean.TRUE.equals(ret);
     }
 
     public void renameField(final String oldName, final String newName) {

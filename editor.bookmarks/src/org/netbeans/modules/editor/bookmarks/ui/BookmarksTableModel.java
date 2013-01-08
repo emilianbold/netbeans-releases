@@ -210,6 +210,7 @@ public class BookmarksTableModel extends AbstractTableModel {
             default:
                 throw new IllegalStateException("Invalid columnIndex=" + columnIndex); // NOI18N
         }
+        fireTableCellUpdated(rowIndex, columnIndex);
     }
 
 }

@@ -107,16 +107,18 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter {
                                     CompilationController controller = result != null ? CompilationController.get(result) : null;
                                     if (controller != null && Phase.PARSED.compareTo(controller.toPhase(Phase.PARSED)) <= 0) {
                                         TreeUtilities tu = controller.getTreeUtilities();
-                                        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(controller.getTokenHierarchy(), startOffset);
-                                        int delta = ts.move(startOffset);
-                                        if (delta == 0 || ts.moveNext() && ts.token().id() == JavaTokenId.WHITESPACE) {
-                                            delta = ts.move(endOffset);
+                                        if (endOffset >= 0) {
+                                            TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(controller.getTokenHierarchy(), startOffset);
+                                            int delta = ts.move(startOffset);
                                             if (delta == 0 || ts.moveNext() && ts.token().id() == JavaTokenId.WHITESPACE) {
-                                                String selectedText = controller.getText().substring(startOffset, endOffset).trim();
-                                                SourcePositions[] sp = new SourcePositions[1];
-                                                ExpressionTree expr = tu.parseExpression(selectedText, sp);
-                                                if (expr != null && expr.getKind() != Tree.Kind.IDENTIFIER && !Utilities.containErrors(expr) && sp[0].getEndPosition(null, expr) >= selectedText.length()) {
-                                                    stringCtx = EXPRESSION;
+                                                delta = ts.move(endOffset);
+                                                if (delta == 0 || ts.moveNext() && ts.token().id() == JavaTokenId.WHITESPACE) {
+                                                    String selectedText = controller.getText().substring(startOffset, endOffset).trim();
+                                                    SourcePositions[] sp = new SourcePositions[1];
+                                                    ExpressionTree expr = tu.parseExpression(selectedText, sp);
+                                                    if (expr != null && expr.getKind() != Tree.Kind.IDENTIFIER && !Utilities.containErrors(expr) && sp[0].getEndPosition(null, expr) >= selectedText.length()) {
+                                                        stringCtx = EXPRESSION;
+                                                    }
                                                 }
                                             }
                                         }

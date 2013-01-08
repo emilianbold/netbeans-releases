@@ -75,6 +75,7 @@ public enum CppStringTokenId implements TokenId {
     PREFIX_u("u", "string-escape"), // NOI18N
     PREFIX_u8("u8", "string-escape"), // NOI18N
     // raw unicode strings
+    PREFIX_LR("LR", "string-escape"), // NOI18N
     PREFIX_UR("UR", "string-escape"), // NOI18N
     PREFIX_uR("uR", "string-escape"), // NOI18N
     PREFIX_u8R("u8R", "string-escape"), // NOI18N

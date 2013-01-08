@@ -69,6 +69,7 @@ import org.openide.awt.Actions;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport.Pane;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -268,7 +269,7 @@ final class JavaRefactoringGlobalAction extends NodeAction {
 
         public TextComponentRunnable(EditorCookie ec, JavaRefactoringActionDelegate delegate) {
             this.delegate = delegate;
-            this.textC = ec.getOpenedPanes()[0];
+            this.textC = NbDocument.findRecentEditorPane(ec);
             this.caret = textC.getCaretPosition();
             this.start = textC.getSelectionStart();
             this.end = textC.getSelectionEnd();

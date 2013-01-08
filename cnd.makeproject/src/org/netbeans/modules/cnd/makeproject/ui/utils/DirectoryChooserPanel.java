@@ -307,7 +307,7 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
             if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION) {
                 return;
             }
-            String newS = notifyDescriptor.getInputText();
+            String newS = notifyDescriptor.getInputText().trim();
             replaceElement(o, newS, i);
         }
     }

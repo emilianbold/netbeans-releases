@@ -103,8 +103,8 @@ public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.
     private static Map<String, String> createWarIncludesMap(AntProjectHelper uh, String webModuleLibraries) {
         Map<String, String> warIncludesMap = new LinkedHashMap<String, String>();
         //try all supported namespaces starting with the newest one
-        for(int idx = WebProjectType.PROJECT_CONFIGURATION_NAMESPACE_LIST.length - 1; idx >= 0; idx--) {
-            String ns = WebProjectType.PROJECT_CONFIGURATION_NAMESPACE_LIST[idx];
+        for(int idx = WebProjectType.getConfigurationNamespaceList().length - 1; idx >= 0; idx--) {
+            String ns = WebProjectType.getConfigurationNamespaceList()[idx];
             Element data = uh.createAuxiliaryConfiguration().getConfigurationFragment("data",ns,true);
             if(data != null) {
                 Element webModuleLibs = (Element) data.getElementsByTagNameNS(ns, webModuleLibraries).item(0);

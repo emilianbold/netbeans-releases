@@ -77,7 +77,7 @@ import org.w3c.dom.Text;
  * @author Nam Nguyen
  */
 public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>> 
-        extends AbstractComponent<C> implements DocumentComponent<C>, DocumentModelAccess.NodeUpdater {
+        extends AbstractComponent<C> implements DocumentComponent2<C>, DocumentModelAccess.NodeUpdater {
     private Element node;
 
     @Override
@@ -503,6 +503,21 @@ public abstract class AbstractDocumentComponent<C extends DocumentComponent<C>>
         return getAccess().findPosition(getPeer());
     }
     
+    /**
+     * @since 1.22
+     * @return 
+     */
+    @Override
+    public int findEndPosition() {
+        if (getModel() == null) {
+            return 0;
+        }
+        if (getAccess() instanceof DocumentModelAccess2) {
+            return ((DocumentModelAccess2)getAccess()).findEndPosition(getPeer());
+        }
+        return 0;
+    }
+        
     private void removeAttribute(Element element, String name) {
         getAccess().removeAttribute(element, name, this);
     }

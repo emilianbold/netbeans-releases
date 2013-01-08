@@ -706,7 +706,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             ResolverFactory.releaseResolver(resolver);
         }
         if( result == null ) {
-            result = ((ProjectBase) getContainingFile().getProject()).getDummyForUnresolved(qname, getContainingFile(), getStartOffset());
+            result = ProjectBase.getDummyForUnresolved(qname, this);
         }
         return result;
     }

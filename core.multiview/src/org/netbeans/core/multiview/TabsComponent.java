@@ -49,8 +49,6 @@ import java.awt.event.*;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.JToggleButton.ToggleButtonModel;
 import javax.swing.KeyStroke;
@@ -59,8 +57,6 @@ import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.openide.awt.Actions;
 import org.openide.awt.Mnemonics;
-import org.openide.text.CloneableEditorSupport;
-import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.util.NbBundle;
 
 
@@ -89,27 +85,6 @@ class TabsComponent extends JPanel {
     public TabsComponent(boolean toolVis) {
         super();
         bar = new JToolBar();
-
-        setFocusTraversalPolicyProvider(true);
-        setFocusTraversalPolicy(new DefaultFocusTraversalPolicy() {
-            @Override
-            public Component getDefaultComponent(Container aContainer) {
-                final MultiViewElement elem = model.getActiveElement();
-                final JComponent vr = elem.getVisualRepresentation();
-                if (vr instanceof CloneableEditorSupport.Pane) {
-                   Pane pane = (Pane)vr;
-                   JEditorPane editorPane = pane.getEditorPane();
-                   if (null != editorPane && editorPane.isShowing()) {
-                     return editorPane;
-                   } else if( null == editorPane ) {
-                       Logger.getLogger(TabsComponent.class.getName()).log(Level.INFO,
-                               "No editor pane in " + model.getActiveElement().getVisualRepresentation() ); //NOI18N
-                   }
-               }
-               return super.getDefaultComponent(aContainer);
-            }
-        });
-
         Border b = (Border)UIManager.get("Nb.Editor.Toolbar.border"); //NOI18N
         bar.setBorder(b);
         bar.setFloatable(false);
