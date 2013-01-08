@@ -73,7 +73,7 @@ public class Braces {
     
     private static final String BRACES_ID = "Braces_"; // NOI18N
     
-    @Hint(displayName="#LBL_Braces_For", description="#DSC_Braces_For", category="braces", id=BRACES_ID + "FOR_LOOP")
+    @Hint(displayName="#LBL_Braces_For", description="#DSC_Braces_For", category="braces", id=BRACES_ID + "FOR_LOOP", enabled=false)
     @TriggerTreeKind({Tree.Kind.FOR_LOOP, Tree.Kind.ENHANCED_FOR_LOOP})
     public static ErrorDescription checkFor(HintContext ctx) {
         StatementTree st;
@@ -87,21 +87,21 @@ public class Braces {
         return checkStatement(ctx, "LBL_Braces_For", st, ctx.getPath());
     }
     
-    @Hint(displayName="#LBL_Braces_While", description="#DSC_Braces_While", category="braces", id=BRACES_ID + "WHILE_LOOP")
+    @Hint(displayName="#LBL_Braces_While", description="#DSC_Braces_While", category="braces", id=BRACES_ID + "WHILE_LOOP", enabled=false)
     @TriggerTreeKind(Tree.Kind.WHILE_LOOP)
     public static ErrorDescription checkWhile(HintContext ctx) {
         WhileLoopTree wlt = (WhileLoopTree) ctx.getPath().getLeaf();
         return checkStatement(ctx, "LBL_Braces_While", wlt.getStatement(), ctx.getPath());
     }
     
-    @Hint(displayName="#LBL_Braces_DoWhile", description="#DSC_Braces_DoWhile", category="braces", id=BRACES_ID + "DO_WHILE_LOOP")
+    @Hint(displayName="#LBL_Braces_DoWhile", description="#DSC_Braces_DoWhile", category="braces", id=BRACES_ID + "DO_WHILE_LOOP", enabled=false)
     @TriggerTreeKind(Tree.Kind.DO_WHILE_LOOP)
     public static ErrorDescription checkDoWhile(HintContext ctx) {
         DoWhileLoopTree dwlt = (DoWhileLoopTree) ctx.getPath().getLeaf();
         return checkStatement(ctx, "LBL_Braces_DoWhile", dwlt.getStatement(), ctx.getPath());
     }
     
-    @Hint(displayName="#LBL_Braces_If", description="#DSC_Braces_If", category="braces", id=BRACES_ID + "IF")
+    @Hint(displayName="#LBL_Braces_If", description="#DSC_Braces_If", category="braces", id=BRACES_ID + "IF", enabled=false)
     @TriggerTreeKind(Tree.Kind.IF)
     public static List<ErrorDescription> checkIf(HintContext ctx) {
         IfTree it = (IfTree) ctx.getPath().getLeaf();
