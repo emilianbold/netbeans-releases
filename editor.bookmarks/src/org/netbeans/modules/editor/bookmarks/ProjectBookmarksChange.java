@@ -41,92 +41,73 @@
  */
 package org.netbeans.modules.editor.bookmarks;
 
+import java.net.URI;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
- * Change of a particular bookmark.
+ * Change of project bookmarks.
  *
  * @author Miloslav Metelka
  */
-public final class BookmarkChange {
+public final class ProjectBookmarksChange {
     
-    private static final int ADDED = 1;
+    private final ProjectBookmarks projectBookmarks;
     
-    private static final int REMOVED = 2;
+    private final Map<URI,FileBookmarksChange> fileBookmarksChanges;
+
+    private boolean added;
     
-    private static final int FILE_CHANGED = 4; // File to which bookmark belongs has changed
+    private boolean loaded;
     
-    private static final int NAME_CHANGED = 8;
+    private boolean released;
     
-    private static final int LINE_INDEX_CHANGED = 16;
-    
-    private static final int KEY_CHANGED = 32;
-    
-    private final BookmarkInfo bookmark;
-    
-    private int statusBits;
-    
-    BookmarkChange(BookmarkInfo bookmark) {
-        this.bookmark = bookmark;
+    public ProjectBookmarksChange(ProjectBookmarks projectBookmarks) {
+        this.projectBookmarks = projectBookmarks;
+        this.fileBookmarksChanges = new HashMap<URI, FileBookmarksChange>();
     }
     
-    /**
-     * Return affected bookmark.
-     *
-     * @return non-null bookmark.
-     */
-    public BookmarkInfo getBookmark() {
-        return bookmark;
+    public ProjectBookmarks getProjectBookmarks() {
+        return projectBookmarks;
     }
 
     public boolean isAdded() {
-        return (statusBits & ADDED) != 0;
+        return added;
+    }
+
+
+    public boolean isLoaded() {
+        return loaded;
     }
     
-    public boolean isRemoved() {
-        return (statusBits & REMOVED) != 0;
+    public boolean isReleased() {
+        return released;
     }
-    
-    public boolean isFileChanged() {
-        return (statusBits & FILE_CHANGED) != 0;
+
+    public FileBookmarksChange getFileBookmarksChange(URI relativeURI) {
+        return fileBookmarksChanges.get(relativeURI);
     }
-    
-    public boolean isNameChanged() {
-        return (statusBits & NAME_CHANGED) != 0;
-    }
-    
-    public boolean isLineIndexChanged() {
-        return (statusBits & LINE_INDEX_CHANGED) != 0;
-    }
-    
-    public boolean isKeyChanged() {
-        return (statusBits & KEY_CHANGED) != 0;
-    }
-    
-    public boolean isNameKeyOrLineIndexChanged() {
-        return (statusBits & (NAME_CHANGED | LINE_INDEX_CHANGED | KEY_CHANGED)) != 0;
+
+    public Collection<FileBookmarksChange> getFileBookmarksChanges() {
+        return fileBookmarksChanges.values();
     }
 
     void markAdded() {
-        statusBits |= ADDED;
+        this.added = true;
+    }
+
+    void markLoaded() {
+        this.loaded = true;
     }
     
-    void markRemoved() {
-        statusBits |= REMOVED;
+    void markReleased() {
+        this.released = true;
     }
     
-    void markFileChanged() {
-        statusBits |= FILE_CHANGED;
+    void addChange(FileBookmarksChange change) {
+        assert (fileBookmarksChanges.put(change.getFileBookmarks().getRelativeURI(), change) == null)
+                : "Change already present: " + change; // NOI18N
     }
-    
-    void markNameChanged() {
-        statusBits |= NAME_CHANGED;
-    }
-    
-    void markLineIndexChanged() {
-        statusBits |= LINE_INDEX_CHANGED;
-    }
-    
-    void markKeyChanged() {
-        statusBits |= KEY_CHANGED;
-    }
-    
+
 }

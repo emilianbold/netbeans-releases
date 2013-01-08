@@ -141,6 +141,7 @@ public class ClipboardHandler {
 
                     TreePath context = copy.getTreeUtilities().pathFor(caret);
                     Scope scope = copy.getTrees().getScope(context);
+                    Scope cutScope = copy.getTrees().getScope(new TreePath(context.getCompilationUnit()));
                     List<Position[]> spans = new ArrayList<Position[]>(inSpans);
 
                     Collections.sort(spans, new Comparator<Position[]>() {
@@ -165,7 +166,7 @@ public class ClipboardHandler {
                                 handled = SourceUtils.resolveImport(copy, context, fqn);
                             } else {
                                 CompilationUnitTree cut = (CompilationUnitTree) copy.resolveRewriteTarget(copy.getCompilationUnit());
-                                if (e.getModifiers().contains(Modifier.STATIC) && copy.getTreeUtilities().isAccessible(scope, e, e.getEnclosingElement().asType())
+                                if (e.getModifiers().contains(Modifier.STATIC) && copy.getTreeUtilities().isAccessible(cutScope, e, e.getEnclosingElement().asType())
                                         && (scope.getEnclosingClass() == null || copy.getElementUtilities().outermostTypeElement(e) != copy.getElementUtilities().outermostTypeElement(scope.getEnclosingClass()))) {
                                     copy.rewrite(copy.getCompilationUnit(), GeneratorUtilities.get(copy).addImports(cut, Collections.singleton(e)));
                                 }

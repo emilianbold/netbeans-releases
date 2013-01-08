@@ -44,33 +44,21 @@
 
 package org.netbeans.modules.java.hints.errors;
 
-import com.sun.source.tree.ArrayAccessTree;
-import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.LiteralTree;
-import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.ParameterizedTypeTree;
-import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
-import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.TreeScanner;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.lang.model.type.ErrorType;
 import javax.lang.model.type.TypeKind;
@@ -92,29 +80,30 @@ public final class AddCast implements ErrorRule<Void> {
             "compiler.err.prob.found.req", // NOI18N
             "compiler.err.cant.apply.symbol", // NOI18N
             "compiler.err.cant.apply.symbol.1", // NOI18N
-            "compiler.err.cant.resolve.location.args")); // NOI18N
+            "compiler.err.cant.resolve.location.args", // NOI18N
+            "compiler.err.cant.apply.symbols")); // NOI18N
     
-    static void computeType(CompilationInfo info, int offset, TypeMirror[] tm, Tree[] typeTree, ExpressionTree[] expression, Tree[] leaf) {
+    static void computeType(CompilationInfo info, int offset, List<TypeMirror> targetType, TreePath[] typeTree, ExpressionTree[] expression, Tree[] leaf) {
         TreePath path = info.getTreeUtilities().pathFor(offset + 1);
         int start = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), path.getLeaf());
         
         //TODO: this does not seem nice:
         while (path != null) {
             Tree scope = path.getLeaf();
-            TypeMirror expected = null;
-            Tree expectedTree = null;
+            List<TypeMirror> expected = null;
+            TreePath expectedTree = null;
             TypeMirror resolved = null;
             ExpressionTree found = null;
             
             if (scope.getKind() == Kind.VARIABLE && ((VariableTree) scope).getInitializer() != null) {
-                expected = info.getTrees().getTypeMirror(path);
-                expectedTree = ((VariableTree) scope).getType();
+                expected = Collections.singletonList(info.getTrees().getTypeMirror(path));
+                expectedTree = new TreePath(path, ((VariableTree) scope).getType());
                 found = ((VariableTree) scope).getInitializer();
                 resolved = info.getTrees().getTypeMirror(new TreePath(path, found));
             }
             
             if (scope.getKind() == Kind.ASSIGNMENT) {
-                expected = info.getTrees().getTypeMirror(path);
+                expected = Collections.singletonList(info.getTrees().getTypeMirror(path));
                 found = ((AssignmentTree) scope).getExpression();
                 resolved = info.getTrees().getTypeMirror(new TreePath(path, found));
             }
@@ -128,7 +117,7 @@ public final class AddCast implements ErrorRule<Void> {
                 if (parents != null) {
                     Tree returnTypeTree = ((MethodTree) parents.getLeaf()).getReturnType();
                     if (returnTypeTree != null && (found = ((ReturnTree) scope).getExpression()) != null) {
-                        expected = info.getTrees().getTypeMirror(new TreePath(parents, returnTypeTree));
+                        expected = Collections.singletonList(info.getTrees().getTypeMirror(new TreePath(parents, returnTypeTree)));
                         resolved = info.getTrees().getTypeMirror(new TreePath(path, found));
                     }
                 }
@@ -139,7 +128,7 @@ public final class AddCast implements ErrorRule<Void> {
                 int[] index = new int[1];
                 
                 if (!Utilities.fuzzyResolveMethodInvocation(info, path, proposed, index).isEmpty()) {
-                    expected = proposed.get(0);
+                    expected = proposed;
                     found = scope.getKind() == Kind.METHOD_INVOCATION ? ((MethodInvocationTree) scope).getArguments().get(index[0]) : ((NewClassTree) scope).getArguments().get(index[0]);
                     resolved = info.getTrees().getTypeMirror(new TreePath(path, found));
                 }
@@ -163,18 +152,20 @@ public final class AddCast implements ErrorRule<Void> {
                     //XXX: ignoring executable, see AddCast9 for more information when this happens.
                     //XXX: ignoring NONE, see test161450
                 } else {
-                    if (info.getTypeUtilities().isCastable(resolved, expected)) {
-                        if (!info.getTypes().isAssignable(foundTM, expected)
-                                /*#85346: cast hint should not be proposed for error types:*/
-                                && foundTM.getKind() != TypeKind.ERROR
-                                && expected.getKind() != TypeKind.ERROR) {
-                            tm[0] = expected;
-                            typeTree[0] = expectedTree;
-                            expression[0] = found;
-                            leaf[0] = scope;
+                    targetType.clear();//clean up, - may be related to test136313
+                    
+                    for (TypeMirror expectedType : expected) {
+                        if (info.getTypeUtilities().isCastable(resolved, expectedType)) {
+                            if (!info.getTypes().isAssignable(foundTM, expectedType)
+                                    /*#85346: cast hint should not be proposed for error types:*/
+                                    && foundTM.getKind() != TypeKind.ERROR
+                                    && expectedType.getKind() != TypeKind.ERROR) {
+                                targetType.add(org.netbeans.modules.java.hints.errors.Utilities.resolveCapturedType(info, expectedType));
+                                typeTree[0] = expectedTree;
+                                expression[0] = found;
+                                leaf[0] = scope;
+                            }
                         }
-                    } else {
-                        tm[0] = null; //clean up, test136313
                     }
                 }
             }
@@ -185,10 +176,6 @@ public final class AddCast implements ErrorRule<Void> {
 
             path = path.getParentPath();
         }
-        
-        if (tm[0] != null) {
-            tm[0] = org.netbeans.modules.java.hints.errors.Utilities.resolveCapturedType(info, tm[0]);
-        }
     }
 
     public Set<String> getCodes() {
@@ -197,18 +184,20 @@ public final class AddCast implements ErrorRule<Void> {
     
     public List<Fix> run(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
         List<Fix> result = new ArrayList<Fix>();
-        TypeMirror[] tm = new TypeMirror[1];
-        Tree[] tmTree = new Tree[1];
+        List<TypeMirror> targetType = new ArrayList<TypeMirror>();
+        TreePath[] tmTree = new TreePath[1];
         ExpressionTree[] expression = new ExpressionTree[1];
         Tree[] leaf = new Tree[1];
         
-        computeType(info, offset, tm, tmTree, expression, leaf);
+        computeType(info, offset, targetType, tmTree, expression, leaf);
         
-        if (tm[0] != null && tm[0].getKind() != TypeKind.NULL) {
-            int position = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), expression[0]);
-            Class interf = expression[0].getKind().asInterface();
-            boolean wrapWithBrackets = interf == BinaryTree.class || interf == ConditionalExpressionTree.class;
-            result.add(new AddCastFix(info.getJavaSource(), org.netbeans.modules.java.hints.errors.Utilities.shortDisplayName(info, expression[0]), Utilities.getTypeName(info, tm[0], false).toString(), position, wrapWithBrackets));
+        if (!targetType.isEmpty()) {
+            TreePath expressionPath = TreePath.getPath(info.getCompilationUnit(), expression[0]); //XXX: performance
+            for (TypeMirror type : targetType) {
+                if (type.getKind() != TypeKind.NULL) {
+                    result.add(new AddCastFix(info, expressionPath, tmTree[0], type).toEditorFix());
+                }
+            }
         }
         
         return result;

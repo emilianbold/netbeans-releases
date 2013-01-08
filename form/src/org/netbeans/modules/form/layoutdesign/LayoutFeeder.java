@@ -1192,6 +1192,14 @@ class LayoutFeeder implements LayoutConstants {
                 }
             }
             if (iDesc1.snappedParallel != null) {
+                if (iDesc1.snappedParallel.getParent() == null && iDesc1.snappedParallel.getSubIntervalCount() == 0
+                        && iDesc1 == originalInclusion1) {
+                    // Attempt to workaround bug #222436. The assumption is it might happen during resizing
+                    // a component: the fixed edge was aligned in parallel with some parent and this parent
+                    // got optimized out somewhere during adding the component. We can determine the align-with
+                    // interval again from the original position.
+                    iDesc1.snappedParallel = LayoutPosition.getInclusionFromOriginal(originalPosition, dimension, iDesc1.alignment).snappedParallel;
+                }
                 alignInParallel(getAlignRep(added, iDesc1.alignment), iDesc1.snappedParallel, iDesc1.alignment);
             }
         }

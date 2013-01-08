@@ -127,14 +127,17 @@ public class LayoutPainter implements LayoutConstants {
 
     private void paintSelectedComponent(Graphics2D g, LayoutComponent component, int dimension) {
         LayoutInterval interval = component.getLayoutInterval(dimension);
+        LayoutInterval parent = interval.getParent();
+        if (parent == null) {
+            return; // workaround of bug 224402: repaint may happen before failed change is undone
+        }
         if (component.isLinkSized(HORIZONTAL) || component.isLinkSized(VERTICAL)) {
             paintLinks(g, component);
         }
         // Paint baseline alignment
         if (interval.getAlignment() == BASELINE) {
-            LayoutInterval alignedParent = interval.getParent();
             int oppDimension = (dimension == HORIZONTAL) ? VERTICAL : HORIZONTAL;
-            LayoutRegion region = alignedParent.getCurrentSpace();
+            LayoutRegion region = parent.getCurrentSpace();
             int x = region.positions[dimension][BASELINE];
             int y1 = region.positions[oppDimension][LEADING];
             int y2 = region.positions[oppDimension][TRAILING];
@@ -147,8 +150,7 @@ public class LayoutPainter implements LayoutConstants {
             }
         }
         int lastAlignment = -1;
-        while (interval.getParent() != null) {
-            LayoutInterval parent = interval.getParent();
+        do {
             if (parent.getType() == SEQUENTIAL) {
                 int alignment = LayoutInterval.getEffectiveAlignment(interval);
                 int index = parent.indexOf(interval);
@@ -183,8 +185,9 @@ public class LayoutPainter implements LayoutConstants {
                 }
                 paintAlignment(g, interval, dimension, lastAlignment);
             }
-            interval = interval.getParent();
-        }
+            interval = parent;
+            parent = interval.getParent();
+        } while (parent != null);
     }
 
     private void paintUnplacedWarningImage(Graphics2D g, LayoutComponent comp) {
@@ -535,8 +538,12 @@ public class LayoutPainter implements LayoutConstants {
             Collection<GapInfo> gaps = (cached != null) ? cached : new LinkedList<GapInfo>();
             Map<LayoutInterval, GapInfo> gapMap = null;
             for (LayoutComponent comp : componentsOfPaintedGaps) {
+                Collection<GapInfo> componentGaps = visualState.getComponentGaps(comp);
+                if (componentGaps == null) {
+                    continue; // bug #224531 workaround, maybe the component's container not built yet after move?
+                }
                 boolean cachedUpToDate = false;
-                for (GapInfo gapInfo : visualState.getComponentGaps(comp)) {
+                for (GapInfo gapInfo : componentGaps) {
                     if (cached != null && gapInfo.paintRect != null) {
                         cachedUpToDate = true;
                         break; // everything is up-to-date
