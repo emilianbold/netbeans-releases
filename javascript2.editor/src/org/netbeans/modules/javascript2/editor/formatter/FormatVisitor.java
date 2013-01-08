@@ -41,31 +41,31 @@
  */
 package org.netbeans.modules.javascript2.editor.formatter;
 
-import com.oracle.nashorn.ir.AccessNode;
-import com.oracle.nashorn.ir.BinaryNode;
-import com.oracle.nashorn.ir.Block;
-import com.oracle.nashorn.ir.CallNode;
-import com.oracle.nashorn.ir.CaseNode;
-import com.oracle.nashorn.ir.CatchNode;
-import com.oracle.nashorn.ir.DoWhileNode;
-import com.oracle.nashorn.ir.ForNode;
-import com.oracle.nashorn.ir.FunctionNode;
-import com.oracle.nashorn.ir.IdentNode;
-import com.oracle.nashorn.ir.IfNode;
-import com.oracle.nashorn.ir.LiteralNode;
-import com.oracle.nashorn.ir.Node;
-import com.oracle.nashorn.ir.ObjectNode;
-import com.oracle.nashorn.ir.PropertyNode;
-import com.oracle.nashorn.ir.ReferenceNode;
-import com.oracle.nashorn.ir.SwitchNode;
-import com.oracle.nashorn.ir.TernaryNode;
-import com.oracle.nashorn.ir.TryNode;
-import com.oracle.nashorn.ir.UnaryNode;
-import com.oracle.nashorn.ir.VarNode;
-import com.oracle.nashorn.ir.WhileNode;
-import com.oracle.nashorn.ir.WithNode;
-import com.oracle.nashorn.ir.visitor.NodeVisitor;
-import com.oracle.nashorn.parser.TokenType;
+import jdk.nashorn.internal.ir.AccessNode;
+import jdk.nashorn.internal.ir.BinaryNode;
+import jdk.nashorn.internal.ir.Block;
+import jdk.nashorn.internal.ir.CallNode;
+import jdk.nashorn.internal.ir.CaseNode;
+import jdk.nashorn.internal.ir.CatchNode;
+import jdk.nashorn.internal.ir.DoWhileNode;
+import jdk.nashorn.internal.ir.ForNode;
+import jdk.nashorn.internal.ir.FunctionNode;
+import jdk.nashorn.internal.ir.IdentNode;
+import jdk.nashorn.internal.ir.IfNode;
+import jdk.nashorn.internal.ir.LiteralNode;
+import jdk.nashorn.internal.ir.Node;
+import jdk.nashorn.internal.ir.ObjectNode;
+import jdk.nashorn.internal.ir.PropertyNode;
+import jdk.nashorn.internal.ir.ReferenceNode;
+import jdk.nashorn.internal.ir.SwitchNode;
+import jdk.nashorn.internal.ir.TernaryNode;
+import jdk.nashorn.internal.ir.TryNode;
+import jdk.nashorn.internal.ir.UnaryNode;
+import jdk.nashorn.internal.ir.VarNode;
+import jdk.nashorn.internal.ir.WhileNode;
+import jdk.nashorn.internal.ir.WithNode;
+import jdk.nashorn.internal.ir.visitor.NodeVisitor;
+import jdk.nashorn.internal.parser.TokenType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -109,13 +109,15 @@ public class FormatVisitor extends NodeVisitor {
 
     @Override
     public Node enter(Block block) {
-        if ((block instanceof FunctionNode || isScript(block)
-                || block.getStart() < block.getFinish())) {
+        boolean isCaseNode = false;
+        if (block instanceof FunctionNode || isScript(block)
+                || caseNodes.contains(block) || !isVirtual(block)) {
 
             if (caseNodes.contains(block)) {
                 // if the block is real block it is reused down the ast tree
                 // so we need to remove it to be handled normally later
                 caseNodes.remove(block);
+                isCaseNode = true;
                 handleCaseBlock(block);
             } else if (isScript(block)) {
                 handleBlockContent(block);
@@ -125,7 +127,7 @@ public class FormatVisitor extends NodeVisitor {
         }
 
         if (block instanceof FunctionNode || isScript(block)
-                || block.getStart() != block.getFinish()) {
+                || isCaseNode || !isVirtual(block)) {
             return null;
         } else {
             return super.enter(block);
@@ -135,7 +137,7 @@ public class FormatVisitor extends NodeVisitor {
     @Override
     public Node leave(Block block) {
         if (block instanceof FunctionNode || isScript(block)
-                || block.getStart() != block.getFinish()) {
+                || !isVirtual(block)) {
             return null;
         } else {
             return super.leave(block);
@@ -178,7 +180,7 @@ public class FormatVisitor extends NodeVisitor {
         // within parens spaces
         int leftStart;
         Block body = doWhileNode.getBody();
-        if (body.getStart() == body.getFinish()) {
+        if (isVirtual(body)) {
             // unfortunately due to condition at the end of do-while
             // we have to care about virtual block
             List<Node> statements = body.getStatements();
@@ -192,7 +194,7 @@ public class FormatVisitor extends NodeVisitor {
         // mark space before left brace
         markSpacesBeforeBrace(doWhileNode.getBody(), FormatToken.Kind.BEFORE_DO_BRACE);
 
-        FormatToken whileToken = getPreviousToken(doWhileNode.getFinish(), JsTokenId.KEYWORD_WHILE);
+        FormatToken whileToken = getPreviousToken(getFinish(doWhileNode), JsTokenId.KEYWORD_WHILE);
         if (whileToken != null) {
             FormatToken beforeWhile = whileToken.previous();
             if (beforeWhile != null) {
@@ -266,7 +268,7 @@ public class FormatVisitor extends NodeVisitor {
         // mark space before left brace
         markSpacesBeforeBrace(body, FormatToken.Kind.BEFORE_IF_BRACE);
 
-        if (body.getStart() == body.getFinish()) {
+        if (isVirtual(body)) {
             handleVirtualBlock(body, FormatToken.Kind.AFTER_IF_START);
         } else {
             enter(body);
@@ -278,7 +280,7 @@ public class FormatVisitor extends NodeVisitor {
             // mark space before left brace
             markSpacesBeforeBrace(body, FormatToken.Kind.BEFORE_ELSE_BRACE);
 
-            if (body.getStart() == body.getFinish()) {
+            if (isVirtual(body)) {
                 // do the standard block related things
                 List<Node> statements = body.getStatements();
                 // there might be no statements when code is broken
@@ -313,7 +315,7 @@ public class FormatVisitor extends NodeVisitor {
         // mark space before left brace
         markSpacesBeforeBrace(body, FormatToken.Kind.BEFORE_WITH_BRACE);
 
-        if (body.getStart() == body.getFinish()) {
+        if (isVirtual(body)) {
             handleVirtualBlock(body, FormatToken.Kind.AFTER_WITH_START);
             return null;
         }
@@ -761,7 +763,7 @@ public class FormatVisitor extends NodeVisitor {
 
     private boolean handleWhile(WhileNode whileNode, FormatToken.Kind afterStart) {
         Block body = whileNode.getBody();
-        if (body.getStart() == body.getFinish()) {
+        if (isVirtual(body)) {
             handleVirtualBlock(body, afterStart);
             return true;
         }
@@ -810,7 +812,7 @@ public class FormatVisitor extends NodeVisitor {
     private void handleVirtualBlock(Block block, FormatToken.Kind indentationInc,
             FormatToken.Kind indentationDec, FormatToken.Kind afterBlock) {
 
-        assert block.getStart() == block.getFinish();
+        assert isVirtual(block) : block;
 
         boolean assertsEnabled = false;
         assert assertsEnabled = true;
@@ -920,12 +922,7 @@ public class FormatVisitor extends NodeVisitor {
                     skipped.accept(this);
                 }
 
-                Token token = getNextNonEmptyToken(getFinish(lastVarNode) - 1);
-                if (token != null && JsTokenId.OPERATOR_SEMICOLON == token.id()) {
-                    finish = ts.offset() + 1;
-                } else {
-                    finish = getFinish(lastVarNode);
-                }
+                finish = getFinish(lastVarNode);
             }
 
             // empty statement has start == finish
@@ -1199,7 +1196,7 @@ public class FormatVisitor extends NodeVisitor {
         // in case it is string literal.
         int start = node.getStart();
         long firstToken = node.getToken();
-        TokenType type = com.oracle.nashorn.parser.Token.descType(firstToken);
+        TokenType type = jdk.nashorn.internal.parser.Token.descType(firstToken);
         if (type.equals(TokenType.STRING) || type.equals(TokenType.ESCSTRING)) {
             start--;
         }
@@ -1212,7 +1209,7 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     private static int getFunctionStart(FunctionNode node) {
-        return com.oracle.nashorn.parser.Token.descPosition(node.getFirstToken());
+        return jdk.nashorn.internal.parser.Token.descPosition(node.getFirstToken());
     }
 
     private int getFinish(Node node) {
@@ -1222,18 +1219,29 @@ public class FormatVisitor extends NodeVisitor {
             FunctionNode function = (FunctionNode) node;
             if (node.getStart() == node.getFinish()) {
                 long lastToken = function.getLastToken();
-                int finish = node.getStart() + com.oracle.nashorn.parser.Token.descPosition(lastToken)
-                        + com.oracle.nashorn.parser.Token.descLength(lastToken);
+                int finish = node.getStart() + jdk.nashorn.internal.parser.Token.descPosition(lastToken)
+                        + jdk.nashorn.internal.parser.Token.descLength(lastToken);
                 // check if it is a string
-                if (com.oracle.nashorn.parser.Token.descType(lastToken).equals(TokenType.STRING)) {
+                if (jdk.nashorn.internal.parser.Token.descType(lastToken).equals(TokenType.STRING)) {
                     finish++;
                 }
                 return finish;
             } else {
                 return node.getFinish();
             }
+        } else if (node instanceof VarNode) {
+            Token token = getNextNonEmptyToken(getFinishFixed(node) - 1);
+            if (token != null && JsTokenId.OPERATOR_SEMICOLON == token.id()) {
+                return ts.offset() + 1;
+            } else {
+                return getFinishFixed(node);
+            }
         }
 
+        return getFinishFixed(node);
+    }
+
+    private int getFinishFixed(Node node) {
         // All this magic is because nashorn nodes and tokens don't contain the
         // quotes for string. Due to this we call this method to add 1 to finish
         // in case it is string literal.
@@ -1250,9 +1258,15 @@ public class FormatVisitor extends NodeVisitor {
         return finish;
     }
 
-    private boolean isScript(Node node) {
+    private static boolean isScript(Node node) {
         return (node instanceof FunctionNode)
                 && ((FunctionNode) node).getKind() == FunctionNode.Kind.SCRIPT;
+    }
+
+    private boolean isVirtual(Block block) {
+        return block.getStart() == block.getFinish()
+                    || jdk.nashorn.internal.parser.Token.descType(block.getToken()) != TokenType.LBRACE
+                    || block.isCatchBlock();
     }
 
     @CheckForNull

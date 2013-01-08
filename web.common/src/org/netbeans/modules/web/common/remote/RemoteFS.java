@@ -115,12 +115,15 @@ public class RemoteFS extends AbstractFileSystem {
     }
     
     private FileObject getDelegateFor(String name) {
+        return getDelegateFor(name, true);
+    }
+    private FileObject getDelegateFor(String name, boolean asynchronous) {
         URL url = getURLforName(name);
         if (url == null) {
             return null;
         }
         try {
-            return RemoteFilesCache.getDefault().getRemoteFile(url);
+            return RemoteFilesCache.getDefault().getRemoteFile(url, asynchronous);
         } catch (IOException ex) {
             return null;
         }
@@ -218,7 +221,7 @@ public class RemoteFS extends AbstractFileSystem {
 
         @Override
         public long size(String name) {
-            FileObject fo = getDelegateFor(name);
+            FileObject fo = getDelegateFor(name, false);
             if (fo != null) {
                 return fo.getSize();
             } else {
@@ -228,7 +231,7 @@ public class RemoteFS extends AbstractFileSystem {
 
         @Override
         public InputStream inputStream(String name) throws FileNotFoundException {
-            FileObject fo = getDelegateFor(name);
+            FileObject fo = getDelegateFor(name, false);
             if (fo != null) {
                 return fo.getInputStream();
             } else {

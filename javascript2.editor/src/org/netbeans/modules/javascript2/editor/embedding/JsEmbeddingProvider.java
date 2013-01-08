@@ -774,8 +774,10 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         }
         if (start < text.length() && text.startsWith("<!--", start)) { //NOI18N
             int lineEnd = text.indexOf('\n', start); //NOI18N
-            if (lineEnd != -1 && lineEnd < text.indexOf("-->", start)) { //NOI18N
-                embeddings.add(new EmbeddingPosition(sourceStart, start));
+            if (isHtmlCommentStartToSkip(text, start, lineEnd)) {
+                if (start > 0) {
+                    embeddings.add(new EmbeddingPosition(sourceStart, start));
+                }
                 lineEnd++; //skip the \n
                 sourceStart += lineEnd;
                 text = text.substring(lineEnd);
@@ -790,6 +792,20 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
             embeddings.add(new EmbeddingPosition(sourceStart + match.start(), match.group().length()));
         }
         return embeddings;
+    }
+
+    private static boolean isHtmlCommentStartToSkip(String text, int start, int lineEnd) {
+        if (lineEnd != -1) {
+            // issue #223883 - one of suggested constructs: http://lachy.id.au/log/2005/05/script-comments (Example 4)
+            if (text.startsWith("<!--//-->", start)) { //NOI18N
+                return true;
+            } else {
+                //    embedded delimiter - issue #217081 || one line comment - issue #223883
+                return (text.indexOf("-->", start) == -1 || lineEnd < text.indexOf("-->", start)); //NOI18N
+            }
+        } else {
+            return false;
+        }
     }
 
     private static final class JsAnalyzerState {

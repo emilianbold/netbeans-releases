@@ -65,7 +65,7 @@ public class InspectionTest extends GeneralHTMLProject {
                 "testBasicInspection",
                 "testMultipleSelect",
                 "testEditNumberedProperty",
-                "testCSSStylesAfterSave",
+                "testStylesAfterSave",
                 "testStylesAfterSaveWithInsp",
                 "testHighlightedElements",
                 "testInspectionFromNavigator",

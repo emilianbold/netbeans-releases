@@ -1192,6 +1192,14 @@ class LayoutFeeder implements LayoutConstants {
                 }
             }
             if (iDesc1.snappedParallel != null) {
+                if (iDesc1.snappedParallel.getParent() == null && iDesc1.snappedParallel.getSubIntervalCount() == 0
+                        && iDesc1 == originalInclusion1) {
+                    // Attempt to workaround bug #222436. The assumption is it might happen during resizing
+                    // a component: the fixed edge was aligned in parallel with some parent and this parent
+                    // got optimized out somewhere during adding the component. We can determine the align-with
+                    // interval again from the original position.
+                    iDesc1.snappedParallel = LayoutPosition.getInclusionFromOriginal(originalPosition, dimension, iDesc1.alignment).snappedParallel;
+                }
                 alignInParallel(getAlignRep(added, iDesc1.alignment), iDesc1.snappedParallel, iDesc1.alignment);
             }
         }
@@ -1255,6 +1263,12 @@ class LayoutFeeder implements LayoutConstants {
         assert iDesc2 == null || (iDesc1.parent == iDesc2.parent
                                   && iDesc1.newSubGroup == iDesc2.newSubGroup
                                   && iDesc1.neighbor == iDesc2.neighbor);
+        LayoutInterval root = dragger.getTargetRoots()[dimension];
+        checkRoot(iDesc1.parent, root, null, dimension);
+        checkRoot(iDesc1.snappedParallel, root, iDesc1.parent, dimension);
+        if (iDesc2 != null) {
+            checkRoot(iDesc2.snappedParallel, root, iDesc2.parent, dimension);
+        }
 
         LayoutInterval parent = iDesc1.parent;
         LayoutInterval seq = null;
@@ -1313,6 +1327,7 @@ class LayoutFeeder implements LayoutConstants {
         assert iDesc1.alignment >= 0 || iDesc2 == null;
         assert iDesc2 == null || iDesc2.alignment == (iDesc1.alignment^1);
         assert parent.isParallel();
+        checkRoot(parent, root, iDesc1.parent, dimension);
 
         LayoutInterval[] outBounds = new LayoutInterval[2]; // outermost boundary intervals (not gaps)
         boolean[] span = new boolean[2]; // [what it really is??]
@@ -1379,10 +1394,12 @@ class LayoutFeeder implements LayoutConstants {
                     if (seq.getParent() == null) {
                         layoutModel.addInterval(seq, parent, -1); // temporary
                         parent = separateSequence(seq, i, iDesc1, iDesc2);
+                        checkRoot(parent, root, iDesc1.parent, dimension);
                         layoutModel.removeInterval(seq);
                         expanded[i] = true;
                     } else {
                         parent = separateSequence(seq, i, iDesc1, iDesc2);
+                        checkRoot(parent, root, iDesc1.parent, dimension);
                         expanded[i] = true;
                     }
                 } else if (subseq && iDesc1.parent.getParent().getParent() != null
@@ -1393,7 +1410,9 @@ class LayoutFeeder implements LayoutConstants {
                     LayoutInterval p = separateSequence(iDesc1.parent, i, iDesc1, iDesc2);
                     if (parent.getSubIntervalCount() == 0 && parent.getParent() == null) {
                         parent = p; // optimized out during the operation
+                        checkRoot(parent, root, iDesc1.parent, dimension);
                     } else {
+                        checkRoot(parent, root, iDesc1.parent, dimension);
                         int outPos = p.getCurrentSpace().positions[dimension][i];
                         int size = (outPos - parent.getCurrentSpace().positions[dimension][i]) * (i==LEADING ? -1:1);
                         if (size > 0 && LayoutInterval.getEffectiveAlignmentInParent(parent, p, i) == i) {
@@ -1514,6 +1533,8 @@ class LayoutFeeder implements LayoutConstants {
             boolean minorGap = false;
             boolean noMinPadding = false;
             LayoutInterval otherPar = otherDesc != null ? otherDesc.snappedParallel : null;
+            checkRoot(parent, root, iDesc1.parent, dimension);
+            checkRoot(otherPar, root, iDesc1.parent, dimension);
             if (!aligned && neighbors[i] == null) { // at the end of the sequence
                 if (originalGap == null) {
                     if (outerNeighbor != null && outerNeighbor.isEmptySpace()) {
@@ -1676,6 +1697,7 @@ class LayoutFeeder implements LayoutConstants {
                             && !parent.isParentOf(outBounds[i^1])) {
                         // should not close open group by making a resizing sequence
                         parent = separateSequence(seq, i^1, iDesc1, iDesc2);
+                        checkRoot(parent, root, iDesc1.parent, dimension);
                         if (i == TRAILING) {
                             edges++; // we need to revisit the LEADING gap
                         }
@@ -1691,7 +1713,9 @@ class LayoutFeeder implements LayoutConstants {
                         LayoutInterval p = separateSequence(iDesc1.parent, i^1, iDesc1, iDesc2);
                         if (parent.getSubIntervalCount() == 0 && parent.getParent() == null) {
                             parent = p; // optimized out during the operation
+                            checkRoot(parent, root, iDesc1.parent, dimension);
                         } else {
+                            checkRoot(parent, root, iDesc1.parent, dimension);
                             setCurrentPositionToParent(parent, p, dimension, i^1);
                         }
                         if (i == TRAILING) {
@@ -1722,6 +1746,7 @@ class LayoutFeeder implements LayoutConstants {
 
         if (seq.getParent() == null) { // newly created sequence
             assert seq.getSubIntervalCount() == 0;
+            checkRoot(parent, root, iDesc1.parent, dimension);
             if (gaps[LEADING] == null && gaps[TRAILING] == null) { // after all, the sequence is not needed
                 layoutModel.setIntervalAlignment(addingInterval, seq.getAlignment());
                 layoutModel.addInterval(addingInterval, parent, -1);
@@ -1762,6 +1787,17 @@ class LayoutFeeder implements LayoutConstants {
         }
         if (gaps[TRAILING] != null) {
             layoutModel.addInterval(gaps[TRAILING], seq, index);
+        }
+    }
+
+    private static void checkRoot(LayoutInterval interval, LayoutInterval expectedRoot, LayoutInterval originalParent, int dim) {
+        if (interval != null && LayoutInterval.getRoot(interval) != expectedRoot) {
+            System.err.println(LayoutPersistenceManager.dumpInterval(null, interval, dim, 2));
+            System.err.println(LayoutPersistenceManager.dumpInterval(null, expectedRoot, dim, 2));
+            if (originalParent != null) {
+                System.err.println(LayoutPersistenceManager.dumpInterval(null, originalParent, dim, 2));
+            }
+            throw new IllegalStateException("Interval lost from root, please report this exception. Related to bug 222703."); // NOI18N
         }
     }
 
@@ -3175,7 +3211,8 @@ class LayoutFeeder implements LayoutConstants {
                         }
                     }
                 }
-                for (LayoutComponent middleComp : VisualState.getComponentsInRegion(dragger.getTargetContainer(), middleSpace)) {
+                for (LayoutComponent middleComp : VisualState.getComponentsInRegion(
+                        dragger.getTargetContainer(), dragger.getTargetRoots(), middleSpace)) {
                     if (LayoutUtils.isOverlapPreventedInOtherDimension(interval, middleComp.getLayoutInterval(dimension), dimension)) {
                         return false;
                     }

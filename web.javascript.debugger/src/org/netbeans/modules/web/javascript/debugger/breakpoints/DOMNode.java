@@ -43,6 +43,8 @@ package org.netbeans.modules.web.javascript.debugger.breakpoints;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -50,10 +52,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.web.webkit.debugging.api.dom.DOM;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
+import org.netbeans.modules.web.webkit.debugging.api.dom.Node.Attribute;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -70,6 +75,7 @@ public final class DOMNode {
     private static final Logger LOG = Logger.getLogger(DOMNode.class.getName());
     private static final char ETX = 0x0003;
     private final List<NodeId> path;
+    private final String id;
     
     private transient DOM dom;
     private transient Node node;
@@ -80,9 +86,25 @@ public final class DOMNode {
     
     private DOMNode(List<NodeId> path) {
         this.path = path;
+        this.id = null;
+    }
+    
+    private DOMNode(String id) {
+        this.path = null;
+        this.id = id;
     }
     
     public static DOMNode create(Node node) {
+        Attribute id = node.getAttribute("id");
+        if (id != null) {
+            String idValue = id.getValue();
+            DOMNode dn = new DOMNode(idValue);
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("new DOMNode(#"+idValue+") created from "+node);
+            }
+            return dn;
+        }
+        // No id, remember the DOM three path
         List<NodeId> path = new LinkedList<NodeId>();
         Node parent = node.getParent();
         Node origNode = node;
@@ -133,6 +155,14 @@ public final class DOMNode {
     }
     
     public static DOMNode create(org.openide.nodes.Node node) {
+        String idValue = tryGetID(node);
+        if (idValue != null) {
+            DOMNode dn = new DOMNode(idValue);
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("new DOMNode("+idValue+") created from "+node);
+            }
+            return dn;
+        }
         List<NodeId> path = new LinkedList<NodeId>();
         org.openide.nodes.Node parent = node.getParentNode();
         org.openide.nodes.Node origNode = node;
@@ -154,6 +184,24 @@ public final class DOMNode {
             LOG.fine("new DOMNode("+dn.getNodePathNames()+") created from "+origNode);
         }
         return dn;
+    }
+    
+    private static String tryGetID(org.openide.nodes.Node node) {
+        // TODO: Request API to be able to access org.netbeans.modules.html.navigator.Description from the Node's lookup
+        // Reading attributes from HTMLElementNode
+        try {
+            Field sourceField = node.getClass().getDeclaredField("source");
+            sourceField.setAccessible(true);
+            Object source = sourceField.get(node);
+            Method getAttributes = source.getClass().getDeclaredMethod("getAttributes");
+            getAttributes.setAccessible(true);
+            Object attributesObj = getAttributes.invoke(source);
+            Map<String, String> attributes = (Map<String, String>) attributesObj;
+            return attributes.get("id");
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
     }
     
     /**
@@ -184,6 +232,14 @@ public final class DOMNode {
         }
         if (stringDefinition.charAt(stringDefinition.length() - 1) != ']') {
             throw new IllegalArgumentException("Missing closing bracket in '"+stringDefinition+"'");
+        }
+        if (stringDefinition.startsWith("[#")) {
+            String id = stringDefinition.substring(2, stringDefinition.length() - 1);
+            DOMNode dn = new DOMNode(id);
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("new DOMNode("+id+") created from "+stringDefinition);
+            }
+            return dn;
         }
         int n = stringDefinition.length() - 1;
         List<NodeId> path = new LinkedList<NodeId>();
@@ -216,6 +272,14 @@ public final class DOMNode {
      * @return 
      */
     private static DOMNode createFromPathNames(String pathNames) {
+        if (pathNames.startsWith("#")) {
+            String id = pathNames.substring(1);
+            DOMNode dn = new DOMNode(id);
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("new DOMNode("+id+") created from "+pathNames);
+            }
+            return dn;
+        }
         List<NodeId> path = new LinkedList<NodeId>();
         int i1 = 0;
         do {
@@ -253,12 +317,17 @@ public final class DOMNode {
      */
     public String getStringDefinition() {
         StringBuilder sb = new StringBuilder("[");
-        synchronized (path) {
-            for (NodeId n : path) {
-                sb.append(n.name);
-                sb.append(ETX);
-                sb.append(n.childNumber);
-                sb.append(',');
+        if (id != null) {
+            sb.append("#");
+            sb.append(id);
+        } else {
+            synchronized (path) {
+                for (NodeId n : path) {
+                    sb.append(n.name);
+                    sb.append(ETX);
+                    sb.append(n.childNumber);
+                    sb.append(',');
+                }
             }
         }
         sb.append(']');
@@ -266,10 +335,17 @@ public final class DOMNode {
     }
     
     public String getNodeName() {
-        return path.get(path.size() - 1).name;
+        if (id != null) {
+            return "#" + id;
+        } else {
+            return path.get(path.size() - 1).name;
+        }
     }
     
     public String getNodePathNames() {
+        if (id != null) {
+            return "#" + id;
+        }
         StringBuilder sb = new StringBuilder();
         for (NodeId ni : path) {
             sb.append(ni.name);
@@ -286,11 +362,18 @@ public final class DOMNode {
     }
     
     public List<? extends NodeId> getPath() {
+        if (path == null) {
+            return null;
+        }
         List<NodeId> thePath;
         synchronized (path) {
             thePath = new ArrayList<NodeId>(path);
         }
         return Collections.unmodifiableList(thePath);
+    }
+    
+    public String getID() {
+        return id;
     }
     
     /**
@@ -312,19 +395,37 @@ public final class DOMNode {
     }
     
     private void createNodePath() throws PathNotFoundException {
-        int n = path.size();
-        nodePath = new ArrayList<Node>(n);
-        this.node = null;
         Node node;
+        DOM theDOM;
         synchronized (this) {
             if (dom == null) {
                 return ;
             }
+            theDOM = dom;
             node = dom.getDocument();
         }
         if (node == null) {
-            throw new PathNotFoundException(path.get(0).name, 0, getNodePathNames());
+            if (path != null) {
+                throw new PathNotFoundException(path.get(0).name, 0, getNodePathNames());
+            } else {
+                throw new PathNotFoundException(id, 0, getNodePathNames());
+            }
         }
+        if (id != null) {
+            node = theDOM.querySelector(node, "#" + id);
+            if (node == null) {
+                throw new PathNotFoundException(id, 0, getNodePathNames());
+            } else {
+                this.node = node;
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("createNodePath() succesfully set node = "+node+" for ID = "+id);
+                }
+                return ;
+            }
+        }
+        int n = path.size();
+        nodePath = new ArrayList<Node>(n);
+        this.node = null;
         Node parent = null;
         for (int i = 0; i < n; i++) {
             NodeId ni = path.get(i);
@@ -409,8 +510,10 @@ public final class DOMNode {
         if (dom == null) {
             return;
         }
-        dom.removeListener(domListener);
-        domListener = null;
+        if (domListener != null) {
+            dom.removeListener(domListener);
+            domListener = null;
+        }
         dom = null;
         node = null;
         nodePath = null;
@@ -487,7 +590,7 @@ public final class DOMNode {
 
         @Override
         public void childNodesSet(Node parent) {
-            LOG.fine("DOM childNodesSet("+parent+")");
+            LOG.fine("DOM childNodesSet("+parent+" ["+parent.getNodeName()+":"+parent.getNodeValue()+"])");
             RP.post(new Notify(NOTIFY_TYPE.CHILDREN_SET, parent));
         }
         
@@ -497,7 +600,7 @@ public final class DOMNode {
             Node newNode;
             synchronized(DOMNode.this) {
                 oldNode = newNode = node;
-                if (node == null) {
+                if (node == null || id != null) {
                     // In process of searching for the node...
                     try {
                         createNodePath();
@@ -531,6 +634,9 @@ public final class DOMNode {
         @Override
         public void childNodeRemoved(Node parent, Node child) {
             LOG.fine("DOM childNodesRemoved("+parent+", "+child+")");
+            if (id != null) {
+                return ;
+            }
             RP.post(new Notify(NOTIFY_TYPE.CHILD_REMOVED, parent, child));
         }
         
@@ -565,7 +671,10 @@ public final class DOMNode {
 
         @Override
         public void childNodeInserted(Node parent, Node child) {
-            LOG.fine("DOM childNodesInserted("+parent+", "+child+")");
+            LOG.fine("DOM childNodesInserted("+parent+", "+child+" ["+child.getNodeName()+":"+child.getNodeValue()+"])");
+            if (id != null) {
+                return ;
+            }
             RP.post(new Notify(NOTIFY_TYPE.CHILD_INSERTED, parent, child));
         }
         
