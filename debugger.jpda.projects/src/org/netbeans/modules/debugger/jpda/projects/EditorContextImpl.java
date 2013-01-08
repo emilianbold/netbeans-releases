@@ -220,6 +220,8 @@ public class EditorContextImpl extends EditorContext {
         if ("true".equalsIgnoreCase(fronting)) {
             if (reuseEditorTabs) {
                 l.show (ShowOpenType.REUSE, ShowVisibilityType.FOCUS);
+            } else {
+                l.show (ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
             }
             l.show (ShowOpenType.OPEN, ShowVisibilityType.FRONT); //FIX 47825
         } else {
