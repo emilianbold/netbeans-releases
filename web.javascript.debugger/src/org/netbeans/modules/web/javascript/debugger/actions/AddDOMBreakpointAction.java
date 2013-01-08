@@ -67,6 +67,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.actions.NodeAction;
 
 /**
@@ -91,7 +92,8 @@ public class AddDOMBreakpointAction extends NodeAction {
 
     @Override
     public JMenuItem getPopupPresenter() {
-        Node[] nodes = getActivatedNodes();
+        //Node[] nodes = getActivatedNodes();  // Contains old nodes when changing focus by the right-click.
+        Node[] nodes = Utilities.actionsGlobalContext().lookupAll(Node.class).toArray(new Node[] {});
         return new PopupPresenter(nodes, enable(nodes));
     }
     
