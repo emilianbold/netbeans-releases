@@ -129,6 +129,14 @@ public class GspBracesMatcher implements BracesMatcher {
                     matchingTokenId = findClosingToken(tokenSequence, GspTokenId.COMMENT_JSP_STYLE_START, GspTokenId.COMMENT_JSP_STYLE_END, null); break;
                 case COMMENT_JSP_STYLE_END:
                     matchingTokenId = findOpeningToken(tokenSequence, GspTokenId.COMMENT_JSP_STYLE_START, GspTokenId.COMMENT_JSP_STYLE_END); break;
+                case COMMENT_GSP_STYLE_START:
+                    matchingTokenId = findClosingToken(tokenSequence, GspTokenId.COMMENT_GSP_STYLE_START, GspTokenId.COMMENT_GSP_STYLE_END, null); break;
+                case COMMENT_GSP_STYLE_END:
+                    matchingTokenId = findOpeningToken(tokenSequence, GspTokenId.COMMENT_GSP_STYLE_START, GspTokenId.COMMENT_GSP_STYLE_END); break;
+                case COMMENT_HTML_STYLE_START:
+                    matchingTokenId = findClosingToken(tokenSequence, GspTokenId.COMMENT_HTML_STYLE_START, GspTokenId.COMMENT_HTML_STYLE_END, null); break;
+                case COMMENT_HTML_STYLE_END:
+                    matchingTokenId = findOpeningToken(tokenSequence, GspTokenId.COMMENT_HTML_STYLE_START, GspTokenId.COMMENT_HTML_STYLE_END); break;
                 default:
                     return null;
 
