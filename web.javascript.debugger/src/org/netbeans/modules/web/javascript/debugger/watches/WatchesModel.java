@@ -133,13 +133,15 @@ public final class WatchesModel extends VariablesModel implements TreeModelFilte
                 return true;
             }
             ScopedRemoteObject sro = evaluateWatch(frame, (Watch)node);
-            RemoteObject var = sro.getRemoteObject();
-            if (var.getType() == RemoteObject.Type.OBJECT) {
-                if (var.hasFetchedProperties()) {
-                    return var.getProperties().isEmpty();
-                } else {
-                    updateNodeOnBackground(node, var);
-                    return true;
+            if (sro != null) {
+                RemoteObject var = sro.getRemoteObject();
+                if (var.getType() == RemoteObject.Type.OBJECT) {
+                    if (var.hasFetchedProperties()) {
+                        return var.getProperties().isEmpty();
+                    } else {
+                        updateNodeOnBackground(node, var);
+                        return true;
+                    }
                 }
             }
             return true;

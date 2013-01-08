@@ -66,7 +66,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.ErrorManager;
-import org.openide.util.Mutex.Action;
 import org.openide.util.RequestProcessor;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Element;
@@ -114,6 +113,8 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
      */
     private boolean openProjectsListening;
     
+    private boolean keepOpenProjectsBookmarksLoaded;
+    
     private BookmarksPersistence() {
         activeProjects = new HashSet<Project>();
         lastOpenProjects = new ArrayList<Project>();
@@ -130,6 +131,7 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
         boolean listening;
         synchronized (lastOpenProjects) {
             listening = openProjectsListening;
+            openProjectsListening = true;
         }
         if (!listening) {
             // Ensure projects will be loaded before processing other bookmark-related tasks
@@ -145,17 +147,16 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
                     } catch (ExecutionException ex) {
                         // Stay silent. Exceptions.printStackTrace(ex);
                     }
+
+                    // Start listening on open projects
+                    OpenProjects openProjects = OpenProjects.getDefault();
+                    List<Project> projects = Arrays.asList(openProjects.getOpenProjects());
+                    synchronized (lastOpenProjects) {
+                        lastOpenProjects.addAll(projects);
+                    }
+                    openProjects.addPropertyChangeListener(BookmarksPersistence.this);
                 }
             });
-            
-            // Start listening on open projects
-            OpenProjects openProjects = OpenProjects.getDefault();
-            List<Project> projects = Arrays.asList(openProjects.getOpenProjects());
-            synchronized (lastOpenProjects) {
-                lastOpenProjects.addAll(projects);
-                openProjectsListening = true;
-            }
-            openProjects.addPropertyChangeListener(this);
         }
 
         return RP.post(run);
@@ -164,6 +165,7 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
     public void endProjectsListening() {
         boolean listening;
         synchronized (lastOpenProjects) {
+            keepOpenProjectsBookmarksLoaded = false;
             listening = openProjectsListening;
         }
         if (listening) {
@@ -185,7 +187,7 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
                     } finally {
                         lockedBookmarkManager.unlock();
                     }
-                    synchronized (activeProjects) {
+                    synchronized (lastOpenProjects) {
                         activeProjects.clear();
                     }
                 }
@@ -199,6 +201,31 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
         }
     }
 
+    void keepOpenProjectsBookmarksLoaded() {
+        synchronized (lastOpenProjects) {
+            keepOpenProjectsBookmarksLoaded = true;
+        }
+        // Post task to ensure open projects listening (and load currently opened projects)
+        postTask(new Runnable() {
+            @Override
+            public void run() {
+                loadBookmarksUnderLock(lastOpenProjects());
+            }
+        });
+    }
+
+    private void loadBookmarksUnderLock(List<Project> prjs) {
+        BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+        try {
+            for (Project project : prjs) {
+                // Force project's bookmarks loading
+                lockedBookmarkManager.getProjectBookmarks(project, true, true);
+            }
+        } finally {
+            lockedBookmarkManager.unlock();
+        }
+    }
+    
     private void checkRPThread() {
         assert (RP.isRequestProcessorThread()) : "Not a dedicated RequestProcessor thread."; // NOI18N
     }
@@ -380,6 +407,9 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
         if (!projectBookmarks.isModified()) {
             return;
         }
+        if (!projectBookmarks.isLoaded()) { // saving of bookmarks done synchronously => check that loading finished
+            return;
+        }
 
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "Saving bookmarks for project={0} ...\n", projectBookmarks.getProjectURI());
@@ -467,20 +497,31 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
                     List<Project> openProjects = Arrays.asList(OpenProjects.getDefault().getOpenProjects());
                     // lastOpenProjects will contain the just closed projects
                     List<Project> projectsToSave;
-                    synchronized (activeProjects) {
+                    boolean keepLoaded;
+                    synchronized (lastOpenProjects) {
                         lastOpenProjects.removeAll(openProjects);
                         projectsToSave = new ArrayList<Project>(lastOpenProjects);
                         lastOpenProjects.clear();
                         lastOpenProjects.addAll(openProjects);
+                        keepLoaded = keepOpenProjectsBookmarksLoaded;
+                    }
 
-                        for (Project p : projectsToSave) {
-                            ProjectBookmarks projectBookmarks = lockedBookmarkManager.getProjectBookmarks(p, false, false);
-                            if (projectBookmarks != null && !projectBookmarks.hasActiveClients()) {
-                                saveProjectBookmarks(p, projectBookmarks); // Write into private.xml under project's mutex acquired
-                                // Releasing currently disabled (open projects change e.g. at startup so releasing is undesirable in such case)
-                                // lockedBookmarkManager.releaseProjectBookmarks(projectBookmarks);
-                            }
+                    for (Project p : projectsToSave) {
+                        ProjectBookmarks projectBookmarks = lockedBookmarkManager.getProjectBookmarks(p, false, false);
+                        if (projectBookmarks != null && !projectBookmarks.hasActiveClients()) {
+                            saveProjectBookmarks(p, projectBookmarks); // Write into private.xml under project's mutex acquired
+                            // Releasing currently disabled (open projects change e.g. at startup so releasing is undesirable in such case)
+                            // lockedBookmarkManager.releaseProjectBookmarks(projectBookmarks);
                         }
+                    }
+                    if (keepLoaded) {
+                        postTask(new Runnable() {
+                            @Override
+                            public void run() {
+                                // Use 
+                                loadBookmarksUnderLock(lastOpenProjects());
+                            }
+                        });
                     }
                 }
             });
@@ -491,7 +532,7 @@ public class BookmarksPersistence implements PropertyChangeListener, Runnable {
 
     @Override
     public void propertyChange (PropertyChangeEvent evt) {
-        BookmarkUtils.postTask(this);
+        postTask(this);
     }
 
     @Override

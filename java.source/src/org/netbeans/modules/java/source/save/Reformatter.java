@@ -1501,8 +1501,22 @@ public class Reformatter implements ReformatTask {
         @Override
         public Boolean visitMemberSelect(MemberSelectTree node, Void p) {
             scan(node.getExpression(), p);
-            accept(DOT);
-            accept(IDENTIFIER, STAR, THIS, SUPER, CLASS);
+            if (ERROR.contentEquals(node.getIdentifier())) {
+                do {
+                    if (tokens.offset() >= endPos)
+                        break;
+                    int len = tokens.token().length();
+                    if (tokens.token().id() == WHITESPACE && tokens.offset() + len >= endPos)
+                        break;
+                    col += len;
+                } while (tokens.moveNext());
+                lastBlankLines = -1;
+                lastBlankLinesTokenIndex = -1;
+                lastBlankLinesDiff = null;
+            } else {
+                accept(DOT);
+                accept(IDENTIFIER, STAR, THIS, SUPER, CLASS);
+            }
             return true;
         }
 
