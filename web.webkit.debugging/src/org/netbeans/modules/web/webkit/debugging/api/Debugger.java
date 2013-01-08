@@ -170,6 +170,9 @@ public final class Debugger {
         webkit.getCSS().disable();
         transport.sendCommand(new Command(COMMAND_DISABLE));
         enabled = false;
+        suspended = false;
+        currentCallStack.clear();
+        currentCallFrame = null;
         initDOMLister = true;
     }
 
