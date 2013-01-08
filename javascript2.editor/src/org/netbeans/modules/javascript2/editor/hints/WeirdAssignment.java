@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.javascript2.editor.hints;
 
-import com.oracle.nashorn.ir.BinaryNode;
-import com.oracle.nashorn.ir.FunctionNode;
-import com.oracle.nashorn.ir.Node;
+import jdk.nashorn.internal.ir.BinaryNode;
+import jdk.nashorn.internal.ir.FunctionNode;
+import jdk.nashorn.internal.ir.Node;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
