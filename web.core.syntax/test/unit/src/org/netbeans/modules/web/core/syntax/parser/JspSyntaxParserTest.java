@@ -304,6 +304,38 @@ public class JspSyntaxParserTest extends TestBase {
         testFile("case001.jsp");
     }
 
+     public void testScripting() {
+        String content = "prefix<% java %>postfix";
+        //                0123456789012345678901234567890
+        //                0         1          2        3
+        Result result = JspSyntaxParser.parse(content);
+
+        assertNotNull(result);
+
+        List<JspSyntaxElement> elements = result.elements();
+        assertNotNull(elements);
+
+        assertEquals(3, elements.size());
+
+        //first
+        JspSyntaxElement el = elements.get(0);
+        assertNotNull(el);
+        assertEquals(JspSyntaxElement.Kind.TEXT, el.kind());
+
+        //second - comment
+        el = elements.get(1);
+        assertNotNull(el);
+        assertEquals(JspSyntaxElement.Kind.SCRIPTING, el.kind());
+        assertEquals("<% java %>", el.text());
+        assertEquals(6, el.from());
+        assertEquals(16, el.to());
+
+        //third
+        el = elements.get(2);
+        assertNotNull(el);
+        assertEquals(JspSyntaxElement.Kind.TEXT, el.kind());
+    }
+    
     private void testFile(String testFile) throws Exception {
         FileObject source = getTestFile(DATA_DIR_BASE + testFile);
         BaseDocument doc = getDocument(source);
