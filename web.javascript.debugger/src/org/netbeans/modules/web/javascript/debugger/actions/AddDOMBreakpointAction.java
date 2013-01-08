@@ -141,9 +141,12 @@ public class AddDOMBreakpointAction extends NodeAction {
                 DOMBreakpoint[] domBreakpoints = findDOMBreakpoints();
                 for (int i = 0; i < activatedNodes.length; i++) {
                     Node node = activatedNodes[i];
-                    bind(items[0], node, DOMBreakpoint.Type.SUBTREE_MODIFIED, domBreakpoints);
-                    bind(items[1], node, DOMBreakpoint.Type.ATTRIBUTE_MODIFIED, domBreakpoints);
-                    bind(items[2], node, DOMBreakpoint.Type.NODE_REMOVED, domBreakpoints);
+                    final org.netbeans.modules.web.webkit.debugging.api.dom.Node domNode;
+                    domNode = node.getLookup().lookup(org.netbeans.modules.web.webkit.debugging.api.dom.Node.class);
+                    DOMBreakpoint db = findBreakpointOn(domNode, node, domBreakpoints);
+                    bind(items[0], node, DOMBreakpoint.Type.SUBTREE_MODIFIED, db, domNode);
+                    bind(items[1], node, DOMBreakpoint.Type.ATTRIBUTE_MODIFIED, db, domNode);
+                    bind(items[2], node, DOMBreakpoint.Type.NODE_REMOVED, db, domNode);
                 }
             }
         }
@@ -161,10 +164,8 @@ public class AddDOMBreakpointAction extends NodeAction {
     }
     
     private static void bind(final JCheckBoxMenuItem cmi, final Node node,
-                             final DOMBreakpoint.Type type, DOMBreakpoint[] domBreakpoints) {
-        final org.netbeans.modules.web.webkit.debugging.api.dom.Node domNode;
-        domNode = node.getLookup().lookup(org.netbeans.modules.web.webkit.debugging.api.dom.Node.class);
-        DOMBreakpoint db = findBreakpointOn(domNode, node, domBreakpoints);
+                             final DOMBreakpoint.Type type, DOMBreakpoint db,
+                             final org.netbeans.modules.web.webkit.debugging.api.dom.Node domNode) {
         if (db != null) {
             cmi.setSelected(db.getTypes().contains(type));
         }
