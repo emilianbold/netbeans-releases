@@ -1659,7 +1659,10 @@ public class JsFormatter implements Formatter {
                 if (!indentOnly) {
                     TokenSequence<? extends JsTokenId> inner = LexUtilities.getPositionedSequence(doc, ts.offset(), language);
                     // skip whitespaces and newlines
-                    Token<? extends JsTokenId> nextToken = LexUtilities.findNextNonWsNonComment(inner);
+                    Token<? extends JsTokenId> nextToken = null;
+                    if (inner != null) {
+                        nextToken = LexUtilities.findNextNonWsNonComment(inner);
+                    }
                     TokenId tokenId = nextToken == null ? null : nextToken.id();
                     if (tokenId == JsTokenId.BRACKET_RIGHT_CURLY) {
                         // if it is end of 'switch'

@@ -489,6 +489,10 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
 
         @Override
         public void propertyChange(final PropertyChangeEvent event) {
+            if (!eb.isEnabled()) {
+                super.propertyChange(event);
+                return ;
+            }
             if (SwingUtilities.isEventDispatchThread()) {
                 rp.post(new Runnable() {
                     @Override

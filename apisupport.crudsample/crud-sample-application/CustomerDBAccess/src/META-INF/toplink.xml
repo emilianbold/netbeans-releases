@@ -4,6 +4,7 @@
     <provider>oracle.toplink.essentials.PersistenceProvider</provider>
     <class>demo.DiscountCode</class>
     <class>demo.Customer</class>
+    <class>demo.MicroMarket</class>
     <properties>
       <property name="toplink.jdbc.user" value="app"/>
       <property name="toplink.jdbc.password" value="app"/>
