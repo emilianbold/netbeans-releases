@@ -199,7 +199,7 @@ public final class DOMNode {
             Map<String, String> attributes = (Map<String, String>) attributesObj;
             return attributes.get("id");
         } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+            LOG.log(Level.INFO, "Problem while getting id from node "+node+", class = "+node.getClass()+": "+ex.toString());
             return null;
         }
     }

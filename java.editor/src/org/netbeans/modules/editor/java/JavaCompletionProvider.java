@@ -1530,6 +1530,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case DOUBLE_LITERAL:
                     case FLOAT_LITERAL:
                     case FLOAT_LITERAL_INVALID:
+                    case LONG_LITERAL:
                     case ELLIPSIS:
                         if (ts.offset() != expEndPos || ts.token().text().charAt(0) != '.')
                             break;
@@ -4943,7 +4944,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                             offset = ts.offset();
                         } else if ((ts.token().id() == JavaTokenId.DOUBLE_LITERAL
                                 || ts.token().id() == JavaTokenId.FLOAT_LITERAL
-                                || ts.token().id() == JavaTokenId.FLOAT_LITERAL_INVALID)
+                                || ts.token().id() == JavaTokenId.FLOAT_LITERAL_INVALID
+                                || ts.token().id() == JavaTokenId.LONG_LITERAL)
                                 && ts.token().text().charAt(0) == '.') {
                             prefix = ts.token().text().toString().substring(1, len);
                             offset = ts.offset() + 1;

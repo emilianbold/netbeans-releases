@@ -54,6 +54,8 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.openide.modules.OnStop;
+import org.openide.util.RequestProcessor;
 
 /**
  * Listens on DebuggerManager and:
@@ -64,10 +66,15 @@ import org.netbeans.spi.debugger.DebuggerServiceRegistration;
  * @author ads
  */
 @DebuggerServiceRegistration(types=LazyDebuggerManagerListener.class)
-public class PersistenceManager extends  DebuggerManagerAdapter {
+@OnStop
+public class PersistenceManager extends  DebuggerManagerAdapter implements Runnable {
     public static final Logger LOGGER = Logger.getLogger(PersistenceManager.class.getName());
     private static final String DEBUGGER = "debugger";      // NOI18N
     private static final String JAVASCRIPT = "javascript-debugger";      // NOI18N
+    
+    private static final RequestProcessor RP = new RequestProcessor(PersistenceManager.class.getName());
+    
+    private RequestProcessor.Task saveTask;
 
     @Override
     public Breakpoint[] initBreakpoints() {
@@ -93,21 +100,24 @@ public class PersistenceManager extends  DebuggerManagerAdapter {
             DebuggerManager.PROP_BREAKPOINTS,
         };
     }
+    
+    private synchronized void scheduleSaveTask() {
+        if (saveTask == null) {
+            saveTask = RP.create(new Store());
+        }
+        saveTask.schedule(500);
+    }
 
     @Override
     public void breakpointAdded(Breakpoint breakpoint) {
-        Properties properties = Properties.getDefault().getProperties(DEBUGGER).
-            getProperties(DebuggerManager.PROP_BREAKPOINTS);
-        properties.setArray(JAVASCRIPT, getBreakpoints());
         breakpoint.addPropertyChangeListener(this);
+        scheduleSaveTask();
     }
 
     @Override
     public void breakpointRemoved(Breakpoint breakpoint) {
-        Properties properties = Properties.getDefault().getProperties(DEBUGGER).
-            getProperties(DebuggerManager.PROP_BREAKPOINTS);
-        properties.setArray( JAVASCRIPT,getBreakpoints());
         breakpoint.removePropertyChangeListener(this);
+        scheduleSaveTask();
     }
     
     @Override
@@ -117,21 +127,39 @@ public class PersistenceManager extends  DebuggerManagerAdapter {
          * This notification are got in the case changing this property.
          */
         if (evt.getSource() instanceof Breakpoint) {
-            Properties.getDefault().getProperties(DEBUGGER).
-                getProperties(DebuggerManager.PROP_BREAKPOINTS).setArray(
-                JAVASCRIPT,getBreakpoints());
+            scheduleSaveTask();
+        }
+    }
+    
+    @Override
+    // OnStop
+    public synchronized void run() {
+        if (saveTask != null) {
+            saveTask.waitFinished();
         }
     }
 
-    private Breakpoint[] getBreakpoints() {
-        Breakpoint[] bpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
-        List<Breakpoint> result = new ArrayList<Breakpoint>();
-        for ( Breakpoint breakpoint : bpoints ) {
-            // Don't store hidden breakpoints
-            if ( breakpoint instanceof AbstractBreakpoint) {
-                result.add( breakpoint );
-            }
+    private static class Store implements Runnable {
+        
+        private Properties properties = Properties.getDefault().getProperties(DEBUGGER).
+            getProperties(DebuggerManager.PROP_BREAKPOINTS);
+
+        @Override
+        public void run() {
+            properties.setArray(JAVASCRIPT, getBreakpoints());
         }
-        return result.toArray( new Breakpoint [result.size()] );
+        
+        private Breakpoint[] getBreakpoints() {
+            Breakpoint[] bpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
+            List<Breakpoint> result = new ArrayList<Breakpoint>();
+            for ( Breakpoint breakpoint : bpoints ) {
+                // Don't store hidden breakpoints
+                if ( breakpoint instanceof AbstractBreakpoint) {
+                    result.add( breakpoint );
+                }
+            }
+            return result.toArray( new Breakpoint [result.size()] );
+        }
+
     }
 }

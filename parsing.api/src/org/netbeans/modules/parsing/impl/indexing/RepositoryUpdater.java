@@ -1554,7 +1554,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         for (URL root : clone) {
             try {
-                FileObject rootFo = URLCache.getInstance().findFileObject(root);
+                FileObject rootFo = URLCache.getInstance().findFileObject(root, false);
                 if (rootFo != null) {
                     if (rootFo.equals(file) || FileUtil.isParentOf(rootFo,file)) {
                         owningSourceRootUrl = root;
@@ -4008,7 +4008,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                 }
 
                                 // check roots that own a suspect
-                                FileObject rootFo = URLCache.getInstance().findFileObject(root);
+                                FileObject rootFo = URLCache.getInstance().findFileObject(root, true);
                                 if (rootFo != null) {
                                     if (f.first == rootFo || FileUtil.isParentOf(rootFo, f.first)) {
                                         depCtx.newBinariesToScan.add(root);
@@ -4024,7 +4024,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         Set<Pair<FileObject, Boolean>> containers = new HashSet<Pair<FileObject, Boolean>>();
                         Map<URL, Pair<FileObject, Boolean>> sourceRootsToScan = new HashMap<URL, Pair<FileObject, Boolean>>();
                         for(URL root : scannedRoots2Dependencies.keySet()) {
-                            FileObject rootFo = URLCache.getInstance().findFileObject(root);
+                            FileObject rootFo = URLCache.getInstance().findFileObject(root, true);
                             if (rootFo != null) {
                                 for(Pair<FileObject, Boolean> f : suspects) {
                                     if (f.first == rootFo || FileUtil.isParentOf(f.first, rootFo)) {
@@ -4066,7 +4066,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         checkTimestampFiles = new HashMap<URL, Set<FileObject>>();
                         for(Pair<FileObject, Boolean> f : suspects) {
                             for(URL root : scannedRoots2Dependencies.keySet()) {
-                                FileObject rootFo = URLCache.getInstance().findFileObject(root);
+                                FileObject rootFo = URLCache.getInstance().findFileObject(root, true);
                                 if (rootFo != null && (f.first == rootFo || FileUtil.isParentOf(rootFo, f.first))) {
                                     Map<URL, Set<FileObject>> map = f.second ? fullRescanFiles : checkTimestampFiles;
                                     Set<FileObject> files = map.get(root);
@@ -4141,13 +4141,13 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             } else if (newWork instanceof FileListWork) {
                 FileListWork flw = (FileListWork) newWork;
                 if (flw.files.isEmpty()) {
-                    suspectFilesOrFileObjects.add(Pair.<Object, Boolean>of(URLCache.getInstance().findFileObject(flw.root), flw.forceRefresh));
+                    suspectFilesOrFileObjects.add(Pair.<Object, Boolean>of(URLCache.getInstance().findFileObject(flw.root, false), flw.forceRefresh));
                 } else {
                     addSuspects(flw.files, flw.forceRefresh);
                 }
                 return true;
             } else if (newWork instanceof DeleteWork) {
-                suspectFilesOrFileObjects.add(Pair.<Object, Boolean>of(URLCache.getInstance().findFileObject(((DeleteWork) newWork).root), false));
+                suspectFilesOrFileObjects.add(Pair.<Object, Boolean>of(URLCache.getInstance().findFileObject(((DeleteWork) newWork).root, false), false));
                 return true;
             }
             return false;
@@ -4933,7 +4933,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 // no indexing.
                 return nopCustomIndexers(root, indexers, sourceForBinaryRoot);
             } else {
-                final FileObject rootFo = URLCache.getInstance().findFileObject(root);
+                final FileObject rootFo = URLCache.getInstance().findFileObject(root, true);
                 if (rootFo != null) {
                     LogContext lctx = getLogContext();
                     long t = System.currentTimeMillis();
