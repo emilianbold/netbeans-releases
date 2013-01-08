@@ -55,16 +55,12 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
-import org.netbeans.modules.php.editor.api.elements.TypeNameResolver;
 import org.netbeans.modules.php.editor.codegen.SinglePropertyMethodCreator.SingleGetterCreator;
 import org.netbeans.modules.php.editor.codegen.SinglePropertyMethodCreator.SingleSetterCreator;
 import org.netbeans.modules.php.editor.codegen.ui.ConstructorPanel;
 import org.netbeans.modules.php.editor.codegen.ui.MethodPanel;
-import org.netbeans.modules.php.editor.elements.TypeNameResolverImpl;
-import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -276,16 +272,14 @@ public final class CGSGenerator implements CodeGenerator {
                 for (MethodProperty methodProperty : cgsInfo.getPossibleMethods()) {
                     if (methodProperty.isSelected()) {
                         final MethodElement method = methodProperty.getMethod();
-                        final TypeNameResolver typeNameResolver = method.getParameters().isEmpty()
-                                ? TypeNameResolverImpl.forNull()
-                                : CodegenUtils.createSmarterTypeNameResolver(
-                                        method,
-                                        ModelUtils.getModel(Source.create(cgsInfo.getComponent().getDocument()), 300),
-                                        cgsInfo.getComponent().getCaretPosition());
                         if (method.isAbstract() || method.isMagic() || method.getType().isInterface()) {
-                            inheritedMethods.append(method.asString(PrintAs.DeclarationWithEmptyBody, typeNameResolver).replace("abstract ", "")); //NOI18N;
+                            inheritedMethods.append(method.asString(
+                                    PrintAs.DeclarationWithEmptyBody,
+                                    cgsInfo.createTypeNameResolver(method)).replace("abstract ", "")); //NOI18N;
                         } else {
-                            inheritedMethods.append(method.asString(PrintAs.DeclarationWithParentCallInBody, typeNameResolver).replace("abstract ", "")); //NOI18N;
+                            inheritedMethods.append(method.asString(
+                                    PrintAs.DeclarationWithParentCallInBody,
+                                    cgsInfo.createTypeNameResolver(method)).replace("abstract ", "")); //NOI18N;
                         }
                         inheritedMethods.append(NEW_LINE);
                     }

@@ -64,7 +64,10 @@ import org.netbeans.modules.php.editor.api.elements.ElementTransformation;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.TreeElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.api.elements.TypeNameResolver;
 import org.netbeans.modules.php.editor.codegen.CGSGenerator.GenWay;
+import org.netbeans.modules.php.editor.elements.TypeNameResolverImpl;
+import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -190,6 +193,15 @@ public final class CGSInfo {
 
     public JTextComponent getComponent() {
         return textComp;
+    }
+
+    public TypeNameResolver createTypeNameResolver(MethodElement method) {
+        return method.getParameters().isEmpty()
+                ? TypeNameResolverImpl.forNull()
+                : CodegenUtils.createSmarterTypeNameResolver(
+                        method,
+                        ModelUtils.getModel(Source.create(getComponent().getDocument()), 300),
+                        getComponent().getCaretPosition());
     }
 
     /**
