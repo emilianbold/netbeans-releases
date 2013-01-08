@@ -109,7 +109,7 @@ public class ModelUtils {
             }
         }
         if (tmpObject == null) {
-            DeclarationScope scope = builder.getCurrentDeclarationScope();
+            DeclarationScope scope = builder.getCurrentDeclarationFunction();
             while (scope != null && tmpObject == null && scope.getInScope() != null) {
                 tmpObject = ((JsFunction)scope).getParameter(firstName);
                 scope = scope.getInScope();
