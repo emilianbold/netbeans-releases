@@ -101,12 +101,12 @@ public class GspLanguage extends DefaultLanguageConfig {
 
     @Override
     public String getLineCommentPrefix() {
-        return GroovyUtils.getLineCommentPrefix();
+        return "//"; // NOI18N
     }
 
     @Override
     public boolean isIdentifierChar(char c) {
-        return GroovyUtils.isIdentifierChar(c);
+        return Character.isJavaIdentifierPart(c) || (c == '$');
     }
 
     @Override
@@ -116,7 +116,7 @@ public class GspLanguage extends DefaultLanguageConfig {
 
     @Override
     public String getDisplayName() {
-        return "GSP";
+        return "GSP"; // NOI18N
     }
 
     @Override

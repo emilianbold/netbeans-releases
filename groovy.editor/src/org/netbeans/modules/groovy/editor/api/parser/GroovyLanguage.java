@@ -71,6 +71,7 @@ import static org.netbeans.modules.groovy.editor.api.parser.GroovyLanguage.*;
 import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyHintsProvider;
 import org.netbeans.modules.groovy.editor.language.GroovyBracketCompleter;
 import org.netbeans.modules.groovy.editor.language.GroovyDeclarationFinder;
+import org.netbeans.modules.groovy.editor.language.GroovyFormatter;
 import org.netbeans.modules.groovy.editor.language.GroovyInstantRenamer;
 import org.netbeans.modules.groovy.editor.language.GroovySemanticAnalyzer;
 import org.netbeans.modules.groovy.editor.language.GroovyTypeSearcher;
@@ -145,12 +146,12 @@ public class GroovyLanguage extends DefaultLanguageConfig {
 
     @Override
     public String getLineCommentPrefix() {
-        return GroovyUtils.getLineCommentPrefix();
+        return "//"; // NOI18N
     }
 
     @Override
     public boolean isIdentifierChar(char c) {
-        return GroovyUtils.isIdentifierChar(c);
+        return Character.isJavaIdentifierPart(c) || (c == '$');
     }
 
     @Override
@@ -160,15 +161,13 @@ public class GroovyLanguage extends DefaultLanguageConfig {
 
     @Override
     public String getDisplayName() {
-        return "Groovy";
+        return "Groovy"; // NOI18N
     }
 
     @Override
     public String getPreferredExtension() {
         return "groovy"; // NOI18N
     }
-
-    // Service Registrations
 
     @Override
     public Parser getParser() {
@@ -182,7 +181,7 @@ public class GroovyLanguage extends DefaultLanguageConfig {
 
     @Override
     public Formatter getFormatter() {
-        return new org.netbeans.modules.groovy.editor.language.GroovyFormatter();
+        return new GroovyFormatter();
     }
 
     @Override
@@ -252,10 +251,6 @@ public class GroovyLanguage extends DefaultLanguageConfig {
 
     @Override
     public Set<String> getSourcePathIds() {
-        // We don't have our own source path id, because javascript files can be
-        // anywhere in a project. So, for index search we will use all available
-        // sourcepath ids.
-        // FIXME parsing API
         return Collections.singleton(ClassPath.SOURCE);
     }
 }
