@@ -715,6 +715,10 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue224462.js","        formatter.println(prom^224462_1);", true);
     }
     
+    public void testIssue224520() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue224520.js","        var te^am = data[i+offset]; // mark occurrences or rename|refactor team", true);
+    }
+    
     private String getTestPath() {
         return getTestFolderPath() + "/" + getTestName() + ".js";//NOI18N
     }
