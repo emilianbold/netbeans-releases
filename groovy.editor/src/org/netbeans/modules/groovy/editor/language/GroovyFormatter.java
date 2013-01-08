@@ -53,6 +53,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -73,10 +74,9 @@ import org.openide.util.Exceptions;
  * @author Martin Adamek
  * @author Gopalakrishnan Sankaran
  */
-public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
-    private boolean isGspDocument;
+public class GroovyFormatter implements Formatter {
+
     private CodeStyle codeStyle;
-    private int rightMarginOverride = -1;
 
     public GroovyFormatter() {
         this.codeStyle = null;
@@ -85,7 +85,6 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
     public GroovyFormatter(CodeStyle codeStyle, int rightMarginOverride) {
         assert codeStyle != null;
         this.codeStyle = codeStyle;
-        this.rightMarginOverride = rightMarginOverride;
     }
 
     @Override
@@ -192,59 +191,23 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
     private int getTokenBalance(BaseDocument doc, int begin, int end, boolean includeKeywords) {
         int balance = 0;
 
-        if (isGspDocument) {
-            TokenHierarchy<Document> th = TokenHierarchy.get((Document) doc);
-            // Probably an GSP file - gotta process it in sections since I can have lines
-            // made up of both whitespace, groovy, html and delimiters and all groovy sections
-            // can affect the token balance
-            TokenSequence<?> t = th.tokenSequence();
-            if (t == null) {
-                return 0;
-            }
-            t.move(begin);
-            if (!t.moveNext()) {
-                return 0;
-            }
-
-            do {
-                Token<?> token = t.token();
-                TokenId id = token.id();
-
-                if (id.primaryCategory().equals("groovy")) { // NOI18N
-                    TokenSequence<GroovyTokenId> ts = t.embedded(GroovyTokenId.language());
-                    ts.move(begin);
-                    ts.moveNext();
-                    do {
-                        Token<GroovyTokenId> groovyToken = ts.token();
-                        if (groovyToken == null) {
-                            break;
-                        }
-                        TokenId groovyId = groovyToken.id();
-
-                        balance += getTokenBalanceDelta(groovyId, groovyToken, doc, ts, includeKeywords);
-                    } while (ts.moveNext() && (ts.offset() < end));
-                }
-
-            } while (t.moveNext() && (t.offset() < end));
-        } else {
-            TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, begin);
-            if (ts == null) {
-                return 0;
-            }
-
-            ts.move(begin);
-
-            if (!ts.moveNext()) {
-                return 0;
-            }
-
-            do {
-                Token<GroovyTokenId> token = ts.token();
-                TokenId id = token.id();
-
-                balance += getTokenBalanceDelta(id, token, doc, ts, includeKeywords);
-            } while (ts.moveNext() && (ts.offset() < end));
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, begin);
+        if (ts == null) {
+            return 0;
         }
+
+        ts.move(begin);
+
+        if (!ts.moveNext()) {
+            return 0;
+        }
+
+        do {
+            Token<GroovyTokenId> token = ts.token();
+            TokenId id = token.id();
+
+            balance += getTokenBalanceDelta(id, token, doc, ts, includeKeywords);
+        } while (ts.moveNext() && (ts.offset() < end));
 
         return balance;
     }
@@ -345,22 +308,7 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
         int lineBegin = Utilities.getRowFirstNonWhite(doc, offset);
 
         if (lineBegin != -1) {
-            if (isGspDocument) {
-                TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, lineBegin);
-                if (ts != null) {
-                    ts.moveNext();
-                    Token<GroovyTokenId> token = ts.token();
-                    while (token != null && token.id() == GroovyTokenId.WHITESPACE) {
-                        if (!ts.moveNext()) {
-                            return null;
-                        }
-                        token = ts.token();
-                    }
-                    return token;
-                }
-            } else {
-                return LexUtilities.getToken(doc, lineBegin);
-            }
+            return LexUtilities.getToken(doc, lineBegin);
         }
         return null;
     }
@@ -461,7 +409,6 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
 
         Document document = context.document();
         final int endOffset = Math.min(context.endOffset(), document.getLength());
-        isGspDocument = false;
 
         try {
             final BaseDocument doc = (BaseDocument) document;
@@ -543,10 +490,6 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
                                 context.modifyIndent(lineBegin, indent);
                             }
                         }
-
-                        if (!indentOnly && codeStyle.isReformatComments()) {
-                            reformatComments(doc, startOffset, endOffset);
-                        }
                     } catch (BadLocationException ble) {
                         Exceptions.printStackTrace(ble);
                     }
@@ -570,7 +513,7 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
         try {
             // Algorithm:
             // Iterate over the range.
-            // Accumulate a token balance ( {,(,[, and keywords like class, case, etc. increases the balance, 
+            // Accumulate a token balance ( {,(,[, and keywords like class, case, etc. increases the balance,
             //      },),] and "end" decreases it
             // If the line starts with an end marker, indent the line to the level AFTER the token
             // else indent the line to the level BEFORE the token (the level being the balance * indentationSize)
@@ -603,28 +546,15 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
             // The bracket balance at the offset ( parens, bracket, brace )
             int bracketBalance = 0;
             boolean continued = false;
-            boolean indentHtml = false;
-            if (isGspDocument) {
-                indentHtml = codeStyle.isIndentHtml();
-            }
 
             while ((!includeEnd && offset < end) || (includeEnd && offset <= end)) {
                 int indent; // The indentation to be used for the current line
-
                 int hangingIndent = continued ? (hangingIndentSize) : 0;
-
-                if (isGspDocument && !indentOnly) {
-                    // Pick up the indentation level assigned by the HTML indenter; gets HTML structure
-                    initialIndent = GsfUtilities.getLineIndent(doc, offset);
-                }
 
                 if (isInLiteral(doc, offset)) {
                     // Skip this line - leave formatting as it is prior to reformatting
                     indent = GsfUtilities.getLineIndent(doc, offset);
 
-                    if (isGspDocument && indentHtml && balance > 0) {
-                        indent += balance * indentSize;
-                    }
                 } else if (isEndIndent(doc, offset)) {
                     indent = (balance - 1) * indentSize + hangingIndent + initialIndent;
                 } else {
@@ -665,12 +595,4 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
             Exceptions.printStackTrace(ble);
         }
     }
-
-    void reformatComments(BaseDocument doc, int start, int end) {
-        int rightMargin = rightMarginOverride != -1 ? rightMarginOverride : codeStyle.getRightMargin();
-
-//        ReflowParagraphAction action = new ReflowParagraphAction();
-//        action.reflowComments(doc, start, end, rightMargin);
-    }
-
 }
