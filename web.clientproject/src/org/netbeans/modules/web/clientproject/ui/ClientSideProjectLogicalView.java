@@ -471,6 +471,9 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         }
 
         private boolean isNodeHidden(BasicNodes type) {
+            if (type == BasicNodes.Sources) {
+                return false;
+            }
             FileObject root = getRootForNode(type);
             return root == null
                     || !root.isValid()
