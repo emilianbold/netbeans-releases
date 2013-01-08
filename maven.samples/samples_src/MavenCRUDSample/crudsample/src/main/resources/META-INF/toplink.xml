@@ -4,6 +4,7 @@
     <provider>oracle.toplink.essentials.PersistenceProvider</provider>
     <class>org.netbeans.modules.crudsampleapplication.dbaccess.Customer</class>
     <class>org.netbeans.modules.crudsampleapplication.dbaccess.DiscountCode</class>
+    <class>org.netbeans.modules.crudsampleapplication.dbaccess.MicroMarket</class>
     <properties>
       <property name="toplink.jdbc.user" value="app"/>
       <property name="toplink.jdbc.password" value="app"/>
