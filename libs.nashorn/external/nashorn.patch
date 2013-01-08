@@ -1,6 +1,6 @@
-diff -r 5a1b0714df0e -r f4548e727aa4 make/build-nasgen.xml
---- a/make/build-nasgen.xml	Fri Jan 04 09:58:33 2013 -0400
-+++ b/make/build-nasgen.xml	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 make/build-nasgen.xml
+--- a/make/build-nasgen.xml	Tue Jan 08 15:02:36 2013 +0530
++++ b/make/build-nasgen.xml	Tue Jan 08 10:50:51 2013 +0100
 @@ -25,7 +25,7 @@
      <description>Builds and runs nasgen.</description>
      <import file="build.xml"/>
@@ -10,9 +10,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 make/build-nasgen.xml
          <ant inheritAll="false" dir="${basedir}/buildtools/nasgen"
              antfile="build.xml" target="jar"/>
      </target>
-diff -r 5a1b0714df0e -r f4548e727aa4 make/build.xml
---- a/make/build.xml	Fri Jan 04 09:58:33 2013 -0400
-+++ b/make/build.xml	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 make/build.xml
+--- a/make/build.xml	Tue Jan 08 15:02:36 2013 +0530
++++ b/make/build.xml	Tue Jan 08 10:50:51 2013 +0100
 @@ -40,8 +40,6 @@
      <mkdir dir="${build.test.classes.dir}"/>
      <mkdir dir="${dist.dir}"/>
@@ -37,7 +37,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 make/build.xml
  
 -  <!-- do it only if ASM is not available -->
 -  <target name="compile-asm" depends="prepare" unless="asm.available">
--    <javac srcdir="${asm.src.dir}"
+-    <javac srcdir="${jdk.asm.src.dir}"
 +  <target name="compile-stubs" depends="prepare">
 +    <javac srcdir="${stubs.src.dir}"
             destdir="${build.classes.dir}"
@@ -92,19 +92,19 @@ diff -r 5a1b0714df0e -r f4548e727aa4 make/build.xml
      </jar>
    </target>
  
--  <target name="javadoc" depends="compile-asm">
-+  <target name="javadoc" depends="get-asm">
-     <javadoc destdir="${dist.javadoc.dir}" use="yes" overview="src/overview.html" windowtitle="${nashorn.product.name} ${nashorn.version}">
+-  <target name="javadoc" depends="prepare">
++  <target name="javadoc" depends="prepare, get-asm">
+     <javadoc destdir="${dist.javadoc.dir}" use="yes" overview="src/overview.html" windowtitle="${nashorn.product.name} ${nashorn.version}" additionalparam="-quiet" failonerror="true">
        <classpath>
          <pathelement location="${build.classes.dir}"/>
          <pathelement location="${dynalink.jar}"/>
 +        <pathelement location="${asm.jar}"/>
        </classpath>
        <fileset dir="${src.dir}" includes="**/*.java"/>
-       <link href="http://docs.oracle.com/javase/7/docs/api"/>
-diff -r 5a1b0714df0e -r f4548e727aa4 make/nbproject/nbjdk.properties
---- a/make/nbproject/nbjdk.properties	Fri Jan 04 09:58:33 2013 -0400
-+++ b/make/nbproject/nbjdk.properties	Fri Jan 04 18:32:23 2013 +0100
+       <fileset dir="${jdk.asm.src.dir}" includes="**/*.java"/>
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 make/nbproject/nbjdk.properties
+--- a/make/nbproject/nbjdk.properties	Tue Jan 08 15:02:36 2013 +0530
++++ b/make/nbproject/nbjdk.properties	Tue Jan 08 10:50:51 2013 +0100
 @@ -20,5 +20,5 @@
  # or visit www.oracle.com if you need additional information or have any
  # questions.
@@ -112,9 +112,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 make/nbproject/nbjdk.properties
 -nbjdk.active=JDK_1.8
 +nbjdk.active=JDK_1.6
  
-diff -r 5a1b0714df0e -r f4548e727aa4 make/nbproject/project.xml
---- a/make/nbproject/project.xml	Fri Jan 04 09:58:33 2013 -0400
-+++ b/make/nbproject/project.xml	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 make/nbproject/project.xml
+--- a/make/nbproject/project.xml	Tue Jan 08 15:02:36 2013 +0530
++++ b/make/nbproject/project.xml	Tue Jan 08 10:50:51 2013 +0100
 @@ -160,17 +160,17 @@
                  <package-root>../test/src</package-root>
                  <unit-tests/>
@@ -136,10 +136,10 @@ diff -r 5a1b0714df0e -r f4548e727aa4 make/nbproject/project.xml
              </compilation-unit>
          </java-data>
      </configuration>
-diff -r 5a1b0714df0e -r f4548e727aa4 make/project.properties
---- a/make/project.properties	Fri Jan 04 09:58:33 2013 -0400
-+++ b/make/project.properties	Fri Jan 04 18:32:23 2013 +0100
-@@ -25,8 +25,8 @@
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 make/project.properties
+--- a/make/project.properties	Tue Jan 08 15:02:36 2013 +0530
++++ b/make/project.properties	Tue Jan 08 10:50:51 2013 +0100
+@@ -28,8 +28,8 @@
  
  # source and target levels
  build.compiler=modern
@@ -150,13 +150,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 make/project.properties
  
  # nashorn version information
  nashorn.version=0.1
-@@ -59,9 +59,13 @@
+@@ -61,6 +61,10 @@
+ dist.jar=${dist.dir}/nashorn.jar
  dist.javadoc.dir=${dist.dir}/javadoc
- 
- # directory where asm project lives
--asm.dir=../asm
-+asm.dir=asm
- asm.src.dir=${asm.dir}/src
  
 +# directory where stubs project lives
 +stubs.dir=stubs
@@ -165,7 +161,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 make/project.properties
  # jars refererred
  file.reference.testng.jar=test/lib/testng.jar
  
-@@ -96,11 +100,17 @@
+@@ -95,11 +99,17 @@
  dynalink.dir=build/${dynalink.dir.name}
  dynalink.jar=${dynalink.dir}/dynalink.jar
  
@@ -184,18 +180,18 @@ diff -r 5a1b0714df0e -r f4548e727aa4 make/project.properties
  javac.test.classpath=\
      ${build.classes.dir}:\
      ${build.test.classes.dir}:\
-diff -r 5a1b0714df0e -r f4548e727aa4 src/META-INF/services/javax.script.ScriptEngineFactory
---- a/src/META-INF/services/javax.script.ScriptEngineFactory	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/META-INF/services/javax.script.ScriptEngineFactory	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/META-INF/services/javax.script.ScriptEngineFactory
+--- a/src/META-INF/services/javax.script.ScriptEngineFactory	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/META-INF/services/javax.script.ScriptEngineFactory	Tue Jan 08 10:50:51 2013 +0100
 @@ -22,4 +22,4 @@
  # or visit www.oracle.com if you need additional information or have any
  # questions.
  #
 -jdk.nashorn.api.scripting.NashornScriptEngineFactory
 +#jdk.nashorn.api.scripting.NashornScriptEngineFactory
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/api/scripting/NashornScriptEngine.java
---- a/src/jdk/nashorn/api/scripting/NashornScriptEngine.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/api/scripting/NashornScriptEngine.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/api/scripting/NashornScriptEngine.java
+--- a/src/jdk/nashorn/api/scripting/NashornScriptEngine.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/api/scripting/NashornScriptEngine.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -231,9 +231,11 @@
                      setNashornGlobal(oldGlobal);
                  }
@@ -223,9 +219,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/api/scripting/NashornScript
              }
          } catch (final IOException e) {
              throw new ScriptException(e);
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/api/scripting/NashornScriptEngineFactory.java
---- a/src/jdk/nashorn/api/scripting/NashornScriptEngineFactory.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/api/scripting/NashornScriptEngineFactory.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/api/scripting/NashornScriptEngineFactory.java
+--- a/src/jdk/nashorn/api/scripting/NashornScriptEngineFactory.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/api/scripting/NashornScriptEngineFactory.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -103,22 +103,21 @@
  
      @Override
@@ -256,9 +252,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/api/scripting/NashornScript
              throw new IllegalArgumentException("Invalid key");
          }
      }
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/api/scripting/ScriptObjectMirror.java
---- a/src/jdk/nashorn/api/scripting/ScriptObjectMirror.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/api/scripting/ScriptObjectMirror.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/api/scripting/ScriptObjectMirror.java
+--- a/src/jdk/nashorn/api/scripting/ScriptObjectMirror.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/api/scripting/ScriptObjectMirror.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -78,7 +78,7 @@
          } catch (final RuntimeException e) {
              throw e;
@@ -312,9 +308,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/api/scripting/ScriptObjectM
              final Iterator<Object> iter   = sobj.valueIterator();
  
              while (iter.hasNext()) {
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/AccessSpecializer.java
---- a/src/jdk/nashorn/internal/codegen/AccessSpecializer.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/AccessSpecializer.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/codegen/AccessSpecializer.java
+--- a/src/jdk/nashorn/internal/codegen/AccessSpecializer.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/codegen/AccessSpecializer.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -365,7 +365,7 @@
              finest("changed assignment " + dest + " " + dest.getSymbol());
              assert !newType.isObject();
@@ -324,9 +320,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/AccessSpec
  
              dest.accept(new NodeVisitor() {
  
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/ClassEmitter.java
---- a/src/jdk/nashorn/internal/codegen/ClassEmitter.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/ClassEmitter.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/codegen/ClassEmitter.java
+--- a/src/jdk/nashorn/internal/codegen/ClassEmitter.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/codegen/ClassEmitter.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -25,18 +25,18 @@
  
  package jdk.nashorn.internal.codegen;
@@ -391,10 +387,10 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/ClassEmitt
  
          cw.visit(V1_7, ACC_PUBLIC | ACC_SUPER, unitClassName, null, Compiler.pathName(jdk.nashorn.internal.scripts.JS$.class.getName()), null);
          cw.visitSource(compiler.getSource().getName(), null);
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/CodeGenerator.java
---- a/src/jdk/nashorn/internal/codegen/CodeGenerator.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/CodeGenerator.java	Fri Jan 04 18:32:23 2013 +0100
-@@ -159,7 +159,7 @@
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/codegen/CodeGenerator.java
+--- a/src/jdk/nashorn/internal/codegen/CodeGenerator.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/codegen/CodeGenerator.java	Tue Jan 08 10:50:51 2013 +0100
+@@ -157,7 +157,7 @@
      private int regexFieldCount;
  
      /** Map of shared scope call sites */
@@ -403,7 +399,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/CodeGenera
  
      /** When should we stop caching regexp expressions in fields to limit bytecode size? */
      private static final int MAX_REGEX_FIELDS = 2 * 1024;
-@@ -380,8 +380,8 @@
+@@ -378,8 +378,8 @@
       * @param symbols list of symbols.
       */
      private void initSymbols(final Iterable<Symbol> symbols) {
@@ -414,7 +410,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/CodeGenera
  
          for (final Symbol symbol : symbols) {
              /*
-@@ -536,8 +536,8 @@
+@@ -534,8 +534,8 @@
           // Turn thisProperties into keys and symbols for the FunctionAnalyzer
          final Map<String, Node> thisProperties = functionNode.getThisProperties();
  
@@ -425,7 +421,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/CodeGenera
  
          for (final Entry<String, Node> entry : thisProperties.entrySet()) {
              keys.add(entry.getKey());
-@@ -884,8 +884,8 @@
+@@ -882,8 +882,8 @@
  
              // TODO for LET we can do better: if *block* does not contain any eval/with, we don't need its vars in scope.
  
@@ -436,7 +432,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/CodeGenera
  
              // note that in the case of a varargs vector the arguments in the vector should NOT have local slots
              // this was a bug: see NASHORN-21
-@@ -905,8 +905,8 @@
+@@ -903,8 +903,8 @@
              }
  
              // Initalize symbols and values
@@ -447,7 +443,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/CodeGenera
  
              for (final Symbol symbol : symbols) {
                  if (symbol.isInternal() || symbol.isThis()) {
-@@ -1332,9 +1332,9 @@
+@@ -1330,9 +1330,9 @@
          final List<Node> elements = objectNode.getElements();
          final int        size     = elements.size();
  
@@ -460,7 +456,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/CodeGenera
  
          boolean hasGettersSetters = false;
  
-@@ -1794,7 +1794,7 @@
+@@ -1792,7 +1792,7 @@
  
          if (allInteger) {
              // Tree for sorting values.
@@ -469,7 +465,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/CodeGenera
  
              // Build up sorted tree.
              for (final CaseNode caseNode : cases) {
-@@ -2609,7 +2609,7 @@
+@@ -2607,7 +2607,7 @@
              @Override
              protected void op() {
                  method.shr();
@@ -478,7 +474,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/CodeGenera
              }
          }.store();
  
-@@ -2854,7 +2854,7 @@
+@@ -2852,7 +2852,7 @@
              @Override
              protected void op() {
                  method.shr();
@@ -487,9 +483,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/CodeGenera
              }
          }.evaluate(binaryNode);
  
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/Compiler.java
---- a/src/jdk/nashorn/internal/codegen/Compiler.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/Compiler.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/codegen/Compiler.java
+--- a/src/jdk/nashorn/internal/codegen/Compiler.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/codegen/Compiler.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -239,7 +239,7 @@
          this.errors       = errors;
          this.strict       = strict;
@@ -536,9 +532,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/Compiler.j
              }
          }
      }
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/ConstantData.java
---- a/src/jdk/nashorn/internal/codegen/ConstantData.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/ConstantData.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/codegen/ConstantData.java
+--- a/src/jdk/nashorn/internal/codegen/ConstantData.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/codegen/ConstantData.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -113,9 +113,9 @@
       * Constructor
       */
@@ -552,9 +548,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/ConstantDa
      }
  
      /**
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/Frame.java
---- a/src/jdk/nashorn/internal/codegen/Frame.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/Frame.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/codegen/Frame.java
+--- a/src/jdk/nashorn/internal/codegen/Frame.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/codegen/Frame.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -54,7 +54,7 @@
       */
      public Frame(final Frame previous) {
@@ -573,9 +569,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/Frame.java
          this.baseCount = frame.getBaseCount();
          this.count     = frame.getCount();
      }
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/Lower.java
---- a/src/jdk/nashorn/internal/codegen/Lower.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/Lower.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/codegen/Lower.java
+--- a/src/jdk/nashorn/internal/codegen/Lower.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/codegen/Lower.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -174,8 +174,8 @@
      Lower(final Compiler compiler) {
          this.compiler   = compiler;
@@ -701,9 +697,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/Lower.java
              case SAR:
                  return LiteralNode.newInstance(source, token, finish, lhs.getInt32() >> rhs.getInt32());
              case SHL:
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/MethodEmitter.java
---- a/src/jdk/nashorn/internal/codegen/MethodEmitter.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/MethodEmitter.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/codegen/MethodEmitter.java
+--- a/src/jdk/nashorn/internal/codegen/MethodEmitter.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/codegen/MethodEmitter.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -25,38 +25,38 @@
  
  package jdk.nashorn.internal.codegen;
@@ -859,9 +855,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/MethodEmit
          /** Name of this label */
          private final String name;
  
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/Namespace.java
---- a/src/jdk/nashorn/internal/codegen/Namespace.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/Namespace.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/codegen/Namespace.java
+--- a/src/jdk/nashorn/internal/codegen/Namespace.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/codegen/Namespace.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -53,7 +53,7 @@
       */
      public Namespace(final Namespace parent) {
@@ -871,9 +867,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/Namespace.
      }
  
      /**
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/RuntimeCallSite.java
---- a/src/jdk/nashorn/internal/codegen/RuntimeCallSite.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/RuntimeCallSite.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/codegen/RuntimeCallSite.java
+--- a/src/jdk/nashorn/internal/codegen/RuntimeCallSite.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/codegen/RuntimeCallSite.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -362,7 +362,7 @@
      private static final Map<String, MethodHandle> METHODS;
  
@@ -934,9 +930,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/RuntimeCal
      }
  
      /**
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/Splitter.java
---- a/src/jdk/nashorn/internal/codegen/Splitter.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/Splitter.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/codegen/Splitter.java
+--- a/src/jdk/nashorn/internal/codegen/Splitter.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/codegen/Splitter.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -65,7 +65,7 @@
      private final CompileUnit scriptCompileUnit;
  
@@ -946,7 +942,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/Splitter.j
  
      /** Weight threshold for when to start a split. */
      public static final long SPLIT_THRESHOLD  = 32 * 1024;
-@@ -144,8 +144,8 @@
+@@ -145,8 +145,8 @@
      private long splitBlock(final Block block) {
          functionNode.setIsSplit();
  
@@ -957,7 +953,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/Splitter.j
          long statementsWeight = 0;
  
          for (final Node statement : block.getStatements()) {
-@@ -154,7 +154,7 @@
+@@ -155,7 +155,7 @@
              if (statementsWeight + weight >= SPLIT_THRESHOLD || statement.isTerminal()) {
                  if (!statements.isEmpty()) {
                      splits.add(createBlockSplitNode(block, statements, statementsWeight));
@@ -966,7 +962,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/Splitter.j
                      statementsWeight = 0;
                  }
  
-@@ -248,7 +248,7 @@
+@@ -249,7 +249,7 @@
              final ArrayLiteralNode arrayLiteralNode = (ArrayLiteralNode) literal;
              final Node[]           value            = arrayLiteralNode.getValue();
              final int[]            postsets         = arrayLiteralNode.getPostsets();
@@ -975,7 +971,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/Splitter.j
  
              long totalWeight = 0;
              int  lo          = 0;
-@@ -296,10 +296,10 @@
+@@ -297,10 +297,10 @@
          private final Deque<SplitNode> splitStack;
  
          /** Map of possible jump targets to containing split node */
@@ -988,9 +984,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/Splitter.j
          }
  
          @Override
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/objects/MapCreator.java
---- a/src/jdk/nashorn/internal/codegen/objects/MapCreator.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/objects/MapCreator.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/codegen/objects/MapCreator.java
+--- a/src/jdk/nashorn/internal/codegen/objects/MapCreator.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/codegen/objects/MapCreator.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -77,7 +77,7 @@
       * @return New map populated with accessor properties.
       */
@@ -1000,9 +996,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/objects/Ma
  
          assert keys != null;
  
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/objects/ObjectClassGenerator.java
---- a/src/jdk/nashorn/internal/codegen/objects/ObjectClassGenerator.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/objects/ObjectClassGenerator.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/codegen/objects/ObjectClassGenerator.java
+--- a/src/jdk/nashorn/internal/codegen/objects/ObjectClassGenerator.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/codegen/objects/ObjectClassGenerator.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -92,7 +92,7 @@
      public static final boolean OBJECT_FIELDS_ONLY = !Options.getBooleanProperty("nashorn.fields.dual");
  
@@ -1021,9 +1017,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/objects/Ob
  
          for (int i = 0; i < fieldCount; i++) {
              for (final Type type : FIELD_TYPES) {
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/types/ArrayType.java
---- a/src/jdk/nashorn/internal/codegen/types/ArrayType.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/ArrayType.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/codegen/types/ArrayType.java
+--- a/src/jdk/nashorn/internal/codegen/types/ArrayType.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/codegen/types/ArrayType.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -25,13 +25,13 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -1044,9 +1040,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/types/Arra
  
  /**
   * This is an array type, i.e. OBJECT_ARRAY, NUMBER_ARRAY.
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/types/BooleanType.java
---- a/src/jdk/nashorn/internal/codegen/types/BooleanType.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/BooleanType.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/codegen/types/BooleanType.java
+--- a/src/jdk/nashorn/internal/codegen/types/BooleanType.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/codegen/types/BooleanType.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -50,14 +50,14 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -1068,9 +1064,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/types/Bool
  import jdk.nashorn.internal.codegen.CompilerConstants;
  import jdk.nashorn.internal.codegen.objects.ObjectClassGenerator;
  import jdk.nashorn.internal.runtime.JSType;
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/types/BytecodeArrayOps.java
---- a/src/jdk/nashorn/internal/codegen/types/BytecodeArrayOps.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/BytecodeArrayOps.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/codegen/types/BytecodeArrayOps.java
+--- a/src/jdk/nashorn/internal/codegen/types/BytecodeArrayOps.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/codegen/types/BytecodeArrayOps.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -25,7 +25,7 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -1080,9 +1076,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/types/Byte
  
  /**
   * Array operations, not supported by all ops
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/types/BytecodeBitwiseOps.java
---- a/src/jdk/nashorn/internal/codegen/types/BytecodeBitwiseOps.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/BytecodeBitwiseOps.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/codegen/types/BytecodeBitwiseOps.java
+--- a/src/jdk/nashorn/internal/codegen/types/BytecodeBitwiseOps.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/codegen/types/BytecodeBitwiseOps.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -25,7 +25,7 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -1092,9 +1088,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/types/Byte
  
  /**
   * Bitwise operations not supported by all types
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/types/BytecodeNumericOps.java
---- a/src/jdk/nashorn/internal/codegen/types/BytecodeNumericOps.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/BytecodeNumericOps.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/codegen/types/BytecodeNumericOps.java
+--- a/src/jdk/nashorn/internal/codegen/types/BytecodeNumericOps.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/codegen/types/BytecodeNumericOps.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -25,7 +25,7 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -1104,9 +1100,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/types/Byte
  
  /**
   * Numeric operations, not supported by all types
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/types/BytecodeOps.java
---- a/src/jdk/nashorn/internal/codegen/types/BytecodeOps.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/BytecodeOps.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/codegen/types/BytecodeOps.java
+--- a/src/jdk/nashorn/internal/codegen/types/BytecodeOps.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/codegen/types/BytecodeOps.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -25,7 +25,7 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -1116,9 +1112,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/types/Byte
  
  
  /**
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/types/IntType.java
---- a/src/jdk/nashorn/internal/codegen/types/IntType.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/IntType.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/codegen/types/IntType.java
+--- a/src/jdk/nashorn/internal/codegen/types/IntType.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/codegen/types/IntType.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -25,35 +25,35 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -1182,9 +1178,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/types/IntT
  import jdk.nashorn.internal.codegen.CompilerConstants;
  import jdk.nashorn.internal.codegen.objects.ObjectClassGenerator;
  
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/types/LongType.java
---- a/src/jdk/nashorn/internal/codegen/types/LongType.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/LongType.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/codegen/types/LongType.java
+--- a/src/jdk/nashorn/internal/codegen/types/LongType.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/codegen/types/LongType.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -25,29 +25,29 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -1236,9 +1232,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/types/Long
  import jdk.nashorn.internal.codegen.CompilerConstants;
  import jdk.nashorn.internal.codegen.objects.ObjectClassGenerator;
  
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/types/NumberType.java
---- a/src/jdk/nashorn/internal/codegen/types/NumberType.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/NumberType.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/codegen/types/NumberType.java
+--- a/src/jdk/nashorn/internal/codegen/types/NumberType.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/codegen/types/NumberType.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -25,22 +25,22 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -1276,9 +1272,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/types/Numb
  import jdk.nashorn.internal.codegen.CompilerConstants;
  import jdk.nashorn.internal.codegen.objects.ObjectClassGenerator;
  import jdk.nashorn.internal.runtime.JSType;
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/types/ObjectType.java
---- a/src/jdk/nashorn/internal/codegen/types/ObjectType.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/ObjectType.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/codegen/types/ObjectType.java
+--- a/src/jdk/nashorn/internal/codegen/types/ObjectType.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/codegen/types/ObjectType.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -25,18 +25,18 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -1306,9 +1302,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/types/Obje
  import jdk.nashorn.internal.codegen.CompilerConstants;
  import jdk.nashorn.internal.runtime.JSType;
  import jdk.nashorn.internal.runtime.ScriptRuntime;
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/types/Type.java
---- a/src/jdk/nashorn/internal/codegen/types/Type.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/Type.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/codegen/types/Type.java
+--- a/src/jdk/nashorn/internal/codegen/types/Type.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/codegen/types/Type.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -25,30 +25,30 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -1508,9 +1504,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/codegen/types/Type
  
      /** This is the singleton for string arrays */
      public static final ArrayType STRING_ARRAY = new ArrayType(new String[0].getClass());
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/compat/Objects.java
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/compat/Objects.java
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/src/jdk/nashorn/internal/compat/Objects.java	Fri Jan 04 18:32:23 2013 +0100
++++ b/src/jdk/nashorn/internal/compat/Objects.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -0,0 +1,54 @@
 +/*
 + * Copyright (c) 2010-2011, Oracle and/or its affiliates. All rights reserved.
@@ -1566,9 +1562,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/compat/Objects.jav
 +        return o1 != null && o1.equals(o2);
 +    }
 +}
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/ir/Block.java
---- a/src/jdk/nashorn/internal/ir/Block.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/ir/Block.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/ir/Block.java
+--- a/src/jdk/nashorn/internal/ir/Block.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/ir/Block.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -94,8 +94,8 @@
  
          this.parent     = parent;
@@ -1594,17 +1590,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/ir/Block.java
          frame      = block.frame == null ? null : block.frame.copy();
          entryLabel = new Label(block.entryLabel);
          breakLabel = new Label(block.breakLabel);
-@@ -185,6 +185,9 @@
-     public void addStatement(final Node statement) {
-         if (statement != null) {
-             statements.add(statement);
-+            if (getFinish() < statement.getFinish()) {
-+                setFinish(statement.getFinish());
-+            }
-         }
-     }
- 
-@@ -195,7 +198,7 @@
+@@ -198,7 +198,7 @@
       */
      public void prependStatement(final Node statement) {
          if (statement != null) {
@@ -1613,9 +1599,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/ir/Block.java
              newStatements.add(statement);
              newStatements.addAll(statements);
              setStatements(newStatements);
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/ir/CallNode.java
---- a/src/jdk/nashorn/internal/ir/CallNode.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/ir/CallNode.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/ir/CallNode.java
+--- a/src/jdk/nashorn/internal/ir/CallNode.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/ir/CallNode.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -90,7 +90,7 @@
      private CallNode(final CallNode callNode, final CopyState cs) {
          super(callNode);
@@ -1625,9 +1611,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/ir/CallNode.java
  
          for (final Node arg : callNode.args) {
              newArgs.add(cs.existingOrCopy(arg));
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/ir/FunctionNode.java
---- a/src/jdk/nashorn/internal/ir/FunctionNode.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/ir/FunctionNode.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/ir/FunctionNode.java
+--- a/src/jdk/nashorn/internal/ir/FunctionNode.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/ir/FunctionNode.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -153,35 +153,35 @@
      private int flags;
  
@@ -1744,9 +1730,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/ir/FunctionNode.ja
              }
              referencingParentBlocks.add(parentBlock);
          }
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/ir/Location.java
---- a/src/jdk/nashorn/internal/ir/Location.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/ir/Location.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/ir/Location.java
+--- a/src/jdk/nashorn/internal/ir/Location.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/ir/Location.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -25,7 +25,7 @@
  
  package jdk.nashorn.internal.ir;
@@ -1756,9 +1742,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/ir/Location.java
  import jdk.nashorn.internal.parser.Token;
  import jdk.nashorn.internal.parser.TokenType;
  import jdk.nashorn.internal.runtime.Source;
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/ir/Node.java
---- a/src/jdk/nashorn/internal/ir/Node.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/ir/Node.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/ir/Node.java
+--- a/src/jdk/nashorn/internal/ir/Node.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/ir/Node.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -184,7 +184,7 @@
       * Helper class used for node cloning
       */
@@ -1768,9 +1754,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/ir/Node.java
  
          /**
           * Find existing or create new copy of the node.
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/ir/ObjectNode.java
---- a/src/jdk/nashorn/internal/ir/ObjectNode.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/ir/ObjectNode.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/ir/ObjectNode.java
+--- a/src/jdk/nashorn/internal/ir/ObjectNode.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/ir/ObjectNode.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -63,7 +63,7 @@
      private ObjectNode(final ObjectNode objectNode, final CopyState cs) {
          super(objectNode);
@@ -1780,9 +1766,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/ir/ObjectNode.java
  
          for (final Node element : objectNode.elements) {
              newElements.add(cs.existingOrCopy(element));
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/ir/ReturnNode.java
---- a/src/jdk/nashorn/internal/ir/ReturnNode.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/ir/ReturnNode.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/ir/ReturnNode.java
+--- a/src/jdk/nashorn/internal/ir/ReturnNode.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/ir/ReturnNode.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -138,7 +138,7 @@
  
      @Override
@@ -1792,9 +1778,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/ir/ReturnNode.java
      }
  
      /**
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/ir/RuntimeNode.java
---- a/src/jdk/nashorn/internal/ir/RuntimeNode.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/ir/RuntimeNode.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/ir/RuntimeNode.java
+--- a/src/jdk/nashorn/internal/ir/RuntimeNode.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/ir/RuntimeNode.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -289,7 +289,7 @@
      private RuntimeNode(final RuntimeNode runtimeNode, final CopyState cs) {
          super(runtimeNode);
@@ -1804,9 +1790,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/ir/RuntimeNode.jav
  
          for (final Node arg : runtimeNode.args) {
              newArgs.add(cs.existingOrCopy(arg));
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/ir/SplitNode.java
---- a/src/jdk/nashorn/internal/ir/SplitNode.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/ir/SplitNode.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/ir/SplitNode.java
+--- a/src/jdk/nashorn/internal/ir/SplitNode.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/ir/SplitNode.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -74,7 +74,7 @@
          this.name         = name;
          this.functionNode = functionNode;
@@ -1825,9 +1811,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/ir/SplitNode.java
      }
  
      @Override
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/ir/SwitchNode.java
---- a/src/jdk/nashorn/internal/ir/SwitchNode.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/ir/SwitchNode.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/ir/SwitchNode.java
+--- a/src/jdk/nashorn/internal/ir/SwitchNode.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/ir/SwitchNode.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -71,7 +71,7 @@
      private SwitchNode(final SwitchNode switchNode, final CopyState cs) {
          super(switchNode);
@@ -1837,10 +1823,10 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/ir/SwitchNode.java
  
          for (final CaseNode caseNode : switchNode.getCases()) {
             newCases.add((CaseNode)cs.existingOrCopy(caseNode));
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/ir/Symbol.java
---- a/src/jdk/nashorn/internal/ir/Symbol.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/ir/Symbol.java	Fri Jan 04 18:32:23 2013 +0100
-@@ -35,30 +35,30 @@
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/ir/Symbol.java
+--- a/src/jdk/nashorn/internal/ir/Symbol.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/ir/Symbol.java	Tue Jan 08 10:50:51 2013 +0100
+@@ -36,30 +36,30 @@
  
  public final class Symbol implements Comparable<Symbol> {
      /** Symbol flags. Kind ordered by precedence. */
@@ -1883,9 +1869,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/ir/Symbol.java
  
      /** Null or name identifying symbol. */
      private final String name;
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/ir/TryNode.java
---- a/src/jdk/nashorn/internal/ir/TryNode.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/ir/TryNode.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/ir/TryNode.java
+--- a/src/jdk/nashorn/internal/ir/TryNode.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/ir/TryNode.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -74,7 +74,7 @@
      private TryNode(final TryNode tryNode, final CopyState cs) {
          super(tryNode);
@@ -1913,9 +1899,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/ir/TryNode.java
          for (final Block catchBlock : catchBlocks) {
              catches.add((CatchNode)catchBlock.getStatements().get(0));
          }
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/ir/debug/ASTWriter.java
---- a/src/jdk/nashorn/internal/ir/debug/ASTWriter.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/ir/debug/ASTWriter.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/ir/debug/ASTWriter.java
+--- a/src/jdk/nashorn/internal/ir/debug/ASTWriter.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/ir/debug/ASTWriter.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -90,8 +90,8 @@
          type = type.substring(type.lastIndexOf('.') + 1, type.length());
   //       type += "@" + Debug.id(node) + "#" + node.getSymbol();
@@ -1950,9 +1936,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/ir/debug/ASTWriter
                      Context.printStackTrace(e);
                      return;
                  }
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/ir/debug/PrintVisitor.java
---- a/src/jdk/nashorn/internal/ir/debug/PrintVisitor.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/ir/debug/PrintVisitor.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/ir/debug/PrintVisitor.java
+--- a/src/jdk/nashorn/internal/ir/debug/PrintVisitor.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/ir/debug/PrintVisitor.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -91,7 +91,7 @@
       * @param printLineNumbers  should line number nodes be included in the output?
       */
@@ -1962,9 +1948,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/ir/debug/PrintVisi
          this.sb               = new StringBuilder();
          this.printLineNumbers = printLineNumbers;
      }
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/AccessorPropertyDescriptor.java
---- a/src/jdk/nashorn/internal/objects/AccessorPropertyDescriptor.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/objects/AccessorPropertyDescriptor.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/objects/AccessorPropertyDescriptor.java
+--- a/src/jdk/nashorn/internal/objects/AccessorPropertyDescriptor.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/objects/AccessorPropertyDescriptor.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -29,7 +29,7 @@
  import static jdk.nashorn.internal.runtime.ScriptRuntime.UNDEFINED;
  import static jdk.nashorn.internal.runtime.ScriptRuntime.sameValue;
@@ -1974,9 +1960,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/AccessorPr
  import jdk.nashorn.internal.objects.annotations.Property;
  import jdk.nashorn.internal.objects.annotations.ScriptClass;
  import jdk.nashorn.internal.runtime.JSType;
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/ArrayBufferView.java
---- a/src/jdk/nashorn/internal/objects/ArrayBufferView.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/objects/ArrayBufferView.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/objects/ArrayBufferView.java
+--- a/src/jdk/nashorn/internal/objects/ArrayBufferView.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/objects/ArrayBufferView.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -310,7 +310,7 @@
              dst = factory.construct(length);
          } else if (arg0 instanceof NativeArray) {
@@ -1995,9 +1981,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/ArrayBuffe
          } else {
              throw new RuntimeException("argument is not of array type");
          }
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/DataPropertyDescriptor.java
---- a/src/jdk/nashorn/internal/objects/DataPropertyDescriptor.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/objects/DataPropertyDescriptor.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/objects/DataPropertyDescriptor.java
+--- a/src/jdk/nashorn/internal/objects/DataPropertyDescriptor.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/objects/DataPropertyDescriptor.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -28,7 +28,7 @@
  import static jdk.nashorn.internal.runtime.ScriptRuntime.UNDEFINED;
  import static jdk.nashorn.internal.runtime.ScriptRuntime.sameValue;
@@ -2007,9 +1993,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/DataProper
  import jdk.nashorn.internal.objects.annotations.Property;
  import jdk.nashorn.internal.objects.annotations.ScriptClass;
  import jdk.nashorn.internal.runtime.JSType;
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/DateParser.java
---- a/src/jdk/nashorn/internal/objects/DateParser.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/objects/DateParser.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/objects/DateParser.java
+--- a/src/jdk/nashorn/internal/objects/DateParser.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/objects/DateParser.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -77,7 +77,7 @@
      private int yearSign = 0;
      private boolean namedMonth = false;
@@ -2019,9 +2005,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/DateParser
  
      static {
          addName("monday", Name.DAY_OF_WEEK, 0);
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/GenericPropertyDescriptor.java
---- a/src/jdk/nashorn/internal/objects/GenericPropertyDescriptor.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/objects/GenericPropertyDescriptor.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/objects/GenericPropertyDescriptor.java
+--- a/src/jdk/nashorn/internal/objects/GenericPropertyDescriptor.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/objects/GenericPropertyDescriptor.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -25,7 +25,7 @@
  
  package jdk.nashorn.internal.objects;
@@ -2031,9 +2017,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/GenericPro
  import jdk.nashorn.internal.objects.annotations.Property;
  import jdk.nashorn.internal.objects.annotations.ScriptClass;
  import jdk.nashorn.internal.runtime.JSType;
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/Global.java
---- a/src/jdk/nashorn/internal/objects/Global.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/objects/Global.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/objects/Global.java
+--- a/src/jdk/nashorn/internal/objects/Global.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/objects/Global.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -493,7 +493,9 @@
  
                  typeError(this, "cannot.get.default.number");
@@ -2058,9 +2044,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/Global.jav
              throw new RuntimeException(e);
          }
      }
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeArray.java
---- a/src/jdk/nashorn/internal/objects/NativeArray.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/objects/NativeArray.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/objects/NativeArray.java
+--- a/src/jdk/nashorn/internal/objects/NativeArray.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/objects/NativeArray.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -345,7 +345,9 @@
                  if (join instanceof ScriptFunction) {
                      return JOIN.getInvoker().invokeExact(join, sobj);
@@ -2211,9 +2197,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeArra
                      result.defineOwnProperty(to++, val);
                  }
                  return true;
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeBoolean.java
---- a/src/jdk/nashorn/internal/objects/NativeBoolean.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/objects/NativeBoolean.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/objects/NativeBoolean.java
+--- a/src/jdk/nashorn/internal/objects/NativeBoolean.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/objects/NativeBoolean.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -174,7 +174,9 @@
      private static MethodHandle findWrapFilter() {
          try {
@@ -2225,9 +2211,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeBool
              throw new AssertionError(e);
          }
      }
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeDate.java
---- a/src/jdk/nashorn/internal/objects/NativeDate.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/objects/NativeDate.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/objects/NativeDate.java
+--- a/src/jdk/nashorn/internal/objects/NativeDate.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/objects/NativeDate.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -75,10 +75,10 @@
      private static final double hoursPerDay      = 24;
      private static final double minutesPerHour   = 60;
@@ -2254,21 +2240,21 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeDate
              throw e;
          } catch (final Throwable t) {
              throw new RuntimeException(t);
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeDebug.java
---- a/src/jdk/nashorn/internal/objects/NativeDebug.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/objects/NativeDebug.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/objects/NativeDebug.java
+--- a/src/jdk/nashorn/internal/objects/NativeDebug.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/objects/NativeDebug.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -28,7 +28,7 @@
  import static jdk.nashorn.internal.runtime.ScriptRuntime.UNDEFINED;
  
- import java.io.PrintStream;
+ import java.io.PrintWriter;
 -import java.util.Objects;
 +import jdk.nashorn.internal.compat.Objects;
  import jdk.nashorn.internal.objects.annotations.Attribute;
  import jdk.nashorn.internal.objects.annotations.Function;
  import jdk.nashorn.internal.objects.annotations.ScriptClass;
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeError.java
---- a/src/jdk/nashorn/internal/objects/NativeError.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/objects/NativeError.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/objects/NativeError.java
+--- a/src/jdk/nashorn/internal/objects/NativeError.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/objects/NativeError.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -244,7 +244,7 @@
          Object[] res;
          if (exception instanceof Throwable) {
@@ -2278,9 +2264,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeErro
              for (final StackTraceElement st : frames) {
                  if (ECMAException.isScriptFrame(st)) {
                      filtered.add(st);
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeFloat32Array.java
---- a/src/jdk/nashorn/internal/objects/NativeFloat32Array.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/objects/NativeFloat32Array.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/objects/NativeFloat32Array.java
+--- a/src/jdk/nashorn/internal/objects/NativeFloat32Array.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/objects/NativeFloat32Array.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -64,10 +64,10 @@
          protected double getDoubleImpl(final int index) {
              final int byteIndex = byteIndex(index);
@@ -2296,9 +2282,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeFloa
              return Float.intBitsToFloat(bits);
          }
  
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeFloat64Array.java
---- a/src/jdk/nashorn/internal/objects/NativeFloat64Array.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/objects/NativeFloat64Array.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/objects/NativeFloat64Array.java
+--- a/src/jdk/nashorn/internal/objects/NativeFloat64Array.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/objects/NativeFloat64Array.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -66,14 +66,14 @@
              final int byteIndex = byteIndex(index);
              final byte[] byteArray = buffer.getByteArray();
@@ -2322,9 +2308,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeFloa
              return Double.longBitsToDouble(bits);
          }
  
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeInt32Array.java
---- a/src/jdk/nashorn/internal/objects/NativeInt32Array.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/objects/NativeInt32Array.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/objects/NativeInt32Array.java
+--- a/src/jdk/nashorn/internal/objects/NativeInt32Array.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/objects/NativeInt32Array.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -63,10 +63,10 @@
          protected int getIntImpl(final int index) {
              final int byteIndex = byteIndex(index);
@@ -2340,9 +2326,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeInt3
          }
  
          @Override
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeJSAdapter.java
---- a/src/jdk/nashorn/internal/objects/NativeJSAdapter.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/objects/NativeJSAdapter.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/objects/NativeJSAdapter.java
+--- a/src/jdk/nashorn/internal/objects/NativeJSAdapter.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/objects/NativeJSAdapter.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -476,7 +476,7 @@
              obj = new NativeArray(0);
          }
@@ -2401,9 +2387,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeJSAd
                  throw e;
              } catch (final Throwable t) {
                  throw new RuntimeException(t);
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeJSON.java
---- a/src/jdk/nashorn/internal/objects/NativeJSON.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/objects/NativeJSON.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/objects/NativeJSON.java
+--- a/src/jdk/nashorn/internal/objects/NativeJSON.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/objects/NativeJSON.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -138,7 +138,7 @@
                  replacer instanceof Iterable ||
                  (replacer != null && replacer.getClass().isArray())) {
@@ -2462,9 +2448,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeJSON
  
          final int length = JSType.toInteger(value.getLength());
          int index = 0;
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeNumber.java
---- a/src/jdk/nashorn/internal/objects/NativeNumber.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/objects/NativeNumber.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/objects/NativeNumber.java
+--- a/src/jdk/nashorn/internal/objects/NativeNumber.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/objects/NativeNumber.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -381,7 +381,9 @@
      private static MethodHandle findWrapFilter() {
          try {
@@ -2476,9 +2462,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeNumb
              throw new AssertionError(e);
          }
      }
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeObject.java
---- a/src/jdk/nashorn/internal/objects/NativeObject.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/objects/NativeObject.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/objects/NativeObject.java
+--- a/src/jdk/nashorn/internal/objects/NativeObject.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/objects/NativeObject.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -325,7 +325,9 @@
                  if (toString instanceof ScriptFunction) {
                      return TO_STRING.getInvoker().invokeExact(toString, sobj);
@@ -2490,9 +2476,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeObje
                  throw e;
              } catch (final Throwable t) {
                  throw new RuntimeException(t);
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeRegExp.java
---- a/src/jdk/nashorn/internal/objects/NativeRegExp.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/objects/NativeRegExp.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/objects/NativeRegExp.java
+--- a/src/jdk/nashorn/internal/objects/NativeRegExp.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/objects/NativeRegExp.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -604,7 +604,7 @@
      }
  
@@ -2502,9 +2488,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeRegE
  
          final NativeRegExp regexp = new NativeRegExp(regexp0);
          regexp.setGlobal(true);
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeString.java
---- a/src/jdk/nashorn/internal/objects/NativeString.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/objects/NativeString.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/objects/NativeString.java
+--- a/src/jdk/nashorn/internal/objects/NativeString.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/objects/NativeString.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -313,7 +313,7 @@
       */
      @Override
@@ -2601,9 +2587,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeStri
              throw new AssertionError(e);
          }
      }
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeUint16Array.java
---- a/src/jdk/nashorn/internal/objects/NativeUint16Array.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/objects/NativeUint16Array.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/objects/NativeUint16Array.java
+--- a/src/jdk/nashorn/internal/objects/NativeUint16Array.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/objects/NativeUint16Array.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -63,8 +63,8 @@
          protected int getIntImpl(final int index) {
              final int byteIndex = byteIndex(index);
@@ -2615,9 +2601,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeUint
          }
  
          @Override
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeUint32Array.java
---- a/src/jdk/nashorn/internal/objects/NativeUint32Array.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/objects/NativeUint32Array.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/objects/NativeUint32Array.java
+--- a/src/jdk/nashorn/internal/objects/NativeUint32Array.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/objects/NativeUint32Array.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -63,25 +63,25 @@
          protected int getIntImpl(final int index) {
              final int byteIndex = byteIndex(index);
@@ -2651,9 +2637,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeUint
          }
  
          @Override
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeUint8ClampedArray.java
---- a/src/jdk/nashorn/internal/objects/NativeUint8ClampedArray.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/objects/NativeUint8ClampedArray.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/objects/NativeUint8ClampedArray.java
+--- a/src/jdk/nashorn/internal/objects/NativeUint8ClampedArray.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/objects/NativeUint8ClampedArray.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -68,7 +68,7 @@
          @Override
          protected void setImpl(final int index, final int value) {
@@ -2663,9 +2649,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/NativeUint
                  clamped = (byte) value;
              } else {
                  clamped = value < 0 ? 0 : (byte)0xff;
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/ScriptFunctionImpl.java
---- a/src/jdk/nashorn/internal/objects/ScriptFunctionImpl.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/objects/ScriptFunctionImpl.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/objects/ScriptFunctionImpl.java
+--- a/src/jdk/nashorn/internal/objects/ScriptFunctionImpl.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/objects/ScriptFunctionImpl.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -46,8 +46,8 @@
   */
  public class ScriptFunctionImpl extends ScriptFunction {
@@ -2677,29 +2663,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/objects/ScriptFunc
  
      // set this function to be a builtin function
      private void setIsBuiltin() {
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/parser/AbstractParser.java
---- a/src/jdk/nashorn/internal/parser/AbstractParser.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/parser/AbstractParser.java	Fri Jan 04 18:32:23 2013 +0100
-@@ -429,6 +429,8 @@
- 
-         // Create literal node.
-         final Object value = getValue();
-+        // move it immediately to have a right finish
-+        next();
- 
-         LiteralNode<?> node = null;
- 
-@@ -452,7 +454,6 @@
-             assert false : "unknown type for LiteralNode: " + value.getClass();
-         }
- 
--        next();
-         return node;
-     }
- }
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/parser/JSONParser.java
---- a/src/jdk/nashorn/internal/parser/JSONParser.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/parser/JSONParser.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/parser/JSONParser.java
+--- a/src/jdk/nashorn/internal/parser/JSONParser.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/parser/JSONParser.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -246,7 +246,7 @@
  
          Node result = null;
@@ -2718,9 +2684,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/parser/JSONParser.
  
          // Create a block for the object literal.
  loop:
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/parser/Parser.java
---- a/src/jdk/nashorn/internal/parser/Parser.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/parser/Parser.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/parser/Parser.java
+--- a/src/jdk/nashorn/internal/parser/Parser.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/parser/Parser.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -530,7 +530,7 @@
      }
  
@@ -2762,37 +2728,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/parser/Parser.java
  
          while (true) {
              // Get starting token.
-@@ -938,7 +934,11 @@
- 
-         // If is a statement then handle end of line.
-         if (isStatement) {
-+            boolean semicolon = (type == SEMICOLON);
-             endOfLine();
-+            if (semicolon) {
-+                block.setFinish(finish);
-+            }
-         }
- 
-         return vars;
-@@ -954,7 +954,8 @@
-      */
-     private void emptyStatement() {
-         if (context._empty_statements) {
--            block.addStatement(new EmptyNode(source, token, Token.descPosition(token)));
-+            block.addStatement(new EmptyNode(source, token,
-+                    Token.descPosition(token) + Token.descLength(token)));
-         }
- 
-         // SEMICOLON checked in caller.
-@@ -988,6 +989,7 @@
- 
-         if (executeNode != null) {
-             executeNode.setFinish(finish);
-+            block.setFinish(finish);
-         }
-     }
- 
-@@ -1534,7 +1536,7 @@
+@@ -1540,7 +1536,7 @@
              expect(LBRACE);
  
              // Prepare to accumulate cases.
@@ -2801,15 +2737,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/parser/Parser.java
              CaseNode defaultCase = null;
  
              while (type != RBRACE) {
-@@ -1571,6 +1573,7 @@
-                 // Get CASE body.
-                 final Block statements = getBlock(false);
-                 final CaseNode caseNode = new CaseNode(source, caseToken, finish, caseExpression, statements);
-+                statements.setFinish(finish);
- 
-                 if (caseExpression == null) {
-                     defaultCase = caseNode;
-@@ -1700,7 +1703,7 @@
+@@ -1707,7 +1703,7 @@
              final Block tryBody = getBlock(true);
  
              // Prepare to accumulate catches.
@@ -2818,7 +2746,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/parser/Parser.java
  
              while (type == CATCH) {
                  // Capture CATCH token.
-@@ -1904,7 +1907,7 @@
+@@ -1911,7 +1907,7 @@
          next();
  
          // Prepare to accummulating elements.
@@ -2827,7 +2755,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/parser/Parser.java
          // Track elisions.
          boolean elision = true;
  loop:
-@@ -1971,8 +1974,8 @@
+@@ -1978,8 +1974,8 @@
          // Object context.
          Block objectContext = null;
          // Prepare to accumulate elements.
@@ -2838,7 +2766,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/parser/Parser.java
  
          try {
              // Create a block for the object literal.
-@@ -2150,20 +2153,18 @@
+@@ -2157,20 +2153,18 @@
              if (type != COLON) {
                  final long getSetToken = token;
  
@@ -2862,7 +2790,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/parser/Parser.java
                      final PropertyKey setIdent = propertyName();
                      final String setterName = setIdent.getPropertyName();
                      final IdentNode setNameNode = new IdentNode(source, ((Node)setIdent).getToken(), finish, "set " + setterName);
-@@ -2171,15 +2172,12 @@
+@@ -2178,15 +2172,12 @@
                      final IdentNode argIdent = getIdent();
                      verifyStrictIdent(argIdent, "setter argument");
                      expect(RPAREN);
@@ -2879,7 +2807,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/parser/Parser.java
                  }
              }
  
-@@ -2310,7 +2308,7 @@
+@@ -2317,7 +2308,7 @@
          if (type == LPAREN) {
              arguments = argumentList();
          } else {
@@ -2888,7 +2816,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/parser/Parser.java
          }
  
          // This is to support the following interface impl. syntax:
-@@ -2427,7 +2425,7 @@
+@@ -2434,7 +2425,7 @@
       */
      private List<Node> argumentList() {
          // Prepare to accumulate list of arguments.
@@ -2897,7 +2825,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/parser/Parser.java
          // LPAREN tested in caller.
          next();
  
-@@ -2511,7 +2509,7 @@
+@@ -2518,7 +2509,7 @@
  
          final boolean strict = functionNode.isStrictMode();
          if (arity > 1) {
@@ -2906,7 +2834,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/parser/Parser.java
  
              for (int i = arity - 1; i >= 0; i--) {
                  final IdentNode parameter = parameters.get(i);
-@@ -2564,7 +2562,7 @@
+@@ -2571,7 +2562,7 @@
       */
      private List<IdentNode> formalParameterList() {
          // Prepare to gather parameters.
@@ -2915,7 +2843,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/parser/Parser.java
          // Track commas.
          boolean first = true;
  
-@@ -2652,7 +2650,7 @@
+@@ -2659,7 +2650,7 @@
      }
  
      private RuntimeNode referenceError(final Node lhs, final Node rhs) {
@@ -2924,9 +2852,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/parser/Parser.java
          args.add(lhs);
          if (rhs == null) {
              args.add(LiteralNode.newInstance(source, lhs.getToken(), lhs.getFinish()));
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/parser/RegExp.java
---- a/src/jdk/nashorn/internal/parser/RegExp.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/parser/RegExp.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/parser/RegExp.java
+--- a/src/jdk/nashorn/internal/parser/RegExp.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/parser/RegExp.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -69,7 +69,7 @@
       */
      public RegExp(final String input, final String flagString) throws ParserException {
@@ -2936,9 +2864,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/parser/RegExp.java
          int flags = 0;
  
          for (final char ch : flagString.toCharArray()) {
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/parser/RegExpScanner.java
---- a/src/jdk/nashorn/internal/parser/RegExpScanner.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/parser/RegExpScanner.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/parser/RegExpScanner.java
+--- a/src/jdk/nashorn/internal/parser/RegExpScanner.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/parser/RegExpScanner.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -57,13 +57,13 @@
      private String javaPattern;
  
@@ -3005,9 +2933,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/parser/RegExpScann
          }
  
          /**
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/ConsString.java
---- a/src/jdk/nashorn/internal/runtime/ConsString.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/ConsString.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/ConsString.java
+--- a/src/jdk/nashorn/internal/runtime/ConsString.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/ConsString.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -92,7 +92,7 @@
          // to be very unbalanced, with mostly single string elements on the right and a long
          // linear list on the left. Traversing from right to left helps to keep the stack small
@@ -3017,9 +2945,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/ConsString
          stack.addFirst(left);
          CharSequence cs = right;
  
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/Context.java
---- a/src/jdk/nashorn/internal/runtime/Context.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/Context.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/Context.java
+--- a/src/jdk/nashorn/internal/runtime/Context.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/Context.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -44,8 +44,8 @@
  import java.security.PrivilegedAction;
  import java.util.Locale;
@@ -3031,44 +2959,25 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/Context.ja
  import jdk.nashorn.internal.codegen.ClassEmitter;
  import jdk.nashorn.internal.codegen.Compiler;
  import jdk.nashorn.internal.codegen.Namespace;
-@@ -120,7 +120,8 @@
-      * @param crlf write a carriage return/new line after text
-      */
-     public static void err(final String str, final boolean crlf) {
--        try (final PrintWriter err = Context.getContext().getErr()) {
-+        final PrintWriter err = Context.getContext().getErr();
-+        try {
-             if (err != null) {
-                 if (crlf) {
-                     err.println(str);
-@@ -134,6 +135,8 @@
-                     System.err.println();
-                 }
-             }
-+        } finally {
-+            err.close();
-         }
-     }
- 
-@@ -508,7 +511,16 @@
+@@ -508,7 +508,16 @@
              // because eval code may start with "use strict" directive.
              try {
                  strictFlag = clazz.getField(STRICT_MODE.tag()).getBoolean(null);
 -            } catch (final NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-+            } catch (final NoSuchFieldException ignored) {
++            } catch (final NoSuchFieldException e) {
 +                //ignored
 +                strictFlag = false;
-+            } catch (final SecurityException ignored) {
++            } catch (final SecurityException e) {
 +                //ignored
 +                strictFlag = false;
-+            } catch (final IllegalArgumentException ignored) {
++            } catch (final IllegalArgumentException e) {
 +                //ignored
 +                strictFlag = false;
-+            } catch (final IllegalAccessException ignored) {
++            } catch (final IllegalAccessException e) {
                  //ignored
                  strictFlag = false;
              }
-@@ -789,7 +801,13 @@
+@@ -787,7 +796,13 @@
  
          try {
              strict = script.getField(STRICT_MODE.tag()).getBoolean(null);
@@ -3083,7 +2992,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/Context.ja
              strict = false;
          }
  
-@@ -864,7 +882,19 @@
+@@ -862,7 +877,19 @@
          try {
              final Class<?> clazz = Class.forName("jdk.nashorn.internal.objects.Global", true, scriptLoader);
              return (ScriptObject) clazz.newInstance();
@@ -3104,9 +3013,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/Context.ja
              printStackTrace(e);
              throw new RuntimeException(e);
          }
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/ErrorManager.java
---- a/src/jdk/nashorn/internal/runtime/ErrorManager.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/ErrorManager.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/ErrorManager.java
+--- a/src/jdk/nashorn/internal/runtime/ErrorManager.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/ErrorManager.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -93,7 +93,7 @@
       * @return formatted string
       */
@@ -3116,9 +3025,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/ErrorManag
          final int           position = Token.descPosition(token);
          final StringBuilder sb       = new StringBuilder();
  
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/JSType.java
---- a/src/jdk/nashorn/internal/runtime/JSType.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/JSType.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/JSType.java
+--- a/src/jdk/nashorn/internal/runtime/JSType.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/JSType.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -58,49 +58,49 @@
      FUNCTION;
  
@@ -3202,9 +3111,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/JSType.jav
          if (obj instanceof StaticClass) {
              return "[JavaClass " + ((StaticClass)obj).getRepresentedClass().getName() + "]";
          }
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/Logging.java
---- a/src/jdk/nashorn/internal/runtime/Logging.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/Logging.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/Logging.java
+--- a/src/jdk/nashorn/internal/runtime/Logging.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/Logging.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -58,7 +58,7 @@
      }
  
@@ -3214,7 +3123,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/Logging.ja
  
      private static String lastPart(final String packageName) {
          final String[] parts = packageName.split("\\.");
-@@ -143,7 +143,9 @@
+@@ -125,7 +125,9 @@
  
                  Logging.loggers.put(name, logger);
              }
@@ -3225,9 +3134,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/Logging.ja
              throw e;
          }
      }
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/NumberToString.java
---- a/src/jdk/nashorn/internal/runtime/NumberToString.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/NumberToString.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/NumberToString.java
+--- a/src/jdk/nashorn/internal/runtime/NumberToString.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/NumberToString.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -52,9 +52,9 @@
  
      //private static final long   signMask           = 0x8000000000000000L;
@@ -3240,9 +3149,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/NumberToSt
      private static final long   fractHOB           = (1L << expShift);
      private static final long   expOne             = ((long)expBias) << expShift;
      private static final int    maxSmallBinExp     = 62;
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/Property.java
---- a/src/jdk/nashorn/internal/runtime/Property.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/Property.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/Property.java
+--- a/src/jdk/nashorn/internal/runtime/Property.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/Property.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -30,7 +30,7 @@
  import static jdk.nashorn.internal.runtime.PropertyDescriptor.WRITABLE;
  
@@ -3292,9 +3201,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/Property.j
  
      /** Property key. */
      private final String key;
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/PropertyHashMap.java
---- a/src/jdk/nashorn/internal/runtime/PropertyHashMap.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/PropertyHashMap.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/PropertyHashMap.java
+--- a/src/jdk/nashorn/internal/runtime/PropertyHashMap.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/PropertyHashMap.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -547,7 +547,7 @@
  
      @Override
@@ -3313,9 +3222,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/PropertyHa
          for (Element element = list; element != null; element = element.getLink()) {
              set.add(element);
          }
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/PropertyListenerManager.java
---- a/src/jdk/nashorn/internal/runtime/PropertyListenerManager.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/PropertyListenerManager.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/PropertyListenerManager.java
+--- a/src/jdk/nashorn/internal/runtime/PropertyListenerManager.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/PropertyListenerManager.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -73,12 +73,12 @@
       */
      public final void addPropertyListener(final PropertyListener listener) {
@@ -3331,9 +3240,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/PropertyLi
      }
  
      /**
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/PropertyMap.java
---- a/src/jdk/nashorn/internal/runtime/PropertyMap.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/PropertyMap.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/PropertyMap.java
+--- a/src/jdk/nashorn/internal/runtime/PropertyMap.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/PropertyMap.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -50,13 +50,13 @@
   */
  public final class PropertyMap implements Iterable<Object>, PropertyListener {
@@ -3352,7 +3261,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/PropertyMa
  
      /** Map status flags. */
      private int flags;
-@@ -204,7 +204,7 @@
+@@ -205,7 +205,7 @@
          }
  
          if (protoGetSwitches == null) {
@@ -3361,7 +3270,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/PropertyMa
              if (! isListenerAdded()) {
                  proto.addPropertyListener(this);
                  setIsListenerAdded();
-@@ -524,10 +524,10 @@
+@@ -525,10 +525,10 @@
       */
      private void addToProtoHistory(final ScriptObject newProto, final PropertyMap newMap) {
          if (protoHistory == null) {
@@ -3374,7 +3283,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/PropertyMa
      }
  
      /**
-@@ -538,7 +538,7 @@
+@@ -539,7 +539,7 @@
       */
      private void addToHistory(final Property property, final PropertyMap newMap) {
          if (history == null) {
@@ -3383,9 +3292,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/PropertyMa
          }
  
          history.put(property, newMap);
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/QuotedStringTokenizer.java
---- a/src/jdk/nashorn/internal/runtime/QuotedStringTokenizer.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/QuotedStringTokenizer.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/QuotedStringTokenizer.java
+--- a/src/jdk/nashorn/internal/runtime/QuotedStringTokenizer.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/QuotedStringTokenizer.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -84,7 +84,7 @@
          }
  
@@ -3404,9 +3313,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/QuotedStri
          for (int i = 0; i < str.length(); i++) {
              final char c = str.charAt(i);
              for (final char q : this.quotes) {
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/ScriptFunction.java
---- a/src/jdk/nashorn/internal/runtime/ScriptFunction.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/ScriptFunction.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/ScriptFunction.java
+--- a/src/jdk/nashorn/internal/runtime/ScriptFunction.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/ScriptFunction.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -500,7 +500,9 @@
          if (allocator != null) {
              try {
@@ -3418,9 +3327,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/ScriptFunc
                  throw e;
              } catch (final Throwable t) {
                  throw new RuntimeException(t);
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/ScriptObject.java
---- a/src/jdk/nashorn/internal/runtime/ScriptObject.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/ScriptObject.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/ScriptObject.java
+--- a/src/jdk/nashorn/internal/runtime/ScriptObject.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/ScriptObject.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -97,13 +97,13 @@
      static final String NO_SUCH_PROPERTY_NAME = "__noSuchProperty__";
  
@@ -3675,9 +3584,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/ScriptObje
                  throw e;
              } catch (final Throwable t) {
                  throw new RuntimeException(t);
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/ScriptRuntime.java
---- a/src/jdk/nashorn/internal/runtime/ScriptRuntime.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/ScriptRuntime.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/ScriptRuntime.java
+--- a/src/jdk/nashorn/internal/runtime/ScriptRuntime.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/ScriptRuntime.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -36,7 +36,7 @@
  import java.lang.reflect.Array;
  import java.util.Collections;
@@ -3727,9 +3636,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/ScriptRunt
              throw e;
          } catch (final Throwable t) {
              throw new RuntimeException(t);
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/Source.java
---- a/src/jdk/nashorn/internal/runtime/Source.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/Source.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/Source.java
+--- a/src/jdk/nashorn/internal/runtime/Source.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/Source.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -35,12 +35,10 @@
  import java.net.URISyntaxException;
  import java.net.URL;
@@ -3815,9 +3724,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/Source.jav
              }
          } finally {
              is.close();
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/StructureLoader.java
---- a/src/jdk/nashorn/internal/runtime/StructureLoader.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/StructureLoader.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/StructureLoader.java
+--- a/src/jdk/nashorn/internal/runtime/StructureLoader.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/StructureLoader.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -76,7 +76,8 @@
                      public Class<?> run() throws ClassNotFoundException {
                          final String      source  = name.replace('.','/') + ".clazz";
@@ -3843,9 +3752,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/StructureL
                          }
                      }
                  });
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/Undefined.java
---- a/src/jdk/nashorn/internal/runtime/Undefined.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/Undefined.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/Undefined.java
+--- a/src/jdk/nashorn/internal/runtime/Undefined.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/Undefined.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -94,35 +94,24 @@
      public static GuardedInvocation lookup(final CallSiteDescriptor desc) {
          final String operator = CallSiteDescriptorFactory.tokenizeOperators(desc).get(0);
@@ -3886,9 +3795,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/Undefined.
          }
  
          return null;
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/WithObject.java
---- a/src/jdk/nashorn/internal/runtime/WithObject.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/WithObject.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/WithObject.java
+--- a/src/jdk/nashorn/internal/runtime/WithObject.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/WithObject.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -135,36 +135,23 @@
  
              final String operator = CallSiteDescriptorFactory.tokenizeOperators(desc).get(0);
@@ -3932,9 +3841,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/WithObject
                      }
                  }
              }
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/arrays/ArrayData.java
---- a/src/jdk/nashorn/internal/runtime/arrays/ArrayData.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/arrays/ArrayData.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/arrays/ArrayData.java
+--- a/src/jdk/nashorn/internal/runtime/arrays/ArrayData.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/arrays/ArrayData.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -199,7 +199,9 @@
              for (int i = 0; i < src.length; i++) {
                  Array.set(dst, i, invoke(converter, src[i]));
@@ -3957,9 +3866,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/arrays/Arr
              throw e;
          } catch (final Throwable t) {
              throw new RuntimeException(t);
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/arrays/IntArrayData.java
---- a/src/jdk/nashorn/internal/runtime/arrays/IntArrayData.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/arrays/IntArrayData.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/arrays/IntArrayData.java
+--- a/src/jdk/nashorn/internal/runtime/arrays/IntArrayData.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/arrays/IntArrayData.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -166,7 +166,7 @@
              array[index] = intValue;
              setLength(Math.max(index + 1, length()));
@@ -3986,9 +3895,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/arrays/Int
          }
  
          final ArrayData newData = convert(value == null ? Object.class : value.getClass());
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/arrays/IteratorAction.java
---- a/src/jdk/nashorn/internal/runtime/arrays/IteratorAction.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/arrays/IteratorAction.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/arrays/IteratorAction.java
+--- a/src/jdk/nashorn/internal/runtime/arrays/IteratorAction.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/arrays/IteratorAction.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -115,7 +115,9 @@
                  if (!forEach(val, index)) {
                      return result;
@@ -4000,9 +3909,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/arrays/Ite
                  throw e;
              } catch (final Throwable t) {
                  throw new RuntimeException(t);
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/arrays/LongArrayData.java
---- a/src/jdk/nashorn/internal/runtime/arrays/LongArrayData.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/arrays/LongArrayData.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/arrays/LongArrayData.java
+--- a/src/jdk/nashorn/internal/runtime/arrays/LongArrayData.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/arrays/LongArrayData.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -143,7 +143,11 @@
              array[index] = longValue;
              setLength(Math.max(index + 1, length()));
@@ -4016,9 +3925,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/arrays/Lon
              if (value == ScriptRuntime.UNDEFINED) {
                  return new UndefinedArrayFilter(this).set(index, value, strict);
              }
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/arrays/NumberArrayData.java
---- a/src/jdk/nashorn/internal/runtime/arrays/NumberArrayData.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/arrays/NumberArrayData.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/arrays/NumberArrayData.java
+--- a/src/jdk/nashorn/internal/runtime/arrays/NumberArrayData.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/arrays/NumberArrayData.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -132,7 +132,11 @@
              array[index] = doubleValue;
              setLength(Math.max(index + 1, length()));
@@ -4032,9 +3941,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/arrays/Num
              if (value == UNDEFINED) {
                  return new UndefinedArrayFilter(this).set(index, value, strict);
              }
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/arrays/SparseArrayData.java
---- a/src/jdk/nashorn/internal/runtime/arrays/SparseArrayData.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/arrays/SparseArrayData.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/arrays/SparseArrayData.java
+--- a/src/jdk/nashorn/internal/runtime/arrays/SparseArrayData.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/arrays/SparseArrayData.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -45,7 +45,7 @@
      private final long maxDenseLength;
  
@@ -4071,9 +3980,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/arrays/Spa
      }
  
      @Override
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/linker/JSObjectLinker.java
---- a/src/jdk/nashorn/internal/runtime/linker/JSObjectLinker.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/linker/JSObjectLinker.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/linker/JSObjectLinker.java
+--- a/src/jdk/nashorn/internal/runtime/linker/JSObjectLinker.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/linker/JSObjectLinker.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -28,7 +28,7 @@
  import java.lang.invoke.MethodHandle;
  import java.lang.invoke.MethodHandles;
@@ -4137,9 +4046,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/linker/JSO
          }
      }
  
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/linker/JavaAdapterFactory.java
---- a/src/jdk/nashorn/internal/runtime/linker/JavaAdapterFactory.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/linker/JavaAdapterFactory.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/linker/JavaAdapterFactory.java
+--- a/src/jdk/nashorn/internal/runtime/linker/JavaAdapterFactory.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/linker/JavaAdapterFactory.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -25,21 +25,21 @@
  
  package jdk.nashorn.internal.runtime.linker;
@@ -4210,9 +4119,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/linker/Jav
      private boolean autoConvertibleFromFunction = false;
  
      private final ClassWriter cw;
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/linker/JavaArgumentConverters.java
---- a/src/jdk/nashorn/internal/runtime/linker/JavaArgumentConverters.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/linker/JavaArgumentConverters.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/linker/JavaArgumentConverters.java
+--- a/src/jdk/nashorn/internal/runtime/linker/JavaArgumentConverters.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/linker/JavaArgumentConverters.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -242,7 +242,7 @@
          return MH.findStatic(MethodHandles.lookup(), JavaArgumentConverters.class, name, MH.type(rtype, types));
      }
@@ -4222,10 +4131,10 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/linker/Jav
  
      static {
          CONVERTERS.put(Number.class, TO_NUMBER);
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/linker/LinkerCallSite.java
---- a/src/jdk/nashorn/internal/runtime/linker/LinkerCallSite.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/linker/LinkerCallSite.java	Fri Jan 04 18:32:23 2013 +0100
-@@ -200,7 +200,7 @@
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/linker/LinkerCallSite.java
+--- a/src/jdk/nashorn/internal/runtime/linker/LinkerCallSite.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/linker/LinkerCallSite.java	Tue Jan 08 10:50:51 2013 +0100
+@@ -199,7 +199,7 @@
  
          public static ProfilingLinkerCallSite newProfilingLinkerCallSite(final NashornCallSiteDescriptor desc) {
              if (profileCallSites == null) {
@@ -4234,26 +4143,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/linker/Lin
  
                  final Thread profileDumperThread = new Thread(new ProfileDumper());
                  Runtime.getRuntime().addShutdownHook(profileDumperThread);
-@@ -285,7 +285,8 @@
-                     out = new PrintStream(System.err); //TODO abstraction break- why is this hard coded to System.err when everything else uses the context
-                 }
- 
--                try (PrintStream stream = new PrintStream(out)) {
-+                PrintStream stream = new PrintStream(out);
-+                try {
-                     int index = 0;
-                     for (final ProfilingLinkerCallSite callSite : profileCallSites) {
-                        stream.println("" + (index++) + '\t' +
-@@ -293,6 +294,8 @@
-                                       callSite.totalTime + '\t' +
-                                       callSite.hitCount);
-                     }
-+                } finally {
-+                    stream.close();
-                 }
-             }
-         }
-@@ -489,7 +492,7 @@
+@@ -495,7 +495,7 @@
  
      // counters updated in debug mode
      private static int count;
@@ -4262,19 +4152,19 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/linker/Lin
      private static int missCount;
      private static final Random r = new Random();
      private static final int missSamplingPercentage = Options.getIntProperty("nashorn.tcs.miss.samplePercent", 1);
-@@ -523,7 +526,7 @@
+@@ -529,7 +529,7 @@
       * @param out print stream
       */
-     public static void getMissCounts(final PrintStream out) {
+     public static void getMissCounts(final PrintWriter out) {
 -        final ArrayList<Entry<String, AtomicInteger>> entries = new ArrayList<>(missCounts.entrySet());
 +        final ArrayList<Entry<String, AtomicInteger>> entries = new ArrayList<Entry<String, AtomicInteger>>(missCounts.entrySet());
  
          Collections.sort(entries, new Comparator<Map.Entry<String, AtomicInteger>>() {
              @Override
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/linker/MethodHandleFactory.java
---- a/src/jdk/nashorn/internal/runtime/linker/MethodHandleFactory.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/linker/MethodHandleFactory.java	Fri Jan 04 18:32:23 2013 +0100
-@@ -181,7 +181,7 @@
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/linker/MethodHandleFactory.java
+--- a/src/jdk/nashorn/internal/runtime/linker/MethodHandleFactory.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/linker/MethodHandleFactory.java	Tue Jan 08 10:50:51 2013 +0100
+@@ -194,7 +194,7 @@
          }
  
          if (arg.getClass().isArray()) {
@@ -4283,7 +4173,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/linker/Met
              for (final Object elem : (Object[])arg) {
                  list.add('\'' + argString(elem) + '\'');
              }
-@@ -350,7 +350,9 @@
+@@ -352,7 +352,9 @@
          public MethodHandle getter(final MethodHandles.Lookup explicitLookup, final Class<?> clazz, final String name, final Class<?> type) {
              try {
                  return explicitLookup.findGetter(clazz, name, type);
@@ -4294,7 +4184,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/linker/Met
                  throw new LookupException(e);
              }
          }
-@@ -359,7 +361,9 @@
+@@ -361,7 +363,9 @@
          public MethodHandle staticGetter(final MethodHandles.Lookup explicitLookup, final Class<?> clazz, final String name, final Class<?> type) {
              try {
                  return explicitLookup.findStaticGetter(clazz, name, type);
@@ -4305,7 +4195,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/linker/Met
                  throw new LookupException(e);
              }
          }
-@@ -369,7 +373,9 @@
+@@ -371,7 +375,9 @@
          public MethodHandle setter(final MethodHandles.Lookup explicitLookup, final Class<?> clazz, final String name, final Class<?> type) {
              try {
                  return explicitLookup.findSetter(clazz, name, type);
@@ -4316,7 +4206,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/linker/Met
                  throw new LookupException(e);
              }
          }
-@@ -378,7 +384,9 @@
+@@ -380,7 +386,9 @@
          public MethodHandle staticSetter(final MethodHandles.Lookup explicitLookup, final Class<?> clazz, final String name, final Class<?> type) {
              try {
                  return explicitLookup.findStaticSetter(clazz, name, type);
@@ -4327,7 +4217,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/linker/Met
                  throw new LookupException(e);
              }
          }
-@@ -396,7 +404,9 @@
+@@ -398,7 +406,9 @@
          public MethodHandle findStatic(final MethodHandles.Lookup explicitLookup, final Class<?> clazz, final String name, final MethodType type) {
              try {
                  return explicitLookup.findStatic(clazz, name, type);
@@ -4338,7 +4228,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/linker/Met
                  throw new LookupException(e);
              }
          }
-@@ -405,7 +415,9 @@
+@@ -407,7 +417,9 @@
          public MethodHandle findVirtual(final MethodHandles.Lookup explicitLookup, final Class<?> clazz, final String name, final MethodType type) {
              try {
                  return explicitLookup.findVirtual(clazz, name, type);
@@ -4349,9 +4239,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/linker/Met
                  throw new LookupException(e);
              }
          }
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/linker/NashornBottomLinker.java
---- a/src/jdk/nashorn/internal/runtime/linker/NashornBottomLinker.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/linker/NashornBottomLinker.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/linker/NashornBottomLinker.java
+--- a/src/jdk/nashorn/internal/runtime/linker/NashornBottomLinker.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/linker/NashornBottomLinker.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -78,39 +78,30 @@
          final NashornCallSiteDescriptor desc = (NashornCallSiteDescriptor)linkRequest.getCallSiteDescriptor();
          final Object self = linkRequest.getReceiver();
@@ -4427,9 +4317,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/linker/Nas
          }
          throw new AssertionError("unknown call type " + desc);
      }
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/linker/NashornCallSiteDescriptor.java
---- a/src/jdk/nashorn/internal/runtime/linker/NashornCallSiteDescriptor.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/linker/NashornCallSiteDescriptor.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/linker/NashornCallSiteDescriptor.java
+--- a/src/jdk/nashorn/internal/runtime/linker/NashornCallSiteDescriptor.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/linker/NashornCallSiteDescriptor.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -74,7 +74,7 @@
      public static final int CALLSITE_TRACE_SCOPE      = 0x200;
  
@@ -4448,9 +4338,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/linker/Nas
          }
          return csd;
      }
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/options/KeyValueOption.java
---- a/src/jdk/nashorn/internal/runtime/options/KeyValueOption.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/options/KeyValueOption.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/options/KeyValueOption.java
+--- a/src/jdk/nashorn/internal/runtime/options/KeyValueOption.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/options/KeyValueOption.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -74,7 +74,7 @@
              return;
          }
@@ -4460,9 +4350,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/options/Ke
  
          final StringTokenizer st = new StringTokenizer(getValue(), ",");
          while (st.hasMoreElements()) {
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/options/OptionTemplate.java
---- a/src/jdk/nashorn/internal/runtime/options/OptionTemplate.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/options/OptionTemplate.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/options/OptionTemplate.java
+--- a/src/jdk/nashorn/internal/runtime/options/OptionTemplate.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/options/OptionTemplate.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -137,22 +137,17 @@
       * @return the default value as a string
       */
@@ -4546,13 +4436,13 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/options/Op
                      throw new IllegalArgumentException();
                  }
              }
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/options/Options.java
---- a/src/jdk/nashorn/internal/runtime/options/Options.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/options/Options.java	Fri Jan 04 18:32:23 2013 +0100
-@@ -76,9 +76,9 @@
-     public Options(final String resource, final PrintWriter errors) {
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/options/Options.java
+--- a/src/jdk/nashorn/internal/runtime/options/Options.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/options/Options.java	Tue Jan 08 10:50:51 2013 +0100
+@@ -87,9 +87,9 @@
+     public Options(final String resource, final PrintWriter err) {
          this.resource  = resource;
-         this.errors    = errors;
+         this.err       = err;
 -        this.files     = new ArrayList<>();
 -        this.arguments = new ArrayList<>();
 -        this.options   = new TreeMap<>();
@@ -4562,7 +4452,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/options/Op
  
          // set all default values
          for (final OptionTemplate t : Options.validOptions) {
-@@ -259,7 +259,7 @@
+@@ -261,7 +261,7 @@
       * @param option option
       */
      public void set(final String key, final boolean option) {
@@ -4571,7 +4461,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/options/Op
      }
  
      /**
-@@ -269,7 +269,7 @@
+@@ -271,7 +271,7 @@
       * @param option option
       */
      public void set(final String key, final String option) {
@@ -4580,7 +4470,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/options/Op
      }
  
      /**
-@@ -382,7 +382,7 @@
+@@ -384,7 +384,7 @@
       * @param args arguments from command line
       */
      public void process(final String[] args) {
@@ -4589,22 +4479,22 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/options/Op
          Collections.addAll(argList, args);
  
          while (!argList.isEmpty()) {
-@@ -474,37 +474,34 @@
+@@ -476,37 +476,36 @@
      }
  
      private static Option<?> createOption(final OptionTemplate t, final String value) {
 -        switch (t.getType()) {
 -        case "string":
--            // default value null
--            return new Option<>(value);
--        case "timezone":
--            // default value "TimeZone.getDefault()"
--            return new Option<>(TimeZone.getTimeZone(value));
--        case "keyvalues":
 +        String type = t.getType();
 +        if ("string".equals(type)) {
+             // default value null
+-            return new Option<>(value);
+-        case "timezone":
 +            return new Option<String>(value);
 +        } else if ("timezone".equals(type)) {
+             // default value "TimeZone.getDefault()"
+-            return new Option<>(TimeZone.getTimeZone(value));
+-        case "keyvalues":
 +            return new Option<TimeZone>(TimeZone.getTimeZone(value));
 +        } else if ("keyvalues".equals(type)) {
              return new KeyValueOption(value);
@@ -4623,8 +4513,8 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/options/Op
 +            return new Option<Boolean>(value != null && Boolean.parseBoolean(value));
 +        } else if ("integer".equals(type)) {
              try {
--                return new Option<>((Integer)((value == null)? 0 : Integer.parseInt(value)));
-+                return new Option<Integer>((Integer)((value == null)? 0 : Integer.parseInt(value)));
+-                return new Option<>((value == null) ? 0 : Integer.parseInt(value));
++                return new Option<Integer>((value == null) ? 0 : Integer.parseInt(value));
              } catch (final NumberFormatException nfe) {
                  throw new IllegalOptionException(t);
              }
@@ -4642,7 +4532,7 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/options/Op
      }
  
      private static void initProps(final KeyValueOption kv) {
-@@ -558,8 +555,8 @@
+@@ -560,8 +559,8 @@
              }
          });
  
@@ -4653,9 +4543,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/options/Op
  
          for (final Enumeration<String> keys = Options.bundle.getKeys(); keys.hasMoreElements(); ) {
              final String key = keys.nextElement();
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/options/ValueOption.java
---- a/src/jdk/nashorn/internal/runtime/options/ValueOption.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/options/ValueOption.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/internal/runtime/options/ValueOption.java
+--- a/src/jdk/nashorn/internal/runtime/options/ValueOption.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/internal/runtime/options/ValueOption.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -40,7 +40,7 @@
      ValueOption(final String value) {
          super(value);
@@ -4665,9 +4555,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/internal/runtime/options/Va
              final StringTokenizer st = new StringTokenizer(getValue(), ",");
              while (st.hasMoreElements()) {
                  values.add(st.nextToken());
-diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/tools/Shell.java
---- a/src/jdk/nashorn/tools/Shell.java	Fri Jan 04 09:58:33 2013 -0400
-+++ b/src/jdk/nashorn/tools/Shell.java	Fri Jan 04 18:32:23 2013 +0100
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 src/jdk/nashorn/tools/Shell.java
+--- a/src/jdk/nashorn/tools/Shell.java	Tue Jan 08 15:02:36 2013 +0530
++++ b/src/jdk/nashorn/tools/Shell.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -203,12 +203,17 @@
              for (final String fileName : options.getFiles()) {
                  final File firstFile = new File(fileName);
@@ -4692,9 +4582,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 src/jdk/nashorn/tools/Shell.java
                          }
                      } catch (final IOException e) {
                          // ignore this. File IO errors will be reported later anyway
-diff -r 5a1b0714df0e -r f4548e727aa4 stubs/build.xml
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 stubs/build.xml
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/stubs/build.xml	Fri Jan 04 18:32:23 2013 +0100
++++ b/stubs/build.xml	Tue Jan 08 10:50:51 2013 +0100
 @@ -0,0 +1,74 @@
 +<?xml version="1.0" encoding="UTF-8"?>
 +<!-- You may freely edit this file. See commented blocks below for -->
@@ -4770,9 +4660,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 stubs/build.xml
 +
 +    -->
 +</project>
-diff -r 5a1b0714df0e -r f4548e727aa4 stubs/nbproject/build-impl.xml
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 stubs/nbproject/build-impl.xml
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/stubs/nbproject/build-impl.xml	Fri Jan 04 18:32:23 2013 +0100
++++ b/stubs/nbproject/build-impl.xml	Tue Jan 08 10:50:51 2013 +0100
 @@ -0,0 +1,1086 @@
 +<?xml version="1.0" encoding="UTF-8"?>
 +<!--
@@ -5860,9 +5750,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 stubs/nbproject/build-impl.xml
 +        </ant>
 +    </target>
 +</project>
-diff -r 5a1b0714df0e -r f4548e727aa4 stubs/nbproject/project.properties
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 stubs/nbproject/project.properties
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/stubs/nbproject/project.properties	Fri Jan 04 18:32:23 2013 +0100
++++ b/stubs/nbproject/project.properties	Tue Jan 08 10:50:51 2013 +0100
 @@ -0,0 +1,70 @@
 +annotation.processing.enabled=true
 +annotation.processing.enabled.in.editor=false
@@ -5934,9 +5824,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 stubs/nbproject/project.properties
 +source.encoding=UTF-8
 +src.dir=src
 +test.src.dir=test
-diff -r 5a1b0714df0e -r f4548e727aa4 stubs/nbproject/project.xml
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 stubs/nbproject/project.xml
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/stubs/nbproject/project.xml	Fri Jan 04 18:32:23 2013 +0100
++++ b/stubs/nbproject/project.xml	Tue Jan 08 10:50:51 2013 +0100
 @@ -0,0 +1,16 @@
 +<?xml version="1.0" encoding="UTF-8"?>
 +<project xmlns="http://www.netbeans.org/ns/project/1">
@@ -5954,9 +5844,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 stubs/nbproject/project.xml
 +        </data>
 +    </configuration>
 +</project>
-diff -r 5a1b0714df0e -r f4548e727aa4 stubs/src/java/lang/ClassValue.java
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 stubs/src/java/lang/ClassValue.java
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/stubs/src/java/lang/ClassValue.java	Fri Jan 04 18:32:23 2013 +0100
++++ b/stubs/src/java/lang/ClassValue.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -0,0 +1,48 @@
 +/*
 + * Copyright (c) 2010-2011, Oracle and/or its affiliates. All rights reserved.
@@ -6006,9 +5896,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 stubs/src/java/lang/ClassValue.java
 +    }
 +
 +}
-diff -r 5a1b0714df0e -r f4548e727aa4 stubs/src/java/lang/invoke/CallSite.java
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 stubs/src/java/lang/invoke/CallSite.java
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/stubs/src/java/lang/invoke/CallSite.java	Fri Jan 04 18:32:23 2013 +0100
++++ b/stubs/src/java/lang/invoke/CallSite.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -0,0 +1,44 @@
 +/*
 + * Copyright (c) 2010-2011, Oracle and/or its affiliates. All rights reserved.
@@ -6054,9 +5944,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 stubs/src/java/lang/invoke/CallSite.java
 +    public abstract MethodHandle dynamicInvoker();
 +
 +}
-diff -r 5a1b0714df0e -r f4548e727aa4 stubs/src/java/lang/invoke/ConstantCallSite.java
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 stubs/src/java/lang/invoke/ConstantCallSite.java
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/stubs/src/java/lang/invoke/ConstantCallSite.java	Fri Jan 04 18:32:23 2013 +0100
++++ b/stubs/src/java/lang/invoke/ConstantCallSite.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -0,0 +1,53 @@
 +/*
 + * Copyright (c) 2010-2011, Oracle and/or its affiliates. All rights reserved.
@@ -6111,9 +6001,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 stubs/src/java/lang/invoke/ConstantCallSite
 +        throw new RuntimeException("stub only");
 +    }
 +}
-diff -r 5a1b0714df0e -r f4548e727aa4 stubs/src/java/lang/invoke/MethodHandle.java
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 stubs/src/java/lang/invoke/MethodHandle.java
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/stubs/src/java/lang/invoke/MethodHandle.java	Fri Jan 04 18:32:23 2013 +0100
++++ b/stubs/src/java/lang/invoke/MethodHandle.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -0,0 +1,83 @@
 +/*
 + * Copyright (c) 2010-2011, Oracle and/or its affiliates. All rights reserved.
@@ -6198,9 +6088,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 stubs/src/java/lang/invoke/MethodHandle.jav
 +        throw new RuntimeException("stub only");
 +    }
 +}
-diff -r 5a1b0714df0e -r f4548e727aa4 stubs/src/java/lang/invoke/MethodHandles.java
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 stubs/src/java/lang/invoke/MethodHandles.java
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/stubs/src/java/lang/invoke/MethodHandles.java	Fri Jan 04 18:32:23 2013 +0100
++++ b/stubs/src/java/lang/invoke/MethodHandles.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -0,0 +1,197 @@
 +/*
 + * Copyright (c) 2010-2011, Oracle and/or its affiliates. All rights reserved.
@@ -6399,9 +6289,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 stubs/src/java/lang/invoke/MethodHandles.ja
 +        }
 +    }
 +}
-diff -r 5a1b0714df0e -r f4548e727aa4 stubs/src/java/lang/invoke/MethodType.java
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 stubs/src/java/lang/invoke/MethodType.java
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/stubs/src/java/lang/invoke/MethodType.java	Fri Jan 04 18:32:23 2013 +0100
++++ b/stubs/src/java/lang/invoke/MethodType.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -0,0 +1,148 @@
 +/*
 + * Copyright (c) 2010-2011, Oracle and/or its affiliates. All rights reserved.
@@ -6551,9 +6441,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 stubs/src/java/lang/invoke/MethodType.java
 +        throw new RuntimeException("stub only");
 +    }
 +}
-diff -r 5a1b0714df0e -r f4548e727aa4 stubs/src/java/lang/invoke/MutableCallSite.java
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 stubs/src/java/lang/invoke/MutableCallSite.java
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/stubs/src/java/lang/invoke/MutableCallSite.java	Fri Jan 04 18:32:23 2013 +0100
++++ b/stubs/src/java/lang/invoke/MutableCallSite.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -0,0 +1,58 @@
 +/*
 + * Copyright (c) 2010-2011, Oracle and/or its affiliates. All rights reserved.
@@ -6613,9 +6503,9 @@ diff -r 5a1b0714df0e -r f4548e727aa4 stubs/src/java/lang/invoke/MutableCallSite.
 +    }
 +}
 +
-diff -r 5a1b0714df0e -r f4548e727aa4 stubs/src/java/lang/invoke/SwitchPoint.java
+diff -r 5f2db2d8a7fa -r 4e3262e2ebb6 stubs/src/java/lang/invoke/SwitchPoint.java
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/stubs/src/java/lang/invoke/SwitchPoint.java	Fri Jan 04 18:32:23 2013 +0100
++++ b/stubs/src/java/lang/invoke/SwitchPoint.java	Tue Jan 08 10:50:51 2013 +0100
 @@ -0,0 +1,46 @@
 +/*
 + * Copyright (c) 2010-2011, Oracle and/or its affiliates. All rights reserved.
