@@ -76,24 +76,27 @@ public final class GotoAction extends AbstractEditorAction {
     private static final Logger LOG = Logger.getLogger(GotoAction.class.getName());
     private static final long serialVersionUID = 1L;
 
+    @Override
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
         String actionName = actionName();
         if (EditorActionNames.gotoDeclaration.equals(actionName)) {
             resetCaretMagicPosition(target);
-            BaseDocument doc = Utilities.getDocument(target);
-            if (doc != null) {
-                try {
-                    Caret caret = target.getCaret();
-                    int dotPos = caret.getDot();
-                    int[] idBlk = Utilities.getIdentifierBlock(doc, dotPos);
-                    ExtSyntaxSupport extSup = (ExtSyntaxSupport)doc.getSyntaxSupport();
-                    if (idBlk != null) {
-                        int decPos = extSup.findDeclarationPosition(doc.getText(idBlk), idBlk[1]);
-                        if (decPos >= 0) {
-                            caret.setDot(decPos);
+            if (target != null) {
+                BaseDocument doc = Utilities.getDocument(target);
+                if (doc != null) {
+                    try {
+                        Caret caret = target.getCaret();
+                        int dotPos = caret.getDot();
+                        int[] idBlk = Utilities.getIdentifierBlock(doc, dotPos);
+                        ExtSyntaxSupport extSup = (ExtSyntaxSupport) doc.getSyntaxSupport();
+                        if (idBlk != null) {
+                            int decPos = extSup.findDeclarationPosition(doc.getText(idBlk), idBlk[1]);
+                            if (decPos >= 0) {
+                                caret.setDot(decPos);
+                            }
                         }
+                    } catch (BadLocationException e) {
                     }
-                } catch (BadLocationException e) {
                 }
             }
         }
