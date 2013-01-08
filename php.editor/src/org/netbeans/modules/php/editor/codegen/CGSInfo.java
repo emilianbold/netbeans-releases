@@ -188,6 +188,10 @@ public final class CGSInfo {
         this.fluentSetter = fluentSetter;
     }
 
+    public JTextComponent getComponent() {
+        return textComp;
+    }
+
     /**
      * Extract attributes and methods from caret enclosing class and initialize list of properties.
      */

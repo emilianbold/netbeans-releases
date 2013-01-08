@@ -124,7 +124,7 @@ public final class CGSGenerator implements CodeGenerator {
             }
 
             @Override
-            public String getTemplateText(final CGSInfo cgsInfo, final JTextComponent textComponent) {
+            public String getTemplateText(final CGSInfo cgsInfo) {
                 final StringBuilder params = new StringBuilder();
                 final StringBuilder assignments = new StringBuilder();
                 for (Property property : cgsInfo.getProperties()) {
@@ -175,7 +175,7 @@ public final class CGSGenerator implements CodeGenerator {
             }
 
             @Override
-            public String getTemplateText(final CGSInfo cgsInfo, final JTextComponent textComponent) {
+            public String getTemplateText(final CGSInfo cgsInfo) {
                 return new PropertyMethodsCreator(cgsInfo.getPossibleGetters()).create(new SingleGetterCreator(cgsInfo));
             }
 
@@ -207,7 +207,7 @@ public final class CGSGenerator implements CodeGenerator {
             }
 
             @Override
-            public String getTemplateText(final CGSInfo cgsInfo, final JTextComponent textComponent) {
+            public String getTemplateText(final CGSInfo cgsInfo) {
                 return new PropertyMethodsCreator(cgsInfo.getPossibleSetters()).create(new SingleSetterCreator(cgsInfo));
             }
 
@@ -240,7 +240,7 @@ public final class CGSGenerator implements CodeGenerator {
             }
 
             @Override
-            public String getTemplateText(final CGSInfo cgsInfo, final JTextComponent textComponent) {
+            public String getTemplateText(final CGSInfo cgsInfo) {
                 final StringBuilder gettersAndSetters = new StringBuilder();
                 gettersAndSetters.append(new PropertyMethodsCreator(cgsInfo.getPossibleGetters()).create(new SingleGetterCreator(cgsInfo)));
                 gettersAndSetters.append(new PropertyMethodsCreator(cgsInfo.getPossibleSetters()).create(new SingleSetterCreator(cgsInfo)));
@@ -271,7 +271,7 @@ public final class CGSGenerator implements CodeGenerator {
             }
 
             @Override
-            public String getTemplateText(final CGSInfo cgsInfo, final JTextComponent textComponent) {
+            public String getTemplateText(final CGSInfo cgsInfo) {
                 final StringBuilder inheritedMethods = new StringBuilder();
                 for (MethodProperty methodProperty : cgsInfo.getPossibleMethods()) {
                     if (methodProperty.isSelected()) {
@@ -280,8 +280,8 @@ public final class CGSGenerator implements CodeGenerator {
                                 ? TypeNameResolverImpl.forNull()
                                 : CodegenUtils.createSmarterTypeNameResolver(
                                         method,
-                                        ModelUtils.getModel(Source.create(textComponent.getDocument()), 300),
-                                        textComponent.getCaretPosition());
+                                        ModelUtils.getModel(Source.create(cgsInfo.getComponent().getDocument()), 300),
+                                        cgsInfo.getComponent().getCaretPosition());
                         if (method.isAbstract() || method.isMagic() || method.getType().isInterface()) {
                             inheritedMethods.append(method.asString(PrintAs.DeclarationWithEmptyBody, typeNameResolver).replace("abstract ", "")); //NOI18N;
                         } else {
@@ -302,7 +302,7 @@ public final class CGSGenerator implements CodeGenerator {
         public abstract ComboBoxModel getModel(final String propertyName);
         public abstract String getDisplayName();
         public abstract String getDialogTitle();
-        public abstract String getTemplateText(final CGSInfo cgsInfo, final JTextComponent textComponent);
+        public abstract String getTemplateText(final CGSInfo cgsInfo);
 
         private GenType(final PanelStrategy panelStrategy, final FluentSetterStrategy fluentSetterStrategy) {
             this.panelStrategy = panelStrategy;
@@ -437,20 +437,19 @@ public final class CGSGenerator implements CodeGenerator {
     //constructor
     private final GenType genType;
     private final CGSInfo cgsInfo;
-    private final JTextComponent component;
 
     private static final String GETTER_SETTER_PROJECT_PROPERTY = "getter.setter.method.name.generation";
     private static final String FLUENT_SETTER_PROJECT_PROPERTY = "fluent.setter.project.property"; //NOI18N
 
-    private CGSGenerator(JTextComponent component, CGSInfo cgsInfo, GenType type) {
+    private CGSGenerator(CGSInfo cgsInfo, GenType type) {
         this.genType = type;
         this.cgsInfo = cgsInfo;
-        this.component = component;
     }
 
     @Override
     public void invoke() {
         // obtain the generation from project properties
+        JTextComponent component = cgsInfo.getComponent();
         FileObject fo = NbEditorUtilities.getFileObject(component.getDocument());
         Project project = FileOwnerQuery.getOwner(fo);
         if (project != null) {
@@ -467,7 +466,7 @@ public final class CGSGenerator implements CodeGenerator {
             dialog.dispose();
             if (desc.getValue() == DialogDescriptor.OK_OPTION) {
                 CodeTemplateManager manager = CodeTemplateManager.get(component.getDocument());
-                CodeTemplate template = manager.createTemporary(genType.getTemplateText(cgsInfo, component));
+                CodeTemplate template = manager.createTemporary(genType.getTemplateText(cgsInfo));
                 template.insert(component);
                 //save the gen type value to the project properties
                 preferences.put(GETTER_SETTER_PROJECT_PROPERTY, cgsInfo.getHowToGenerate().name());
@@ -491,19 +490,19 @@ public final class CGSGenerator implements CodeGenerator {
 
             if (info.getClassName() != null) { // is the cursor in a class?
                 if (!info.hasConstructor()) {
-                    ret.add(new CGSGenerator(textComp, info, GenType.CONSTRUCTOR));
+                    ret.add(new CGSGenerator(info, GenType.CONSTRUCTOR));
                 }
                 if (info.getPossibleGetters().size() > 0) {
-                    ret.add(new CGSGenerator(textComp, info, GenType.GETTER));
+                    ret.add(new CGSGenerator(info, GenType.GETTER));
                 }
                 if (info.getPossibleSetters().size() > 0) {
-                    ret.add(new CGSGenerator(textComp, info, GenType.SETTER));
+                    ret.add(new CGSGenerator(info, GenType.SETTER));
                 }
                 if (info.getPossibleGettersSetters().size() > 0) {
-                    ret.add(new CGSGenerator(textComp, info, GenType.GETTER_AND_SETTER));
+                    ret.add(new CGSGenerator(info, GenType.GETTER_AND_SETTER));
                 }
                 if (info.getPossibleMethods().size() > 0) {
-                    ret.add(new CGSGenerator(textComp, info, GenType.METHODS));
+                    ret.add(new CGSGenerator(info, GenType.METHODS));
                 }
             }
             return ret;
