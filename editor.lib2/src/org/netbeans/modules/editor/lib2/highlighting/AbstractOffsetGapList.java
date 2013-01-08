@@ -271,9 +271,10 @@ public abstract class AbstractOffsetGapList<E> extends GapList<E> {
      * @param  index      The position to add the element at.
      * @param  element    The element to add.
      * 
-     * @return The old elemet, which was originally stored at the <code>index</code>
+     * @return The old element, which was originally stored at the <code>index</code>
      *         position.
      */
+    @Override
     public final E set(int index, E element) {
         if (index < 0 || index >= size()) {
             throw new IndexOutOfBoundsException("index = " + index + " size = " + size()); //NOI18N
@@ -282,30 +283,24 @@ public abstract class AbstractOffsetGapList<E> extends GapList<E> {
         int originalOffset = attachElement(element);
         setElementRawOffset(element, offset2raw(originalOffset));
         
-        boolean ok = true;
-        
         // check offset of the element at (index - 1)
         if (index > 0 && elementOffset(index - 1) > originalOffset) {
-            System.out.println("[" + (index - 1) + "] = " + elementOffset(index - 1) + " > {" + index + "} = "+ originalOffset);
-            ok = false;
+            // can't insert the element at this index, the list must remain sorted
+            detachElement(element);
+            throw new IllegalStateException("Can't insert element at index: " + index + "[" + (index - 1) + "] = " + elementOffset(index - 1) + " > {" + index + "} = "+ originalOffset); //NOI18N
         }
 
         // check offset of the element at (index + 1)
         if (index + 1 < size() && elementOffset(index + 1) < originalOffset) {
-            System.out.println("[" + (index + 1) + "] = " + elementOffset(index + 1) + " < {" + index + "} = "+ originalOffset);
-            ok = false;
-        }
-        
-        if (ok) {
-            // the index is valid for the element
-            E oldElement = super.set(index, element);
-            detachElement(oldElement);
-            return oldElement;
-        } else {
             // can't insert the element at this index, the list must remain sorted
             detachElement(element);
-            throw new IllegalStateException("Can't insert element at index: " + index); //NOI18N
+            throw new IllegalStateException("Can't insert element at index: " + index + "[" + (index + 1) + "] = " + elementOffset(index + 1) + " < {" + index + "} = "+ originalOffset); //NOI18N
         }
+        
+        // the index is valid for the element
+        E oldElement = super.set(index, element);
+        detachElement(oldElement);
+        return oldElement;
     }
 
     /**
