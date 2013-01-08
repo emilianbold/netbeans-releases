@@ -37,15 +37,16 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
-import com.oracle.nashorn.parser.Token;
-import com.oracle.nashorn.parser.TokenType;
-import com.oracle.nashorn.runtime.ErrorManager;
-import com.oracle.nashorn.runtime.Source;
+import jdk.nashorn.internal.parser.Token;
+import jdk.nashorn.internal.parser.TokenType;
+import jdk.nashorn.internal.runtime.ErrorManager;
+import jdk.nashorn.internal.runtime.Source;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jdk.nashorn.internal.runtime.ParserException;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Error;
@@ -106,21 +107,8 @@ public class JsErrorManager extends ErrorManager {
     }
 
     @Override
-    public void error(String message, Source source, int line, int column, long token) {
-        LOGGER.log(Level.FINE, "Error {0} [{1}, {2}]", new Object[] {message, line, column});
-        addParserError(new ParserError(message, line, column, token));
-    }
-
-    @Override
-    public void error(String message, Source source, long token) {
-        LOGGER.log(Level.FINE, "Error {0} ({1})", new Object[] {message, token});
-        addParserError(new ParserError(message, token));
-    }
-
-    @Override
-    public void error(String message, long token) {
-        LOGGER.log(Level.FINE, "Error {0} ({1})", new Object[] {message, token});
-        addParserError(new ParserError(message, token));
+    public void error(ParserException e) {
+        addParserError(new ParserError(e.getMessage(), e.getLineNumber(), e.getColumnNumber(), e.getToken()));
     }
 
     @Override
@@ -130,18 +118,8 @@ public class JsErrorManager extends ErrorManager {
     }
 
     @Override
-    public void warning(String message, Source source, int line, int column, long token) {
-        LOGGER.log(Level.FINE, "Warning {0} [{1}, {2}]",  new Object[] {message, line, column});
-    }
-
-    @Override
-    public void warning(String message, Source source, long token) {
-        LOGGER.log(Level.FINE, "Warning {0} ({1})", new Object[] {message, token});
-    }
-
-    @Override
-    public void warning(String message, long token) {
-        LOGGER.log(Level.FINE, "Warning {0} ({1})", new Object[] {message, token});
+    public void warning(ParserException e) {
+        LOGGER.log(Level.FINE, null, e);
     }
 
     @Override
