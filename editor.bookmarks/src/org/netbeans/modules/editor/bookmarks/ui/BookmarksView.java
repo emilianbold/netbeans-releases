@@ -87,7 +87,6 @@ import org.netbeans.modules.editor.bookmarks.BookmarkManager;
 import org.netbeans.modules.editor.bookmarks.BookmarkManagerEvent;
 import org.netbeans.modules.editor.bookmarks.BookmarkManagerListener;
 import org.netbeans.modules.editor.bookmarks.BookmarkUtils;
-import org.netbeans.modules.editor.bookmarks.BookmarksPersistence;
 import org.netbeans.modules.editor.bookmarks.ProjectBookmarks;
 import org.netbeans.swing.etable.ETable;
 import org.openide.cookies.EditorCookie;
@@ -329,7 +328,12 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
     
     private void updateNodeTree() {
         nodeTree.updateNodeTree();
-        rebuildTableEntries();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                rebuildTableEntries();
+            }
+        });
     }
     
     private void rebuildTableEntries() {
@@ -459,7 +463,7 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
         // Ensure all bookmarks from all projects loaded
         BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
         try {
-            lockedBookmarkManager.loadOpenProjectsBookmarks();
+            lockedBookmarkManager.keepOpenProjectsBookmarksLoaded();
         } finally {
             lockedBookmarkManager.unlock();
         }
