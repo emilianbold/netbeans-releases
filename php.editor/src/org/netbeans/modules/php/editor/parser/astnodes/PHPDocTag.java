@@ -58,7 +58,8 @@ public class PHPDocTag extends ASTNode {
         PROPERTY("property"), PROPERTY_READ("property-read"), PROPERTY_WRITE("property-write"), //NOI18N
         PARAM("param"), //NOI18N
         RETURN("return"), //NOI18N
-        VAR("var"); //NOI18N
+        VAR("var"), //NOI18N
+        DEPRECATED("deprecated"); //NOI18N
 
         private final String name;
 
