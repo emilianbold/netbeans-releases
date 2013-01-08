@@ -333,9 +333,9 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
     }
     private static class ClientSideProjectChildren extends Children.Keys<BasicNodes> {
 
-        private ClientSideProject project;
+        private final ClientSideProject project;
         private final FileObject nbprojectFolder;
-        private Listener listener;
+        private final Listener listener;
 
         public ClientSideProjectChildren(ClientSideProject p) {
             this.project = p;
@@ -355,9 +355,9 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         private class Listener extends FileChangeAdapter implements PropertyChangeListener {
 
-            private boolean sourcesNodeHidden;
-            private boolean testsNodeHidden;
-            private boolean configNodeHidden;
+            private volatile boolean sourcesNodeHidden;
+            private volatile boolean testsNodeHidden;
+            private volatile boolean configNodeHidden;
 
             public Listener() {
                 sourcesNodeHidden = isNodeHidden(BasicNodes.Sources);
@@ -471,14 +471,13 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         }
 
         private boolean isNodeHidden(BasicNodes type) {
-            FileObject root = getRootForNode(type);
-            if (root != null && root.isValid()) {
-                DataFolder df = DataFolder.findFolder(root);
-                if (df.getChildren().length > 0 || type == BasicNodes.Sources) {
-                    return false;
-                }
+            if (type == BasicNodes.Sources) {
+                return false;
             }
-            return true;
+            FileObject root = getRootForNode(type);
+            return root == null
+                    || !root.isValid()
+                    || root.getChildren().length == 0;
         }
 
         private FileObject getRootForNode(BasicNodes node) {
