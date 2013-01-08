@@ -61,6 +61,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     final private boolean hasName;
     private String documentation;
     protected JsElement.Kind kind;
+    private boolean deprecated;
     
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange) {
         super((parent != null ? parent.getFileObject() : null), name.getName(), name.getName().equals("prototype"),  offsetRange, EnumSet.of(Modifier.PUBLIC));
@@ -71,6 +72,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         this.assignments = new HashMap<Integer, Collection<TypeUsage>>();
         this.hasName = name.getOffsetRange().getStart() != name.getOffsetRange().getEnd();
         this.kind = null;
+        this.deprecated = false;
     }
     
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange, boolean isDeclared, Set<Modifier> modifiers) {
@@ -82,6 +84,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         this.assignments = new HashMap<Integer, Collection<TypeUsage>>();
         this.hasName = name.getOffsetRange().getStart() != name.getOffsetRange().getEnd();
         this.kind = null;
+        this.deprecated = false;
     }
     
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange, boolean isDeclared) {
@@ -96,6 +99,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         this.occurrences = new ArrayList<Occurrence>();
         this.assignments = new HashMap<Integer, Collection<TypeUsage>>();
         this.hasName = false;
+        this.deprecated = false;
     }
     
     @Override
@@ -276,6 +280,8 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     public boolean isAnonymous() {
         return false;
     }
+    
+   
 
     @Override
     public boolean hasExactName() {
@@ -340,33 +346,42 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         for(Integer index: assignments.keySet()) {
             resolved.clear();
             Collection<TypeUsage> unresolved = assignments.get(index);
-            for (TypeUsage type : unresolved) {
-                if(!((TypeUsageImpl)type).isResolved()){
-                    resolved.addAll(ModelUtils.resolveTypeFromSemiType(this, type));
-                } else {
-                    resolved.add(type);
-                }
-            }
             JsObject global = ModelUtils.getGlobalObject(parent);
-            for (TypeUsage type : resolved) {
-                if (type.getOffset() > 0) {
-                    JsObject jsObject = ModelUtils.findJsObjectByName(global, type.getType());
-                    if (jsObject == null && type.getType().indexOf('.') == -1) {
-                        JsObject decParent = (
-                                this.parent.getJSKind() != JsElement.Kind.ANONYMOUS_OBJECT
-                                && this.parent.getJSKind() != JsElement.Kind.OBJECT_LITERAL) 
-                                ? this.parent : this.parent.getParent();
-                        while (jsObject == null && decParent != null) {
-                            jsObject = decParent.getProperty(type.getType());
-                            decParent = decParent.getParent();
+            for (TypeUsage type : unresolved) {
+                Collection<TypeUsage> resolvedHere = new ArrayList<TypeUsage>();
+                if(!((TypeUsageImpl)type).isResolved()){
+                    resolvedHere.addAll(ModelUtils.resolveTypeFromSemiType(this, type));
+                } else {
+                    resolvedHere.add(type);
+                }
+                if (!type.getType().contains("this")) {
+                    for (TypeUsage typeHere : resolvedHere) {
+                        if (typeHere.getOffset() > 0) {
+                            JsObject jsObject = ModelUtils.findJsObjectByName(global, typeHere.getType());
+                            if (jsObject == null && typeHere.getType().indexOf('.') == -1) {
+                                DeclarationScope declarationScope = ModelUtils.getDeclarationScope((DeclarationScope)global, typeHere.getOffset());
+                                jsObject = ModelUtils.getJsObjectByName(declarationScope, typeHere.getType());
+                                if (jsObject == null) {
+                                    JsObject decParent = (
+                                            this.parent.getJSKind() != JsElement.Kind.ANONYMOUS_OBJECT
+                                            && this.parent.getJSKind() != JsElement.Kind.OBJECT_LITERAL) 
+                                            ? this.parent : this.parent.getParent();
+                                    while (jsObject == null && decParent != null) {
+                                        jsObject = decParent.getProperty(typeHere.getType());
+                                        decParent = decParent.getParent();
+                                    }
+                                }
+                            }
+                            if (jsObject != null) {
+                                ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(typeHere.getOffset(), typeHere.getOffset() + typeHere.getType().length()));
+                                moveOccurrenceOfProperties((JsObjectImpl)jsObject, this);
+                            }
                         }
                     }
-                    if (jsObject != null) {
-                        ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(type.getOffset(), type.getOffset() + type.getType().length()));
-                        moveOccurrenceOfProperties((JsObjectImpl)jsObject, this);
-                    }
                 }
+                resolved.addAll(resolvedHere);
             }
+            
             unresolved.clear();
             unresolved.addAll(resolved);
         }
@@ -468,5 +483,14 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
  
     public void setDocumentation(String doc) {
         this.documentation = doc;
+    }
+
+    @Override
+    public boolean isDeprecated() {
+        return deprecated;
+    }
+    
+    public void setDeprecated(boolean depreceted) {
+        this.deprecated = depreceted;
     }
 }

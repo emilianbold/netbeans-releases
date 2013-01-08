@@ -64,6 +64,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle.Messages;
 
@@ -115,7 +116,7 @@ public class MavenPlatformJarProvider implements PlatformJarProvider {
             Set<File> jars = new LinkedHashSet<File>();
             for (Artifact art : arts) {
                 if (art.getFile() != null && art.getFile().exists()) {
-                    jars.add(art.getFile());
+                    jars.add(FileUtil.normalizeFile(art.getFile()));
                 }
             }
             return jars;

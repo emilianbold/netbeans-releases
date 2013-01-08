@@ -72,6 +72,7 @@ import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
 import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.project.api.PhpProjectUtils;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -195,6 +196,7 @@ public class PHPTypeSearcher implements IndexSearcher {
         private String projectName;
         private Icon projectIcon;
         private final Helper helper;
+        private FileObject projectDirectory;
 
         public PHPTypeDescriptor(PhpElement element, Helper helper) {
             this(element, null, helper);
@@ -235,6 +237,9 @@ public class PHPTypeSearcher implements IndexSearcher {
             if (fo != null) {
                 Project p = FileOwnerQuery.getOwner(fo);
                 if (p != null) {
+                    if (PhpProjectUtils.isPhpProject(p)) {
+                        projectDirectory = p.getProjectDirectory();
+                    }
                     ProjectInformation pi = ProjectUtils.getInformation(p);
                     projectName = pi.getDisplayName();
                     projectIcon = pi.getIcon();
@@ -272,6 +277,9 @@ public class PHPTypeSearcher implements IndexSearcher {
 
         @Override
         public String getContextName() {
+            if (projectName == null) {
+                initProjectInfo();
+            }
             StringBuilder sb = new StringBuilder();
             boolean s = false;
             if (element instanceof FullyQualifiedElement) {
@@ -299,7 +307,16 @@ public class PHPTypeSearcher implements IndexSearcher {
                 if (s) {
                     sb.append(" in ");
                 }
-                sb.append(FileUtil.getFileDisplayName(file));
+                String pathToDisplay;
+                String filePath = FileUtil.getFileDisplayName(file);
+                if (projectDirectory != null) {
+                    String projectPath = FileUtil.getFileDisplayName(projectDirectory);
+                    assert projectPath.length() < filePath.length();
+                    pathToDisplay = getProjectName() + " ." + filePath.substring(projectPath.length()); //NOI18N
+                } else {
+                    pathToDisplay = filePath;
+                }
+                sb.append(pathToDisplay); //NOI18N
             }
             if (sb.length() > 0) {
                 return sb.toString();

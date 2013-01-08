@@ -48,6 +48,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.repository.api.CacheLocation;
+import org.netbeans.modules.cnd.repository.relocate.api.RelocationSupport;
+import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.openide.modules.OnStop;
 
@@ -78,7 +80,8 @@ public class CndTextIndexManager {
             indexRoot.mkdirs();
 
             try {
-                index = new CndTextIndexImpl(IndexManager.createDocumentIndex(indexRoot));
+                UnitCodec unitCodec = RelocationSupport.get(location);
+                index = new CndTextIndexImpl(IndexManager.createDocumentIndex(indexRoot), unitCodec);
             } catch (IOException ex) {
                 Logger.getLogger(CndTextIndexManager.class.getName()).log(Level.SEVERE, null, ex);
             }

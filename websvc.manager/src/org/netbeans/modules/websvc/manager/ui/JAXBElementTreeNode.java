@@ -57,7 +57,7 @@ public class JAXBElementTreeNode extends AbstractParameterTreeNode {
         DefaultMutableTreeNode localPartNode = (DefaultMutableTreeNode) this.getChildAt(0);
         DefaultMutableTreeNode valueNode = (DefaultMutableTreeNode)this.getChildAt(1);
         
-        TypeNodeData localPartData = (TypeNodeData) localPartNode.getUserObject();
+        //TypeNodeData localPartData = (TypeNodeData) localPartNode.getUserObject();
         TypeNodeData valueData = (TypeNodeData) valueNode.getUserObject();
         
         Object value = valueData.getTypeValue();
@@ -90,7 +90,7 @@ public class JAXBElementTreeNode extends AbstractParameterTreeNode {
         
         Object jaxBElement = this.getUserObject();
         if (null != jaxBElement) {
-            Object holder = ((TypeNodeData) jaxBElement).getTypeValue();
+            //Object holder = ((TypeNodeData) jaxBElement).getTypeValue();
             try {
                 Object value = ReflectionHelper.getJAXBElementValue(jaxBElement);
                 String localPart = ReflectionHelper.getQNameLocalPart(jaxBElement);

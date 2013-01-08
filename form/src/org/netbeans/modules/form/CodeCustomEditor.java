@@ -60,6 +60,7 @@ import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.api.editor.guards.SimpleSection;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -123,7 +124,8 @@ class CodeCustomEditor extends javax.swing.JPanel implements DocumentListener, R
         int codePos = -1;
         FormDataObject dobj = FormEditor.getFormDataObject(formModel);
         EditorSupport es = dobj.getFormEditorSupport();
-        SimpleSection sec = es.getGuardedSectionManager().findSimpleSection(EditorSupport.SECTION_INIT_COMPONENTS);
+        GuardedSectionManager gsm = es.getGuardedSectionManager();
+        SimpleSection sec = gsm.findSimpleSection(EditorSupport.SECTION_INIT_COMPONENTS);
         if ((property instanceof RADProperty) && (property.getWriteMethod() != null)) {
             RADComponent metacomp = ((RADProperty)property).getRADComponent();
             headerLabel.setText("<html>" + metacomp.getName() + ".<b>" // NOI18N

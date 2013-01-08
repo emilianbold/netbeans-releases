@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.html.editor;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Position;
 import org.netbeans.api.lexer.LanguagePath;
@@ -62,20 +63,23 @@ import org.netbeans.modules.html.editor.xhtml.XhtmlElTokenId;
 import org.openide.util.Exceptions;
 
 /**
- * This static class groups the whole aspect of bracket
- * completion. It is defined to clearly separate the functionality
- * and keep actions clean.
- * The methods of the class are called from different actions as
- * KeyTyped, DeletePreviousChar.
+ * This static class groups the whole aspect of bracket completion. It is
+ * defined to clearly separate the functionality and keep actions clean. The
+ * methods of the class are called from different actions as KeyTyped,
+ * DeletePreviousChar.
  */
 public class HtmlAutoCompletion {
 
+    /* test */ static boolean adjust_quote_type_after_eq = true; //can be disabled in unit tests
+    
+    /* test */ static char default_quote_char_after_eq = '"'; //TODO expose in UI options
+    
     private static DocumentInsertIgnore insertIgnore;
 
-    /** Hook for before char inserted actions
+    /**
+     * Hook for before char inserted actions
      *
-     * <b>Runs under document atomic lock.</b>
-     * <b>Always runs in AWT.</b>
+     * <b>Runs under document atomic lock.</b> <b>Always runs in AWT.</b>
      *
      * @return false if the char should be inserted, true otherwise
      */
@@ -100,10 +104,10 @@ public class HtmlAutoCompletion {
         }
 
         //handle quotation marks
-        if (ch == '"') { //NOI18N
+        if (ch == '"' || ch == '\'') { //NOI18N
             //user has pressed quotation mark
             if (HtmlPreferences.autocompleteQuotes()) {
-                return handleQuotationMark(doc, dotPos, caret);
+                return handleQuotationMark(doc, dotPos, caret, ch);
             }
         }
 
@@ -111,15 +115,72 @@ public class HtmlAutoCompletion {
 
     }
 
+    public static boolean charBackspaced(final BaseDocument doc,
+            final int dotPos,
+            Caret caret,
+            char ch) throws BadLocationException {
+
+        if (ch == '\'' || ch == '"') {
+            TokenSequence<HTMLTokenId> ts = LexUtilities.getTokenSequence((BaseDocument) doc, dotPos, HTMLTokenId.language());
+            if (ts != null) {
+                int diff = ts.move(dotPos);
+                if (diff == 0) {
+                    if (!ts.movePrevious()) {
+                        return false;
+                    }
+                } else if (diff > 0) {
+                    if (!(ts.moveNext())) {
+                        return false;
+                    }
+                } else {
+                    //before embedded ts
+                    return false;
+                }
+                Token<HTMLTokenId> token = ts.token();
+                if (token.id() == HTMLTokenId.OPERATOR) {
+                    if (ts.moveNext()) {
+                        token = ts.token();
+                        if(token.id() == HTMLTokenId.VALUE || token.id() == HTMLTokenId.VALUE_CSS || token.id() == HTMLTokenId.VALUE_JAVASCRIPT) {
+                            if(token.length() > 0) {
+                                char first = token.text().charAt(0);
+                                if(first == ch) {
+                                    //user pressed backspace in empty value: <div class="|" + BACKSPACE
+                                    //now the text is: <div class=|"
+                                    //expected result: remove the second quote
+                                    final AtomicBoolean result_ref = new AtomicBoolean();
+                                    doc.runAtomic(new Runnable() {
+
+                                        @Override
+                                        public void run() {
+                                            try {
+                                                doc.remove(dotPos, 1);
+                                                result_ref.set(true);
+                                            } catch (BadLocationException ex) {
+                                                Exceptions.printStackTrace(ex);
+                                            }
+                                        }
+                                        
+                                    });
+                                    return result_ref.get();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+
+        return false; //unhandled
+    }
+
     /**
-     * A hook method called after a character was inserted into the
-     * document. The function checks for special characters for
-     * completion ()[]'"{} and other conditions and optionally performs
-     * changes to the doc and or caret (completes braces, moves caret,
-     * etc.)
+     * A hook method called after a character was inserted into the document.
+     * The function checks for special characters for completion ()[]'"{} and
+     * other conditions and optionally performs changes to the doc and or caret
+     * (completes braces, moves caret, etc.)
      *
-     * <b>Runs under document atomic lock.</b>
-     * <b>Always runs in AWT.</b>
+     * <b>Runs under document atomic lock.</b> <b>Always runs in AWT.</b>
      *
      * @param doc the document where the change occurred
      * @param dotPos position of the character insertion
@@ -136,10 +197,10 @@ public class HtmlAutoCompletion {
             if (HtmlPreferences.autocompleteQuotesAfterEqualSign()) {
                 completeQuotes(doc, dotPos, caret);
             }
-        } else if (ch == '\'') { //NOI18N
+        } else if (ch == '\'' || ch == '"') { //NOI18N
             // #189561
             if (HtmlPreferences.autocompleteQuotesAfterEqualSign()) {
-                transformQuotesToApostrophes(doc, dotPos, caret);
+                transformQuotesType(doc, dotPos, caret, ch);
             }
         } else if (ch == '{') { //NOI18N
             //user has pressed quotation mark
@@ -196,14 +257,12 @@ public class HtmlAutoCompletion {
                 final Position from = doc.createPosition(Utilities.getRowStart(doc, dotPos));
                 final Position to = doc.createPosition(Utilities.getRowEnd(doc, dotPos));
                 SwingUtilities.invokeLater(new Runnable() {
-
                     @Override
                     public void run() {
                         final Indent indent = Indent.get(doc);
                         indent.lock();
                         try {
                             doc.runAtomic(new Runnable() {
-
                                 @Override
                                 public void run() {
                                     try {
@@ -240,9 +299,9 @@ public class HtmlAutoCompletion {
 
         Token<HTMLTokenId> token = ts.token();
         if (token.id() == HTMLTokenId.ERROR) {
-            if (ts.movePrevious() && (ts.token().id() == HTMLTokenId.TAG_OPEN ||
-                    ts.token().id() == HTMLTokenId.WS ||
-                    isHtmlValueToken(ts.token()))) {
+            if (ts.movePrevious() && (ts.token().id() == HTMLTokenId.TAG_OPEN
+                    || ts.token().id() == HTMLTokenId.WS
+                    || isHtmlValueToken(ts.token()))) {
                 // slash typed just after open tag name => autocomplete the > symbol
                 doc.insertString(dotPos + 1, ">", null); // NOI18N
 
@@ -253,7 +312,7 @@ public class HtmlAutoCompletion {
     }
 
     //must be called before the change in the document!
-    private static boolean handleQuotationMark(final BaseDocument doc, final int dotPos, final Caret caret) throws BadLocationException {
+    private static boolean handleQuotationMark(final BaseDocument doc, final int dotPos, final Caret caret, char qchar) throws BadLocationException {
         //test whether the user typed an ending quotation in the attribute value
         TokenSequence<HTMLTokenId> ts = LexUtilities.getTokenSequence((BaseDocument) doc, dotPos, HTMLTokenId.language());
         if (ts == null) {
@@ -272,20 +331,29 @@ public class HtmlAutoCompletion {
 
         Token<HTMLTokenId> token = ts.token();
         try {
-            if(isHtmlValueToken(token)) {
+            if (isHtmlValueToken(token)) {
                 //test if the user inserted the qutation in an attribute value and before
                 //an already existing end quotation
                 //the text looks following in such a situation:
                 //
                 //  atrname="abcd|"", where offset of the | == dotPos
-                if (token.text().charAt(diff) == '"') { // NOI18N
+                if (diff > 0 && token.text().charAt(diff) == qchar) { // NOI18N
                     caret.setDot(dotPos + 1);
                     return true;
                 }
-                
+
             } else if (token.id() == HTMLTokenId.OPERATOR) {
+                //check if the next token is a value 
+                if(ts.moveNext()) {
+                    Token<HTMLTokenId> next = ts.token();
+                    if(isHtmlValueToken(next)) {
+                        return false; //ignore
+                    }
+                }
+                
                 //user typed quation just after equal sign after tag attribute name => complete the second quote
-                doc.insertString(dotPos, "\"\"", null); // NOI18N
+                StringBuilder insert = new StringBuilder().append(qchar).append(qchar);
+                doc.insertString(dotPos, insert.toString(), null); // NOI18N
                 caret.setDot(dotPos + 1);
 
                 return true;
@@ -300,9 +368,9 @@ public class HtmlAutoCompletion {
     private static boolean isHtmlValueToken(Token token) {
         TokenId id = token.id();
 
-        return id == HTMLTokenId.VALUE ||
-                id == HTMLTokenId.VALUE_CSS ||
-                id == HTMLTokenId.VALUE_JAVASCRIPT;
+        return id == HTMLTokenId.VALUE
+                || id == HTMLTokenId.VALUE_CSS
+                || id == HTMLTokenId.VALUE_JAVASCRIPT;
     }
 
     private static void completeQuotes(final BaseDocument doc, final int dotPos, final Caret caret) {
@@ -320,7 +388,8 @@ public class HtmlAutoCompletion {
         int dotPosAfterTypedChar = dotPos + 1;
         if (token != null && token.id() == HTMLTokenId.OPERATOR) {
             try {
-                doc.insertString(dotPosAfterTypedChar, "\"\"", null); // NOI18N
+                String insert = new StringBuilder().append(default_quote_char_after_eq).append(default_quote_char_after_eq).toString();
+                doc.insertString(dotPosAfterTypedChar, insert , null); // NOI18N
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -328,7 +397,7 @@ public class HtmlAutoCompletion {
         }
     }
 
-    private static void transformQuotesToApostrophes(final BaseDocument doc, final int dotPos, final Caret caret) {
+    private static void transformQuotesType(final BaseDocument doc, final int dotPos, final Caret caret, char expected) {
         TokenSequence<HTMLTokenId> ts = LexUtilities.getTokenSequence((BaseDocument) doc, dotPos, HTMLTokenId.language());
         if (ts == null) {
             return; //no html ts at the caret position
@@ -341,16 +410,23 @@ public class HtmlAutoCompletion {
         Token<HTMLTokenId> token = ts.token();
 
         int dotPosBeforeTypedChar = dotPos - 1;
-        final String text = token.text().toString();
-        if (text.contentEquals("\"'\"")) { // NOI18N
+        String text = token.text().toString();
+        
+        String pattern = expected == '\'' ? "\"'\"" : "'\"'";
+        if (text.contentEquals(pattern)) { // NOI18N
             try {
                 doc.remove(dotPosBeforeTypedChar, 1);
-                doc.insertString(dotPosBeforeTypedChar, "\'", null); // NOI18N
+                doc.insertString(dotPosBeforeTypedChar, "" + expected, null); // NOI18N
                 doc.remove(dotPosBeforeTypedChar + 2, 1);
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
             caret.setDot(dotPosBeforeTypedChar + 1);
+        }
+        
+        //remember that user changed the default type so next time we'll autocomplete the wanted one
+        if(adjust_quote_type_after_eq) {
+            default_quote_char_after_eq = expected;
         }
     }
 

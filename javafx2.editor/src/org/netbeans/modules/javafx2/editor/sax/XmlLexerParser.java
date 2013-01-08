@@ -919,7 +919,7 @@ public class XmlLexerParser implements ContentLocator {
         int end;
         
         t = nextToken();
-        while (t.id() == XMLTokenId.VALUE || t.id() == XMLTokenId.CHARACTER) {
+        while (t != null && (t.id() == XMLTokenId.VALUE || t.id() == XMLTokenId.CHARACTER)) {
             valEnd = seq.offset() + t.length();
             if (sb == null) {
                 sb = new StringBuilder();
@@ -938,8 +938,12 @@ public class XmlLexerParser implements ContentLocator {
                 s = s.subSequence(1, s.length() - 1);
                 valStart++;
                 valEnd--;
-            } 
-        }
+            } else if (t == null || t.id() == XMLTokenId.ERROR) {
+                // strip at least 1st quote in case of an error
+                s = s.subSequence(1, s.length());
+                valStart++;
+            }
+        } 
         if (!ignore) {
             attrs.put(argName, s.toString());
             int[] offsets = attrOffsets.get(argName);
@@ -983,14 +987,19 @@ public class XmlLexerParser implements ContentLocator {
     @NbBundle.Messages({
         "# {0} - token text",
         "ERR_unexpectedToken=Unexpected token: \"{0}\"",
+        "ERR_UnexpectedEndOfFile=Unexpected end of file",
         "TOKEN_newline=< new line >",
         "TOKEN_tab=< tab >"
     })
     private void markUnexpectedToken() {
-        String s = currentToken.text().toString();
-        s = s.replaceAll("\\\n", TOKEN_newline()).replaceAll("\\\t", TOKEN_tab());
-        
-        addError(ERR_UnexpectedToken, ERR_unexpectedToken(s));
+        String s;
+        if (currentToken != null) {
+            s = currentToken.text().toString();
+            s = s.replaceAll("\\\n", TOKEN_newline()).replaceAll("\\\t", TOKEN_tab());
+            addError(ERR_UnexpectedToken, ERR_unexpectedToken(s));
+        } else {
+            addError(ERR_UnexpectedToken, ERR_UnexpectedEndOfFile());
+        }
     }
     
     private void parseTag(Token<XMLTokenId> t) throws SAXException {

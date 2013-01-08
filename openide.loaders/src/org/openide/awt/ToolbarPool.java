@@ -479,7 +479,14 @@ public final class ToolbarPool extends JComponent implements Accessible {
          */
         @Override
         protected InstanceCookie acceptFolder (DataFolder df) {
-            return new Toolbar(df).waitFinished();
+            Toolbar res = new Toolbar(df);
+	    //#223266
+	    FileObject fo = df.getPrimaryFile();
+	    Object disable = fo.getAttribute("nb.toolbar.overflow.disable"); //NOI18N
+	    if (Boolean.TRUE.equals(disable)) {
+		res.putClientProperty("nb.toolbar.overflow.disable", Boolean.TRUE); //NOI18N
+	    }
+	    return res.waitFinished();
         }
 
         /**

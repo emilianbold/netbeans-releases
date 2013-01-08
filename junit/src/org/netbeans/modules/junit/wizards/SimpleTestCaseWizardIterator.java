@@ -66,9 +66,11 @@ import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin.CreateTestParam;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -271,6 +273,13 @@ public class SimpleTestCaseWizardIterator
      */
     public void initialize(TemplateWizard wiz) {
         this.wizard = wiz;
+	DataFolder targetFolder = null;
+	try {
+	    targetFolder = wiz.getTargetFolder();
+	} catch (IOException ex) {
+	    Exceptions.printStackTrace(ex);
+	}
+	
         current = INDEX_CHOOSE_CLASS;
         loadSettings(wiz);
 
@@ -280,7 +289,7 @@ public class SimpleTestCaseWizardIterator
 
         ((javax.swing.JComponent)getClassChooserPanel().getComponent()).putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, panelNames); 
         ((javax.swing.JComponent)getClassChooserPanel().getComponent()).putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(0)); 
-
+	((SimpleTestStepLocation) getClassChooserPanel()).selectLocation(targetFolder.getPrimaryFile());
     }
 
     /**

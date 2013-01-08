@@ -167,7 +167,7 @@ final class NameIconLocationPanel extends BasicWizardIterator.Panel {
         } else {
             String[] invalid = data.getCreatedModifiedFiles().getInvalidPaths();
             if (invalid.length > 0) {
-                setError(NbBundle.getMessage(NameIconLocationPanel.class, "ERR_ToBeCreateFileExists", invalid[0]));
+                setWarning(WizardUtils.getIconAlreadyExistsWarning(invalid[0]));
             } else {
                 markValid();
                 checkIconValidity();

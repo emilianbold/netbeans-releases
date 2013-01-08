@@ -65,7 +65,6 @@ public class HttpMethodNode extends AbstractNode{
     private String produceMime;
     private String consumeMime;
     private String returnType;
-    private MetadataModel<RestServicesMetadata> model;
     
     
     public HttpMethodNode(Project project, RestServiceDescription desc, HttpMethod method) {
@@ -141,7 +140,7 @@ public class HttpMethodNode extends AbstractNode{
         };
     }
 
-    private class MethodUriProvider implements ResourceUriProvider {
+    private static class MethodUriProvider implements ResourceUriProvider {
 
         private String resourcePath, methodPath;
 

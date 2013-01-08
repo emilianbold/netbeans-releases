@@ -156,7 +156,12 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         @Override
         public void componentActivated() {
             super.componentActivated();
-            getEditorSupport().restartParserTask();
+            BaseJspEditorSupport editorSupport = getEditorSupport();
+            if (editorSupport == null) {
+                JspDataObject jspDO = getLookup().lookup(JspDataObject.class);
+                editorSupport = jspDO.getJspEditorSupport();
+            }
+            editorSupport.restartParserTask();
             getTaglibParseSupport().setEditorOpened(true);
         }
 

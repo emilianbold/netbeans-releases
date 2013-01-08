@@ -41,8 +41,9 @@
  */
 package org.netbeans.test.mobility;
 
+import java.util.Calendar;
+
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewJavaProjectNameLocationStepOperator;
@@ -67,12 +68,6 @@ import org.netbeans.junit.NbModuleSuite;
  * @author stezeb@netbeans.org
  */
 public class ValidationTest extends JellyTestCase {
-
-    public static final String MESDK_WIN_LOCATION = "C:\\space\\hudson\\mesdk";
-    public static final String MESDK_WIN_VERSION = "3.0.5";
-    
-    public static final String MESDK_LINUX_LOCATION = "/space/hudson/mesdk";
-    public static final String MESDK_LINUX_VERSION = "2.5.2";
     
     public static final String ITEM_MIDLET = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.ui.wizard.Bundle", "Templates/MIDP/Midlet.java");
     public static final String ITEM_MIDPCANVAS = Bundle.getStringTrimmed("org.netbeans.modules.mobility.project.ui.wizard.Bundle", "Templates/MIDP/MIDPCanvas.java");
@@ -97,25 +92,17 @@ public class ValidationTest extends JellyTestCase {
                              .honorAutoloadEager(true));
     }
 
-    private void locateEmulator() {
-        String sdkpath = null;
-        String osarch = System.getProperty("os.name", null);
-        if (osarch.toLowerCase().indexOf("windows") != -1) {
-            sdkpath = MESDK_WIN_LOCATION;
-        } else if (osarch.toLowerCase().indexOf("linux") != -1) {
-            sdkpath = MESDK_LINUX_LOCATION;
-        }
-        System.setProperty("platform.home", sdkpath);
-        //System.out.println("platform.home for tests set to " + sdkpath);
+    @Override
+    public void setUp() {
+        System.out.println("########  " + getName() + "  #######");
+        assertNotNull("mesdk.home not set", System.getProperty("mesdk.home", null));
     }
-
+        
     /**
      * Adding ME emulator.
      * NOTE: Previous version of this test used zipped WTK 2.2.
      */
     public void testAddEmulator() {
-        locateEmulator();
-
         MainWindowOperator mainWindow = MainWindowOperator.getDefault();
         JMenuBarOperator menubar = mainWindow.menuBar();
 
@@ -127,20 +114,18 @@ public class ValidationTest extends JellyTestCase {
 
         WizardOperator ajpw = new WizardOperator("Add Java Platform");
         ajpw.stepsWaitSelectedValue("Select platform type");
-        //System.out.println("current step: " + ajpw.stepsGetSelectedIndex() + " - " + ajpw.stepsGetSelectedValue());
 
         new JRadioButtonOperator(ajpw, "Java ME CLDC Platform Emulator").clickMouse();
 
         ajpw.next();
         ajpw.stepsWaitSelectedValue("Platform Folders");
-        //System.out.println("current step: " + ajpw.stepsGetSelectedIndex() + " - " + ajpw.stepsGetSelectedValue());
         
         new EventTool().waitNoEvent(2000);
         (new JButtonOperator(ajpw, "Find More Java ME Platform Folders...")).pushNoBlock(); //TODO I18N
         new EventTool().waitNoEvent(2000);
         
         DialogOperator cdtsfp = new DialogOperator("Choose directory to search for platforms"); //TODO I18N
-        new JTextFieldOperator(cdtsfp, 0).setText(System.getProperty("platform.home"));
+        new JTextFieldOperator(cdtsfp, 0).setText(System.getProperty("mesdk.home", null));
         (new JButtonOperator(cdtsfp, "Open")).pushNoBlock();
         cdtsfp.waitClosed();
         
@@ -150,7 +135,6 @@ public class ValidationTest extends JellyTestCase {
 
         ajpw.next();
         ajpw.stepsWaitSelectedValue("Detected Platforms");
-        //System.out.println("current step: " + ajpw.stepsGetSelectedIndex() + " - " + ajpw.stepsGetSelectedValue());
 
         DialogOperator djmep = new DialogOperator("Detecting Java ME platforms"); //TODO I18N
         djmep.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 200000);
@@ -205,7 +189,7 @@ public class ValidationTest extends JellyTestCase {
 
 
         NewJavaProjectNameLocationStepOperator step = new NewJavaProjectNameLocationStepOperator();
-        step.txtProjectLocation().setText(getWorkDirPath());
+        step.txtProjectLocation().setText(getWorkDirPath() + Calendar.getInstance().getTimeInMillis());
         step.txtProjectName().setText(PROJECT_TO_BE_CREATED);//NOI18N
         step.finish();
 

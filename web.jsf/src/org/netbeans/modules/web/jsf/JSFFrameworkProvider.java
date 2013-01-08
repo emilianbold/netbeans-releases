@@ -323,7 +323,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
 
     @Override
     public WebModuleExtender createWebModuleExtender(WebModule webModule, ExtenderController controller) {
-        boolean defaultValue = (webModule == null || !isInWebModule(webModule));
+        boolean isFrameworkAddition = (webModule == null || !isInWebModule(webModule));
         if (webModule != null && webModule.getDocumentBase() != null) {
             FileObject docBase = webModule.getDocumentBase();
             Project project = FileOwnerQuery.getOwner(docBase);
@@ -336,15 +336,15 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     preferences.put(PREFERRED_LANGUAGE, "Facelets");    //NOI18N
                 }
             }
-            panel = new JSFConfigurationPanel(this, controller, !defaultValue, preferences, webModule);
+            panel = new JSFConfigurationPanel(this, controller, isFrameworkAddition, preferences, webModule);
         } else {
             if (webModule!=null && webModule.getDocumentBase() == null) {
                 controller.getProperties().setProperty("NoDocBase", true);  //NOI18N
             }
-            panel = new JSFConfigurationPanel(this, controller, !defaultValue);
+            panel = new JSFConfigurationPanel(this, controller, isFrameworkAddition);
         }
         panel.setCreateExamples(createWelcome);
-        if (!defaultValue){
+        if (!isFrameworkAddition){
             // get configuration panel with values from the wm
             Servlet servlet = ConfigurationUtils.getFacesServlet(webModule);
             if (servlet != null) {

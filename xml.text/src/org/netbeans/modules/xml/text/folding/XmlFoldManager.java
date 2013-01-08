@@ -218,7 +218,8 @@ public class XmlFoldManager implements FoldManager {
     private void updateFolds() {
         FoldHierarchy foldHierarchy = getOperation().getHierarchy();
         //lock the document for changes
-        getDocument().readLock();
+        BaseDocument d = getDocument();
+        d.readLock();
         try {
             //lock the hierarchy
             foldHierarchy.lock();
@@ -243,7 +244,7 @@ public class XmlFoldManager implements FoldManager {
                 foldHierarchy.unlock();
             }
         } finally {
-            getDocument().readUnlock();
+            d.readUnlock();
         }
     }
    

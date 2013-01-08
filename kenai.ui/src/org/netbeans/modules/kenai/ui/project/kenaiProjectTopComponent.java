@@ -51,6 +51,8 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
+import java.util.Map;
+import java.util.WeakHashMap;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
@@ -95,7 +97,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
 
     private static final String PREFERRED_ID = "kenaiProjectTopComponent"; //NOI18N
 
-    private static kenaiProjectTopComponent inst = null;
+    private static Map<KenaiProject, kenaiProjectTopComponent> instances = new WeakHashMap<KenaiProject, kenaiProjectTopComponent>(2);
     private KenaiProject instProj = null;
 
     public kenaiProjectTopComponent() {
@@ -117,13 +119,6 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
         wwwLabel.setBorder(new DottedBorder());
         wikiLabel.setBorder(new DottedBorder());
         downloadsLabel.setBorder(new DottedBorder());
-    }
-
-    public static synchronized kenaiProjectTopComponent getDefault() {
-        if (inst == null) {
-            inst = new kenaiProjectTopComponent();
-        }
-        return inst;
     }
 
     private class DottedBorder implements Border {
@@ -584,8 +579,10 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
      * Obtain the kenaiProjectTopComponent instance.
      */
     public static synchronized kenaiProjectTopComponent getInstance(KenaiProject forProject) {
+        kenaiProjectTopComponent inst = instances.get(forProject);
         if (inst == null){
             inst = new kenaiProjectTopComponent(forProject);
+            instances.put(forProject, inst);
         }
         inst.reinitialize(forProject, true); //always hard reinit...
         inst.setName(forProject.getDisplayName());

@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.test.TestObject;
 import org.netbeans.modules.cnd.repository.test.TestObjectCreator;
-import org.netbeans.modules.cnd.repository.util.UnitCodec;
+import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -75,12 +75,12 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
             new StorageAllocator(CacheLocation.DEFAULT),
             new UnitCodec() {
                 @Override
-                public int removeRepositoryID(int unitId) {
+                public int unmaskRepositoryID(int unitId) {
                     return unitId;
                 }
 
                 @Override
-                public int addRepositoryID(int unitId) {
+                public int maskByRepositoryID(int unitId) {
                     return unitId;
                 }
             });

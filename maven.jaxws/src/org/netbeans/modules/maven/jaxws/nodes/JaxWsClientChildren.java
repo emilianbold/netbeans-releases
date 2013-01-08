@@ -62,13 +62,13 @@ import org.openide.nodes.Node;
 
 public class JaxWsClientChildren extends Children.Keys<WsdlService> {
 
-    JaxWsService client;
+    //JaxWsService client;
     WsdlModel wsdlModel;
     private JAXWSLightSupport jaxWsSupport;
 
     public JaxWsClientChildren(JAXWSLightSupport jaxWsSupport, JaxWsService client) {
         this.jaxWsSupport = jaxWsSupport;
-        this.client = client;
+        //this.client = client;
     }
 
     @Override

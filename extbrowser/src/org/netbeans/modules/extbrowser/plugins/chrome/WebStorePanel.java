@@ -79,7 +79,7 @@ class WebStorePanel extends javax.swing.JPanel {
         warningTextLbl.setText( NbBundle.getMessage(WebStorePanel.class, "LBL_UpdateRequired"));
         description.setText(NbBundle.getMessage(WebStorePanel.class, "TXT_WebStoreUpdate"));
         webStoreButton.setText(NbBundle.getMessage(WebStorePanel.class, "LBL_RerunButton"));
-        remove(jScrollPane1);
+        remove(notConnectedLink);
         attachActions(runnable);
     }
 
@@ -208,9 +208,8 @@ class WebStorePanel extends javax.swing.JPanel {
         warningLbl = new javax.swing.JLabel();
         warningTextLbl = new javax.swing.JLabel();
         webStoreButton = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        notConnectedLink = new javax.swing.JEditorPane();
         description = new javax.swing.JEditorPane();
+        notConnectedLink = new javax.swing.JEditorPane();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -235,28 +234,13 @@ class WebStorePanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 15, 0);
         add(webStoreButton, gridBagConstraints);
 
-        jScrollPane1.setBorder(null);
-
-        notConnectedLink.setEditable(false);
-        notConnectedLink.setBackground(new java.awt.Color(240, 240, 240));
-        notConnectedLink.setBorder(null);
-        notConnectedLink.setContentType("text/html"); // NOI18N
-        notConnectedLink.setText(org.openide.util.NbBundle.getMessage(WebStorePanel.class, "LBL_NotConnected")); // NOI18N
-        jScrollPane1.setViewportView(notConnectedLink);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 0);
-        add(jScrollPane1, gridBagConstraints);
-
         description.setEditable(false);
         description.setBackground(new java.awt.Color(240, 240, 240));
         description.setBorder(null);
         description.setContentType("text/html"); // NOI18N
         description.setText(org.openide.util.NbBundle.getMessage(WebStorePanel.class, "WebStorePanel.description.text")); // NOI18N
         description.setMinimumSize(new java.awt.Dimension(350, 60));
+        description.setOpaque(false);
         description.setPreferredSize(new java.awt.Dimension(350, 100));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -264,10 +248,22 @@ class WebStorePanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 20);
         add(description, gridBagConstraints);
+
+        notConnectedLink.setEditable(false);
+        notConnectedLink.setBackground(new java.awt.Color(240, 240, 240));
+        notConnectedLink.setBorder(null);
+        notConnectedLink.setContentType("text/html"); // NOI18N
+        notConnectedLink.setText(org.openide.util.NbBundle.getMessage(WebStorePanel.class, "LBL_NotConnected")); // NOI18N
+        notConnectedLink.setOpaque(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 0);
+        add(notConnectedLink, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JEditorPane description;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JEditorPane notConnectedLink;
     private javax.swing.JLabel warningLbl;
     private javax.swing.JLabel warningTextLbl;

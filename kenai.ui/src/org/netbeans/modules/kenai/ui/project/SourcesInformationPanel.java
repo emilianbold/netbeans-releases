@@ -50,7 +50,6 @@ package org.netbeans.modules.kenai.ui.project;
 
 import java.awt.Cursor;
 import java.awt.Font;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileNotFoundException;
@@ -73,7 +72,6 @@ import javax.swing.text.html.StyleSheet;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -252,13 +250,19 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
 
                 DocumentBuilder dbf = DocumentBuilderFactory.newInstance().newDocumentBuilder();
                 String base = proj.getKenai().getUrl().toString().replaceFirst("https://", "http://"); //NOI18N
-                String urlStr = base + repo.getWebLocation().getPath().replaceAll("/show$", "/history.atom"); //NOI18N
+                URL webLocation = repo.getWebLocation();
+                String urlStr = webLocation == null 
+                        ? null 
+                        : base + webLocation.getPath().replaceAll("/show$", "/history.atom"); //NOI18N
                 int entriesCount = 0;
                 NodeList entries = null;
                 String htmlID = repo.getName().replaceAll("[^a-zA-Z0-9]", "_") + "_" + k + "__" + proj.getName().replace('-', '_'); //NOI18N
                 repoMap.put(htmlID, repo);
                 registeredButtonID.add(htmlID);
                 try {
+                    if (urlStr == null) {
+                        throw new FileNotFoundException();
+                    }
                     new URL(urlStr).openStream(); // just to fail quickly if URL is invalid...
                     if (Thread.interrupted()) {
                         return WAIT_STRING;

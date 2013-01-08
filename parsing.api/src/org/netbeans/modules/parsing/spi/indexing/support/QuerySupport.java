@@ -63,6 +63,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.parsing.impl.Installer;
 import org.netbeans.modules.parsing.impl.RunWhenScanFinishedSupport;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
@@ -78,6 +79,7 @@ import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LayeredDocumentIndex;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -310,6 +312,12 @@ public final class QuerySupport {
                     return result;
                 }
             });
+        } catch (Index.IndexClosedException ice) {
+            if (Installer.isClosed()) {
+                return Collections.<IndexResult>emptySet();
+            } else {
+                throw ice;
+            }
         } catch (IOException ioe) {
             throw ioe;
         } catch (RuntimeException re) {

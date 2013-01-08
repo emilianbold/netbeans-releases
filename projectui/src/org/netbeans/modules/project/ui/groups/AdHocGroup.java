@@ -57,6 +57,7 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.openide.util.RequestProcessor;
 
 /**
  * Arbitrary collection of projects, with an optional main project.
@@ -70,6 +71,9 @@ public class AdHocGroup extends Group {
     private static final String KEY_AUTO_SYNCH = "autoSynch"; // NOI18N
 
     static final String KIND = "adHoc"; // NOI18N
+    
+    private static final RequestProcessor RP = new RequestProcessor(AdHocGroup.class);
+            
 
     /**
      * Create a new ad-hoc group of projects.
@@ -151,9 +155,15 @@ public class AdHocGroup extends Group {
      * Update a group's definition with the current list of open projects (and main project).
      */
     public void synch() {
-        OpenProjects op = OpenProjects.getDefault();
-        setProjects(new HashSet<Project>(Arrays.asList(op.getOpenProjects())));
-        setMainProject(op.getMainProject());
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                OpenProjects op = OpenProjects.getDefault();
+                setProjects(new HashSet<Project>(Arrays.asList(op.getOpenProjects())));
+                setMainProject(op.getMainProject());
+            }
+        });
     }
 
     @Override

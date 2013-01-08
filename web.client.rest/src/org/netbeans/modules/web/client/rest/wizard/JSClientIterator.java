@@ -235,7 +235,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         if ( htmlFile != null ){
             handle.progress(NbBundle.getMessage(JSClientGenerator.class, 
                     "TXT_GenerateHtml"));                         // NOI18N
-            FileObject html = createHtml( htmlFile , jsFile, existedBackbone , 
+            /*FileObject html = */createHtml( htmlFile , jsFile, existedBackbone , 
                     existedUnderscore, existedJQuery , map , generator );
         }
 
@@ -391,7 +391,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
                 Panel panel = myPanels[i];
                 JComponent component = (JComponent)panel.getComponent();
                 component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, newSteps);
-                component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i));
+                component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i);
             }
         }
     }

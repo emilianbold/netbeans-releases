@@ -247,7 +247,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiServer, KenaiProje
                 }
                 final DefaultDashboard<KenaiServer, KenaiProject> dashboard = KenaiServer.getDashboard(project);
                 dashboard.bookmarkingStarted();
-                RequestProcessor.getDefault().post(new Runnable() {
+                Utilities.getRequestProcessor().post(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -310,7 +310,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiServer, KenaiProje
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            Utilities.getRequestProcessor().post(new Runnable() {
                 @Override
                 public void run() {
                     try {

@@ -76,6 +76,7 @@ import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.versioning.util.status.VCSStatusNode;
 import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -115,17 +116,6 @@ class GitStatusTable extends VCSStatusTable<GitStatusNode> {
         JMenuItem item;
         item = menu.add(new OpenInEditorAction(getSelectedFiles()));
         Mnemonics.setLocalizedText(item, item.getText());
-        menu.addSeparator();
-        item = menu.add(new SystemActionBridge(SystemAction.get(CommitAction.class), NbBundle.getMessage(CommitAction.class, "LBL_CommitAction.popupName"))); //NOI18N
-        Mnemonics.setLocalizedText(item, item.getText());
-        item = menu.add(new SystemActionBridge(SystemAction.get(DiffAction.class), NbBundle.getMessage(DiffAction.class, "LBL_DiffAction_PopupName")) { //NOI18N
-            @Override
-            public void actionPerformed (ActionEvent e) {
-                modeKeeper.storeMode();
-                super.actionPerformed(e);
-            }
-        });
-        Mnemonics.setLocalizedText(item, item.getText());
 
         GitStatusNode[] selectedNodes = getSelectedNodes();
         boolean displayAdd = false;
@@ -143,6 +133,17 @@ class GitStatusTable extends VCSStatusTable<GitStatusNode> {
             }
         }
         Lookup lkp = Lookups.fixed((Object[]) selectedNodes);
+        menu.addSeparator();
+        item = menu.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), NbBundle.getMessage(CommitAction.class, "LBL_CommitAction.popupName"), lkp)); //NOI18N
+        Mnemonics.setLocalizedText(item, item.getText());
+        item = menu.add(new SystemActionBridge(SystemAction.get(DiffAction.class).createContextAwareInstance(lkp), NbBundle.getMessage(DiffAction.class, "LBL_DiffAction_PopupName")) { //NOI18N
+            @Override
+            public void actionPerformed (ActionEvent e) {
+                modeKeeper.storeMode();
+                super.actionPerformed(e);
+            }
+        });
+        Mnemonics.setLocalizedText(item, item.getText());
         if (displayAdd) {
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "LBL_AddAction.popupName"), lkp)); //NOI18N
             Mnemonics.setLocalizedText(item, item.getText());

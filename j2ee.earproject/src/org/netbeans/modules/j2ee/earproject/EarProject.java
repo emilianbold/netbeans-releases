@@ -571,7 +571,7 @@ public final class EarProject implements Project, AntProjectListener {
         }
     }
     
-    class MyIconBaseProvider implements IconBaseProvider {
+    static class MyIconBaseProvider implements IconBaseProvider {
         public String getIconBase() {
             return "org/netbeans/modules/j2ee/earproject/ui/resources/"; // NOI18N
         }
@@ -657,7 +657,7 @@ public final class EarProject implements Project, AntProjectListener {
     // FIXME this is just fallback for code searching for the old SPI in lookup
     // remove in next release
     @SuppressWarnings("deprecation")
-    private class EarImpl implements EarImplementation {
+    private static class EarImpl implements EarImplementation {
 
         private final Ear apiEar;
 
@@ -693,7 +693,7 @@ public final class EarProject implements Project, AntProjectListener {
         }
     }
 
-    private class EarImpl2 implements EarImplementation2 {
+    private static class EarImpl2 implements EarImplementation2 {
 
         private final ProjectEar projectEar;
 

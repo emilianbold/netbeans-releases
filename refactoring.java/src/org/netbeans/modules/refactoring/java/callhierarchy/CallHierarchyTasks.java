@@ -67,6 +67,7 @@ import org.netbeans.modules.refactoring.java.plugins.FindUsagesVisitor;
 import org.netbeans.modules.refactoring.java.plugins.JavaWhereUsedQueryPlugin;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -117,10 +118,10 @@ final class CallHierarchyTasks {
         RootResolver resolver = null;
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         if (ec != null/*RefactoringActionsProvider.isFromEditor(ec)*/) {
-            JEditorPane[] openedPanes = ec.getOpenedPanes();
+            JEditorPane openedPane = NbDocument.findRecentEditorPane(ec);
             Document doc = ec.getDocument();
             js = JavaSource.forDocument(doc);
-            resolver = new RootResolver(openedPanes[0].getCaretPosition(), isCallerGraph);
+            resolver = new RootResolver(openedPane.getCaretPosition(), isCallerGraph);
         }
 //        else {
             // XXX resolve Node.class
@@ -223,7 +224,7 @@ final class CallHierarchyTasks {
             
             while (tpath != null) {
                 Kind kind = tpath.getLeaf().getKind();
-                if (kind == Kind.METHOD || kind == Kind.METHOD_INVOCATION || kind == Kind.MEMBER_SELECT) {
+                if (kind == Kind.METHOD || kind == Kind.METHOD_INVOCATION || kind == Kind.MEMBER_SELECT || kind == Kind.NEW_CLASS) {
                     method = ScanUtils.checkElement(javac, javac.getTrees().getElement(tpath));
                     if (method != null && (method.getKind() == ElementKind.METHOD || method.getKind() == ElementKind.CONSTRUCTOR)) {
                         break;

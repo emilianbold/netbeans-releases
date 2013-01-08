@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ui.NamedOption;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
@@ -109,11 +108,6 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
     @Override
     protected void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
         long start = System.currentTimeMillis();
-        for (CsmErrorProvider.RequestValidator p : Lookup.getDefault().lookupAll(CsmErrorProvider.RequestValidator.class)) {
-            if(!p.isValid(this, request)) {
-                return;
-            }
-        }
         Thread currentThread = Thread.currentThread();
         CsmFile file = request.getFile();
         currentThread.setName("Provider "+getName()+" prosess "+file.getAbsolutePath()); // NOI18N

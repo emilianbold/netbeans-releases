@@ -70,7 +70,7 @@ public class CordovaPanelProvider implements ProjectCustomizer.CompositeCategory
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = "org.netbeans.modules.web.clientproject",//NOI18N
-            position = 200)
+            position = 355)
     public static CordovaPanelProvider createRunConfigs() {
         return new CordovaPanelProvider();
     }

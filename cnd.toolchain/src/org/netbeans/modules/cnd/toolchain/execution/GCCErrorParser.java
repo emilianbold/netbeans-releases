@@ -43,7 +43,6 @@
 package org.netbeans.modules.cnd.toolchain.execution;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -56,6 +55,7 @@ import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ScannerDescriptor
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ScannerPattern;
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider;
+import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.OutputListenerRegistry;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.Result;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.Results;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -77,7 +77,7 @@ public final class GCCErrorParser extends ErrorParser {
     private Stack<Integer> relativesLevel = new Stack<Integer>();
     private ArrayList<StackIncludeItem> errorInludes = new ArrayList<StackIncludeItem>();
     private boolean isEntered;
-    private final OutputListenerFactory listenerFactory = new OutputListenerFactory();
+    private OutputListenerRegistry listenerRegistry;
 
     public GCCErrorParser(Project project, CompilerFlavor flavor, ExecutionEnvironment execEnv, FileObject relativeTo) {
         super(project, execEnv, relativeTo);
@@ -118,6 +118,11 @@ public final class GCCErrorParser extends ErrorParser {
 	}
     }
 
+    @Override
+    public void setOutputListenerRegistry(OutputListenerRegistry regestry) {
+        listenerRegistry = regestry;
+    }
+
     // FIXUP IZ#115960 and all other about EmptyStackException
     // - make Stack.pop() and peek() safe.
     private void popPath() {
@@ -133,7 +138,7 @@ public final class GCCErrorParser extends ErrorParser {
     }
 
     @Override
-    public Result handleLine(String line) throws IOException {
+    public Result handleLine(String line) {
         for (Pattern p : patterns) {
             Matcher m = p.matcher(line);
             boolean found = m.find();
@@ -144,7 +149,7 @@ public final class GCCErrorParser extends ErrorParser {
         return null;
     }
 
-    private Result handleLine(String line, Matcher m) throws IOException {
+    private Result handleLine(String line, Matcher m) {
         if (m.pattern() == GCC_DIRECTORY_ENTER || m.pattern() == GCC_DIRECTORY_LEAVE) {
             String levelString = m.group(1);
             int level = levelString == null ? 0 : Integer.valueOf(levelString);
@@ -277,14 +282,14 @@ public final class GCCErrorParser extends ErrorParser {
                         for (Iterator<StackIncludeItem> it = errorInludes.iterator(); it.hasNext();) {
                             StackIncludeItem item = it.next();
                             if (item.fo != null) {
-                                res.add(item.line, listenerFactory.register(item.fo, item.lineNumber, important,
+                                res.add(item.line, listenerRegistry.register(item.fo, item.lineNumber, important,
                                         NbBundle.getMessage(GCCErrorParser.class, "HINT_IncludedFrom"))); // NOI18N
                             } else {
                                 res.add(item.line, null);
                             }
                         }
                         errorInludes.clear();
-                        res.add(line, listenerFactory.register(fo, lineNumber.intValue() - 1, important, description));
+                        res.add(line, listenerRegistry.register(fo, lineNumber.intValue() - 1, important, description));
                         return res;
                     }
                 }

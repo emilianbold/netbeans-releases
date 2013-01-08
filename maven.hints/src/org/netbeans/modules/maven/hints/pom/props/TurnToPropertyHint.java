@@ -94,6 +94,9 @@ public class TurnToPropertyHint implements SelectionPOMFixProvider {
     public List<ErrorDescription> getErrorsForDocument(POMModel model, Project prj,
             int selectionStart, int selectionEnd) {
         List<ErrorDescription> err = new ArrayList<ErrorDescription>();
+        if (prj == null) {
+            return err;
+        }
         DocumentComponent comp1 = model.findComponent(selectionStart);
         DocumentComponent comp2 = model.findComponent(selectionEnd);
         if (comp1 == null || comp2 == null) { //#157213

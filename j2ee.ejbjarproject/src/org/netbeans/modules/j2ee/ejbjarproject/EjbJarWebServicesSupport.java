@@ -670,6 +670,9 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
             return;
         }
         JavaSource targetSource = JavaSource.forFileObject(implClassFo);
+        if (targetSource == null) {
+            return;
+        }
         final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);

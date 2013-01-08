@@ -129,6 +129,31 @@ public class ErrorDescriptionFactory {
         return null;
     }
     
+    /**Create a new {@link ErrorDescription}. Severity is automatically inferred from the {@link HintContext},
+     * and the {@link ErrorDescription} is created to be consistent with {@link ErrorDescription}s created
+     * by the other factory methods in this class.
+     * 
+     * @param context from which the {@link Severity} and other properties are inferred.
+     * @param start start of the warning
+     * @param end end of the warning
+     * @param text the warning text
+     * @param fixes one or more {@link Fix}es to show shown to the user.
+     * @return a standard {@link ErrorDescription} for use in Java source
+     * @since 1.9
+     */
+    public static ErrorDescription forSpan(HintContext context, int start, int end, String text, Fix... fixes) {
+        if (context.getHintMetadata().kind != Hint.Kind.INSPECTION) {
+            start = end = context.getCaretLocation();
+        }
+
+        if (start != (-1) && end != (-1)) {
+            LazyFixList fixesForED = org.netbeans.spi.editor.hints.ErrorDescriptionFactory.lazyListForFixes(resolveDefaultFixes(context, fixes));
+            return org.netbeans.spi.editor.hints.ErrorDescriptionFactory.createErrorDescription("text/x-java:" + context.getHintMetadata().id, context.getSeverity(), text, context.getHintMetadata().description, fixesForED, context.getInfo().getFileObject(), start, end);
+        }
+
+        return null;
+    }
+    
     public static ErrorDescription forName(HintContext context, TreePath tree, String text, Fix... fixes) {
         return forName(context, tree.getLeaf(), text, fixes);
     }

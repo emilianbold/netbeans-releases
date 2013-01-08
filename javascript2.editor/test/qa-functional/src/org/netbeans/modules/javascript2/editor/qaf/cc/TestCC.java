@@ -80,7 +80,7 @@ public class TestCC extends GeneralJavaScript {
     public void createApplication() {
         startTest();
         TestCC.NAME_ITERATOR++;
-        createPhpApplication(TEST_BASE_NAME + NAME_ITERATOR);
+        createPhpApplication(TEST_BASE_NAME + "_" + NAME_ITERATOR);
         endTest();
     }
 
@@ -88,7 +88,7 @@ public class TestCC extends GeneralJavaScript {
         startTest();
 
         TestCC.currentFile = "cc.js";
-        EditorOperator eo = createWebFile("cc", TEST_BASE_NAME + NAME_ITERATOR, "JavaScript File");
+        EditorOperator eo = createWebFile("cc", TEST_BASE_NAME + "_" + NAME_ITERATOR, "JavaScript File");
         eo.setCaretPositionToLine(5);
         type(eo, "function Foo(){\n this.x=1; \n var foo = 2;");
         eo.setCaretPosition("}", false);
@@ -103,7 +103,6 @@ public class TestCC extends GeneralJavaScript {
             evt.waitNoEvent(3000); // fallback
         }
 
-        eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);
 
 
@@ -140,7 +139,6 @@ public class TestCC extends GeneralJavaScript {
         eo.setCaretPosition("b.", false);
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(100);
-        System.out.println(eo.getText());
         CompletionInfo completion = getCompletion();
         String[] res = {"test", "value"};
         CompletionJListOperator cjo = completion.listItself;
@@ -162,7 +160,6 @@ public class TestCC extends GeneralJavaScript {
         type(eo, "\n \n");
         eo.setCaretPositionToLine(eo.getLineNumber() - 1);
         type(eo, "f.");
-        eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(100);
 
         CompletionInfo completion = getCompletion();
@@ -186,7 +183,6 @@ public class TestCC extends GeneralJavaScript {
         type(eo, "\n \n");
         eo.setCaretPositionToLine(eo.getLineNumber() - 1);
         type(eo, "person.");
-        eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(100);
 
         CompletionInfo completion = getCompletion();
@@ -197,7 +193,7 @@ public class TestCC extends GeneralJavaScript {
 
         endTest();
     }
-    
+
     public void testSetterGetter(){
         startTest();
 
@@ -207,7 +203,6 @@ public class TestCC extends GeneralJavaScript {
         eo.setCaretPositionToLine(1);
         type(eo, "var person = { get name(){return this.myname;}, set name(n){this.myname=n;}}; ");
         type(eo, "person.");
-        eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(100);
 
         CompletionInfo completion = getCompletion();
@@ -218,7 +213,6 @@ public class TestCC extends GeneralJavaScript {
 
         endTest();
     }
-   
 
     public void testDOMReferences() {
         startTest();
@@ -251,7 +245,6 @@ public class TestCC extends GeneralJavaScript {
 
             eo.setCaretPositionToLine(1);
             type(eo, " document.");
-            eo.typeKey(' ', InputEvent.CTRL_MASK);
             evt.waitNoEvent(100);
 
             CompletionInfo completion = getCompletion();
@@ -275,7 +268,6 @@ public class TestCC extends GeneralJavaScript {
         type(eo, ";\n\n");
         eo.setCaretPositionToLine(eo.getLineNumber() - 1);
         type(eo, "foo.");
-        eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(100);
 
         CompletionInfo completion = getCompletion();
@@ -322,7 +314,6 @@ public class TestCC extends GeneralJavaScript {
         type(eo, "\n Foo.prototype.setName = function(n){\n this.");
 
         // cc inside function's prototype
-        eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(100);
         completion = getCompletion();
         String[] res4 = {"name", "start", "setName"};
@@ -347,7 +338,6 @@ public class TestCC extends GeneralJavaScript {
 
         type(eo, "Foo();\n o.");
         // public variable & method & prototype
-        eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(100);
         completion = getCompletion();
         String[] res2 = {"name", "start", "setName"};
@@ -400,19 +390,14 @@ public class TestCC extends GeneralJavaScript {
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(100);
 
+        eo.typeKey(' ', InputEvent.CTRL_MASK);
+        evt.waitNoEvent(100);
+        eo.typeKey(' ', InputEvent.CTRL_MASK);
+        evt.waitNoEvent(100);
+
         CompletionInfo completion = getCompletion();
-        String[] res = {"aa", "bb"};
-        CompletionJListOperator cjo = completion.listItself;
-        checkCompletionDoesntContainItems(cjo, res);
-
-        eo.typeKey(' ', InputEvent.CTRL_MASK);
-        evt.waitNoEvent(100);
-        eo.typeKey(' ', InputEvent.CTRL_MASK);
-        evt.waitNoEvent(100);
-
-        completion = getCompletion();
         String[] res2 = {"aa", "bb"};
-        cjo = completion.listItself;
+        CompletionJListOperator cjo = completion.listItself;
         checkCompletionItems(cjo, res2);
         completion.listItself.hideAll();
         type(eo, "aa");
@@ -424,7 +409,7 @@ public class TestCC extends GeneralJavaScript {
     public void testAllCompletionMultipleFiles() {
         startTest();
         TestCC.currentFile = "other.js";
-        EditorOperator eo = createWebFile("other", TEST_BASE_NAME + NAME_ITERATOR, "JavaScript File");
+        EditorOperator eo = createWebFile("other", TEST_BASE_NAME + "_" + NAME_ITERATOR, "JavaScript File");
         cleanFile(eo);
         eo.setCaretPositionToLine(1);
         type(eo, "var cc = 1; \nvar dd = 2;\n function AA(){\n");
@@ -435,19 +420,14 @@ public class TestCC extends GeneralJavaScript {
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(100);
 
+        eo.typeKey(' ', InputEvent.CTRL_MASK);
+        evt.waitNoEvent(100);
+        eo.typeKey(' ', InputEvent.CTRL_MASK);
+        evt.waitNoEvent(100);
+
         CompletionInfo completion = getCompletion();
-        String[] res = {"aa", "cc"};
-        CompletionJListOperator cjo = completion.listItself;
-        checkCompletionDoesntContainItems(cjo, res);
-
-        eo.typeKey(' ', InputEvent.CTRL_MASK);
-        evt.waitNoEvent(100);
-        eo.typeKey(' ', InputEvent.CTRL_MASK);
-        evt.waitNoEvent(100);
-
-        completion = getCompletion();
         String[] res2 = {"aa", "bb", "cc", "dd"};
-        cjo = completion.listItself;
+        CompletionJListOperator cjo = completion.listItself;
         checkCompletionItems(cjo, res2);
         completion.listItself.hideAll();
 

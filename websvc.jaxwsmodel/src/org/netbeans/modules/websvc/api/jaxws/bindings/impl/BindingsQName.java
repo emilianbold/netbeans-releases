@@ -83,14 +83,20 @@ public enum BindingsQName {
     private static Set<QName> qnames = null;
 
     public static Set<QName> getQNames() {
-        if (qnames == null) {
-            qnames = new HashSet<QName>();
-            for (BindingsQName wq : values()) {
-                qnames.add(wq.getQName());
-            }
-        }
         return qnames;
     }
+    
+    public static void initQNames() {
+        qnames = new HashSet<QName>();
+        for (BindingsQName wq : values()) {
+            qnames.add(wq.getQName());
+        }
+    }
+    
+    static {
+        initQNames();
+    }
+    
     private final QName qName;
 }
 

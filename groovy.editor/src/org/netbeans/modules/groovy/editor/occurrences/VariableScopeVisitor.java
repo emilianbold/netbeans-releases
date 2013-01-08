@@ -151,7 +151,7 @@ public final class VariableScopeVisitor extends TypeVisitor {
 
 
     @Override
-    protected boolean isValidToken(Token<? extends GroovyTokenId> currentToken, Token<? extends GroovyTokenId> previousToken) {
+    protected boolean isValidToken(Token<GroovyTokenId> currentToken, Token<GroovyTokenId> previousToken) {
         // cursor must be positioned on identifier, otherwise occurences doesn't make sense
         // second check is here because we want to have occurences also at the end of the identifier (see issue #155574)
         return currentToken.id() == GroovyTokenId.IDENTIFIER || previousToken.id() == GroovyTokenId.IDENTIFIER;

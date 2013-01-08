@@ -195,21 +195,21 @@ public class HtmlLexerTest extends NbTestCase {
                 "<|TAG_OPEN_SYMBOL", "script|TAG_OPEN", " |WS", "type|ARGUMENT",
                 "=|OPERATOR", "\"text/javascript\"|VALUE", ">|TAG_CLOSE_SYMBOL", "x|SCRIPT", "</|TAG_OPEN_SYMBOL", "script|TAG_CLOSE", ">|TAG_CLOSE_SYMBOL");
 
-        //javascript embedding w/ explicit unknown type specification - no embedding
+        //javascript embedding w/ explicit unknown type specification
         checkTokens("<script type=\"text/xxx\">x</script>",
                 "<|TAG_OPEN_SYMBOL", "script|TAG_OPEN", " |WS", "type|ARGUMENT",
-                "=|OPERATOR", "\"text/xxx\"|VALUE", ">|TAG_CLOSE_SYMBOL", "x|TEXT", "</|TAG_OPEN_SYMBOL", "script|TAG_CLOSE", ">|TAG_CLOSE_SYMBOL");
+                "=|OPERATOR", "\"text/xxx\"|VALUE", ">|TAG_CLOSE_SYMBOL", "x|SCRIPT", "</|TAG_OPEN_SYMBOL", "script|TAG_CLOSE", ">|TAG_CLOSE_SYMBOL");
 
-        //javascript embedding w/ explicit type specification of known but excluded type - no embedding
+        //javascript embedding w/ explicit type specification of known but excluded type 
         checkTokens("<script type=\"text/vbscript\">x</script>",
                 "<|TAG_OPEN_SYMBOL", "script|TAG_OPEN", " |WS", "type|ARGUMENT",
-                "=|OPERATOR", "\"text/vbscript\"|VALUE", ">|TAG_CLOSE_SYMBOL", "x|TEXT", "</|TAG_OPEN_SYMBOL", "script|TAG_CLOSE", ">|TAG_CLOSE_SYMBOL");
+                "=|OPERATOR", "\"text/vbscript\"|VALUE", ">|TAG_CLOSE_SYMBOL", "x|SCRIPT", "</|TAG_OPEN_SYMBOL", "script|TAG_CLOSE", ">|TAG_CLOSE_SYMBOL");
 
         //check also single quotes
         //javascript embedding w/ explicit unknown type specification
         checkTokens("<script type='text/xxx'>x</script>",
                 "<|TAG_OPEN_SYMBOL", "script|TAG_OPEN", " |WS", "type|ARGUMENT",
-                "=|OPERATOR", "'text/xxx'|VALUE", ">|TAG_CLOSE_SYMBOL", "x|TEXT", "</|TAG_OPEN_SYMBOL", "script|TAG_CLOSE", ">|TAG_CLOSE_SYMBOL");
+                "=|OPERATOR", "'text/xxx'|VALUE", ">|TAG_CLOSE_SYMBOL", "x|SCRIPT", "</|TAG_OPEN_SYMBOL", "script|TAG_CLOSE", ">|TAG_CLOSE_SYMBOL");
 
 
     }
@@ -399,4 +399,57 @@ public class HtmlLexerTest extends NbTestCase {
         assertTrue("There are some tokens left: " + b.toString(), b.length() == 0);
     }
 
+     public void testScriptType_value() {
+        TokenHierarchy th = TokenHierarchy.create("<script type=\"text/plain\">plain</script>", HTMLTokenId.language());
+        TokenSequence ts = th.tokenSequence();
+        ts.moveStart();
+
+        while(ts.moveNext()) {
+            Token t = ts.token();
+            if(t.id() == HTMLTokenId.SCRIPT) {
+                String scriptType = (String)t.getProperty(HTMLTokenId.SCRIPT_TYPE_TOKEN_PROPERTY);
+                assertNotNull(scriptType);
+                assertEquals("text/plain", scriptType);
+                return ;
+            }
+        }
+        
+        assertTrue("Couldn't find any SCRIPT token!", false);
+    }
+     
+    public void testScriptType_empty() {
+        TokenHierarchy th = TokenHierarchy.create("<script type=\"\">plain</script>", HTMLTokenId.language());
+        TokenSequence ts = th.tokenSequence();
+        ts.moveStart();
+
+        while(ts.moveNext()) {
+            Token t = ts.token();
+            if(t.id() == HTMLTokenId.SCRIPT) {
+                String scriptType = (String)t.getProperty(HTMLTokenId.SCRIPT_TYPE_TOKEN_PROPERTY);
+                assertNotNull(scriptType);
+                assertEquals("", scriptType);
+                return ;
+            }
+        }
+        
+        assertTrue("Couldn't find any SCRIPT token!", false);
+    }
+    
+    public void testScriptType_missing() {
+        TokenHierarchy th = TokenHierarchy.create("<script>plain</script>", HTMLTokenId.language());
+        TokenSequence ts = th.tokenSequence();
+        ts.moveStart();
+
+        while(ts.moveNext()) {
+            Token t = ts.token();
+            if(t.id() == HTMLTokenId.SCRIPT) {
+                String scriptType = (String)t.getProperty(HTMLTokenId.SCRIPT_TYPE_TOKEN_PROPERTY);
+                assertNull(scriptType);
+                return ;
+            }
+        }
+        
+        assertTrue("Couldn't find any SCRIPT token!", false);
+    }
+    
 }

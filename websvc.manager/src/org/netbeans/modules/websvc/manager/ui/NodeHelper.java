@@ -213,7 +213,7 @@ public final class NodeHelper {
          * TODO: figure out some better way to pick the number of instances of the array to create
          */
         TypeNodeData inData = (TypeNodeData)parentNode.getUserObject();
-        String inTypeClass = inData.getTypeClass();
+        //String inTypeClass = inData.getTypeClass();
         String elementType = inData.getGenericType();
         
         for(int ii=0; ii < 9; ii++) {
@@ -234,7 +234,7 @@ public final class NodeHelper {
          *
          */
         TypeNodeData parentData = (TypeNodeData)parentNode.getUserObject();
-        String parentType = parentData.getTypeClass();
+        //String parentType = parentData.getTypeClass();
 
         String elementType = parentData.getGenericType();
         if (elementType == null) {
@@ -279,25 +279,25 @@ public final class NodeHelper {
                 Object value = null;
 
                 if (currentType.equals(int.class.getName()) || currentType.equals(Integer.class.getName())) {
-                    value = new Integer(0);
+                    value = Integer.valueOf(0);
                 } else if (currentType.equals(byte.class.getName()) || currentType.equals(Byte.class.getName())) {
-                    value = new Byte("0");
+                    value = Byte.valueOf("0");
                 } else if (currentType.equals(boolean.class.getName()) || currentType.equals(Boolean.class.getName())) {
-                    value = new Boolean(false);
+                    value = false;
                 } else if (currentType.equals(float.class.getName()) || currentType.equals(Float.class.getName())) {
-                    value = new Float(0);
+                    value = Float.valueOf(0);
                 } else if (currentType.equals(double.class.getName()) || currentType.equals(Double.class.getName())) {
-                    value = new Double(0);
+                    value = Double.valueOf(0);
                 } else if (currentType.equals(long.class.getName()) || currentType.equals(Long.class.getName())) {
-                    value = new Long(0L);
+                    value = Long.valueOf(0);
                 } else if (currentType.equals(short.class.getName()) || currentType.equals(Short.class.getName())) {
-                    value = new Short("0");
+                    value = Short.valueOf("0");
                 } else if (currentType.equals(String.class.getName())) {
                     value = "";
                 } else if (currentType.equals(BigDecimal.class.getName())) {
-                    value = new BigDecimal("0");
+                    value = BigDecimal.valueOf(0);
                 } else if (currentType.equals(BigInteger.class.getName())) {
-                    value = new BigInteger("0");
+                    value = BigInteger.valueOf(0);
                 } else if (currentType.equals(URI.class.getName())) {
                     try {
                         value = new URI("http://java.sun.com");

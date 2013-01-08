@@ -207,6 +207,8 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
     private static final Icon MEMORY_ICON = Icons.getIcon(ProfilerIcons.MEMORY_32);
     private static final Icon RUN_ICON = Icons.getIcon(GeneralIcons.BUTTON_RUN);
     private static final Icon ATTACH_ICON = Icons.getIcon(GeneralIcons.BUTTON_ATTACH);
+    
+    private static final Dimension MINIMUM_SIZE = new Dimension();
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 
@@ -232,6 +234,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
     private JSeparator extraSettingsPanelSeparator;
     private JSeparator projectsChooserSeparator;
     private List<SimpleFilter> predefinedInstrFilterKeys;
+    private FileObject lastAttachProjectFO;
     private Object lastAttachProject; // Actually may be also EXTERNAL_APPLICATION_STRING, is reset to null when project is closed
     private Lookup.Provider project;
     private SettingsConfigurator configurator;
@@ -255,7 +258,6 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
 
     // --- Private implementation ------------------------------------------------
     private SelectProfilingTask() {
-        initClosedProjectHook();
         initComponents();
         initTasks();
         Runnable r = new Runnable() {
@@ -307,6 +309,10 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         assert !SwingUtilities.isEventDispatchThread();
 
         final SelectProfilingTask spt = getDefault();
+        
+        if (spt.lastAttachProject == null && spt.lastAttachProjectFO != null)
+            spt.lastAttachProject = ProjectUtilities.getProject(spt.lastAttachProjectFO);
+        
         spt.setSubmitButton(spt.attachButton);
         spt.setupAttachProfiler(project);
 
@@ -321,6 +327,13 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
             public void run() {
                 Dialog d = DialogDisplayer.getDefault().createDialog(dd);
                 d.pack();
+                if (MINIMUM_SIZE.width * MINIMUM_SIZE.height > 0) {
+                    d.setMinimumSize(MINIMUM_SIZE);
+                } else {
+                    Dimension dim = d.getSize();
+                    MINIMUM_SIZE.width = dim.width;
+                    MINIMUM_SIZE.height = dim.height;
+                }
                 d.setVisible(true);
                 latch.countDown();
             }
@@ -333,6 +346,14 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
 
             if (dd.getValue() == spt.attachButton) {
                 result = new Configuration(spt.project, spt.createFinalSettings(), spt.getAttachSettings());
+            }
+            
+            if (spt.lastAttachProject instanceof Lookup.Provider) {
+                spt.lastAttachProjectFO = ProjectUtilities.getProjectDirectory(
+                        (Lookup.Provider)spt.lastAttachProject);
+                spt.lastAttachProject = null;
+            } else {
+                spt.lastAttachProjectFO = null;
             }
 
             spt.cleanup(result != null);
@@ -365,6 +386,13 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
             public void run() {
                 Dialog d = DialogDisplayer.getDefault().createDialog(dd);
                 d.pack();
+                if (MINIMUM_SIZE.width * MINIMUM_SIZE.height > 0) {
+                    d.setMinimumSize(MINIMUM_SIZE);
+                } else {
+                    Dimension dim = d.getSize();
+                    MINIMUM_SIZE.width = dim.width;
+                    MINIMUM_SIZE.height = dim.height;
+                }
                 d.setVisible(true);
                 latch.countDown();
             }
@@ -413,6 +441,13 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                 Dialog d = DialogDisplayer.getDefault().createDialog(spt[0].dd);
                 d.getAccessibleContext().setAccessibleDescription(d.getTitle());
                 d.pack();
+                if (MINIMUM_SIZE.width * MINIMUM_SIZE.height > 0) {
+                    d.setMinimumSize(MINIMUM_SIZE);
+                } else {
+                    Dimension dim = d.getSize();
+                    MINIMUM_SIZE.width = dim.width;
+                    MINIMUM_SIZE.height = dim.height;
+                }
                 d.setVisible(true);
                 latch.countDown();
             }
@@ -614,24 +649,6 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         } else {
             return null;
         }
-    }
-
-    private void initClosedProjectHook() {
-        ProjectUtilities.addOpenProjectsListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                Lookup.Provider[] openedProjects = ProjectUtilities.getOpenedProjects();
-
-                for (Lookup.Provider openedProject : openedProjects) {
-                    if (lastAttachProject == openedProject) {
-                        return;
-                    }
-                }
-
-                // lastAttachProject points to a closed project
-                lastAttachProject = null; // NOTE: projectsChooserCombo should not be opened, no need to remove the project
-            }
-        });
     }
 
     // --- UI definition ---------------------------------------------------------

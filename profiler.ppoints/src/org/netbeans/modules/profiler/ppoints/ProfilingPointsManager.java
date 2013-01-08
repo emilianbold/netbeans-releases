@@ -348,10 +348,13 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
     
     private WeakReference<RequestProcessor> _processorRef;
     private final Object _processorLock = new Object();
+    
+    private static boolean hasInstance;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     public ProfilingPointsManager() {
+        hasInstance = true;
         refreshProfilingPointFactories();
         final ProfilingStateListener listener = new ProfilingStateAdapter() {
             public void profilingStateChanged(final ProfilingStateEvent profilingStateEvent) {
@@ -384,7 +387,8 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
                             GlobalProfilingPointsProcessor.getDefault().notifyProfilingStateChanged();
                             CommonUtils.runInEventDispatchThread(new Runnable() {
                                 public void run() {
-                                    ProfilingPointsWindow.getDefault().notifyProfilingStateChanged(); // this needs to be called on EDT
+                                    if (ProfilingPointsWindow.hasDefault())
+                                        ProfilingPointsWindow.getDefault().notifyProfilingStateChanged(); // this needs to be called on EDT
                                     ProfilingPointReport.refreshOpenReports();
                                 }
                             });
@@ -404,6 +408,10 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
+    static boolean hasDefault() {
+        return hasInstance;
+    }
+    
     public static ProfilingPointsManager getDefault() {
         return Lookup.getDefault().lookup(ProfilingPointsManager.class);
     }

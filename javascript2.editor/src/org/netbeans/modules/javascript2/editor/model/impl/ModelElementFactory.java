@@ -86,13 +86,13 @@ class ModelElementFactory {
         if (fqName.size() > 1) {
             List<Identifier> objectName = fqName.subList(0, fqName.size() - 1);
             parentObject = isAnnonymous ? globalObject : ModelUtils.getJsObject(modelBuilder, objectName, false);
-            result = new JsFunctionImpl(modelBuilder.getCurrentDeclarationScope(), 
+            result = new JsFunctionImpl(modelBuilder.getCurrentDeclarationFunction(), 
                     parentObject, fqName.get(fqName.size() - 1), parameters, ModelUtils.documentOffsetRange(parserResult, start, end));
             if (parentObject instanceof JsFunction && !"prototype".equals(parentObject.getName())) {
                 result.addModifier(Modifier.STATIC);
             } 
         } else {
-            result = new JsFunctionImpl(modelBuilder.getCurrentDeclarationScope(),
+            result = new JsFunctionImpl(modelBuilder.getCurrentDeclarationFunction(),
                     inObject, fqName.get(fqName.size() - 1), parameters, ModelUtils.documentOffsetRange(parserResult, start, end));
         }
         String propertyName = result.getDeclarationName().getName();
@@ -171,6 +171,7 @@ class ModelElementFactory {
         }
         JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
         if (docHolder != null) {
+            newObject.setDeprecated(docHolder.isDeprecated(objectNode));
             newObject.setDocumentation(docHolder.getDocumentation(objectNode));
         }
         parent.addProperty(name.getName(), newObject);
@@ -183,12 +184,13 @@ class ModelElementFactory {
     @NonNull
     static JsObjectImpl createAnonymousObject(JsParserResult parserResult, ObjectNode objectNode, ModelBuilder modelBuilder) {
         String name = modelBuilder.getUnigueNameForAnonymObject();
-        JsObjectImpl result = new AnonymousObject(modelBuilder.getCurrentDeclarationScope(),
+        JsObjectImpl result = new AnonymousObject(modelBuilder.getCurrentDeclarationFunction(),
                     name, ModelUtils.documentOffsetRange(parserResult, objectNode.getStart(), objectNode.getFinish()));
-        modelBuilder.getCurrentDeclarationScope().addProperty(name, result);
+        modelBuilder.getCurrentDeclarationFunction().addProperty(name, result);
         JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
         if (docHolder != null) {
             result.setDocumentation(docHolder.getDocumentation(objectNode));
+            result.setDeprecated(docHolder.isDeprecated(objectNode));
         }
         return result;
     }
@@ -202,6 +204,7 @@ class ModelElementFactory {
         JsObjectImpl property = new JsObjectImpl(scope, name, name.getOffsetRange());
         JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
         property.setDocumentation(docHolder.getDocumentation(propertyNode));
+        property.setDeprecated(docHolder.isDeprecated(propertyNode));
         if (property.hasExactName()) {
             property.addOccurrence(property.getDeclarationName().getOffsetRange());
         }

@@ -434,15 +434,17 @@
 <mapID target="gui.csh.handlers" url="gui/csh/gui_event_handler_dialog.html" />
 <!-- CSH page for Form Editor property Variables Modifier (also for the Java module's "Modifiers" property) :-->
 <mapID target="org.openide.explorer.propertysheet.editors.ModifierEditor" url="gui/csh/gui_modifiers_editor.html" />
-<!-- GUI Builder Connection Wizard : F1 and Help button-->
+<!-- GUI Builder Connection Wizard : F1 and Help buttons-->
 <mapID target="gui.connecting.source" url="gui/csh/gui_connection_wizard.html" />
+<mapID target="gui.connecting.target" url="gui/csh/gui_connection_wizard_target.html" />
+<mapID target="gui.connecting.param" url="gui/csh/gui_connection_wizard_param.html" />
 <!--CSH topic for Advanced Modify Source dialog-->
 <mapID target="gui.source.modifying.property" url="gui/csh/gui_advanced_sourcemod_dialog.html" />
 <!--CSH topic for GUI Builder main workspace-->
 <mapID target="gui.formeditor" url="gui/csh/gui_guibuilder_window.html" />
 <!--CSH topic for New Master/Detail Form wizard-->
-<mapID target="org.netbeans.modules.form.j2ee.wizard.MasterPanel" url="gui/csh/new_master_form_wizard_mastertable.html" />
-<mapID target="org.netbeans.modules.form.j2ee.wizard.DetailPanel" url="gui/csh/new_master_form_wizard_detailoptions.html" />
+<mapID target="gui.masterdetail-wizard.master" url="gui/csh/new_master_form_wizard_mastertable.html" />
+<mapID target="gui.masterdetail-wizard.detail" url="gui/csh/new_master_form_wizard_detailoptions.html" />
 <!--CSH topic for Property Editors dialog box-->
 <mapID target="f1_mat_prop_html" url="gui/csh/gui_prop_editors.html" />
 
@@ -455,11 +457,6 @@
 <!--CSH for Binding dialog-->
 <mapID target="gui.binding-customizer.basic" url="gui/csh/gui_bind_dialog.html" />
 <mapID target="gui.binding-customizer.advanced" url="gui/csh/gui_bind_advanced_dialog.html" />
-
-<!--<mapID target="org.netbeans.modules.form.ConnectionWizard1" url="pending.html" />-->
-<!--<mapID target="org.netbeans.modules.form.ConnectionWizard2" url="pending.html" />-->
-<!--<mapID target="org.netbeans.modules.form.ConnectionWizard3" url="pending.html" />-->
-<!--<mapID target="org.netbeans.modules.form.FormCustomEditor.tabbedPane" url="pending.html" />-->
 
 <!--Space Around Component dialog-->
 <mapID target="org.netbeans.modules.form.actions.CustomizeEmptySpaceAction" url="pending.html" />

@@ -47,8 +47,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -288,11 +290,12 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
             // keep a backup of an existing extension just in case
             File backupFolder = null;
             if (extensionDir.exists()) {
-                String tmp = EXTENSION_ID + "-tmp"; // NOI18N
+                StringBuilder tmp = new StringBuilder(EXTENSION_ID);
+                tmp.append("-tmp");                 // NOI18N
                 
                 do {
-                    tmp += "0";
-                    backupFolder = new File(extensionDir.getParentFile(), tmp);
+                    tmp.append("0");
+                    backupFolder = new File(extensionDir.getParentFile(), tmp.toString());
                 } 
                 while (backupFolder.exists());
                 
@@ -557,9 +560,11 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
         }
         
         private List<FirefoxProfile> getAllProfiles(File dir) {
-            File profileCfg = new File(dir, "profiles.ini"); // NOI18N
+            File profileCfg = new File( dir, "profiles.ini"); // NOI18N
+            BufferedReader reader = null;
             try {
-                BufferedReader reader = new BufferedReader(new FileReader(profileCfg));
+                reader = new BufferedReader(new InputStreamReader( 
+                        new FileInputStream(profileCfg), Utils.UTF_8));
                 Set<LinkedHashSet<String>> profileData = 
                     new HashSet<LinkedHashSet<String>>();
                 
@@ -631,6 +636,18 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
                 Logger.getLogger(FFExtensionManager.class.getCanonicalName()).
                     log(Level.WARNING, "Could not read Firefox profiles", ex);  // NOI18N
             }
+            finally {
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    }
+                    catch (IOException e) {
+                        Logger.getLogger(
+                                FFExtensionManager.class.getCanonicalName())
+                                .log(Level.WARNING, null, e); // NOI18N
+                    }
+                }
+            }
             
             return null;
         }
@@ -644,7 +661,8 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
             if (extensionCache.exists() && extensionCache.isFile()) {
                 BufferedReader br = null;
                 try {
-                    br = new BufferedReader(new FileReader(extensionCache));
+                    br = new BufferedReader(new InputStreamReader( 
+                            new FileInputStream(extensionCache), Utils.UTF_8));
                     boolean foundExtension = false;
                     
                     while (br.ready() && !foundExtension) {

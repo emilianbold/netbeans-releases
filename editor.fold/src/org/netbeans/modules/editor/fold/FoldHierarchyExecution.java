@@ -48,6 +48,8 @@ import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -55,6 +57,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -104,7 +108,7 @@ import org.openide.util.Task;
  */
 
 public final class FoldHierarchyExecution implements DocumentListener, Runnable {
-    
+    private static final Logger LOG = Logger.getLogger(FoldHierarchyExecution.class.getName());
     /**
      * Runs rebuild(). Although it theoretically could work in parallel for several views, the original code
      * was written to run in EQ and many managers depend on parsing API, which also runs in 1 thread.
@@ -151,6 +155,12 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
     private boolean inited;
     
     private AbstractDocument lastDocument;
+    
+    /**
+     * This is different from lastDocument, which can be cleared after rebuild(false).
+     * This reference exactly tracks the parent document of the root fold.
+     */
+    private Reference<Document> lastRootDocument;
     
     private PriorityMutex mutex;
     
@@ -214,7 +224,23 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
 
         this.hierarchy = ApiPackageAccessor.get().createFoldHierarchy(this);
         
-        Document doc = component.getDocument();
+        updateRootFold(component.getDocument());
+        
+        foldingEnabled = getFoldingEnabledSetting();
+
+        // Start listening on component changes
+        startComponentChangesListening();
+
+        this.initTask = RP.post(this);
+    }
+    
+    private void updateRootFold(Document doc) {
+        if (lastRootDocument != null) {
+            Document d = lastRootDocument.get();
+            if (d == doc) {
+                return;
+            }
+        }
         try {
             rootFold = ApiPackageAccessor.get().createFold(
                 new FoldOperationImpl(this, null, Integer.MAX_VALUE),
@@ -226,16 +252,10 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
                 0, 0,
                 null
             );
+            lastRootDocument = new WeakReference(doc);
         } catch (BadLocationException e) {
             ErrorManager.getDefault().notify(e);
         }
-        
-        foldingEnabled = getFoldingEnabledSetting();
-
-        // Start listening on component changes
-        startComponentChangesListening();
-
-        this.initTask = RP.post(this);
     }
     
     /* testing only */
@@ -619,6 +639,7 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
     }
     
     public void rebuild(boolean doRelease) {
+        Document doc = getComponent().getDocument();
         // Stop listening on the original document
         if (lastDocument != null) {
             // Remove document listener with specific priority
@@ -626,7 +647,6 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
             lastDocument = null;
         }
 
-        Document doc = getComponent().getDocument();
         AbstractDocument adoc;
         boolean releaseOnly; // only release the current hierarchy root folds
         if (doc instanceof AbstractDocument) {
@@ -646,6 +666,8 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
         if (adoc != null) {
             adoc.readLock();
             
+            updateRootFold(doc);
+
             // Start listening for changes
             if (!releaseOnly) {
                 lastDocument = adoc;

@@ -62,6 +62,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
@@ -192,7 +193,7 @@ public class ClientHandlerButtonListener implements ActionListener {
                         FileLock lock = bindingHandlerFO.lock();
                         try {
                             os = bindingHandlerFO.getOutputStream(lock);
-                            osw = new OutputStreamWriter(os);
+                            osw = new OutputStreamWriter(os, Charset.forName("UTF-8"));// NOI18N
                             bw = new BufferedWriter(osw);
                             bw.write(bindingsContent);
                         } finally {
@@ -330,6 +331,7 @@ public class ClientHandlerButtonListener implements ActionListener {
         invokeWsImport(srcRoot);
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     private void removeHandlerAnnotation() {
         JaxWsClientNode clientNode = node.getLookup().lookup(JaxWsClientNode.class);
         WsdlModel wsdlModel = clientNode.getWsdlModel();
@@ -463,9 +465,8 @@ public class ClientHandlerButtonListener implements ActionListener {
         InputStreamReader isr = null;
         StringBuilder sb = new StringBuilder();
         try {
-
-            String lineSep = System.getProperty("line.separator");//NOI18N
-            isr = new InputStreamReader(is);
+            String lineSep = System.getProperty("line.separator");      //NOI18N
+            isr = new InputStreamReader(is, Charset.forName("UTF-8"));  //NOI18N
             br = new BufferedReader(isr);
 
             String line = br.readLine();
@@ -475,9 +476,15 @@ public class ClientHandlerButtonListener implements ActionListener {
                 line = br.readLine();
             }
         } finally {
-            isr.close();
-            br.close();
-            is.close();
+            if ( isr!= null ){
+                isr.close();
+            }
+            else {
+                is.close();
+            }
+            if ( br!= null ){
+                br.close();
+            }
         }
         return sb.toString();
     }

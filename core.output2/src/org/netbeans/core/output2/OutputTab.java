@@ -109,6 +109,7 @@ import org.netbeans.core.output2.ui.OutputKeymapManager;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.windows.IOColors;
+import org.openide.windows.OutputEvent;
 
 
 /**
@@ -243,6 +244,27 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
             //Select the text on click if it is still visible
             if (getOutputPane().getLength() >= range[1]) { // #179768
                 getOutputPane().sendCaretToPos(range[0], range[1], true);
+            }
+        }
+    }
+
+    void enterPressed(int caretMark, int caretDot) {
+        int start, end;
+        if (caretMark < caretDot) {
+            start = caretMark;
+            end = caretDot;
+        } else {
+            start = caretDot;
+            end = caretMark;
+        }
+        if (getOut().getLines().isListener(start, end)) {
+            int[] range = new int[2];
+            OutputListener listener = getOut().getLines().nearestListener(
+                    start, false, range);
+            if (listener != null && range[0] <= start && range[1] >= end) {
+                int line = getOut().getLines().getLineAt(start);
+                OutputEvent oe = new ControllerOutputEvent(io, line);
+                listener.outputLineAction(oe);
             }
         }
     }

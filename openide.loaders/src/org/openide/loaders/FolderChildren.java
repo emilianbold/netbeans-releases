@@ -86,6 +86,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     @SuppressWarnings("NonConstantLogger")
     private final Logger err;
     /** last refresh task */
+    private volatile Collection<FolderChildrenPair> pairs;
     private volatile Task refTask = Task.EMPTY;
     private static final boolean DELAYED_CREATION_ENABLED;
     static {
@@ -126,6 +127,11 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     DataFilter getFilter () {
         return filter;
     }
+    
+    void applyKeys(Collection<FolderChildrenPair> pairs) {
+        setKeys(pairs);
+        this.pairs = pairs;
+    }
 
     static void waitRefresh() {
         DataNodeUtils.reqProcessor().post(Task.EMPTY, 0, Thread.MIN_PRIORITY).waitFinished();
@@ -142,7 +148,28 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     @Override
     public void stateChanged(ChangeEvent e) {
         // Filtering changed need to recompute children
-        refreshChildren(RefreshMode.DEEP);
+        Object source = e.getSource();
+        FileObject fo = null;
+        if (source instanceof DataObject) {
+            DataObject dobj = (DataObject) source;
+            fo = dobj.getPrimaryFile();
+        } else if (source instanceof FileObject) {
+            fo = (FileObject) source;
+        }
+        boolean doRefresh;
+        if (fo != null) {
+            FileObject folderFO = folder.getPrimaryFile();
+            if (!fo.isFolder()) {
+                doRefresh = (fo.getParent() == folderFO);
+            } else {
+                doRefresh = (fo == folderFO);
+            }
+        } else {
+            doRefresh = true;
+        }
+        if (doRefresh) {
+            refreshChildren(RefreshMode.DEEP);
+        }
     }
 
     private enum RefreshMode {SHALLOW, SHALLOW_IMMEDIATE, DEEP, DEEP_LATER, CLEAR}
@@ -160,7 +187,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
 
                 try {
                     if (op == RefreshMode.CLEAR) {
-                        setKeys(Collections.<FolderChildrenPair>emptyList());
+                        applyKeys(Collections.<FolderChildrenPair>emptyList());
                         return;
                     }
 
@@ -179,13 +206,13 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
                     }
 
                     if (op == RefreshMode.DEEP_LATER) {
-                        setKeys(Collections.<FolderChildrenPair>emptyList());
-                        setKeys(positioned);
+                        applyKeys(Collections.<FolderChildrenPair>emptyList());
+                        applyKeys(positioned);
                         return;
                     }
 
                     if (op == RefreshMode.SHALLOW) {
-                        setKeys(positioned);
+                        applyKeys(positioned);
                         return;
                     }
 
@@ -353,7 +380,29 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     @Override
     public Node findChild(String name) {
         if (checkChildrenMutex()) {
-            getNodesCount(true);
+            waitOptimalResult();
+        }
+        int i = 0;
+        final Collection<FolderChildrenPair> tmp = pairs;
+        if (tmp != null) {
+            for (FolderChildrenPair p : tmp) {
+                final FileObject pf = p.primaryFile;
+                if (pf.getNameExt().startsWith(name)) {
+                    try {
+                        Node original = DataObject.find(pf).getNodeDelegate();
+                        if (!original.getName().equals(name)) {
+                            continue;
+                        }
+                        Node candidate = getNodeAt(i);
+                        if (candidate != null && candidate.getName().equals(name)) {
+                            return candidate;
+                        }
+                    } catch (DataObjectNotFoundException ex) {
+                        err.log(Level.INFO, "Can't find object for " + pf, ex);
+                    }
+                }
+                i++;
+            }
         }
         return super.findChild(name);
     }
@@ -424,7 +473,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
 
         // we need to clear the children now
         List<FolderChildrenPair> emptyList = Collections.emptyList();
-        setKeys(emptyList);
+        applyKeys(emptyList);
         err.fine("removeNotify end");
     }
 
@@ -470,7 +519,8 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     
     private final class DelayedNode extends FilterNode implements Runnable {
         final FolderChildrenPair pair;
-        private volatile RequestProcessor.Task task;
+        /** @GuardedBy("this") */
+        private RequestProcessor.Task task;
 
         public DelayedNode(FolderChildrenPair pair) {
             this(pair, new DelayedLkp(new InstanceContent()));
@@ -498,15 +548,20 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             } else {
                 refreshKey(pair);
             }
-            task = null;
+            synchronized (this) {
+                task = null;
+            }
             err.log(Level.FINE, "delayed node refreshed {0} original: {1}", new Object[]{this, n});
         }
         
         /* @return true if there was some change in the node while waiting */
         public final boolean waitFinished() {
-            RequestProcessor.Task t = task;
-            if (t == null) {
-                return false;
+            RequestProcessor.Task t;
+            synchronized (this) {
+                t = task;
+                if (t == null) {
+                    return false;
+                }
             }
             err.log(Level.FINE, "original before wait: {0}", getOriginal());
             t.waitFinished();
@@ -515,7 +570,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             return true;
         }
 
-        final void scheduleRefresh(String by) {
+        final synchronized void scheduleRefresh(String by) {
             task = DataNodeUtils.reqProcessor().post(this);
             err.log(Level.FINE, "Task initialized by {0} to {1} for {2}", new Object[] { by, task, this });
         }

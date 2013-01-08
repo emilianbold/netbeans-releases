@@ -49,6 +49,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import javax.swing.JButton;
 import javax.xml.parsers.ParserConfigurationException;
 import java.net.URL;
@@ -59,6 +60,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.uihandler.LogRecords;
 import org.openide.DialogDescriptor;
@@ -78,7 +80,34 @@ public class InstallerTest extends NbTestCase {
     
     @Override
     protected boolean runInEQ() {
-        return true;
+        return false;
+    }
+    
+    private void runTestInEQ(final String testName) throws Exception {
+        final Method method = getClass().getMethod(testName);
+        final Object obj = this;
+        SwingUtilities.invokeAndWait(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    method.invoke(obj);
+                } catch (IllegalAccessException ex) {
+                    throw new RuntimeException(ex);
+                } catch (IllegalArgumentException ex) {
+                    throw new RuntimeException(ex);
+                } catch (InvocationTargetException ex) {
+                    Throwable cause = ex.getCause();
+                    if (cause instanceof RuntimeException) {
+                        throw (RuntimeException) cause;
+                    } else {
+                        throw new RuntimeException(cause);
+                    }
+                } catch (SecurityException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        });
     }
 
     @Override
@@ -87,18 +116,28 @@ public class InstallerTest extends NbTestCase {
         System.setProperty("netbeans.user", getWorkDirPath());
         clearWorkDir();
         
-        Installer installer = Installer.findObject(Installer.class, true);
-        assertNotNull(installer);
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                Installer installer = Installer.findObject(Installer.class, true);
+                assertNotNull(installer);
 
-        // setup the listing
-        installer.restored();
+                // setup the listing
+                installer.restored();
+            }
+        });
     }
 
     @Override
     protected void tearDown() throws Exception {
-        Installer installer = Installer.findObject(Installer.class, true);
-        assertNotNull(installer);
-        installer.doClose();
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                Installer installer = Installer.findObject(Installer.class, true);
+                assertNotNull(installer);
+                installer.doClose();
+            }
+        });
     }
     
     public void testEmptyLog() throws Exception {
@@ -112,11 +151,16 @@ public class InstallerTest extends NbTestCase {
         Logger log = Logger.getLogger("org.netbeans.ui"); // NOI18N
         log.warning("Something happened");
 
-        Installer installer = Installer.findObject(Installer.class, true);
-        assertNotNull(installer);
-        installer.doClose();
-        
-        installer.restored();
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                Installer installer = Installer.findObject(Installer.class, true);
+                assertNotNull(installer);
+                installer.doClose();
+
+                installer.restored();
+            }
+        });
         UIHandler.waitFlushed();
         assertEquals("One log is available: " + getLogs(), 1, getLogsSize());
         
@@ -154,6 +198,10 @@ public class InstallerTest extends NbTestCase {
     }
 
     public void testReadListOfSubmitButtons() throws Exception {
+        runTestInEQ("inEQtestReadListOfSubmitButtons");
+    }
+
+    public void inEQtestReadListOfSubmitButtons() throws Exception {
         String page = "<html><body><form action='http://xyz.cz' method='POST'>" +
             "<input type='hidden' name='submit' value=\"Send Feedback\"/>" +
             "\n" +
@@ -173,6 +221,9 @@ public class InstallerTest extends NbTestCase {
         assertEquals("It url attribute is set", "http://xyz.cz", b.getClientProperty("url"));
     }
     public void testAutosubmitButtonIsAlsoSubmitButton() throws Exception {
+        runTestInEQ("inEQtestAutosubmitButtonIsAlsoSubmitButton");
+    }
+    public void inEQtestAutosubmitButtonIsAlsoSubmitButton() throws Exception {
         String page = "<html><body><form action='http://xyz.cz' method='POST'>" +
             "<input type='hidden' name='auto-submit' value=\"Send Feedback\"/>" +
             "\n" +
@@ -192,6 +243,9 @@ public class InstallerTest extends NbTestCase {
         assertEquals("It url attribute is set", "http://xyz.cz", b.getClientProperty("url"));
     }
     public void testDisabledButton() throws Exception {
+        runTestInEQ("inEQtestDisabledButton");
+    }
+    public void inEQtestDisabledButton() throws Exception {
         String page = "<html><body><form action='http://xyz.cz' method='POST'>" +
             "<input type='hidden' name='submit' disabled='true' value=\"Send Feedback\"/>" +
             "<input type='hidden' name='cancel' value=\"Cancel\"></input>" +
@@ -214,6 +268,9 @@ public class InstallerTest extends NbTestCase {
         assertFalse("disabled", b.isEnabled());
     }
     public void testTitle() throws Exception {
+        runTestInEQ("inEQtestTitle");
+    }
+    public void inEQtestTitle() throws Exception {
         String page = "<html><head><title>Ahoj</title></head><body><form action='http://xyz.cz' method='POST'>" +
             "\n" +
             "</form></body></html>";
@@ -231,6 +288,9 @@ public class InstallerTest extends NbTestCase {
         assertEquals("Ahoj", dd.getTitle());
     }
     public void testParseEmptyAction() throws Exception {
+        runTestInEQ("inEQtestParseEmptyAction");
+    }
+    public void inEQtestParseEmptyAction() throws Exception {
         String page = "<html><head><title>Ahoj</title></head><body><form action='' method='POST'>" +
                 "\n" +
                 "</form></body></html>";
@@ -251,6 +311,9 @@ public class InstallerTest extends NbTestCase {
         assertTrue(ok);
     }
     public void testNoTitle() throws Exception {
+        runTestInEQ("inEQtestNoTitle");
+    }
+    public void inEQtestNoTitle() throws Exception {
         String page = "<html><head></head><body><form action='http://xyz.cz' method='POST'>" +
             "\n" +
             "</form></body></html>";
@@ -269,6 +332,9 @@ public class InstallerTest extends NbTestCase {
     }
 
     public void testUnknownButton() throws Exception {
+        runTestInEQ("inEQtestUnknownButton");
+    }
+    public void inEQtestUnknownButton() throws Exception {
         String page = "<html><body><form action='http://xyz.cz' method='POST'>" +
             "<input type='hidden' name='nevim.co.s.nim' value=\"&amp;Unknown\"/>" +
             "<input type='hidden' name='cancel' value=\"Cancel\"></input>" +
@@ -292,6 +358,9 @@ public class InstallerTest extends NbTestCase {
     }
     
     public void testReadListOfSubmitButtonsWithAmpersand() throws Exception {
+        runTestInEQ("inEQtestReadListOfSubmitButtonsWithAmpersand");
+    }
+    public void inEQtestReadListOfSubmitButtonsWithAmpersand() throws Exception {
         String page = "<html><body><form action='http://xyz.cz' method='POST'>" +
             "<input type='hidden' name='submit' value=\"&amp;Send Feedback\"/>" +
             "\n" +
@@ -319,6 +388,9 @@ public class InstallerTest extends NbTestCase {
     }
 
     public void testCanDefineExitButton() throws Exception {
+        runTestInEQ("inEQtestCanDefineExitButton");
+    }
+    public void inEQtestCanDefineExitButton() throws Exception {
         String page = "<html><body><form action='http://xyz.cz' method='POST'>" +
             "\n" +
             "<input type='hidden' name='submit' value=\"&amp;Send Feedback\"/>" +
@@ -363,6 +435,9 @@ public class InstallerTest extends NbTestCase {
     }
 
     public void testReadAllButtons() throws Exception {
+        runTestInEQ("inEQtestReadAllButtons");
+    }
+    public void inEQtestReadAllButtons() throws Exception {
         String page = 
             "<html><body><form action='http://xyz.cz' method='POST'>" +
             "  <input type='hidden' name='submit' value=\"&amp;Send Feedback\"/>" +
@@ -437,6 +512,9 @@ public class InstallerTest extends NbTestCase {
       */
     
     public void testNoFormMeansNoButtons() throws Exception {
+        runTestInEQ("inEQtestNoFormMeansNoButtons");
+    }
+    public void inEQtestNoFormMeansNoButtons() throws Exception {
         String page = 
             "<html><body></body></html>";
         
@@ -451,6 +529,9 @@ public class InstallerTest extends NbTestCase {
     }
         
     public void testLeftAligned() throws Exception {
+        runTestInEQ("inEQtestLeftAligned");
+    }
+    public void inEQtestLeftAligned() throws Exception {
         String page = 
             "<html><body><form action='http://xyz.cz' method='POST'>" +
             "  <input type='hidden' name='submit' value=\"&amp;Send Feedback\"/>" +

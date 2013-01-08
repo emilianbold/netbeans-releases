@@ -156,7 +156,7 @@ public class RuleEditorNode extends AbstractNode {
 
     //called by the RuleEditorPanel when any of the properties affecting 
     //the PropertySet-s generation changes.
-    void fireContextChanged(boolean forceRefresh) {
+    public void fireContextChanged(boolean forceRefresh) {
         try {
             PropertySetsInfo oldInfo = getCachedPropertySetsInfo();
             PropertySetsInfo newInfo = createPropertySetsInfo();
@@ -318,6 +318,7 @@ public class RuleEditorNode extends AbstractNode {
         if (isShowCategories()) {
             //create property sets for property categories
 
+            Map<PropertyDefinition, Declaration> created = new HashMap<PropertyDefinition, Declaration>();
             Map<PropertyCategory, List<Declaration>> categoryToDeclarationsMap = new EnumMap<PropertyCategory, List<Declaration>>(PropertyCategory.class);
             for (Declaration d : declarations) {
                 if (addedDeclarations.containsValue(d)) {
@@ -329,6 +330,12 @@ public class RuleEditorNode extends AbstractNode {
                 if (property != null && propertyValue != null) {
                     if (matchesFilterText(property.getContent().toString())) {
                         PropertyDefinition def = Properties.getPropertyDefinition(property.getContent().toString());
+                        
+                        String declarationId = PropertyUtils.getDeclarationId(getRule(), d);
+                        if(panel.getCreatedDeclarationsIdsList().contains(declarationId)) {
+                            created.put(def, d);
+                        }
+                        
                         PropertyCategory category;
                         if (def != null) {
                             category = def.getPropertyCategory();
@@ -350,6 +357,12 @@ public class RuleEditorNode extends AbstractNode {
             for (Entry<PropertyCategory, List<Declaration>> entry : categoryToDeclarationsMap.entrySet()) {
 
                 List<Declaration> categoryDeclarations = entry.getValue();
+                
+                if(isShowAllProperties()) {
+                    //remove the "just created"
+                    categoryDeclarations.removeAll(created.values());
+                }
+                
                 //sort alpha
                 Collections.sort(categoryDeclarations, PropertyUtils.getDeclarationsComparator());
 
@@ -385,6 +398,9 @@ public class RuleEditorNode extends AbstractNode {
                     //add the rest of unused properties to the property set
                     for (PropertyDefinition pd : allInCat) {
                         Declaration alreadyAdded = addedDeclarations.get(pd);
+                        if(alreadyAdded == null) {
+                            alreadyAdded = created.get(pd);
+                        }
                         if (alreadyAdded != null) {
                             propertySet.add(alreadyAdded, true);
                         } else {
@@ -398,48 +414,68 @@ public class RuleEditorNode extends AbstractNode {
 
         } else {
             //not showCategories
+            //just create one top level property set for virtual category (the items actually don't belong to the category)
+            PropertyCategoryPropertySet set = new PropertyCategoryPropertySet(PropertyCategory.DEFAULT);
 
-            //do not create property sets since the natural ordering if no categorized view
-            //is enabled does not work then.
-
-
-            List<Declaration> filtered = new ArrayList<Declaration>();
-            for (Declaration d : declarations) {
-                if (addedDeclarations.containsValue(d)) {
-                    continue; //skip those added declarations
-                }
-                String declarationId = PropertyUtils.getDeclarationId(getRule(), d);
-                if(panel.getCreatedDeclarationsIdsList().contains(declarationId)) {
-                    //created declaration--ignore filter
-                    filtered.add(d);
-                } else {
-                    //check the declaration
-                    org.netbeans.modules.css.model.api.Property property = d.getProperty();
-                    PropertyValue propertyValue = d.getPropertyValue();
-                    if (property != null && propertyValue != null) {
-                        if (matchesFilterText(property.getContent().toString())) {
-                            filtered.add(d);
+            if(!isShowAllProperties()) {
+                //set properties only view
+                List<Declaration> filtered = new ArrayList<Declaration>();
+                for (Declaration d : declarations) {
+                    if (addedDeclarations.containsValue(d)) {
+                        continue; //skip those added declarations
+                    }
+                    String declarationId = PropertyUtils.getDeclarationId(getRule(), d);
+                    if(panel.getCreatedDeclarationsIdsList().contains(declarationId)) {
+                        //created declaration--ignore filter
+                        filtered.add(d);
+                    } else {
+                        //check the declaration
+                        org.netbeans.modules.css.model.api.Property property = d.getProperty();
+                        PropertyValue propertyValue = d.getPropertyValue();
+                        if (property != null && propertyValue != null) {
+                            if (matchesFilterText(property.getContent().toString())) {
+                                filtered.add(d);
+                            }
                         }
                     }
                 }
-            }
-
-            //sort aplha
-            Comparator<Declaration> comparator = PropertyUtils.createDeclarationsComparator(getRule(), panel.getCreatedDeclarationsIdsList());
-            Collections.sort(filtered, comparator);
-
-            //just create one top level property set for virtual category (the items actually don't belong to the category)
-            PropertyCategoryPropertySet set = new PropertyCategoryPropertySet(PropertyCategory.DEFAULT);
-            set.addAll(filtered);
-
-            //overrride the default descriptions
-            set.setDisplayName(Bundle.rule_global_set_displayname());
-            set.setShortDescription(Bundle.rule_global_set_tooltip());
-
-            sets.add(set);
-
-            if (isShowAllProperties()) {
-                //Show all properties
+                //sort aplha
+                Comparator<Declaration> comparator = PropertyUtils.createDeclarationsComparator(getRule(), panel.getCreatedDeclarationsIdsList());
+                Collections.sort(filtered, comparator);
+                set.addAll(filtered);
+                
+                //do NOT show all properties
+                //Add the fake "Add Property" FeatureDescriptor at the end of the set
+                if(panel.getCreatedDeclaration() == null) {
+                    //do not add the "Add Property" item when we are editing value of the just added property
+                    set.add_Add_Property_FeatureDescriptor();
+                }
+            } else {
+                //all properties view
+                List<Declaration> filteredExisting = new ArrayList<Declaration>();
+                Map<PropertyDefinition, Declaration> filteredCreated = new HashMap<PropertyDefinition, Declaration>();
+                for (Declaration d : declarations) {
+                    if (addedDeclarations.containsValue(d)) {
+                        continue; //skip those added declarations
+                    }
+                    String declarationId = PropertyUtils.getDeclarationId(getRule(), d);
+                    if(panel.getCreatedDeclarationsIdsList().contains(declarationId)) {
+                        //created declaration--ignore filter
+                        filteredCreated.put(d.getResolvedProperty().getPropertyDefinition(), d);
+                    } else {
+                        //check the declaration
+                        org.netbeans.modules.css.model.api.Property property = d.getProperty();
+                        PropertyValue propertyValue = d.getPropertyValue();
+                        if (property != null && propertyValue != null) {
+                            if (matchesFilterText(property.getContent().toString())) {
+                                filteredExisting.add(d);
+                            }
+                        }
+                    }
+                }
+                
+                set.addAll(filteredExisting);
+                
                 List<PropertyDefinition> all = new ArrayList<PropertyDefinition>(filterByPrefix(Properties.getPropertyDefinitions(file, true)));
                 Collections.sort(all, PropertyUtils.getPropertyDefinitionsComparator());
 
@@ -451,22 +487,25 @@ public class RuleEditorNode extends AbstractNode {
 
                 //add the rest of unused properties to the property set
                 for (PropertyDefinition pd : all) {
-                    Declaration alreadyAdded = addedDeclarations.get(pd);
+                    //boz<i' gula's<:
+                    Declaration alreadyAdded = addedDeclarations.get(pd); //added in "ADD PROPERTY MODE"
+                    if(alreadyAdded == null) {
+                        alreadyAdded = filteredCreated.get(pd); //added in normal mode
+                    }
+                    
                     if (alreadyAdded != null) {
                         set.add(alreadyAdded, true);
                     } else {
                         set.add(file, pd);
                     }
                 }
-
-            } else {
-                //do NOT show all properties
-                //Add the fake "Add Property" FeatureDescriptor at the end of the set
-                if(panel.getCreatedDeclaration() == null) {
-                    //do not add the "Add Property" item when we are editing value of the just added property
-                    set.add_Add_Property_FeatureDescriptor();
-                }
             }
+            
+            //overrride the default descriptions
+            set.setDisplayName(Bundle.rule_global_set_displayname());
+            set.setShortDescription(Bundle.rule_global_set_tooltip());
+            
+            sets.add(set);
         }
 
 
@@ -641,6 +680,7 @@ public class RuleEditorNode extends AbstractNode {
 
             //save the model to the source
             if (!isAddPropertyMode()) {
+                panel.setCreatedDeclaration(rule, newDeclaration);
                 applyModelChanges();
             } else {
                 //add property mode - just refresh the content
@@ -717,7 +757,7 @@ public class RuleEditorNode extends AbstractNode {
             super(propertyName,
                     String.class,
                     propertyDisplayName,
-                    null, true, getRule().isValid() && !isAddPropertyMode());
+                    null, true, getRule().isValid());
             this.propertyName = propertyName;
             this.declaration = declaration;
             this.markAsModified = markAsModified;
@@ -1197,6 +1237,8 @@ public class RuleEditorNode extends AbstractNode {
 
         private AutocompleteJComboBox editor;
         private AddPropertyFD property;
+        
+        private boolean cancelled;
 
         public AddPropertyCellEditorComponent(AutocompleteJComboBox jcb, AddPropertyFD addFDProperty) {
             super(jcb);
@@ -1205,7 +1247,9 @@ public class RuleEditorNode extends AbstractNode {
             this.editor.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent ae) {
-                    property.setValue((String)editor.getSelectedItem());
+                    if(!cancelled) {
+                        property.setValue((String)editor.getSelectedItem());
+                    }
                 }
             });
             
@@ -1216,6 +1260,12 @@ public class RuleEditorNode extends AbstractNode {
             return editor;
         }
 
+        @Override
+        protected void fireEditingCanceled() {
+            cancelled = true;
+            super.fireEditingCanceled();
+        }
+        
     }
 
     /**

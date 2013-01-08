@@ -56,6 +56,7 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JToolBar;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
@@ -187,8 +188,12 @@ public class FormDesignerTC extends TopComponent implements MultiViewElement {
             reload = false;
         }
 
+        JToolBar toolbar = formDesigner != null ? formDesigner.getToolBar() : null;
         formEditorSupport = closeDesigner();
         createDesigner();
+        if (toolbar != null) { // need to reuse the previous toolbar component (toolbar of MultiViewElement)
+            formDesigner.setToolBar(toolbar);
+        }
 
         if (selected) {
             TopComponent activeTC = TopComponent.getRegistry().getActivated();

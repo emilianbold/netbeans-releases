@@ -467,6 +467,10 @@ public class KenaiConnection implements PropertyChangeListener {
                     public void run() {
                         synchronized(KenaiConnection.this) {
                             final PasswordAuthentication pa = kenai.getPasswordAuthentication();
+                            if (pa == null) {
+                                // logged out meanwhile
+                                return;
+                            }
                             USER = pa.getUserName();
                             try {
                                 tryConnect();

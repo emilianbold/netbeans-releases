@@ -54,17 +54,26 @@ import java.util.regex.Pattern;
  */
 public final class Parser {
 
+    private enum STATE {
+        START, H, HT, F, HTT_FT, 
+        HTTP_FTP,
+        HTTPS,
+        HTTPC, // // (ht|f)tp(s?)
+        HTTPCS, // (ht|f)tp(s?):/
+        END // (ht|f)tp(s?)://
+    }
+
     private Parser() {}
 
     public static Iterable<int[]> recognizeURLs(CharSequence text) {
         List<int[]> result = new LinkedList<int[]>();
-        int state = 0;
+        STATE state = STATE.START;
         int lastURLStart = -1;
         
         OUTER: for (int cntr = 0; cntr < text.length(); cntr++) {
             char ch = text.charAt(cntr);
 
-            if (state == 6) {
+            if (state == STATE.END) {
                 if (Character.isLetterOrDigit(ch)) {
                     continue OUTER;
                 }
@@ -73,7 +82,7 @@ public final class Parser {
                     case '/': case '.': case '?': case '+': //NOI18N
                     case '%': case '_': case '~': case '=': //NOI18N
                     case '\\':case '&': case '$': case '-': //NOI18N
-                    case '#': case ',': case ':'://NOI18N
+                    case '#': case ',': case ':': case ';': //NOI18N
                         continue OUTER;
                 }
 
@@ -81,72 +90,78 @@ public final class Parser {
                 result.add(new int[] {lastURLStart, cntr});
 
                 lastURLStart = (-1);
-                state = 0;
+                state = STATE.START;
                 continue OUTER;
             }
 
             switch (ch) {
                 case 'h': //NOI18N
-                    if (state == 0) {
+                    if (state == STATE.START) {
                         lastURLStart = cntr;
-                        state = 1;
+                        state = STATE.H;
                         continue OUTER;
                     }
                     break;
                 case 't': //NOI18N
-                    if (state == 1) {
-                        state = 2;
+                    if (state == STATE.H) {
+                        state = STATE.HT;
                         continue OUTER;
-                    } else if (state == 2) {
-                            state = 3;
+                    } else if (state == STATE.HT) {
+                            state = STATE.HTT_FT;
                             continue OUTER;
-                    } else if (state == 7) {
-                        state = 8;
+                    } else if (state == STATE.F) {
+                        state = STATE.HTT_FT;
                         continue OUTER;
                     }
                     break;
                 case 'f': //NOI18N
-                    if (state == 0) {
+                    if (state == STATE.START) {
                         lastURLStart = cntr;
-                        state = 7;
+                        state = STATE.F;
                         continue OUTER;
                     }
                     break;
                 case 'p': //NOI18N
-                    if (state == 3) {
-                        state = 4;
-                        continue OUTER;
-                    } else if (state == 8) {
-                        state = 5;
+                    if (state == STATE.HTT_FT) {
+                        state = STATE.HTTP_FTP;
                         continue OUTER;
                     }
                     break;
                 case 's': //NOI18N
-                    if (state == 4) {
-                        state = 5;
+                    if (state == STATE.HTTP_FTP) {
+                        state = STATE.HTTPS;
                         continue OUTER;
                     }
                     break;
                 case ':': //NOI18N
-                    if (state == 4 || state == 5) {
-                        state = 6;
+                    if (state == STATE.HTTP_FTP || state == STATE.HTTPS) {
+                        state = STATE.HTTPC;
+                        continue OUTER;
+                    }
+                    break;
+                case '/' : //NOI18N
+                    if (state == STATE.HTTPC) {
+                        state = STATE.HTTPCS;
+                        continue OUTER;
+                    } else if (state == STATE.HTTPCS) {
+                        state = STATE.END;
                         continue OUTER;
                     }
                     break;
             }
 
-            state = 0;
+            state = STATE.START;
             lastURLStart = (-1);
         }
 
-        if (lastURLStart != (-1) && state == 6) {
+        if (lastURLStart != (-1) && state == STATE.END) {
             result.add(new int[] {lastURLStart, text.length()});
         }
         
         return result;
     }
     
-    private static final Pattern URL_PATTERN = Pattern.compile("(https|http|ftp):[0-9a-zA-Z/.?%+_~=\\\\&$\\-#,:]*"); //NOI18N
+    private static final Pattern URL_PATTERN = Pattern.compile("(ht|f)tp(s?)://[0-9a-zA-Z/.?%+_~=\\\\&$\\-#,:]*"); //NOI18N
 
     public static Iterable<int[]> recognizeURLsREBased(CharSequence text) {
         Matcher m = URL_PATTERN.matcher(text);

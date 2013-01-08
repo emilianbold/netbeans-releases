@@ -65,6 +65,7 @@ public final class SetupDirNodeFactory implements NodeFactory {
     public SetupDirNodeFactory() {
     }
 
+    @Override
     public NodeList createNodes(Project p) {
         EjbJarProject project = p.getLookup().lookup(EjbJarProject.class);
         assert project != null;
@@ -80,29 +81,35 @@ public final class SetupDirNodeFactory implements NodeFactory {
             project = proj;
         }
         
+        @Override
         public List<String> keys() {
             return Collections.singletonList(SETUP_DIR);
         }
 
+        @Override
         public void addChangeListener(ChangeListener l) {
             // Ignore, not generating change event.
         }
 
+        @Override
         public void removeChangeListener(ChangeListener l) {
             // Ignore, not generating change event.
         }
 
+        @Override
         public Node node(String key) {
-            if (key == SETUP_DIR) {
+            if (SETUP_DIR.equals(key)) {
                 return J2eeProjectView.createServerResourcesNode(project);
             }
             assert false: "No node for key: " + key; // NOI18N
             return null;
         }
 
+        @Override
         public void addNotify() {
         }
 
+        @Override
         public void removeNotify() {
         }
     }    

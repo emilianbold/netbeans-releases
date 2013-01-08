@@ -73,6 +73,7 @@ public class SocketClient extends SocketFramework {
     @Override
     public void run() {
         super.run();
+        chanelClosed(null);
         try {
             socketChannel.close();
         }
@@ -80,7 +81,7 @@ public class SocketClient extends SocketFramework {
             LOG.log(Level.WARNING, null, e);
         }
     }
-
+    
     /* (non-Javadoc)
      * @see org.netbeans.modules.netserver.SocketFramework#chanelClosed(java.nio.channels.SelectionKey)
      */

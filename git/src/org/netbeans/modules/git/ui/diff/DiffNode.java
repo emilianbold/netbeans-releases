@@ -47,7 +47,9 @@ import java.io.File;
 import javax.swing.Action;
 import org.netbeans.modules.git.FileInformation.Mode;
 import org.netbeans.modules.git.ui.commit.GitFileNode;
+import org.netbeans.modules.versioning.diff.DiffLookup;
 import org.netbeans.modules.versioning.util.OpenInEditorAction;
+import org.openide.cookies.EditorCookie;
 
 /**
  *
@@ -55,12 +57,26 @@ import org.netbeans.modules.versioning.util.OpenInEditorAction;
  */
 public class DiffNode extends GitStatusNode {
 
-    public DiffNode (GitFileNode node, Mode mode) {
-        super(node, mode);
+    DiffNode (GitFileNode node, EditorCookie eCookie, Mode mode) {
+        super(node, mode, getLookupFor(eCookie, node.getLookupObjects()));
     }
 
     @Override
     public Action getPreferredAction () {
         return new OpenInEditorAction(new File[] { getFile() });
+    }
+
+    private static org.openide.util.Lookup getLookupFor (EditorCookie eCookie, Object[] lookupObjects) {
+        Object[] allLookupObjects;
+        if (eCookie == null) {
+            allLookupObjects = new Object[lookupObjects.length];
+        } else {
+            allLookupObjects = new Object[lookupObjects.length + 1];
+            allLookupObjects[allLookupObjects.length - 1] = eCookie;
+        }
+        System.arraycopy(lookupObjects, 0, allLookupObjects, 0, lookupObjects.length);
+        DiffLookup lkp = new DiffLookup();
+        lkp.setData(allLookupObjects);
+        return lkp;
     }
 }

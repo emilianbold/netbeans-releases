@@ -45,19 +45,12 @@
 package org.netbeans.modules.form;
 
 import java.beans.Beans;
-import java.beans.Introspector;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import org.openide.modules.ModuleInstall;
 
 /**
  * Module installation class for Form Editor
  */
 public class FormEditorModule extends ModuleInstall {
-
-    private static final String BEANINFO_PATH_AWT = "org.netbeans.modules.form.beaninfo.awt"; // NOI18N
-    private static final String BEANINFO_PATH_SWING = "org.netbeans.modules.form.beaninfo.swing"; // NOI18N
 
     @Override
     public void restored() {
@@ -69,26 +62,10 @@ public class FormEditorModule extends ModuleInstall {
             javax.swing.KeyStroke.class,
             org.netbeans.modules.form.editors.KeyStrokeEditor.class);
 
-        // Add beaninfo search path.
-        String[] sp = Introspector.getBeanInfoSearchPath();
-        List<String> paths = new ArrayList<String>(Arrays.asList(sp));
-        if (!paths.contains(BEANINFO_PATH_AWT)) {
-            paths.add(BEANINFO_PATH_AWT);
-        }
-        if (!paths.contains(BEANINFO_PATH_SWING)) {
-            paths.add(BEANINFO_PATH_SWING);
-        }
-        Introspector.setBeanInfoSearchPath(paths.toArray(new String[paths.size()]));
     }
 
     @Override
     public void uninstalled() {
-        // Remove beaninfo search path.
-        String[] sp = Introspector.getBeanInfoSearchPath();
-        List<String> paths = new ArrayList<String>(Arrays.asList(sp));
-        paths.remove(BEANINFO_PATH_AWT);
-        paths.remove(BEANINFO_PATH_SWING);
-        Introspector.setBeanInfoSearchPath(paths.toArray(new String[paths.size()]));
     }
 
 }

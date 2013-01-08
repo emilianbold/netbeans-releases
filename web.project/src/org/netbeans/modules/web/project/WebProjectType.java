@@ -60,7 +60,7 @@ public final class WebProjectType {
     private static final String PRIVATE_CONFIGURATION_NAME = "data";
     private static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/web-project-private/1";
     
-    public static final String[] PROJECT_CONFIGURATION_NAMESPACE_LIST =         
+    private static final String[] PROJECT_CONFIGURATION_NAMESPACE_LIST =
             {"http://www.netbeans.org/ns/web-project/1",
             "http://www.netbeans.org/ns/web-project/2",
             "http://www.netbeans.org/ns/web-project/3"};
@@ -88,5 +88,9 @@ public final class WebProjectType {
 
     private static Collection<? extends WebProjectImplementationFactory> getProjectFactories() {
         return Lookup.getDefault().lookupAll(WebProjectImplementationFactory.class);
+    }
+
+    public static String[] getConfigurationNamespaceList() {
+        return PROJECT_CONFIGURATION_NAMESPACE_LIST.clone();
     }
 }

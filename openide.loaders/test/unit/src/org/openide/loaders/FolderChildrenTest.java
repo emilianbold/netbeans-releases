@@ -52,6 +52,7 @@ import java.io.IOException;
 import java.util.*;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -274,6 +275,140 @@ public class FolderChildrenTest extends NbTestCase {
         assertNodes( arr, new String[] { "B.txt", "BA.txt" } );
     }
 
+    @RandomlyFails // Because testChangeableDataFilter() RandomlyFails
+    public void testChangeableDataFilterWithPartialRefresh() throws Exception {
+        String pref = getName() + "/";
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/0/A.txt");
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/0/B.txt");
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/0/AA.txt");
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/0/BA.txt");
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/1/A.txt");
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/1/B.txt");
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/1/AA.txt");
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/1/BA.txt");
+
+        FileObject bb = FileUtil.getConfigFile(pref + "/BB");
+
+        Filter filter = new Filter();
+        DataFolder folder = DataFolder.findFolder (bb);
+
+        Children ch = folder.createNodeChildren( filter );
+        doTestChangeableDataFilterWithPartialRefresh(ch, filter, bb);
+    }
+    
+    @RandomlyFails // Because testChangeableDataFilterOnNodeDelegate() RandomlyFails
+    public void testChangeableDataFilterOnNodeDelegateWithPartialRefresh() throws Exception {
+        String pref = getName() + "/";
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/0/A.txt");
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/0/B.txt");
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/0/AA.txt");
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/0/BA.txt");
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/1/A.txt");
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/1/B.txt");
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/1/AA.txt");
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/1/BA.txt");
+
+        FileObject bb = FileUtil.getConfigFile(pref + "/BB");
+
+        Filter filter = new Filter();
+        DataFolder folder = DataFolder.findFolder (bb);
+
+        Node n = folder.getClonedNodeDelegate(filter);
+        Children ch = n.getChildren();
+        doTestChangeableDataFilterWithPartialRefresh(ch, filter, bb);
+    }
+    
+    @RandomlyFails // Because testChangeableDataFilter() RandomlyFails
+    public void testChangeableDataFilterOnFilterNodeWithPartialRefresh() throws Exception {
+        String pref = getName() + "/";
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/0/A.txt");
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/0/B.txt");
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/0/AA.txt");
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/0/BA.txt");
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/1/A.txt");
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/1/B.txt");
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/1/AA.txt");
+        FileUtil.createData (FileUtil.getConfigRoot(), pref + "BB/1/BA.txt");
+
+        FileObject bb = FileUtil.getConfigFile(pref + "/BB");
+
+        Filter filter = new Filter();
+        DataFolder folder = DataFolder.findFolder (bb);
+
+        Node root = new FilterNode (folder.getNodeDelegate (), folder.createNodeChildren (filter));
+        Children ch = root.getChildren();
+        doTestChangeableDataFilterWithPartialRefresh(ch, filter, bb);
+    }
+    
+    private void doTestChangeableDataFilterWithPartialRefresh(Children ch, Filter filter, FileObject bb) throws Exception {
+        Node[] arr = ch.getNodes (true);
+        assertTwoFolders(arr, new String[] { "A.txt", "AA.txt" },
+                              new String[] { "A.txt", "AA.txt" });
+        
+        // Test, that all folders change
+        filter.fire();
+        arr = ch.getNodes (true);
+        assertTwoFolders(arr, new String[] { "B.txt", "BA.txt" },
+                              new String[] { "B.txt", "BA.txt" });
+        
+        // Test that just the folder containing a changed file is refreshed:
+        FileObject chFo = bb.getFileObject("0/B.txt");
+        filter.fire(chFo);
+        arr = ch.getNodes (true);
+        assertTwoFolders(arr, new String[] { "A.txt", "AA.txt" },
+                              new String[] { "B.txt", "BA.txt" });
+        
+        // Sync all folders
+        filter.fire();
+        arr = ch.getNodes (true);
+        assertTwoFolders(arr, new String[] { "B.txt", "BA.txt" },
+                              new String[] { "B.txt", "BA.txt" });
+        
+        // Test that just the changed folder is refreshed:
+        chFo = bb.getFileObject("1");
+        filter.fire(chFo);
+        arr = ch.getNodes (true);
+        assertTwoFolders(arr, new String[] { "B.txt", "BA.txt" },
+                              new String[] { "A.txt", "AA.txt" });
+        
+        // Sync all folders
+        filter.fire();
+        arr = ch.getNodes (true);
+        assertTwoFolders(arr, new String[] { "B.txt", "BA.txt" },
+                              new String[] { "B.txt", "BA.txt" });
+        
+        // Test that just the folder containing a changed data object is refreshed:
+        chFo = bb.getFileObject("0/BA.txt");
+        DataObject chDo = DataObject.find(chFo);
+        filter.fire(chDo);
+        arr = ch.getNodes (true);
+        assertTwoFolders(arr, new String[] { "A.txt", "AA.txt" },
+                              new String[] { "B.txt", "BA.txt" });
+        
+        // Sync all folders
+        filter.fire();
+        arr = ch.getNodes (true);
+        assertTwoFolders(arr, new String[] { "B.txt", "BA.txt" },
+                              new String[] { "B.txt", "BA.txt" });
+        
+        // Test that just the changed data folder is refreshed:
+        chFo = bb.getFileObject("1");
+        chDo = DataObject.find(chFo);
+        filter.fire(chDo);
+        arr = ch.getNodes (true);
+        assertTwoFolders(arr, new String[] { "B.txt", "BA.txt" },
+                              new String[] { "A.txt", "AA.txt" });
+    }
+    
+    private void assertTwoFolders(Node[] arr, String[] names0, String[] names1) {
+        assertNodes (arr, "0", "1" );
+        Node[] arr0 = arr[0].getChildren().getNodes(true);
+        Node[] arr1 = arr[1].getChildren().getNodes(true);
+
+        assertNodes( arr0, names0 );
+        assertNodes( arr1, names1 );
+    }
+
     public void testOrderAttributesAreReflected() throws Exception {
         FileObject root = FileUtil.createFolder(FileUtil.getConfigRoot(), "order");
 
@@ -423,10 +558,14 @@ public class FolderChildrenTest extends NbTestCase {
 
         private boolean selectA = true;
 
-        private final ChangeSupport cs = new ChangeSupport(this);
+        private final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
 
         public boolean acceptDataObject (DataObject obj) {
-            String fileName = obj.getPrimaryFile().getName();
+            FileObject fo = obj.getPrimaryFile();
+            if (fo.isFolder()) {
+                return true;
+            }
+            String fileName = fo.getName();
             boolean select = fileName.startsWith( "A" );
             select = selectA ? select : !select;
             return select;
@@ -435,20 +574,47 @@ public class FolderChildrenTest extends NbTestCase {
         @Override
         public void addChangeListener( ChangeListener listener ) {
             LOG.log(Level.INFO, "addChangeListener: " + listener, new Throwable());
-            cs.addChangeListener(listener);
+            listeners.add(listener);
         }
 
         @Override
         public void removeChangeListener( ChangeListener listener ) {
             LOG.log(Level.INFO, "removeChangeListener: " + listener, new Throwable());
-            cs.removeChangeListener(listener);
+            listeners.remove(listener);
         }
-
+        
         public void fire( ) {
 
             selectA = !selectA;
 
-            cs.fireChange();
+            ChangeEvent event = new ChangeEvent(this);
+            fireChange(event);
+        }
+
+        public void fire(FileObject fo) {
+
+            selectA = !selectA;
+
+            ChangeEvent event = new ChangeEvent(fo);
+            fireChange(event);
+        }
+
+        public void fire(DataObject dobj) {
+
+            selectA = !selectA;
+
+            ChangeEvent event = new ChangeEvent(dobj);
+            fireChange(event);
+        }
+
+        private void fireChange(ChangeEvent event) {
+            for (ChangeListener listener : listeners) {
+                try {
+                    listener.stateChanged(event);
+                } catch (RuntimeException x) {
+                    Exceptions.printStackTrace(x);
+                }
+            }
         }
 
     }

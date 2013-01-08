@@ -71,8 +71,7 @@ class CompileClassPathImpl extends AbstractProjectClassPathImpl {
         List<Artifact> arts = getMavenProject().getOriginalMavenProject().getCompileArtifacts();
         for (Artifact art : arts) {
             if (art.getFile() != null) {
-                File fil = FileUtil.normalizeFile(art.getFile());
-                lst.add(Utilities.toURI(fil));
+                lst.add(Utilities.toURI(art.getFile()));
             } else {
               //NOPMD   //null means dependencies were not resolved..
             } 

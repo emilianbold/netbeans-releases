@@ -55,11 +55,9 @@ import org.openide.util.Utilities;
  * @author mkuchtiak
  */
 public class ServiceNode extends AbstractNode {
-    WsdlService service;
     
     public ServiceNode(WsdlService service) {
         super(new ServiceChildren(service));
-        this.service=service;
         setName(service.getName());
         setDisplayName(service.getName());
     }

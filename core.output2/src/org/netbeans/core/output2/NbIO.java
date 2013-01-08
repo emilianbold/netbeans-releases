@@ -74,7 +74,7 @@ import org.openide.windows.IOTab;
 class NbIO implements InputOutput, Lookup.Provider {
 
     private Boolean focusTaken = null;
-    private boolean closed = false;
+    private volatile boolean closed = false;
     private final String name;
     private OutputOptions options = OutputOptions.getDefault().makeCopy();
     
@@ -102,11 +102,18 @@ class NbIO implements InputOutput, Lookup.Provider {
         this.name = name;
     }
     
+    @Override
     public void closeInputOutput() {
-        if (Controller.LOG) Controller.log("CLOSE INPUT OUTPUT CALLED FOR " + this);
-        if (out != null) {
-            if (Controller.LOG) Controller.log (" - Its output is non null, calling close() on " + out);
-            out.close();
+        if (Controller.LOG) {
+            Controller.log("CLOSE INPUT OUTPUT CALLED FOR " + this);    //NOI18N
+        }
+        synchronized (this) {
+            if (out != null) {
+                if (Controller.LOG) {
+                    Controller.log(" - Its output is non null, calling close() on " + out); //NOI18N
+                }
+                out.close();
+            }
         }
         post (this, IOEvent.CMD_CLOSE, true);
     }
@@ -123,21 +130,27 @@ class NbIO implements InputOutput, Lookup.Provider {
         return ((NbWriter) getOut()).getErr();
     }
 
-    NbWriter writer() {
+    synchronized NbWriter writer() {
         return out;
     }
 
     void dispose() {
-        if (Controller.LOG) Controller.log (this + ": IO " + getName() + " is being disposed");
-        if (out != null) {
-            if (Controller.LOG) Controller.log (this + ": Still has an OutWriter.  Disposing it");
-            out().dispose();
-            out = null;
-            if (in != null) {
-                in.eof();
-                in = null;
+        if (Controller.LOG) {
+            Controller.log(this + ": IO " + getName() + " is being disposed"); //NOI18N
+        }
+        synchronized (this) {
+            if (out != null) {
+                if (Controller.LOG) {
+                    Controller.log(this + ": Still has an OutWriter.  Disposing it"); //NOI18N
+                }
+                out().dispose();
+                out = null;
+                if (in != null) {
+                    in.eof();
+                    in = null;
+                }
+                focusTaken = null;
             }
-            focusTaken = null;
         }
         NbIOProvider.dispose(this);
     }
@@ -148,12 +161,12 @@ class NbIO implements InputOutput, Lookup.Provider {
                 OutWriter realout = new OutWriter(this);
                 out = new NbWriter(realout, this);
             }
+            return out;
         }
-        return out;
     }
     
     /** Called by the view when polling */
-    OutWriter out() {
+    synchronized OutWriter out() {
         return out == null ? null : out.out();
     }
 
@@ -173,7 +186,7 @@ class NbIO implements InputOutput, Lookup.Provider {
         return Boolean.TRUE.equals(focusTaken);
     }
     
-    boolean isStreamClosed() {
+    synchronized boolean isStreamClosed() {
         return out == null ? true : streamClosed;
     }
     
@@ -226,9 +239,11 @@ class NbIO implements InputOutput, Lookup.Provider {
         closed = false;
         streamClosed = false;
 
-        if (in != null) {
-            in.eof();
-            in.reuse();
+        synchronized (this) {
+            if (in != null) {
+                in.eof();
+                in.reuse();
+            }
         }
         post (this, IOEvent.CMD_RESET, true);
     }
@@ -258,12 +273,12 @@ class NbIO implements InputOutput, Lookup.Provider {
         return "NbIO@" + System.identityHashCode(this) + " " + getName();
     }
 
-    IOReader in() {
+    synchronized IOReader in() {
         return in;
     }
 
     private IOReader in = null;
-    public Reader getIn() {
+    public synchronized Reader getIn() {
         if (in == null) {
             in = new IOReader();
         }
@@ -294,7 +309,9 @@ class NbIO implements InputOutput, Lookup.Provider {
 
         void reuse() {
              pristine = true;
-             inputClosed = false;
+             synchronized (lock) {
+                inputClosed = false;
+             }
         }
 
         private StringBuffer buffer() {

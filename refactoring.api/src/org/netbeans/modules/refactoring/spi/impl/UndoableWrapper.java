@@ -54,6 +54,7 @@ import javax.swing.undo.UndoableEdit;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.spi.editor.document.UndoableEditWrapper;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
@@ -67,6 +68,7 @@ public class UndoableWrapper implements UndoableEditWrapper {
 
     private AtomicBoolean active = new AtomicBoolean();
     private Map<BaseDocument, UndoableEditDelegate> docToFirst = new HashMap();
+    private RefactoringSession session;
 
     public UndoableWrapper() {
     }
@@ -80,7 +82,7 @@ public class UndoableWrapper implements UndoableEditWrapper {
             //no dataobject
             return ed;
         } 
-        UndoableEditDelegate current = new UndoableEditDelegate(ed, (BaseDocument) doc);
+        UndoableEditDelegate current = new UndoableEditDelegate(ed, (BaseDocument) doc, session);
         UndoableEditDelegate first = docToFirst.get(doc);
         if (first == null) {
             docToFirst.put((BaseDocument) doc, current);
@@ -95,8 +97,10 @@ public class UndoableWrapper implements UndoableEditWrapper {
         docToFirst.clear();
     }
 
-    public void setActive(boolean b) {
+    public void setActive(boolean b, RefactoringSession session) {
+        this.session = session;
         active.set(b);
+        
     }
 
     public class UndoableEditDelegate implements UndoableEdit {
@@ -105,8 +109,9 @@ public class UndoableWrapper implements UndoableEditWrapper {
         private CloneableEditorSupport ces;
         private UndoableEdit delegate;
         private CompoundEdit inner;
+        private RefactoringSession session;
 
-        private UndoableEditDelegate(UndoableEdit ed, BaseDocument doc) {
+        private UndoableEditDelegate(UndoableEdit ed, BaseDocument doc, RefactoringSession session) {
             undoManager = UndoManager.getDefault();
             DataObject dob = (DataObject) doc.getProperty(BaseDocument.StreamDescriptionProperty);
             ces = dob.getLookup().lookup(CloneableEditorSupport.class);
@@ -114,6 +119,7 @@ public class UndoableWrapper implements UndoableEditWrapper {
             this.inner = new CompoundEdit();
             inner.addEdit(ed);
             delegate = ed;
+            this.session = session;
         }
 
         @Override
@@ -122,7 +128,7 @@ public class UndoableWrapper implements UndoableEditWrapper {
             if (focusedComponent != null) {
                 if (focusedComponent.getDocument() == ces.getDocument()) {
                     //call global undo only for focused component
-                    undoManager.undo();
+                    undoManager.undo(session);
                 }
             }
             //delegate.undo();
@@ -141,7 +147,7 @@ public class UndoableWrapper implements UndoableEditWrapper {
             if (focusedComponent != null) {
                 if (focusedComponent.getDocument() == ces.getDocument()) {
                     //call global undo only for focused component
-                    undoManager.redo();
+                    undoManager.redo(session);
                 }
             }
             //delegate.redo();
@@ -194,17 +200,17 @@ public class UndoableWrapper implements UndoableEditWrapper {
 
         @Override
         public String getPresentationName() {
-            return undoManager.getUndoDescription();
+            return undoManager.getUndoDescription(session);
         }
 
         @Override
         public String getUndoPresentationName() {
-            return undoManager.getUndoDescription();
+            return undoManager.getUndoDescription(session);
         }
 
         @Override
         public String getRedoPresentationName() {
-            return undoManager.getRedoDescription();
+            return undoManager.getRedoDescription(session);
         }
 
         private void end() {

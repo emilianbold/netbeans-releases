@@ -61,6 +61,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
@@ -703,42 +704,40 @@ public class SemiAttribute extends DefaultVisitor {
         return global.getElements(k);
     }
 
-    public Collection<AttributedElement> getNamedGlobalElements(Kind k, String... filterNames) {
+    public Collection<AttributedElement> getNamedGlobalElements(Kind k, String fName) {
         final List<AttributedElement> retval = new ArrayList<AttributedElement>();
         final Map<String, AttributedElement> name2El = global.name2Writes.get(k);
-        if (global != null) {
-            for (String fName : filterNames) {
-                if (fName.equals("self")) { //NOI18N
-                    String ctxName = getContextClassName();
-                    if (ctxName != null) {
-                        fName = ctxName;
-                    }
+        if (global != null && StringUtils.hasText(fName)) {
+            if (fName.equals("self")) { //NOI18N
+                String ctxName = getContextClassName();
+                if (ctxName != null) {
+                    fName = ctxName;
                 }
-                if (Kind.CLASS.equals(k) && fName.equals("parent")) { //NOI18N
-                    if (name2El != null) {
-                        Collection<AttributedElement> values = name2El.values();
-                        for (AttributedElement ael : values) {
-                            if (ael instanceof ClassElementAttribute) {
-                                ClassElementAttribute ce = (ClassElementAttribute) ael;
-                                ClassElementAttribute superClass = ce.getSuperClass();
-                                if (superClass != null) {
-                                    retval.add(superClass);
-                                }
+            }
+            if (Kind.CLASS.equals(k) && fName.equals("parent")) { //NOI18N
+                if (name2El != null) {
+                    Collection<AttributedElement> values = name2El.values();
+                    for (AttributedElement ael : values) {
+                        if (ael instanceof ClassElementAttribute) {
+                            ClassElementAttribute ce = (ClassElementAttribute) ael;
+                            ClassElementAttribute superClass = ce.getSuperClass();
+                            if (superClass != null) {
+                                retval.add(superClass);
                             }
                         }
                     }
+                }
+            } else {
+                AttributedElement el = (name2El != null) ? name2El.get(fName) : null;
+                if (el != null) {
+                    retval.add(el);
                 } else {
-                    AttributedElement el = (name2El != null) ? name2El.get(fName) : null;
-                    if (el != null) {
-                        retval.add(el);
-                    } else {
-                        Index index = ElementQueryFactory.getIndexQuery(info);
-                        for (ClassElement m : index.getClasses(NameKind.prefix(fName))) {
-                            String idxName = m.getName();
-                            el = global.enterWrite(idxName, Kind.CLASS, m);
-                            if (el != null) {
-                                retval.add(el);
-                            }
+                    Index index = ElementQueryFactory.getIndexQuery(info);
+                    for (ClassElement m : index.getClasses(NameKind.prefix(fName))) {
+                        String idxName = m.getName();
+                        el = global.enterWrite(idxName, Kind.CLASS, m);
+                        if (el != null) {
+                            retval.add(el);
                         }
                     }
                 }
@@ -1549,7 +1548,7 @@ public class SemiAttribute extends DefaultVisitor {
     public abstract static class AttributedType {
 
         public abstract String getTypeName();
-        
+
     }
 
     public static class ClassType extends AttributedType {

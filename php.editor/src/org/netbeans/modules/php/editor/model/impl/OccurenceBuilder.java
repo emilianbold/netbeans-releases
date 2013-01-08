@@ -1890,7 +1890,10 @@ class OccurenceBuilder {
     }
 
     private void buildVariables(ElementInfo nodeCtxInfo, FileScopeImpl fileScope, final List<Occurence> occurences) {
-        final Scope ctxScope = nodeCtxInfo.getScope() instanceof VariableName ? nodeCtxInfo.getScope().getInScope() : nodeCtxInfo.getScope();
+        Scope ctxScope = nodeCtxInfo.getScope() instanceof VariableName ? nodeCtxInfo.getScope().getInScope() : nodeCtxInfo.getScope();
+        if (ctxScope instanceof VarAssignmentImpl) {
+            ctxScope = ctxScope.getInScope();
+        }
         if (!(ctxScope instanceof VariableScope)) {
             return;
         }

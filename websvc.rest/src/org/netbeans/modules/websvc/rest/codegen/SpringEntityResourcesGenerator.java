@@ -100,6 +100,9 @@ public class SpringEntityResourcesGenerator extends EntityResourcesGenerator {
         
         // Inject EntityManager
         JavaSource javaSource = JavaSource.forFileObject( facade );
+        if ( javaSource == null ){
+            return false;
+        }
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             @Override
@@ -307,7 +310,7 @@ public class SpringEntityResourcesGenerator extends EntityResourcesGenerator {
         return null;
     }
     
-    private final class FindMethod implements RestMethod {
+    private static final class FindMethod implements RestMethod {
 
         @Override
         public boolean overrides() {
