@@ -157,12 +157,14 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
             }
             breakpointImpls.put(ab, bm);
         }
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                bm.add();
-            }
-        });
+        if (ab.isEnabled()) {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    bm.add();
+                }
+            });
+        }
     }
     
     /* (non-Javadoc)
