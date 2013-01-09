@@ -344,11 +344,11 @@ public final class PaletteItem implements Node.Cookie {
             }
         }
         catch (Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             lastError = ex;
         }
         catch (LinkageError ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             lastError = ex;
         }
         return null;
