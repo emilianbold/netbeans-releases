@@ -1361,7 +1361,7 @@ public final class LayoutDesigner implements LayoutConstants {
      * @return true if repaint is needed (selection changed)
      */
     public boolean selectInside(Point p) {
-        if (!paintGaps) {
+        if (!paintGaps || !visualStateUpToDate) {
             return false;
         }
 
@@ -3408,6 +3408,8 @@ public final class LayoutDesigner implements LayoutConstants {
                 }
                 operations.resizeInterval(li, NOT_EXPLICITLY_DEFINED);
             }
+        } else {
+            preferredSizeChanged = true;
         }
         updateDataAfterBuild = true;
     }

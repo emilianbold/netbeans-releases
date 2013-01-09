@@ -56,6 +56,7 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +70,7 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.ClassPath.PathConversionMode;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -138,6 +140,8 @@ public class BatchUtilities {
                 overlay = ElementOverlay.getOrCreateOverlay();
             }
             public boolean spansVerified(CompilationController wc, Resource r, Collection<? extends ErrorDescription> hints) throws Exception {
+                if (hints.isEmpty()) return true;
+                
                 Constructor<WorkingCopy> wcConstr = WorkingCopy.class.getDeclaredConstructor(CompilationInfoImpl.class, ElementOverlay.class);
                 wcConstr.setAccessible(true);
 
@@ -250,7 +254,7 @@ public class BatchUtilities {
     }
     
     public static boolean applyFixes(WorkingCopy copy, Map<Project, Set<String>> processedDependencyChanges, Collection<? extends ErrorDescription> hints, Map<FileObject, byte[]> resourceContentChanges, Collection<? super RefactoringElementImplementation> fileChanges, Map<JavaFix, ModificationResult> changesPerFix, Collection<? super MessageImpl> problems) throws IllegalStateException, Exception {
-        List<JavaFix> fixes = new ArrayList<JavaFix>();
+        Set<JavaFix> fixes = new LinkedHashSet<JavaFix>();
         for (ErrorDescription ed : hints) {
             if (!ed.getFixes().isComputed()) {
                 throw new IllegalStateException();//TODO: should be problem
@@ -401,6 +405,20 @@ public class BatchUtilities {
         return result;
     }
     
+    private static final ClassPath getClassPath(FileObject forFO, String id) {
+        ClassPath result = ClassPath.getClassPath(forFO, id);
+        
+        if (result == null) {
+            if (ClassPath.BOOT.equals(id)) {
+                result = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
+            } else {
+                result = ClassPath.EMPTY;
+            }
+        }
+        
+        return result;
+    }
+    
     private static final class CPCategorizer {
         private final String cps;
         private final ClassPath boot;
@@ -409,9 +427,9 @@ public class BatchUtilities {
         private final FileObject sourceRoot;
 
         public CPCategorizer(FileObject file) {
-            this.boot = ClassPath.getClassPath(file, ClassPath.BOOT);
-            this.compile = ClassPath.getClassPath(file, ClassPath.COMPILE);
-            this.source = ClassPath.getClassPath(file, ClassPath.SOURCE);
+            this.boot = getClassPath(file, ClassPath.BOOT);
+            this.compile = getClassPath(file, ClassPath.COMPILE);
+            this.source = getClassPath(file, ClassPath.SOURCE);
             this.sourceRoot = source != null ? source.findOwnerRoot(file) : null;
             
             StringBuilder cps = new StringBuilder();
@@ -453,7 +471,7 @@ public class BatchUtilities {
 
     public static final String ENSURE_DEPENDENCY = "ensure-dependency";
 
-    public static boolean fixDependencies(FileObject file, List<JavaFix> toProcess, Map<Project, Set<String>> alreadyProcessed) {
+    public static boolean fixDependencies(FileObject file, Iterable<? extends JavaFix> toProcess, Map<Project, Set<String>> alreadyProcessed) {
         boolean modified = false;
 //        for (FileObject file : toProcess.keySet()) {
             for (JavaFix fix : toProcess) {

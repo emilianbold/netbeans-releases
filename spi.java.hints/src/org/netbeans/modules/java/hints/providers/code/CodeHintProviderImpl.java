@@ -202,7 +202,7 @@ public class CodeHintProviderImpl implements HintProvider {
 
             if (allowedOptions != null && !allowedOptions.contains(key)) continue;
             
-            declarativeOptions.add(new OptionDescriptor(key, true, option.displayName(), option.tooltip()));
+            declarativeOptions.add(new OptionDescriptor(key, option.defaultValue(), option.displayName(), option.tooltip()));
         }
 
         return !declarativeOptions.isEmpty() ? new ReflectiveCustomizerProvider(clazz.getName(), id, declarativeOptions) : null;

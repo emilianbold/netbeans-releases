@@ -105,7 +105,7 @@ public final class OnSaveTabSelector {
             List<MimeEntry> mimeEntries = new ArrayList<MimeEntry>(allMimeTypes.size());
             for (String mimeType : allMimeTypes) {
                 MimePath mimePath = MimePath.parse(mimeType);
-                if (mimePath.size() > 1 && !isCompoundMimeType(mimeType)) { // Only root languages and non-compound
+                if (mimePath.size() > 1 || isCompoundMimeType(mimeType)) { // Only root languages and non-compound
                     continue;
                 }
                 String language = EditorSettings.getDefault().getLanguageName(mimeType);

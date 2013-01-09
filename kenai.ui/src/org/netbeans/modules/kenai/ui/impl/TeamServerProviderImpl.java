@@ -72,7 +72,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
-import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -189,7 +188,7 @@ public class TeamServerProviderImpl implements TeamServerProvider {
         }
         try {
             if (prefs.keys().length > 0) {
-                RequestProcessor.getDefault().post(new Runnable() {
+                Utilities.getRequestProcessor().post(new Runnable() {
                     @Override
                     public void run () {
                         for (Kenai k : KenaiManager.getDefault().getKenais()) {

@@ -275,8 +275,10 @@ public class DerbyOptions {
             FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
                 @Override
                 public void run() {
-                    registerDriver(DRIVER_NAME_NET, DRIVER_DISP_NAME_NET, DRIVER_CLASS_NET, DRIVER_PATH_NET, newLocation);
-                    registerDriver(DRIVER_NAME_EMBEDDED, DRIVER_DISP_NAME_EMBEDDED, DRIVER_CLASS_EMBEDDED, DRIVER_PATH_EMBEDDED, newLocation);
+                    registerDriver(DRIVER_NAME_NET, DRIVER_DISP_NAME_NET, DRIVER_CLASS_NET,
+                            new String[]{DRIVER_PATH_NET, DRIVER_PATH_EMBEDDED}, newLocation);
+                    registerDriver(DRIVER_NAME_EMBEDDED, DRIVER_DISP_NAME_EMBEDDED,
+                            DRIVER_CLASS_EMBEDDED, new String[]{DRIVER_PATH_EMBEDDED}, newLocation);
                 }
             });
         } catch (IOException e) {
@@ -284,7 +286,7 @@ public class DerbyOptions {
         }
     }
 
-    private static void registerDriver(String driverName, String driverDisplayName, String driverClass, String driverRelativeFile, String newLocation) {
+    private static void registerDriver(String driverName, String driverDisplayName, String driverClass, String[] driverRelativeFile, String newLocation) {
         // try to remove the driver first if it exists was registered from the current location
         JDBCDriver[] drivers = JDBCDriverManager.getDefault().getDrivers(driverClass);
         for (int i = 0; i < drivers.length; i++) {
@@ -336,16 +338,21 @@ public class DerbyOptions {
 
         // register the new driver if it exists at the new location
         if (newLocation != null && newLocation.length() >= 0) {
-            File newDriverFile = new File(newLocation, driverRelativeFile);
-            if (newDriverFile.exists()) {
-                try {
-                    JDBCDriver newDriver = JDBCDriver.create(driverName, driverDisplayName, driverClass, new URL[] { newDriverFile.toURI().toURL() });
-                    JDBCDriverManager.getDefault().addDriver(newDriver);
-                } catch (MalformedURLException e) {
-                    LOGGER.log(Level.WARNING, null, e);
-                } catch (DatabaseException e) {
-                    LOGGER.log(Level.WARNING, null, e);
+            URL[] driverFileUrls = new URL[driverRelativeFile.length];
+            try {
+                for (int i = 0; i < driverRelativeFile.length; i++) {
+                    File drvFile = new File(newLocation, driverRelativeFile[i]);
+                    if (!drvFile.exists()) {
+                        return;
+                    }
+                    driverFileUrls[i] = drvFile.toURI().toURL();
                 }
+                JDBCDriver newDriver = JDBCDriver.create(driverName, driverDisplayName, driverClass, driverFileUrls);
+                JDBCDriverManager.getDefault().addDriver(newDriver);
+            } catch (MalformedURLException e) {
+                LOGGER.log(Level.WARNING, null, e);
+            } catch (DatabaseException e) {
+                LOGGER.log(Level.WARNING, null, e);
             }
         }
     }

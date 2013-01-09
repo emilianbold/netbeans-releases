@@ -140,10 +140,10 @@ public class HudsonInstanceNode extends AbstractNode {
     })
     private String getProjectInfoString() {
         boolean pers = instance.isPersisted();
-        String info = instance.getInfo();
+        String info = instance.getPersistence().getInfo(
+                HudsonInstanceNode_from_open_project());
         return (!pers ? " <font color='!controlShadow'>" + // NOI18N
-                (info == null ? HudsonInstanceNode_from_open_project() : info)
-                + "</font>" : "");                                      //NOI18N
+                info + "</font>" : "");                                 //NOI18N
     }
 
     public @Override Action[] getActions(boolean context) {

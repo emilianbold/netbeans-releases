@@ -378,15 +378,17 @@ public class JsCompletionItem implements CompletionProposal {
                 if (!assignment.isEmpty()) {
                     Collection<TypeUsage> resolved = new ArrayList<TypeUsage>(assignment);
                     resolved = ModelUtils.resolveTypes(resolved, request.result);
-                    formatter.type(true);
-                    formatter.appendText(": ");  //NOI18N
-                    for (Iterator<? extends TypeUsage> it = resolved.iterator(); it.hasNext();) {
-                        formatter.appendText(it.next().getType());
-                        if (it.hasNext()) {
-                            formatter.appendText("|");   //NOI18N
+                    if (!resolved.isEmpty()) {
+                        formatter.type(true);
+                        formatter.appendText(": ");  //NOI18N
+                        for (Iterator<? extends TypeUsage> it = resolved.iterator(); it.hasNext();) {
+                            formatter.appendText(it.next().getType());
+                            if (it.hasNext()) {
+                                formatter.appendText("|");   //NOI18N
+                            }
                         }
+                        formatter.type(false);
                     }
-                    formatter.type(false);
                 }
             }
             return formatter.getText();

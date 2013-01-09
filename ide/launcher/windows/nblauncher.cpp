@@ -191,7 +191,7 @@ bool NbLauncher::initBaseNames() {
         return false;
     }
     appName = bslash + 1;
-    appName.erase(appName.find('.'));
+    appName.erase(appName.rfind('.'));
     
     if (ARCHITECTURE == 64) {
         appName = appName.erase(appName.length() - 2);

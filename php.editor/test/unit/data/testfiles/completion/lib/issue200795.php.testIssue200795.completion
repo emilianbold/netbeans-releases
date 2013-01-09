@@ -95,6 +95,7 @@ CLASS      Abc                             [PUBLIC]   issue209405.php
 CLASS      Admin                           [PUBLIC]   Admin
 CLASS      AliasedClassName                [PUBLIC]   Foo\Bar
 CLASS      AnonymousObject                 [PUBLIC]   anonymousObjectVariables.php
+CLASS      Another                         [PUBLIC]   test224549.php
 CLASS      ArraysCc                        [PUBLIC]   arrays.php
 CLASS      Author                          [PUBLIC]   mixedtypes.php
 CLASS      Author_1                        [PUBLIC]   mixedtypes_1.php
@@ -213,6 +214,7 @@ CLASS      NewClass                        [PUBLIC]   issue171232_01.php
 CLASS      NewClass                        [PUBLIC]   issue171232_02.php
 CLASS      ObjectTracker                   [PUBLIC]   test204908.php
 CLASS      Omg                             [PUBLIC]   test204104_05.php
+CLASS      OmgCls                          [PUBLIC]   declarations.php
 CLASS      Ondrej                          [PUBLIC]   test211230.php
 CLASS      PagePresenter                   [PUBLIC]   AdminModule
 CLASS      ParentClass                     [PUBLIC]   class_member_visibility.php
@@ -227,6 +229,7 @@ CLASS      SetFoo                          [PUBLIC]   test221725.php
 CLASS      SmartCompletion                 [PUBLIC]   issue201032.php
 CLASS      Strings                         [PUBLIC]   Nette\Utils
 CLASS      SubClass157534                  [PUBLIC]   issue157534.php
+CLASS      Super                           [PUBLIC]   declarations.php
 CLASS      SuperClass157534                [PUBLIC]   issue157534.php
 CLASS      SuperUser                       [PUBLIC]   XUser
 CLASS      System147427                    [PUBLIC]   issue147427.php

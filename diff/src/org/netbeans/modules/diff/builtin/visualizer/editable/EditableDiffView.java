@@ -991,7 +991,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                 int ext1 = scrollBarH1.getModel().getExtent();
                 int ext2 = scrollBarH2.getModel().getExtent();
                 if (max1 == ext1) horizontalScroll2ChangedValue = 0;
-                else horizontalScroll2ChangedValue = (value*(max2 - ext2))/(max1 - ext1);
+                else horizontalScroll2ChangedValue = (int) (((long) value * (max2 - ext2)) / (max1 - ext1));
                 horizontalScroll1ChangedValue = -1;
                 scrollBarH2.setValue(horizontalScroll2ChangedValue);
             }
@@ -1006,7 +1006,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                 int ext1 = scrollBarH1.getModel().getExtent();
                 int ext2 = scrollBarH2.getModel().getExtent();
                 if (max2 == ext2) horizontalScroll1ChangedValue = 0;
-                else horizontalScroll1ChangedValue = (value*(max1 - ext1))/(max2 - ext2);
+                else horizontalScroll1ChangedValue = (int) (((long) value * (max1 - ext1)) / (max2 - ext2));
                 horizontalScroll2ChangedValue = -1;
                 scrollBarH1.setValue(horizontalScroll1ChangedValue);
             }

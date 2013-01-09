@@ -236,6 +236,8 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
                 TypeElement type = indexedFunction.getType();
                 if (type.isInterface()) {
                     allMethods.add(new MethodScopeImpl(new InterfaceScopeImpl(indexScope, (InterfaceElement) type), indexedFunction));
+                } else if (type.isTrait()) {
+                    allMethods.add(new MethodScopeImpl(new TraitScopeImpl(indexScope, (TraitElement) type), indexedFunction));
                 } else {
                     allMethods.add(new MethodScopeImpl(new ClassScopeImpl(indexScope, (ClassElement) type), indexedFunction));
                 }

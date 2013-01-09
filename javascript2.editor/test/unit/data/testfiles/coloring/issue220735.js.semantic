@@ -10,7 +10,7 @@
             } else {
                 |>GLOBAL:window<|.SYNERGY.util.deleteCookie("user");
             }
-        } catch (|>GLOBAL:e<|) {
+        } catch (e) {
         }
     }
 }
