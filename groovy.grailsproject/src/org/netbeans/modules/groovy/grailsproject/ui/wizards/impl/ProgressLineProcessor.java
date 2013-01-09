@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,23 +34,52 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.groovy.grailsproject.templates;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.SourceGroup;
-import org.openide.WizardDescriptor;
+package org.netbeans.modules.groovy.grailsproject.ui.wizards.impl;
+
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.extexecution.input.LineProcessor;
 
 /**
- * Default implementations of Grails-specific template UI.
+ *
  * @author Petr Hejl
  */
-public final class GrailsTemplates {
+public class ProgressLineProcessor implements LineProcessor {
 
-    private GrailsTemplates() {
+    private final ProgressHandle progress;
+
+    private final int max;
+
+    private final int step;
+
+    private int value;
+
+    public ProgressLineProcessor(ProgressHandle progress, int max, int step) {
+        this.progress = progress;
+        this.max = max;
+        this.step = step;
     }
 
-    public static WizardDescriptor.Panel<WizardDescriptor> createArtifactChooser(Project project, SourceGroup folder, String suffix) {
-        return new GrailsTargetChooserPanel(project, folder, null, suffix);
+    public void processLine(String line) {
+        value += step;
+        if (value > max) {
+            value = max;
+        }
+
+        progress.progress(value);
+    }
+
+    public void reset() {
+        // noop
+    }
+
+    public void close() {
+        value = max;
+        progress.progress(max);
     }
 }

@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.grailsproject.ui.wizards;
+package org.netbeans.modules.groovy.grailsproject.ui.wizards.impl;
 
 import javax.swing.JPanel;
 import org.openide.WizardDescriptor;
@@ -57,51 +57,49 @@ import org.openide.util.NbBundle;
 public class PanelConfigureProjectVisual extends JPanel {
 
     private PanelConfigureProject panel;
-    
     private SettingsPanel projectLocationPanel;
-    
     private PanelOptionsVisual optionsPanel;
-    
+
+
     public PanelConfigureProjectVisual(PanelConfigureProject panel) {
         this.panel = panel;
         initComponents();
 
-        setName(NbBundle.getMessage(PanelProjectLocationVisual.class,"LAB_ConfigureProject")); // NOI18N
+        setName(NbBundle.getMessage(PanelProjectLocationVisual.class, "LAB_ConfigureProject")); // NOI18N
 
         projectLocationPanel = new PanelProjectLocationVisual(panel);
         jSeparator1.setVisible(true);
 
-        putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(NewGrailsProjectWizardIterator.class,"TXT_NewGrailsApp")); // NOI18N
-        getAccessibleContext ().setAccessibleName (NbBundle.getMessage(NewGrailsProjectWizardIterator.class,"TXT_NewGrailsApp")); // NOI18N
+        putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewGrailsApp")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewGrailsApp")); // NOI18N
 
         locationContainer.add(projectLocationPanel, java.awt.BorderLayout.CENTER);
 
         optionsPanel = new PanelOptionsVisual(panel);
-        //projectLocationPanel.addPropertyChangeListener(optionsPanel);
         optionsContainer.add(optionsPanel, java.awt.BorderLayout.CENTER);
     }
-    
-    boolean valid( WizardDescriptor wizardDescriptor ) {
+
+    boolean valid( WizardDescriptor wizardDescriptor) {
         wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
         return projectLocationPanel.valid(wizardDescriptor) && optionsPanel.valid(wizardDescriptor);
     }
-    
-    void read (WizardDescriptor d) {
-        projectLocationPanel.read (d);
-        optionsPanel.read (d);
+
+    void read(WizardDescriptor d) {
+        projectLocationPanel.read(d);
+        optionsPanel.read(d);
     }
-    
-    void store( WizardDescriptor d ) {
-        projectLocationPanel.store( d );
-        optionsPanel.store( d );        
+
+    void store(WizardDescriptor d) {
+        projectLocationPanel.store(d);
+        optionsPanel.store(d);
     }
-    
-    void validate (WizardDescriptor d) throws WizardValidationException {
-        projectLocationPanel.validate (d);
+
+    void validate(WizardDescriptor d) throws WizardValidationException {
+        projectLocationPanel.validate(d);
         optionsPanel.validate(d);
     }
-    
-    
+
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

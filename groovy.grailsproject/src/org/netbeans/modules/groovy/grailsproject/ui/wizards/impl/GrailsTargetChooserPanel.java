@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.grailsproject.templates;
+package org.netbeans.modules.groovy.grailsproject.ui.wizards.impl;
 
 import java.awt.Component;
 import java.io.File;

@@ -35,7 +35,7 @@
     <Component class="javax.swing.JButton" name="configureButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/groovy/grailsproject/ui/wizards/Bundle.properties" key="PanelOptionsVisual.configureButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/groovy/grailsproject/ui/wizards/impl/Bundle.properties" key="PanelOptionsVisual.configureButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>

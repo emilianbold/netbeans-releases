@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.grailsproject.templates;
+package org.netbeans.modules.groovy.grailsproject.ui.wizards.impl;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -252,8 +252,8 @@ public class GrailsTargetChooserPanelGUI extends javax.swing.JPanel implements A
         jLabel5 = new javax.swing.JLabel();
         projectTextField = new javax.swing.JTextField();
         packageLabel = new javax.swing.JLabel();
-        packageComboBox = new javax.swing.JComboBox();
         fileLabel = new javax.swing.JLabel();
+        packageComboBox = new javax.swing.JComboBox();
         fileTextField = new javax.swing.JTextField();
 
         setLayout(new java.awt.GridBagLayout());
@@ -290,7 +290,7 @@ public class GrailsTargetChooserPanelGUI extends javax.swing.JPanel implements A
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         jPanel1.add(documentNameTextField, gridBagConstraints);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/groovy/grailsproject/templates/Bundle"); // NOI18N
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/groovy/grailsproject/ui/wizards/impl/Bundle"); // NOI18N
         documentNameTextField.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_documentNameTextField")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -322,6 +322,15 @@ public class GrailsTargetChooserPanelGUI extends javax.swing.JPanel implements A
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         jPanel2.add(packageLabel, gridBagConstraints);
 
+        fileLabel.setLabelFor(fileTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(fileLabel, org.openide.util.NbBundle.getMessage(GrailsTargetChooserPanelGUI.class, "LBL_GrailsTargetChooserPanelGUI_CreatedFile_Label")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 12, 0);
+        jPanel2.add(fileLabel, gridBagConstraints);
+
         packageComboBox.setEditable(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -330,13 +339,6 @@ public class GrailsTargetChooserPanelGUI extends javax.swing.JPanel implements A
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         jPanel2.add(packageComboBox, gridBagConstraints);
         packageComboBox.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_packageComboBox")); // NOI18N
-
-        fileLabel.setLabelFor(fileTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(fileLabel, org.openide.util.NbBundle.getMessage(GrailsTargetChooserPanelGUI.class, "LBL_GrailsTargetChooserPanelGUI_CreatedFile_Label")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 12, 0);
-        jPanel2.add(fileLabel, gridBagConstraints);
 
         fileTextField.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
