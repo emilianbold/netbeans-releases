@@ -452,7 +452,7 @@ public class MarkOccurrenceTest extends JsTestBase {
     }
     
     public void testIssue221228_05() throws Exception {
-        checkOccurrences("testfiles/markoccurences/issue221228.js", "Greetings.prototype.say^Ahoj() = function () {", true);
+        checkOccurrences("testfiles/markoccurences/issue221228.js", "Greetings.prototype.say^Ahoj = function () {", true);
     }
     
     public void testIssue221228_06() throws Exception {
@@ -681,6 +681,42 @@ public class MarkOccurrenceTest extends JsTestBase {
 
     public void testIssue223952() throws Exception {
         checkOccurrences("testfiles/markoccurences/issue223952.js","function UserToConnectio^ns(ahoj) {", true);
+    }
+    
+    public void testIssue224215_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue224215.js","    var A^ = 1;", true);
+    }
+    
+    public void testIssue224215_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue224215.js","    window.A = A^;", true);
+    }
+    
+    public void testIssue224215_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue224215.js","    window.A^ = A;", true);
+    }
+    
+    public void testIssue224462_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue224462.js","    formatter.print(err224^462);", true);
+    }
+    
+    public void testIssue224462_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue224462.js","        formatter.println(err22^4462);", true);
+    }
+    
+    public void testIssue224462_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue224462.js","        formatter.say(err2^24462);", true);
+    }
+    
+    public void testIssue224462_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue224462.js","        formatter.println(prom22^4462);", true);
+    }
+    
+    public void testIssue224462_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue224462.js","        formatter.println(prom^224462_1);", true);
+    }
+    
+    public void testIssue224520() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue224520.js","        var te^am = data[i+offset]; // mark occurrences or rename|refactor team", true);
     }
     
     private String getTestPath() {

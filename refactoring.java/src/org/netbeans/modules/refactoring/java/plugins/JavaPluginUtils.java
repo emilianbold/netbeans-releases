@@ -265,31 +265,15 @@ public final class JavaPluginUtils {
     public static JavaSource createSource(final FileObject file, final ClasspathInfo cpInfo, final TreePathHandle tph) throws IllegalArgumentException {
         JavaSource source;
         if (file != null) {
-            final ClassPath mergedPlatformPath = merge(cpInfo.getClassPath(PathKind.BOOT), ClassPath.getClassPath(file, ClassPath.BOOT));
-            final ClassPath mergedCompilePath = merge(cpInfo.getClassPath(PathKind.COMPILE), ClassPath.getClassPath(file, ClassPath.COMPILE));
-            final ClassPath mergedSourcePath = merge(cpInfo.getClassPath(PathKind.SOURCE), ClassPath.getClassPath(file, ClassPath.SOURCE));
+            final ClassPath mergedPlatformPath = RefactoringUtils.merge(cpInfo.getClassPath(PathKind.BOOT), ClassPath.getClassPath(file, ClassPath.BOOT));
+            final ClassPath mergedCompilePath = RefactoringUtils.merge(cpInfo.getClassPath(PathKind.COMPILE), ClassPath.getClassPath(file, ClassPath.COMPILE));
+            final ClassPath mergedSourcePath = RefactoringUtils.merge(cpInfo.getClassPath(PathKind.SOURCE), ClassPath.getClassPath(file, ClassPath.SOURCE));
             final ClasspathInfo mergedInfo = ClasspathInfo.create(mergedPlatformPath, mergedCompilePath, mergedSourcePath);
             source = JavaSource.create(mergedInfo, new FileObject[]{tph.getFileObject()});
         } else {
             source = JavaSource.create(cpInfo);
         }
         return source;
-    }
-
-    @SuppressWarnings("CollectionContainsUrl")
-    public static ClassPath merge(final ClassPath... cps) {
-        final Set<URL> roots = new LinkedHashSet<URL>(cps.length);
-        for (final ClassPath cp : cps) {
-            if (cp != null) {
-                for (final ClassPath.Entry entry : cp.entries()) {
-                    final URL root = entry.getURL();
-                    if (!roots.contains(root)) {
-                        roots.add(root);
-                    }
-                }
-            }
-        }
-        return ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
     }
     
     //<editor-fold defaultstate="collapsed" desc="TODO: Copy from org.netbeans.modules.java.hints.errors.Utilities">

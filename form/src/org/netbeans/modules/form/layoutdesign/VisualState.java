@@ -979,10 +979,11 @@ public class VisualState implements LayoutConstants {
         return PADDING_DISPLAY_NAMES[pt != null ? pt.ordinal() : 4];
     }
 
-    static List<LayoutComponent> getComponentsInRegion(LayoutComponent container, LayoutRegion space) {
+    static List<LayoutComponent> getComponentsInRegion(LayoutComponent container, LayoutInterval[] roots, LayoutRegion space) {
         List<LayoutComponent> list = null;
         for (LayoutComponent comp : container.getSubcomponents()) {
-            if (LayoutRegion.overlap(space, comp.getCurrentSpace())) {
+            if (LayoutRegion.overlap(space, comp.getCurrentSpace())
+                    && (roots == null || roots[HORIZONTAL] == LayoutInterval.getRoot(comp.getLayoutInterval(HORIZONTAL)))) {
                 if (list == null) {
                     list = new LinkedList<LayoutComponent>();
                 }

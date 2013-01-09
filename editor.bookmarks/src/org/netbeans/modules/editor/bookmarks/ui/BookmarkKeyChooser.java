@@ -67,7 +67,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import org.netbeans.modules.editor.bookmarks.BookmarkInfo;
 import org.netbeans.modules.editor.bookmarks.BookmarkManager;
-import org.netbeans.modules.editor.bookmarks.BookmarkUtils;
 import org.netbeans.modules.editor.bookmarks.BookmarksPersistence;
 import org.netbeans.modules.editor.bookmarks.FileBookmarks;
 import org.netbeans.modules.editor.bookmarks.ProjectBookmarks;
@@ -102,11 +101,12 @@ public class BookmarkKeyChooser implements KeyListener, ActionListener {
     public void show(Component parent, Runnable runOnClose) {
         this.runOnClose = runOnClose;
         key2bookmark = new HashMap<Character, BookmarkInfo>(2 * 46, 0.5f);
-        BookmarksPersistence.get().ensureAllOpenedProjectsBookmarksLoaded();
         BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
         try {
-            for (ProjectBookmarks projectBookmarks : lockedBookmarkManager.allLoadedProjectBookmarks()) {
-                for (FileBookmarks fileBookmarks : projectBookmarks.allFileBookmarks()) {
+            // Open projects should have their bookmarks loaded before invocation of this method
+            // so that it's possible to enumerate present keys properly
+            for (ProjectBookmarks projectBookmarks : lockedBookmarkManager.activeProjectBookmarks()) {
+                for (FileBookmarks fileBookmarks : projectBookmarks.getFileBookmarks()) {
                     for (BookmarkInfo bookmark : fileBookmarks.getBookmarks()) {
                         String key = bookmark.getKey();
                         if (key != null && key.length() > 0) {

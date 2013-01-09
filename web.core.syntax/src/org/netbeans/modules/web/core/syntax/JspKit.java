@@ -88,6 +88,16 @@ import org.netbeans.spi.lexer.MutableTextInput;
 //@MimeRegistration(mimeType="text/x-jsp", service=EditorKit.class, position=1)
 public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Provider{
 
+    //hack for Bug 212105 - JspKit.createSyntax slow - LowPerformance took 9988 ms. 
+    public static final ThreadLocal<Boolean> ATTACH_COLORING_LISTENER_TO_SYNTAX = new ThreadLocal<Boolean>() {
+
+        @Override
+        protected Boolean initialValue() {
+            return true;
+        }
+        
+    };
+    
     public static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
     public static final String TAG_MIME_TYPE = "text/x-tag"; // NOI18N
 
@@ -131,20 +141,21 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
     public Syntax createSyntax(Document doc) {
         final Jsp11Syntax newSyntax = new Jsp11Syntax(new HtmlSyntax(), new JavaSyntax(null, true));
 
-        DataObject dobj = NbEditorUtilities.getDataObject(doc);
-        FileObject fobj = (dobj != null) ? dobj.getPrimaryFile() : null;
+        if(ATTACH_COLORING_LISTENER_TO_SYNTAX.get()) {
+            DataObject dobj = NbEditorUtilities.getDataObject(doc);
+            FileObject fobj = (dobj != null) ? dobj.getPrimaryFile() : null;
 
-        // tag library coloring data stuff
-        JspColoringData data = JspUtils.getJSPColoringData(fobj);
-        // construct the listener
-        PropertyChangeListener pList = new ColoringListener(doc, data, newSyntax);
-        // attach the listener
-        // PENDING - listen on the language
-        //jspdo.addPropertyChangeListener(WeakListeners.propertyChange(pList, jspdo));
-        if (data != null) {
-            data.addPropertyChangeListener(WeakListeners.propertyChange(pList, data));
+            // tag library coloring data stuff
+            JspColoringData data = JspUtils.getJSPColoringData(fobj);
+            // construct the listener
+            PropertyChangeListener pList = new ColoringListener(doc, data, newSyntax);
+            // attach the listener
+            // PENDING - listen on the language
+            //jspdo.addPropertyChangeListener(WeakListeners.propertyChange(pList, jspdo));
+            if (data != null) {
+                data.addPropertyChangeListener(WeakListeners.propertyChange(pList, data));
+            }
         }
-
         return newSyntax;
     }
 

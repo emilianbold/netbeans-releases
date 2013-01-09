@@ -42,22 +42,15 @@
 
 package org.netbeans.modules.hudson.impl;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.spi.PasswordAuthorizer;
 import org.netbeans.modules.hudson.spi.ConnectionAuthenticator;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -73,14 +66,7 @@ public class ServletConnectionAuthenticator implements ConnectionAuthenticator {
 
     private static final Logger LOGGER = Logger.getLogger(ServletConnectionAuthenticator.class.getName());
 
-    private final Map</*URL*/String,/*[field,crumb]*/String[]> crumbs = Collections.synchronizedMap(new HashMap<String,String[]>()); // #193008
-
-    public @Override void prepareRequest(URLConnection conn, URL home) {
-        String[] fieldCrumb = crumbs.get(home.toString());
-        if (fieldCrumb != null) {
-           conn.setRequestProperty(fieldCrumb[0], fieldCrumb[1]);
-        }
-    }
+    public @Override void prepareRequest(URLConnection conn, URL home) {}
 
     public @Override URLConnection forbidden(URLConnection conn, URL home) {
         for (PasswordAuthorizer aa : Lookup.getDefault().lookupAll(PasswordAuthorizer.class)) {
@@ -98,25 +84,6 @@ public class ServletConnectionAuthenticator implements ConnectionAuthenticator {
                                 URLEncoder.encode(auth[1], "UTF-8")).getBytes("UTF-8")). // NOI18N
                                 homeURL(home).authentication(false).connection();
                         LOGGER.log(Level.FINER, "Posted authentication to {0} worked", realmURI);
-                        try {
-                            InputStream is = new ConnectionBuilder().url(new URL(home, "crumbIssuer/api/xml?xpath=concat(//crumbRequestField,'=',//crumb)")).homeURL(home).connection().getInputStream();
-                            try {
-                                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                                FileUtil.copy(is, baos);
-                                String crumb = baos.toString("UTF-8");
-                                String[] crumbA = crumb.split("=", 2);
-                                if (crumbA.length == 2 && crumbA[0].indexOf('\n') == -1) {
-                                    LOGGER.log(Level.FINER, "Received crumb: {0}", crumb);
-                                    crumbs.put(home.toString(), crumbA);
-                                } else {
-                                    LOGGER.log(Level.WARNING, "Bad crumb response: {0}", crumb);
-                                }
-                            } finally {
-                                is.close();
-                            }
-                        } catch (FileNotFoundException x) {
-                            LOGGER.finer("not using crumbs");
-                        }
                         return conn.getURL().openConnection();
                     } catch (IOException x) {
                         LOGGER.log(Level.FINE, null, x);

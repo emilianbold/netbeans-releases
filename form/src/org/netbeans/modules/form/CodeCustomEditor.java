@@ -123,7 +123,8 @@ class CodeCustomEditor extends javax.swing.JPanel implements DocumentListener, R
 
         int codePos = -1;
         FormDataObject dobj = FormEditor.getFormDataObject(formModel);
-        GuardedSectionManager gsm = dobj.getFormEditorSupport().getGuardedSectionManager();
+        EditorSupport es = dobj.getFormEditorSupport();
+        GuardedSectionManager gsm = es.getGuardedSectionManager();
         SimpleSection sec = gsm.findSimpleSection(EditorSupport.SECTION_INIT_COMPONENTS);
         if ((property instanceof RADProperty) && (property.getWriteMethod() != null)) {
             RADComponent metacomp = ((RADProperty)property).getRADComponent();

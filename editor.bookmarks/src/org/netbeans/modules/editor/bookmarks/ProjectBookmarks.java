@@ -42,11 +42,8 @@
 package org.netbeans.modules.editor.bookmarks;
 
 import java.net.URI;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -62,20 +59,64 @@ public final class ProjectBookmarks {
 
     private volatile int lastBookmarkId;
 
-    private final Map<URL,FileBookmarks> url2FileBookmarks;
+    private final Map<URI,FileBookmarks> relativeURI2FileBookmarks;
     
-    private boolean released;
+    /**
+     * Whether bookmarks for this project were loaded.
+     * If not yet and the project bookmarks were modified then
+     * the bookmarks must be loaded first before saving
+     * (otherwise the original not-yet loaded bookmarks would be lost).
+     */
+    private boolean loaded;
 
+    /**
+     * Loading task was scheduled already. Once marked it remains true forever.
+     */
+    private boolean loadingScheduled;
+    
+    /**
+     * Whether bookmarks were modified by an explicit change (loading is not a change).
+     */
+    private boolean modified;
+    
     private final Map<Object,Boolean> activeClients = new WeakHashMap<Object, Boolean>();
     
+    /**
+     * Cached project's display name (required for proper nodes sorting).
+     */
+    private String projectDisplayName;
+    
     public ProjectBookmarks(URI projectURI) {
-        this(projectURI, 0);
+        this.projectURI = projectURI;
+        relativeURI2FileBookmarks = new HashMap<URI, FileBookmarks>();
+        if (projectURI == null) { // Mark loaded (in future remove this if persistent storage would exist)
+            markLoadScheduled();
+            markLoaded();
+        }
     }
     
-    public ProjectBookmarks(URI projectURI, int lastBookmarkId) {
-        this.projectURI = projectURI;
-        this.lastBookmarkId = lastBookmarkId;
-        url2FileBookmarks = new HashMap<URL, FileBookmarks>();
+    public boolean isLoaded() {
+        return loaded;
+    }
+    
+    void markLoaded() {
+        loaded = true;
+    }
+    
+    public boolean isLoadingScheduled() {
+        return loadingScheduled;
+    }
+    
+    void markLoadScheduled() {
+        loadingScheduled = true;
+    }
+    
+    public boolean isModified() {
+        return modified;
+    }
+    
+    void setModified(boolean modified) {
+        this.modified = modified;
     }
 
     public URI getProjectURI() {
@@ -85,58 +126,48 @@ public final class ProjectBookmarks {
     public int getLastBookmarkId() {
         return lastBookmarkId;
     }
+    
+    void setLastBookmarkId(int lastBookmarkId) {
+        this.lastBookmarkId = lastBookmarkId;
+        // Shift IDs of any currently contained bookmarks up by lastBookmarkId
+        for (FileBookmarks fileBookmarks : relativeURI2FileBookmarks.values()) {
+            for (BookmarkInfo bookmark : fileBookmarks.getBookmarks()) {
+                bookmark.shiftId(lastBookmarkId);
+            }
+        }
+    }
 
     public int generateBookmarkId() {
         return ++lastBookmarkId;
     }
     
-    public void ensureBookmarkIdSkip(int bookmarkId) {
+    public void ensureBookmarkIdIsSkipped(int bookmarkId) {
         lastBookmarkId = Math.max(lastBookmarkId, bookmarkId);
     }
 
-    public FileBookmarks get(URL url) {
-        return url2FileBookmarks.get(url);
+    public FileBookmarks getFileBookmarks(URI relativeURI) {
+        return relativeURI2FileBookmarks.get(relativeURI);
     }
     
-    public void remove(URL url) {
-        url2FileBookmarks.remove(url);
+    void add(FileBookmarks fileBookmarks) {
+        relativeURI2FileBookmarks.put(fileBookmarks.getRelativeURI(), fileBookmarks);
     }
     
-    public void add(FileBookmarks fileBookmarks) {
-        url2FileBookmarks.put(fileBookmarks.getUrl(), fileBookmarks);
+    void remove(URI relativeURI) {
+        relativeURI2FileBookmarks.remove(relativeURI);
     }
     
-    public Collection<URL> allURLs() {
-        return url2FileBookmarks.keySet();
+    public Collection<FileBookmarks> getFileBookmarks() {
+        return relativeURI2FileBookmarks.values();
     }
     
     public boolean containsAnyBookmarks() {
-        for (FileBookmarks fileBookmarks : url2FileBookmarks.values()) {
+        for (FileBookmarks fileBookmarks : relativeURI2FileBookmarks.values()) {
             if (fileBookmarks.containsAnyBookmarks()) {
                 return true;
             }
         }
         return false;
-    }
-
-    public Collection<FileBookmarks> allFileBookmarks() {
-        return url2FileBookmarks.values();
-    }
-    
-    public List<BookmarkInfo> allBookmarks() {
-       List<BookmarkInfo> allBookmarks = new ArrayList<BookmarkInfo>();
-       for (FileBookmarks fileBookmarks : url2FileBookmarks.values()) {
-           allBookmarks.addAll(fileBookmarks.getBookmarks());
-       }
-       return allBookmarks;
-    }
-    
-    public void release() {
-        released = true;
-    }
-
-    public boolean isReleased() {
-        return released;
     }
 
     /**
@@ -154,9 +185,20 @@ public final class ProjectBookmarks {
         return (activeClients.size() > 0);
     }
 
+    public String getProjectDisplayName() {
+        return projectDisplayName;
+    }
+
+    void setProjectDisplayName(String projectDisplayName) {
+        this.projectDisplayName = projectDisplayName;
+    }
+    
     @Override
     public String toString() {
-        return "project=" + projectURI + ", lastBId=" + lastBookmarkId + ", removed=" + released; // NOI18N
+        return "project=" + projectURI + ", lastBId=" + lastBookmarkId + // NOI18N
+                ", loaded=" + loaded + // NOI18N
+                ", loadingScheduled=" + loadingScheduled + // NOI18N
+                ", modified=" + modified; // NOI18N
     }
 
 }

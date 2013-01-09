@@ -888,11 +888,17 @@ public final class LibrariesNode extends AbstractNode {
                 }
                 final Project prj = FileOwnerQuery.getOwner(helper.getProjectDirectory());
                 final ClassPathModifier modifierImpl = prj.getLookup().lookup(ClassPathModifier.class);
-                assert modifierImpl != null : prj.getProjectDirectory();
-                modifierImpl.addRoots(toAdd.toArray(new URI[toAdd.size()]),
-                    findSourceGroup(projectSourcesArtifact, modifierImpl),
-                    ClassPath.COMPILE,
-                    ClassPathModifier.ADD_NO_HEURISTICS);
+                if (modifierImpl == null) {
+                    throw new IllegalStateException(
+                        String.format("Project: %s (located in: %s) does not provide ClassPathModifier in Lookup.",   //NOI18N
+                        prj,
+                        FileUtil.getFileDisplayName(prj.getProjectDirectory())));
+                } else {
+                    modifierImpl.addRoots(toAdd.toArray(new URI[toAdd.size()]),
+                        findSourceGroup(projectSourcesArtifact, modifierImpl),
+                        ClassPath.COMPILE,
+                        ClassPathModifier.ADD_NO_HEURISTICS);
+                }
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             }

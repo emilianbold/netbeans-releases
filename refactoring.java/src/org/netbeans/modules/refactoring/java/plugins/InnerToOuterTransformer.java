@@ -319,6 +319,13 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                     if (member.getKind() == Tree.Kind.METHOD) {
                         MethodTree m = (MethodTree) member;
                         if (m.getReturnType()==null) {
+                    
+                            for( VariableTree var: m.getParameters() ) {
+                                if( var.getName().contentEquals(refactoring.getReferenceName()) ) {
+                                    problem = MoveTransformer.createProblem(problem, true, NbBundle.getMessage(InnerToOuterTransformer.class, "ERR_InnerToOuter_OuterNameClashSubtype", refactoring.getReferenceName(), refactoring.getClassName(), currentElement.getSimpleName()));
+                                }
+                            }
+
                             MethodInvocationTree superCall = (MethodInvocationTree) ((ExpressionStatementTree) m.getBody().getStatements().get(0)).getExpression();
                             List<ExpressionTree> newArgs = new ArrayList<ExpressionTree>(superCall.getArguments());
                             

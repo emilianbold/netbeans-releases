@@ -127,8 +127,14 @@ public class TestNode extends AbstractNode {
 
         props.put(new TestProperty("Byte", java.lang.Byte.class));
         props.put(new TestProperty("byte", byte.class));
-        props.put(new TestProperty("Character", java.lang.Character.class));
-
+        //props.put(new TestProperty("Character", java.lang.Character.class));
+        TestProperty characterProperty = new TestProperty("Character", java.lang.Character.class);
+        try {
+            characterProperty.setValue("a");
+            props.put(characterProperty);
+        } catch (Exception e) {
+            ErrorManager.getDefault().notify(e);
+        }
         // props.put(new TestProperty("char", char.class));
         TestProperty charProperty =
                 new TestProperty("char", char.class);

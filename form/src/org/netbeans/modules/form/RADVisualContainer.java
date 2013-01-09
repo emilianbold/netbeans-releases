@@ -468,7 +468,6 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
         } else {
             visual = (RADVisualComponent) metacomp;
             if (index == -1) {
-                index = subComponents.size();
                 subComponents.add(visual);
             } else {
                 subComponents.add(index, visual);
