@@ -291,7 +291,8 @@ private static String PROP_NEWLINE_WHILE = "org-netbeans-modules-editor-indent.t
         props.setProperty(PROP_SPACE_BEFORE_FOR_LEFT, new Boolean (tokens.contains(Token.LITERAL_FOR)).toString());
         props.setProperty(PROP_SPACE_BEFORE_FOR_PAREN, new Boolean (tokens.contains(Token.LITERAL_FOR)).toString());
         props.setProperty(PROP_SPACE_BEFORE_WHILE_LEFT, new Boolean (tokens.contains(Token.LITERAL_WHILE)).toString());
-        props.setProperty(PROP_SPACE_WITHIN_PAREN, new Boolean (tokens.contains(Token.LPAREN) || tokens.contains(Token.RPAREN)).toString());
+        //#221067 no LPAREN and RPAREN inside withespacearound - http://checkstyle.sourceforge.net/config_whitespace.html
+        //props.setProperty(PROP_SPACE_WITHIN_PAREN, new Boolean (tokens.contains(Token.LPAREN) || tokens.contains(Token.RPAREN)).toString());
 
     }
 
