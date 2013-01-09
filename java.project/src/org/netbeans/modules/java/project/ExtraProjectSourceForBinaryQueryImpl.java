@@ -46,7 +46,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import java.io.File;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -59,7 +58,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -70,6 +69,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 
 /**
@@ -150,39 +150,44 @@ public final class ExtraProjectSourceForBinaryQueryImpl extends ProjectOpenedHoo
     
 
     private Map<URL, URL> getExtraSources() {
-        Map<URL, URL> result = new HashMap<URL, URL>();
-        Map<String, String> props = evaluator.getProperties();
-        if (props != null) {
-            for (Map.Entry<String, String> entry : props.entrySet()) {
-                if (entry.getKey().startsWith(REF_START)) {
-                    String val = entry.getKey().substring(REF_START.length());
-                    String sourceKey = SOURCE_START + val;
-                    String source[] = ExtraProjectJavadocForBinaryQueryImpl.stripJARPath(props.get(sourceKey));
-                    File bin = PropertyUtils.resolveFile(FileUtil.toFile(helper.getProjectDirectory()), entry.getValue());
-                    URL binURL = FileUtil.urlForArchiveOrDir(bin);
-                    if (source[0] != null && binURL != null) {
-                        File src = PropertyUtils.resolveFile(FileUtil.toFile(helper.getProjectDirectory()), source[0]);
-                        // #138349 - ignore non existing paths or entries with undefined IDE variables
-                        if (src.exists()) {
-                            try {
-                                URL url = Utilities.toURI(src).toURL();
-                                if (FileUtil.isArchiveFile(url)) {
-                                    url = FileUtil.getArchiveRoot(url);
+        return ProjectManager.mutex().readAccess(new Mutex.Action<Map<URL,URL>>() {
+            @Override
+            public Map<URL, URL> run() {
+                Map<URL, URL> result = new HashMap<URL, URL>();
+                Map<String, String> props = evaluator.getProperties();
+                if (props != null) {
+                    for (Map.Entry<String, String> entry : props.entrySet()) {
+                        if (entry.getKey().startsWith(REF_START)) {
+                            String val = entry.getKey().substring(REF_START.length());
+                            String sourceKey = SOURCE_START + val;
+                            String source[] = ExtraProjectJavadocForBinaryQueryImpl.stripJARPath(props.get(sourceKey));
+                            File bin = PropertyUtils.resolveFile(FileUtil.toFile(helper.getProjectDirectory()), entry.getValue());
+                            URL binURL = FileUtil.urlForArchiveOrDir(bin);
+                            if (source[0] != null && binURL != null) {
+                                File src = PropertyUtils.resolveFile(FileUtil.toFile(helper.getProjectDirectory()), source[0]);
+                                // #138349 - ignore non existing paths or entries with undefined IDE variables
+                                if (src.exists()) {
+                                    try {
+                                        URL url = Utilities.toURI(src).toURL();
+                                        if (FileUtil.isArchiveFile(url)) {
+                                            url = FileUtil.getArchiveRoot(url);
+                                        }
+                                        if (source[1] != null) {
+                                            assert url.toExternalForm().endsWith("!/") : url.toExternalForm();
+                                            url = new URL(url.toExternalForm()+source[1]);
+                                        }
+                                        result.put(binURL, url);
+                                    } catch (MalformedURLException ex) {
+                                        Exceptions.printStackTrace(ex);
+                                    }
                                 }
-                                if (source[1] != null) {
-                                    assert url.toExternalForm().endsWith("!/") : url.toExternalForm();
-                                    url = new URL(url.toExternalForm()+source[1]);
-                                }
-                                result.put(binURL, url);
-                            } catch (MalformedURLException ex) {
-                                ex.printStackTrace();
                             }
                         }
                     }
                 }
+                return result;
             }
-        }
-        return result;
+        });
     }
     
     private void checkAndRegisterExtraSources(Map<URL, URL> newvalues) {
