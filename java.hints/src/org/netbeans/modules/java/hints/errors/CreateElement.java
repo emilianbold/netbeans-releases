@@ -382,10 +382,12 @@ public final class CreateElement implements ErrorRule<Void> {
                 FileObject targetFile = SourceUtils.getFile(ElementHandle.create(target), info.getClasspathInfo());
                 if (targetFile != null) {
                     if (target.getKind() == ElementKind.ENUM) {
+                        if (source != null) { //TODO: maybe create a constant? - but the test below seems very suspicious:
                         if (source.equals(target)) {
                             result.add(new CreateFieldFix(info, simpleName, modifiers, (TypeElement) target, type, targetFile));
                         } else {
                             result.add(new CreateEnumConstant(info, simpleName, modifiers, (TypeElement) target, type, targetFile));
+                        }
                         }
                     } else {
                         if (firstMethod != null && info.getTrees().getElement(firstMethod).getKind() == ElementKind.CONSTRUCTOR && ErrorFixesFakeHint.isCreateFinalFieldsForCtor()) {
