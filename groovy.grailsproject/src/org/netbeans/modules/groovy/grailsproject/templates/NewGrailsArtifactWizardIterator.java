@@ -69,6 +69,8 @@ import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.*;
+import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.api.templates.TemplateRegistrations;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
@@ -92,24 +94,98 @@ import org.openide.util.NbBundle;
 public class NewGrailsArtifactWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
 
     private static final long serialVersionUID = 1L;
-
     private static final Logger LOG = Logger.getLogger(NewGrailsArtifactWizardIterator.class.getName());
 
+    private transient int index;
+    private transient WizardDescriptor.Panel[] panels;
+    private transient WizardDescriptor wiz;
+    
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
+    private SourceCategory sourceCategory;
     private GrailsProject project;
 
-    private SourceCategory sourceCategory;
 
-    private transient int index;
+    @NbBundle.Messages({
+        "Service=Grails Service",
+        "UnitTest=Grails Unit Test",
+        "Controller=Grails Controller",
+        "TagLibrary=Grails Tag Library",
+        "GantScript=Grails Gant Script",
+        "DomainClass=Grails Domain Class",
+        "IntegrationTest=Grails Integration Test"
+    })
+    @TemplateRegistrations(value = {
+        @TemplateRegistration(
+            id = "DomainClass",
+            position = 130,
+            folder = "Groovy",
+            category = "groovy",
+            displayName = "#DomainClass",
+            iconBase = "org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png",
+            description = "/org/netbeans/modules/groovy/grailsproject/resources/DomainClass.html"
+        ),
+        @TemplateRegistration(
+            id = "Controller",
+            position = 140,
+            folder = "Groovy",
+            category = "groovy",
+            displayName = "#Controller",
+            iconBase = "org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png",
+            description = "/org/netbeans/modules/groovy/grailsproject/resources/Controller.html"
+        ),
+        @TemplateRegistration(
+            id = "IntegrationTest",
+            position = 150,
+            folder = "Groovy",
+            category = "groovy",
+            displayName = "#IntegrationTest",
+            iconBase = "org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png",
+            description = "/org/netbeans/modules/groovy/grailsproject/resources/IntegrationTest.html"
+        ),
+        @TemplateRegistration(
+            id = "GantScript",
+            position = 160,
+            folder = "Groovy",
+            category = "groovy",
+            displayName = "#GantScript",
+            iconBase = "org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png",
+            description = "/org/netbeans/modules/groovy/grailsproject/resources/GantScript.html"
+        ),
+        @TemplateRegistration(
+            id = "Service",
+            position = 170,
+            folder = "Groovy",
+            category = "groovy",
+            displayName = "#Service",
+            iconBase = "org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png",
+            description = "/org/netbeans/modules/groovy/grailsproject/resources/Service.html"
+        ),
+        @TemplateRegistration(
+            id = "TagLibrary",
+            position = 180,
+            folder = "Groovy",
+            category = "groovy",
+            displayName = "#TagLibrary",
+            iconBase = "org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png",
+            description = "/org/netbeans/modules/groovy/grailsproject/resources/TagLib.html"
+        ),
+        @TemplateRegistration(
+            id = "UnitTest",
+            position = 190,
+            folder = "Groovy",
+            category = "groovy",
+            displayName = "#UnitTest",
+            iconBase = "org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png",
+            description = "/org/netbeans/modules/groovy/grailsproject/resources/UnitTest.html"
+        )
+    })
+    public static WizardDescriptor.InstantiatingIterator createArtifactIterator() {
+        return new NewGrailsArtifactWizardIterator();
+    }
 
-    private transient WizardDescriptor.Panel[] panels;
 
-    private transient WizardDescriptor wiz;
-
-    /** Create a new wizard iterator. */
-    public NewGrailsArtifactWizardIterator() {
-        super();
+    private NewGrailsArtifactWizardIterator() {
     }
 
     private WizardDescriptor.Panel[] createPanels(WizardDescriptor wizardDescriptor) {

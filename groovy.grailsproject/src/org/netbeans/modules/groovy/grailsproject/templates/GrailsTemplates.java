@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.groovy.grailsproject.templates;
 
 import org.netbeans.api.project.Project;
@@ -55,15 +54,9 @@ import org.openide.WizardDescriptor;
 public final class GrailsTemplates {
 
     private GrailsTemplates() {
-        super();
     }
 
     public static WizardDescriptor.Panel<WizardDescriptor> createArtifactChooser(Project project, SourceGroup folder, String suffix) {
         return new GrailsTargetChooserPanel(project, folder, null, suffix);
     }
-
-    public static WizardDescriptor.InstantiatingIterator createArtifactIterator () {
-        return new NewGrailsArtifactWizardIterator();
-    }
-
 }

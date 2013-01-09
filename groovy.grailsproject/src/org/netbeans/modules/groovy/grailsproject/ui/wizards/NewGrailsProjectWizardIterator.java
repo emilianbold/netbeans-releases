@@ -54,12 +54,14 @@ import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grailsproject.GrailsProjectSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -79,6 +81,14 @@ public class NewGrailsProjectWizardIterator implements WizardDescriptor.Progress
         super();
     }
 
+    @Messages("GrailsAppDisplayName=Grails Application")
+    @TemplateRegistration(
+        position = 400,
+        folder = "Project/Groovy",
+        displayName = "#GrailsAppDisplayName",
+        iconBase = "org/netbeans/modules/groovy/grails/resources/GrailsIcon16x16.png",
+        description = "/org/netbeans/modules/groovy/grailsproject/resources/emptyProject.html"
+    )
     public static NewGrailsProjectWizardIterator create() {
         return new NewGrailsProjectWizardIterator();
     }

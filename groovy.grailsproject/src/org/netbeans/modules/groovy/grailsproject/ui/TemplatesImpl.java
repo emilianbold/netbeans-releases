@@ -60,14 +60,15 @@ public class TemplatesImpl implements PrivilegedTemplates, RecommendedTemplates 
     public static final String GROOVY_CLASS = "Templates/Groovy/GroovyClass.groovy";
     public static final String GROOVY_SCRIPT = "Templates/Groovy/GroovyScript.groovy";
     public static final String GSP = "Templates/Groovy/_view.gsp";
-    
-    public static final String DOMAIN_CLASS = "Templates/Groovy/DomainClass.groovy";
-    public static final String CONTROLLER = "Templates/Groovy/Controller.groovy";
-    public static final String INTEGRATION_TEST = "Templates/Groovy/IntegrationTest.groovy";
-    public static final String GANT_SCRIPT = "Templates/Groovy/GantScript.groovy";
-    public static final String SERVICE = "Templates/Groovy/Service.groovy";
-    public static final String TAG_LIB = "Templates/Groovy/TagLib.groovy";
-    public static final String UNIT_TEST = "Templates/Groovy/UnitTest.groovy";
+
+    // These constants must be synchronized with template registrations IDs
+    public static final String DOMAIN_CLASS = "Templates/Groovy/DomainClass";
+    public static final String CONTROLLER = "Templates/Groovy/Controller";
+    public static final String INTEGRATION_TEST = "Templates/Groovy/IntegrationTest";
+    public static final String GANT_SCRIPT = "Templates/Groovy/GantScript";
+    public static final String SERVICE = "Templates/Groovy/Service";
+    public static final String TAG_LIB = "Templates/Groovy/TagLib";
+    public static final String UNIT_TEST = "Templates/Groovy/UnitTest";
 
     private static final String FOLDER = "Templates/Other/Folder";
     private static final String PROPERTIES = "Templates/Other/properties.properties";
@@ -84,6 +85,7 @@ public class TemplatesImpl implements PrivilegedTemplates, RecommendedTemplates 
         this.sourceGroup = sourceGroup;
     }
 
+    @Override
     public String[] getPrivilegedTemplates() {
         SourceCategory sourceCategory = GrailsArtifacts.getCategoryForFolder(
                 project.getProjectDirectory(), sourceGroup.getRootFolder());
@@ -127,8 +129,8 @@ public class TemplatesImpl implements PrivilegedTemplates, RecommendedTemplates 
         return new String[] {};
     }
 
+    @Override
     public String[] getRecommendedTypes() {
         return new String[] { SIMPLE_FILES };
     }
-    
 }
