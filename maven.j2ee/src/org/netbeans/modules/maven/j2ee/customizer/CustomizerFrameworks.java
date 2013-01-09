@@ -168,14 +168,17 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
     }
 
     private void initFrameworksList() {
-        final WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
         existingExtenders.clear();
 
         ExtenderController.Properties properties = controller.getProperties();
-        String j2eeVersion = webModule.getJ2eePlatformVersion();
-        properties.setProperty("j2eeLevel", j2eeVersion); // NOI18N
         properties.setProperty("maven", Boolean.TRUE);  //NOI18N
-        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
+
+        final WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if (webModule != null) {
+            properties.setProperty("j2eeLevel", webModule.getJ2eePlatformVersion()); // NOI18N
+        }
+
+        final J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         if (provider != null) {
             String serverInstanceID = provider.getServerInstanceID();
             if (serverInstanceID != null && !"".equals(serverInstanceID)) {

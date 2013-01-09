@@ -41,27 +41,45 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.groovy.gsp;
 
-import org.netbeans.editor.Acceptor;
+package org.netbeans.modules.groovy.gsp.editor.indent;
 
+import javax.swing.text.BadLocationException;
+import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.editor.indent.spi.ExtraLock;
+import org.netbeans.modules.editor.indent.spi.IndentTask;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
- * The classes in here no one should ever implement, as I would think all this
- * information could be defined in a more declarative way: either via a simple interface
- * implementation where returning specific flags enables a set of settings
- * or a table or some external xml-like file.
- * Maybe that is all there already in NetBeans but I could not find it.
- * This is called from the ModuleInstall class and it's key for the editor to work.
+ * Indent task for GSP.
+ *
+ * @author Martin Janicek
  */
-public final class GspEditorSettings {
-    private final static Acceptor defaultAbbrevResetAcceptor = new Acceptor() {
-          public final boolean accept(char ch) {
-              return !Character.isJavaIdentifierPart(ch) && ch != ':'; //NOI18N
-          }
-    };
-    
-    public static Acceptor getAbbrevResetAcceptor() {
-        return defaultAbbrevResetAcceptor;
+public class GspIndentTask implements IndentTask, Lookup.Provider {
+
+    private final GspIndenter indenter;
+    private final Lookup lookup;
+
+
+    GspIndentTask(Context context) {
+        indenter = new GspIndenter(context);
+        lookup = Lookups.singleton(indenter.createFormattingContext());
+    }
+
+
+    @Override
+    public void reindent() throws BadLocationException {
+        indenter.reindent();
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return lookup;
+    }
+
+    @Override
+    public ExtraLock indentLock() {
+        return null;
     }
 }
