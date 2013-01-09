@@ -372,7 +372,7 @@ public final class FileObjectFactory {
                         exist = touchExists(file, realExists);
                         if (!exist) {
                             //parent is exception must be issued even if not valid
-                            retval.setValid(false);
+                            invalidateSubtree(retval);
                         }
                     }
                     assert checkCacheState(exist, file, caller);
@@ -426,6 +426,18 @@ public final class FileObjectFactory {
         }
     }
 
+    void invalidateSubtree(BaseFileObj root) {
+        synchronized (allIBaseFileObjects) {
+            for (FileNaming fn : NamingFactory.findSubTree(root.getFileName())) {
+                BaseFileObj cached = getCachedOnly(fn.getFile());
+                if (cached != null) {
+                    cached.setValid(false);
+                }
+            }
+        }
+    }
+
+    
     private BaseFileObj create(final FileInfo fInfo) {
         if (!fInfo.isConvertibleToFileObject()) {
             return null;
