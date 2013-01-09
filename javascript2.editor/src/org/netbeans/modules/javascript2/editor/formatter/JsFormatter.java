@@ -165,7 +165,7 @@ public class JsFormatter implements Formatter {
                 for (int i = 0; i < tokens.size(); i++) {
                     FormatToken token = tokens.get(i);
 
-                    if (processed.contains(token)) {
+                    if (processed.remove(token)) {
                         continue;
                     }
 
@@ -244,7 +244,6 @@ public class JsFormatter implements Formatter {
                         updateIndentationLevel(token, formatContext);
                     } else if (token.getKind() == FormatToken.Kind.SOURCE_START
                             || token.getKind() == FormatToken.Kind.EOL) {
-                        processed.clear();
                         // XXX refactor eol token WRAP_IF_LONG handling
                         if (token.getKind() != FormatToken.Kind.SOURCE_START) {
                             // search for token which will be present just before eol
