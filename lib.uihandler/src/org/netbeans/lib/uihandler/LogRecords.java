@@ -147,7 +147,7 @@ public final class LogRecords {
             is = new FileInputStream(f);
             LogRecords.scan(is, hd, errorLogRecords);
         } catch (IOException ex) {
-            LOG.log(Level.INFO, "LogRecords scan throwed {0}", ex);
+            LOG.log(Level.INFO, "LogRecords scan threw {0}", ex.toString());
             is.close();
             is = null;
             //LOG.severe("Stream closed.");
