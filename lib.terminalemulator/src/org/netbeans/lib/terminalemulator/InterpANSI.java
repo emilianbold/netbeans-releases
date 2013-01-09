@@ -59,19 +59,7 @@ public class InterpANSI extends InterpProtoANSI {
 
 	protected InterpTypeANSI() {
 	    st_esc_lb.setAction('i', st_base, new ACT_PRINT());
-	    st_esc_lb.setAction('l', st_base, new ACT_RM());
 	    st_esc_lb.setAction('t', st_base, new ACT_GLYPH());
-	}
-
-	static final class ACT_RM implements Actor {
-	    @Override
-	    public String action(AbstractInterp ai, char c) {
-		if (ai.noNumber())
-		    ai.ops.op_reset_mode(1);
-		else
-		    ai.ops.op_reset_mode(ai.numberAt(0));
-		return null;
-	    }
 	}
 
 	static final class ACT_PRINT implements Actor {

@@ -101,6 +101,7 @@ class InterpProtoANSI extends InterpDumb {
 	    st_esc_lb.setAction('P', st_base, new ACT_DC());
 	    st_esc_lb.setAction('@', st_base, new ACT_IC());
 	    st_esc_lb.setAction('h', st_base, new ACT_SM());
+	    st_esc_lb.setAction('l', st_base, new ACT_RM());
 	    st_esc_lb.setAction('m', st_base, new ACT_ATTR());
 	    st_esc_lb.setAction('n', st_base, new ACT_DSR());
 	    st_esc_lb.setAction('r', st_base, new ACT_MARGIN());
@@ -366,6 +367,18 @@ class InterpProtoANSI extends InterpDumb {
 		return null;
 	    }
 	}
+
+	static final class ACT_RM implements Actor {
+	    @Override
+	    public String action(AbstractInterp ai, char c) {
+		if (ai.noNumber())
+		    ai.ops.op_reset_mode(1);
+		else
+		    ai.ops.op_reset_mode(ai.numberAt(0));
+		return null;
+	    }
+	}
+
 
 	static final class ACT_ATTR implements Actor {
 	    @Override

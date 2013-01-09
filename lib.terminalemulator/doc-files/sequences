@@ -116,13 +116,10 @@ sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term
 
 \ESC[3g		TBC (TaB Clear)		ct		tbc		03	- 	ST	ST 	ST	N
 
-\ESC[4h		SM/IRM (Insert Mode)	im		smir		insert	- 	ST	ST	ST	protoansi	op_set_mode
-\ESC[5h		SM (Set Mode)		-				reverse	- 	ST	S-	ST	protoansi	op_reverse(true)?
+\ESC[4h		SM/IRM (Insert Mode)	im		smir		4	- 	ST	ST	ST	protoansi
+\ESC[4l		RM/IRM (Replace Mode)	ei		rmir		4	- 	ST	ST	ST	protoansi
 
 \ESC[%di	MC (Media Copy)		-		mc0, mc4	1,4,5,10,11	S-	--	S-	ansi	ACT_PRINT	term debugging
-
-\ESC[4l		RM/IRM (Replace Mode)	ei		rmir		?	?? 	ST	ST	ST	?
-\ESC[5l		RM (Reset Mode)		-				reverse	- 	S-	--	ST	ansi	op_reverse(false)?
 
 ----------------------------------------------------------------------------------------------------------------------------------------
 sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term

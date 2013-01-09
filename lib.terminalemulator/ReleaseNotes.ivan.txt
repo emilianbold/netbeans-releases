@@ -1,5 +1,11 @@
 207965 - Terminal incorrectly displays prompt string
 187345 - wrong characters in Terminals
+	- \ESC[%dl implementation moved from 'ansi' to 'protoansi'.
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+
+	changeset   : 242703:674b8a6f08a4
 
 	- \ESC7 and \ESC8 implementation moved from 'ansi' to 'protoansi'.
 
