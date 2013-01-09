@@ -5080,11 +5080,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
         
         public @Override boolean getDone() {
-            try {
-                if (indexers == null) {
-                    indexers = SourceIndexers.load(true);
-                }
-
+            try {                
                 if (waitForProjects) {
                     boolean retry = true;
                     suspendProgress(NbBundle.getMessage(RepositoryUpdater.class, "MSG_OpeningProjects"));
@@ -5101,6 +5097,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             retry = false;
                         }
                     }
+                }
+                
+                if (indexers == null) {
+                    indexers = SourceIndexers.load(true);
                 }
 
                 return super.getDone();
