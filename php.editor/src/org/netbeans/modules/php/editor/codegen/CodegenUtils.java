@@ -99,4 +99,28 @@ public final class CodegenUtils {
         return result;
     }
 
+    public static String getUnusedMethodName(List<String> usedMethods, String methodName) {
+        if (usedMethods.contains(methodName)) {
+            int counter = 1;
+            while (usedMethods.contains(methodName + "_" + counter)) {  //NOI18N
+                counter++;
+            }
+            methodName = methodName + "_" + counter;        //NOI18N
+        }
+        usedMethods.add(methodName);
+        return methodName;
+    }
+
+    public static String upFirstLetter(String name) {
+        return name.substring(0, 1).toUpperCase() + name.substring(1);
+    }
+
+    public static String upFirstLetterWithoutUnderscore(String name) {
+        return upFirstLetter(withoutUnderscore(name));
+    }
+
+    public static String withoutUnderscore(String name) {
+        return (name.length() > 0 && name.charAt(0) == '_') ? name.substring(1) : name;
+    }
+
 }
