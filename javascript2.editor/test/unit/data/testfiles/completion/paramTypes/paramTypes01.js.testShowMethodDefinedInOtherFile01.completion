@@ -2,28 +2,28 @@ Code completion result for source line:
 MyParamTestContext.|testParamDoc();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-CLASS      prototype                       [PUBLIC]   stub_CORE_Object.js
+CLASS      prototype                       [PUBLIC]   JS Platform
 METHOD     charAt(index): undefined        [PUBLIC]   paramTypes01.js
-METHOD     create(O: Object): Object       [PUBLIC,   stub_CORE_Object.js
-METHOD     defineProperties(O: Object, Pr  [PUBLIC,   stub_CORE_Object.js
-METHOD     defineProperty(O: Object, P: S  [PUBLIC,   stub_CORE_Object.js
+METHOD     create(O: Object): Object       [PUBLIC,   JS Platform
+METHOD     defineProperties(O: Object, Pr  [PUBLIC,   JS Platform
+METHOD     defineProperty(O: Object, P: S  [PUBLIC,   JS Platform
 METHOD     definedInOtherFile(param1: Num  [PUBLIC]   testFile.js
-METHOD     freeze(O: Object): Object       [PUBLIC,   stub_CORE_Object.js
-METHOD     getOwnPropertyDescriptor(O: Ob  [PUBLIC,   stub_CORE_Object.js
-METHOD     getOwnPropertyNames(O: Object)  [PUBLIC,   stub_CORE_Object.js
-METHOD     getPrototypeOf(O: Object): Obj  [PUBLIC,   stub_CORE_Object.js
-METHOD     hasOwnProperty(V: String): Boo  [PUBLIC]   stub_CORE_Object.js
-METHOD     isExtensible(O: Object): Boole  [PUBLIC,   stub_CORE_Object.js
-METHOD     isFrozen(O: Object): Boolean    [PUBLIC,   stub_CORE_Object.js
-METHOD     isPrototypeOf(V: Object): Bool  [PUBLIC]   stub_CORE_Object.js
-METHOD     isSealed(O: Object): Boolean    [PUBLIC,   stub_CORE_Object.js
-METHOD     keys(O: Object): Array          [PUBLIC,   stub_CORE_Object.js
-METHOD     preventExtensions(O: Object):   [PUBLIC,   stub_CORE_Object.js
-METHOD     propertyIsEnumerable(V: String  [PUBLIC]   stub_CORE_Object.js
-METHOD     seal(O: Object): Object         [PUBLIC,   stub_CORE_Object.js
+METHOD     freeze(O: Object): Object       [PUBLIC,   JS Platform
+METHOD     getOwnPropertyDescriptor(O: Ob  [PUBLIC,   JS Platform
+METHOD     getOwnPropertyNames(O: Object)  [PUBLIC,   JS Platform
+METHOD     getPrototypeOf(O: Object): Obj  [PUBLIC,   JS Platform
+METHOD     hasOwnProperty(V: String): Boo  [PUBLIC]   JS Platform
+METHOD     isExtensible(O: Object): Boole  [PUBLIC,   JS Platform
+METHOD     isFrozen(O: Object): Boolean    [PUBLIC,   JS Platform
+METHOD     isPrototypeOf(V: Object): Bool  [PUBLIC]   JS Platform
+METHOD     isSealed(O: Object): Boolean    [PUBLIC,   JS Platform
+METHOD     keys(O: Object): Array          [PUBLIC,   JS Platform
+METHOD     preventExtensions(O: Object):   [PUBLIC,   JS Platform
+METHOD     propertyIsEnumerable(V: String  [PUBLIC]   JS Platform
+METHOD     seal(O: Object): Object         [PUBLIC,   JS Platform
 METHOD     testParamDoc(param1: String, p  [PUBLIC]   paramTypes01.js
 METHOD     testParamDoc2(param1, param2):  [PUBLIC]   paramTypes01.js
-METHOD     toLocaleString(): String        [PUBLIC]   stub_CORE_Object.js
-METHOD     toString(): String              [PUBLIC]   stub_CORE_Object.js
-METHOD     valueOf(): Object               [PUBLIC]   stub_CORE_Object.js
-FIELD      constructor: Function           [PUBLIC]   stub_CORE_Object.js
+METHOD     toLocaleString(): String        [PUBLIC]   JS Platform
+METHOD     toString(): String              [PUBLIC]   JS Platform
+METHOD     valueOf(): Object               [PUBLIC]   JS Platform
+FIELD      constructor: Function           [PUBLIC]   JS Platform
