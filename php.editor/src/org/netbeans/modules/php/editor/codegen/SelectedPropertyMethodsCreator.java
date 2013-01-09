@@ -47,18 +47,20 @@ import java.util.List;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PropertyMethodsCreator {
+public class SelectedPropertyMethodsCreator {
     private final List<Property> properties;
     private final StringBuilder generatedMethods;
 
-    public PropertyMethodsCreator(List<Property> properties) {
+    public SelectedPropertyMethodsCreator(List<Property> properties) {
         this.properties = properties;
         generatedMethods = new StringBuilder();
     }
 
     public String create(SinglePropertyMethodCreator propertyCreator) {
         for (Property property : properties) {
-            generatedMethods.append(propertyCreator.create(property));
+            if (property.isSelected()) {
+                generatedMethods.append(propertyCreator.create(property));
+            }
         }
         return generatedMethods.toString();
     }

@@ -61,13 +61,7 @@ public interface SinglePropertyMethodCreator {
         }
 
         @Override
-        public String create(Property property) {
-            String result = ""; //NOI18N
-            if (property.isSelected()) {
-                result = createMethodFor(property);
-            }
-            return result;
-        }
+        public abstract String create(Property property);
 
         protected String getMethodName(Property property) {
             String changedName = cgsInfo.getHowToGenerate() == CGSGenerator.GenWay.WITHOUT_UNDERSCORE
@@ -75,8 +69,6 @@ public interface SinglePropertyMethodCreator {
                     : CodegenUtils.upFirstLetter(property.getName());
             return CodegenUtils.getUnusedMethodName(new ArrayList<String>(), changedName);
         }
-
-        protected abstract String createMethodFor(Property property);
 
     }
 
@@ -90,7 +82,7 @@ public interface SinglePropertyMethodCreator {
         }
 
         @Override
-        protected String createMethodFor(Property property) {
+        public String create(Property property) {
             StringBuilder getter = new StringBuilder();
             String methodName = getMethodName(property);
             getter.append(
@@ -122,7 +114,7 @@ public interface SinglePropertyMethodCreator {
         }
 
         @Override
-        protected String createMethodFor(Property property) {
+        public String create(Property property) {
             StringBuilder setter = new StringBuilder();
             String name = property.getName();
             String paramName = cgsInfo.getHowToGenerate() == CGSGenerator.GenWay.WITHOUT_UNDERSCORE ? CodegenUtils.withoutUnderscore(name) : name;

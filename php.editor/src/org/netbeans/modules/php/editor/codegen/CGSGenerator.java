@@ -172,7 +172,7 @@ public final class CGSGenerator implements CodeGenerator {
 
             @Override
             public String getTemplateText(final CGSInfo cgsInfo) {
-                return new PropertyMethodsCreator(cgsInfo.getPossibleGetters()).create(new SingleGetterCreator(cgsInfo));
+                return new SelectedPropertyMethodsCreator(cgsInfo.getPossibleGetters()).create(new SingleGetterCreator(cgsInfo));
             }
 
         },
@@ -204,7 +204,7 @@ public final class CGSGenerator implements CodeGenerator {
 
             @Override
             public String getTemplateText(final CGSInfo cgsInfo) {
-                return new PropertyMethodsCreator(cgsInfo.getPossibleSetters()).create(new SingleSetterCreator(cgsInfo));
+                return new SelectedPropertyMethodsCreator(cgsInfo.getPossibleSetters()).create(new SingleSetterCreator(cgsInfo));
             }
 
         },
@@ -240,8 +240,8 @@ public final class CGSGenerator implements CodeGenerator {
             @Override
             public String getTemplateText(final CGSInfo cgsInfo) {
                 final StringBuilder gettersAndSetters = new StringBuilder();
-                gettersAndSetters.append(new PropertyMethodsCreator(cgsInfo.getPossibleGetters()).create(new SingleGetterCreator(cgsInfo)));
-                gettersAndSetters.append(new PropertyMethodsCreator(cgsInfo.getPossibleSetters()).create(new SingleSetterCreator(cgsInfo)));
+                gettersAndSetters.append(new SelectedPropertyMethodsCreator(cgsInfo.getPossibleGetters()).create(new SingleGetterCreator(cgsInfo)));
+                gettersAndSetters.append(new SelectedPropertyMethodsCreator(cgsInfo.getPossibleSetters()).create(new SingleSetterCreator(cgsInfo)));
                 return gettersAndSetters.toString();
             }
 

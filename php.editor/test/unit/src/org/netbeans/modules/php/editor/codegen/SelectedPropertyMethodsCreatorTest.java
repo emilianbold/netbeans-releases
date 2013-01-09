@@ -58,9 +58,9 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PropertyMethodsCreatorTest extends PHPTestBase {
+public class SelectedPropertyMethodsCreatorTest extends PHPTestBase {
 
-    public PropertyMethodsCreatorTest(String testName) {
+    public SelectedPropertyMethodsCreatorTest(String testName) {
         super(testName);
     }
 
@@ -105,34 +105,34 @@ public class PropertyMethodsCreatorTest extends PHPTestBase {
 
     public void testInstancePropertyGetter() throws Exception {
         CGSInfo cgsInfo = getCgsInfo("^}");
-        checkResult(new PropertyMethodsCreator(selectAllProperties(cgsInfo.getPossibleGetters())).create(new SinglePropertyMethodCreator.SingleGetterCreator(cgsInfo)));
+        checkResult(new SelectedPropertyMethodsCreator(selectAllProperties(cgsInfo.getPossibleGetters())).create(new SinglePropertyMethodCreator.SingleGetterCreator(cgsInfo)));
     }
 
     public void testInstancePropertySetter() throws Exception {
         CGSInfo cgsInfo = getCgsInfo("^}");
-        checkResult(new PropertyMethodsCreator(selectAllProperties(cgsInfo.getPossibleSetters())).create(new SinglePropertyMethodCreator.SingleSetterCreator(cgsInfo)));
+        checkResult(new SelectedPropertyMethodsCreator(selectAllProperties(cgsInfo.getPossibleSetters())).create(new SinglePropertyMethodCreator.SingleSetterCreator(cgsInfo)));
     }
 
     public void testInstancePropertySetterWithFluentInterface() throws Exception {
         CGSInfo cgsInfo = getCgsInfo("^}");
         cgsInfo.setFluentSetter(true);
-        checkResult(new PropertyMethodsCreator(selectAllProperties(cgsInfo.getPossibleSetters())).create(new SinglePropertyMethodCreator.SingleSetterCreator(cgsInfo)));
+        checkResult(new SelectedPropertyMethodsCreator(selectAllProperties(cgsInfo.getPossibleSetters())).create(new SinglePropertyMethodCreator.SingleSetterCreator(cgsInfo)));
     }
 
     public void testClassPropertyGetter() throws Exception {
         CGSInfo cgsInfo = getCgsInfo("^}");
-        checkResult(new PropertyMethodsCreator(selectAllProperties(cgsInfo.getPossibleGetters())).create(new SinglePropertyMethodCreator.SingleGetterCreator(cgsInfo)));
+        checkResult(new SelectedPropertyMethodsCreator(selectAllProperties(cgsInfo.getPossibleGetters())).create(new SinglePropertyMethodCreator.SingleGetterCreator(cgsInfo)));
     }
 
     public void testClassPropertySetter() throws Exception {
         CGSInfo cgsInfo = getCgsInfo("^}");
-        checkResult(new PropertyMethodsCreator(selectAllProperties(cgsInfo.getPossibleSetters())).create(new SinglePropertyMethodCreator.SingleSetterCreator(cgsInfo)));
+        checkResult(new SelectedPropertyMethodsCreator(selectAllProperties(cgsInfo.getPossibleSetters())).create(new SinglePropertyMethodCreator.SingleSetterCreator(cgsInfo)));
     }
 
     public void testClassPropertySetterWithFluentInterface() throws Exception {
         CGSInfo cgsInfo = getCgsInfo("^}");
         cgsInfo.setFluentSetter(true);
-        checkResult(new PropertyMethodsCreator(selectAllProperties(cgsInfo.getPossibleSetters())).create(new SinglePropertyMethodCreator.SingleSetterCreator(cgsInfo)));
+        checkResult(new SelectedPropertyMethodsCreator(selectAllProperties(cgsInfo.getPossibleSetters())).create(new SinglePropertyMethodCreator.SingleSetterCreator(cgsInfo)));
     }
 
 }
