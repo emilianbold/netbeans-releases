@@ -2,9 +2,9 @@ Code completion result for source line:
 co|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-METHOD     confirm(message: String): Bool  [PUBLIC]   stub_DOM_window.js
-FIELD      console: Console                [PUBLIC]   stub_DOM_window.js
-FIELD      constructor: Function           [PUBLIC]   stub_CORE_Object.js
-FIELD      content: Window                 [PUBLIC]   stub_DOM_window.js
-FIELD      controllers: XULControllers     [PUBLIC]   stub_DOM_window.js
+METHOD     confirm(message: String): Bool  [PUBLIC]   JS Platform
+FIELD      console: Console                [PUBLIC]   JS Platform
+FIELD      constructor: Function           [PUBLIC]   JS Platform
+FIELD      content: Window                 [PUBLIC]   JS Platform
+FIELD      controllers: XULControllers     [PUBLIC]   JS Platform
 KEYWORD    continue                                   null

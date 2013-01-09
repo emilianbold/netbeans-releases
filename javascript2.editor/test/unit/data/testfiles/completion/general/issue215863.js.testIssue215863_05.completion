@@ -2,8 +2,8 @@ Code completion result for source line:
 l|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-FIELD      length: Number                  [PUBLIC]   stub_DOM_window.js
-FIELD      localStorage: Storage           [PUBLIC]   stub_DOM_window.js
-FIELD      location: Location              [PUBLIC]   stub_DOM_Window.js
-FIELD      locationbar: Object             [PUBLIC]   stub_DOM_window.js
+FIELD      length: Number                  [PUBLIC]   JS Platform
+FIELD      localStorage: Storage           [PUBLIC]   JS Platform
+FIELD      location: Location              [PUBLIC]   JS Platform
+FIELD      locationbar: Object             [PUBLIC]   JS Platform
 VARIABLE   l                               [PUBLIC]   issue215863.js

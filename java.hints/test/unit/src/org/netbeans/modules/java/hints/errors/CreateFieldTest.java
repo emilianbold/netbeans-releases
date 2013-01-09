@@ -47,6 +47,7 @@ import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
 import org.netbeans.spi.editor.hints.Fix;
@@ -113,6 +114,12 @@ public class CreateFieldTest extends ErrorHintsTestBase {
                 "package test; public class Test<T> { private T aa; private T getA() { return aa;} }");
     }
     
+    public void test224626Temp() throws Exception {
+        performAnalysisTest("test/package-info.java",
+                            "@B(\"\" + T.A)\npackage test;\nenum T {}\n@interface B { String value();}\n",
+                            -1);
+    }
+    
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
         List<Fix> fixes = CreateElement.analyze(info, pos);
         List<Fix> result=  new LinkedList<Fix>();
@@ -128,6 +135,11 @@ public class CreateFieldTest extends ErrorHintsTestBase {
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return ((CreateFieldFix) f).toDebugString(info);
+    }
+
+    @Override
+    protected Set<String> getSupportedErrorKeys() {
+        return new CreateElement().getCodes();
     }
     
 }

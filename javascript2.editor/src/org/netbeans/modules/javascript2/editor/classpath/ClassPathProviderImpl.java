@@ -99,7 +99,7 @@ public class ClassPathProviderImpl implements ClassPathProvider {
         return cachedBootClassPath;
     }
 
-    protected static synchronized FileObject[] getJsStubs() {
+    public static synchronized FileObject[] getJsStubs() {
         List<FileObject> roots = new LinkedList<FileObject>();
         for (StubsBundle bundle : STUBS_BUNDLES) {
             File stubFile = InstalledFileLocator.getDefault().locate("jsstubs/" + bundle.getNameOfDocumented(), "org.netbeans.modules.javascript2.editor", false); //NOI18N
