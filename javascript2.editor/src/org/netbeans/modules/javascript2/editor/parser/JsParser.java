@@ -96,4 +96,9 @@ public class JsParser extends SanitizingParser {
         FunctionNode node = parser.parse(CompilerConstants.RUN_SCRIPT.tag());
         return node;
     }
+
+    @Override
+    protected String getMimeType() {
+        return JsTokenId.JAVASCRIPT_MIME_TYPE;
+    }
 }
