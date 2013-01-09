@@ -154,7 +154,7 @@ class ColumnSelectionPanel extends JPanel {
             Object transformed = table.transformValue (etc);
             String dName;
             if (transformed == etc || transformed == null) {
-                dName = etc.getHeaderValue ().toString ();
+                dName = table.getColumnDisplayName(etc.getHeaderValue ().toString ());
             } else {
                 dName = transformed.toString ();
             }
@@ -308,7 +308,7 @@ class ColumnSelectionPanel extends JPanel {
                 Object transformed = table.transformValue (etc);
                 String dName;
                 if (transformed == etc || transformed == null) {
-                    dName = etc.getHeaderValue ().toString ();
+                    dName = table.getColumnDisplayName(etc.getHeaderValue ().toString ());
                 } else {
                     dName = transformed.toString ();
                 }
