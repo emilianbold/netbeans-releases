@@ -48,7 +48,6 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -57,10 +56,11 @@ import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
-import org.netbeans.modules.groovy.editor.options.CodeStyle;
 import org.openide.util.Exceptions;
 
 
@@ -76,17 +76,6 @@ import org.openide.util.Exceptions;
  */
 public class GroovyFormatter implements Formatter {
 
-    private CodeStyle codeStyle;
-
-    public GroovyFormatter() {
-        this.codeStyle = null;
-    }
-
-    public GroovyFormatter(CodeStyle codeStyle, int rightMarginOverride) {
-        assert codeStyle != null;
-        this.codeStyle = codeStyle;
-    }
-
     @Override
     public boolean needsParserResult() {
         return false;
@@ -94,40 +83,22 @@ public class GroovyFormatter implements Formatter {
 
     @Override
     public void reindent(Context context) {
-        if (codeStyle != null) {
-            reindent(context, null, true);
-        } else {
-            GroovyFormatter f = new GroovyFormatter(CodeStyle.get(context.document()), -1);
-            f.reindent(context, null, true);
-        }
+        reindent(context, null, true);
     }
 
     @Override
     public void reformat(Context context, ParserResult compilationInfo) {
-        if (codeStyle != null) {
-            reindent(context, compilationInfo, false);
-        } else {
-            GroovyFormatter f = new GroovyFormatter(CodeStyle.get(context.document()), -1);
-            f.reindent(context, compilationInfo, false);
-        }
+        reindent(context, compilationInfo, false);
     }
 
     @Override
     public int indentSize() {
-        if (codeStyle != null) {
-            return codeStyle.getIndentSize();
-        } else {
-            return CodeStyle.get((Document) null).getIndentSize();
-        }
+        return IndentUtils.indentLevelSize(null);
     }
 
     @Override
     public int hangingIndentSize() {
-        if (codeStyle != null) {
-            return codeStyle.getContinuationIndentSize();
-        } else {
-            return CodeStyle.get((Document) null).getContinuationIndentSize();
-        }
+        return CodeStylePreferences.get((Document) null).getPreferences().getInt("continuationIndentSize", 4);
     }
 
     /** Compute the initial balance of brackets at the given offset. */
@@ -301,23 +272,11 @@ public class GroovyFormatter implements Formatter {
         return false;
     }
 
-    /**
-     * Get the first token on the given line.
-     */
-    private Token<GroovyTokenId> getFirstToken(BaseDocument doc, int offset) throws BadLocationException {
-        int lineBegin = Utilities.getRowFirstNonWhite(doc, offset);
-
-        if (lineBegin != -1) {
-            return LexUtilities.getToken(doc, lineBegin);
-        }
-        return null;
-    }
-
     private boolean isEndIndent(BaseDocument doc, int offset) throws BadLocationException {
         int lineBegin = Utilities.getRowFirstNonWhite(doc, offset);
 
         if (lineBegin != -1) {
-            Token<GroovyTokenId> token = getFirstToken(doc, offset);
+            Token<GroovyTokenId> token = LexUtilities.getToken(doc, lineBegin);
 
             if (token == null) {
                 return false;
@@ -336,7 +295,6 @@ public class GroovyFormatter implements Formatter {
     }
 
     private boolean isLineContinued(BaseDocument doc, int offset, int bracketBalance) throws BadLocationException {
-        // TODO RHTML - this isn't going to work for rhtml embedded strings...
         offset = Utilities.getRowLastNonWhite(doc, offset);
         if (offset == -1) {
             return false;
@@ -405,8 +363,6 @@ public class GroovyFormatter implements Formatter {
     }
 
     private void reindent(final Context context, ParserResult info, final boolean indentOnly) {
-        assert codeStyle != null;
-
         Document document = context.document();
         final int endOffset = Math.min(context.endOffset(), document.getLength());
 
@@ -500,7 +456,7 @@ public class GroovyFormatter implements Formatter {
         }
     }
 
-    public void computeIndents(BaseDocument doc, int initialIndent, int startOffset, int endOffset, ParserResult info,
+    private void computeIndents(BaseDocument doc, int initialIndent, int startOffset, int endOffset, ParserResult info,
             List<Integer> offsets,
             List<Integer> indents,
             boolean indentEmptyLines, boolean includeEnd, boolean indentOnly
@@ -527,8 +483,8 @@ public class GroovyFormatter implements Formatter {
             int offset = Utilities.getRowStart(doc, startOffset); // The line's offset
             int end = endOffset;
 
-            int indentSize = codeStyle.getIndentSize();
-            int hangingIndentSize = codeStyle.getContinuationIndentSize();
+            int indentSize = IndentUtils.indentLevelSize(doc);
+            int hangingIndentSize = hangingIndentSize();
 
             // Pending - apply comment formatting too?
 
