@@ -1676,6 +1676,10 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/issue221495.js",new IndentPrefs(4, 4));
     }
 
+    public void testIssue224246() throws Exception {
+        reformatFileContents("testfiles/formatter/issue224246.js",new IndentPrefs(4, 4));
+    }
+
     // test from original formatter
 
     public void testSemi01() throws Exception {
