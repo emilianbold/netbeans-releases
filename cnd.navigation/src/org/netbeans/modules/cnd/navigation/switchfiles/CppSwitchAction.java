@@ -45,7 +45,6 @@
 package org.netbeans.modules.cnd.navigation.switchfiles;
 
 import java.awt.event.ActionEvent;
-import java.io.File;
 import java.util.Collection;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
@@ -55,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -142,6 +142,11 @@ public final class CppSwitchAction extends BaseAction {
 
     protected @Override Object getDefaultShortDescription() {
         return getMessage("cpp-switch-header-source"); //NOI18N
+    }
+
+    @Override
+    protected boolean asynchonous() {
+        return true;
     }
 
     // File search functionality
@@ -332,8 +337,7 @@ public final class CppSwitchAction extends BaseAction {
     // Utility
     
     private static String getName(String path) {
-        int idxSlash = path.lastIndexOf(File.separatorChar);
-        String name = path.substring(idxSlash == -1 ? 0 : idxSlash + 1);
+        String name = CndPathUtilitities.getBaseName(path);
         int idxDot = name.lastIndexOf('.');
         return name.substring(0, idxDot == -1 ? name.length() : idxDot);
     }
