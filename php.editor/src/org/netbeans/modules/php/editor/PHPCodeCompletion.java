@@ -1341,7 +1341,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     public ParameterInfo parameters(final ParserResult info, final int caretOffset, CompletionProposal proposal) {
         final org.netbeans.modules.php.editor.model.Model model = ((PHPParseResult) info).getModel();
         ParameterInfoSupport infoSupport = model.getParameterInfoSupport(caretOffset);
-        return infoSupport.getParameterInfo();
+        ParameterInfo parameterInfo = infoSupport.getParameterInfo();
+        return parameterInfo == null ? ParameterInfo.NONE : parameterInfo;
     }
 
     private boolean startsWith(String theString, String prefix) {
