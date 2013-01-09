@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import javax.swing.Action;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
@@ -75,7 +76,7 @@ public class RecursiveValidityTest extends NbTestCase {
         clearWorkDir();
         
         rf = new File(getWorkDir(), "wd");
-        next = recreateFolders(rf);
+        next = FileUtil.toFileObject(recreateFolders(rf));
         root = FileUtil.toFileObject(rf);
 
         MockServices.setServices(AP.class);
@@ -84,7 +85,7 @@ public class RecursiveValidityTest extends NbTestCase {
 
     public void testConsistencyWhenDeletingRoot() throws Exception {
         assertTrue("Is valid", root.isValid());
-        assertTrue("Is valid leaft", next.isValid());
+        assertTrue("Is valid leaf", next.isValid());
 
         clearWorkDir();
         assertFalse("Root file is gone", rf.exists());
@@ -108,8 +109,8 @@ public class RecursiveValidityTest extends NbTestCase {
         cnt = 5;
         root.refresh();
 
-        assertTrue("May have stayed valid", root.isValid());
-        assertTrue("May have stayed valid", next.isValid());
+        assertFalse("Whole tree invalidated", root.isValid());
+        assertFalse("Leaf invalidated too", next.isValid());
         assertFalse("But the first child of root is certainly gone", ch1.isValid());
     }
 
@@ -119,7 +120,10 @@ public class RecursiveValidityTest extends NbTestCase {
             FileObject test = next;
             do {
                 test = test.getParent();
-                assertTrue("Leaf is valid, " + test + " has to be too", test.isValid());
+                if (!next.isValid()) {
+                    break;
+                }
+                assertTrue("Leaf is valid" + next + " and thus " + test + " has to be too", test.isValid());
             } while (test != root);
         }
         if (--cnt == 0) {
@@ -131,13 +135,13 @@ public class RecursiveValidityTest extends NbTestCase {
         }
     }
 
-    private FileObject recreateFolders(File from) throws IOException {
-        from.mkdirs();
-        FileObject r = FileUtil.toFileObject(from);
-        
+    private File recreateFolders(File from) throws IOException {
+        File r = from;
         for (int i = 0; i < 10; i++) {
-            r = r.createFolder("i" + i);
+            r = new File(r, "i" + i);
         }
+        r.getParentFile().mkdirs();
+        r.createNewFile();
         return r;
     }
     

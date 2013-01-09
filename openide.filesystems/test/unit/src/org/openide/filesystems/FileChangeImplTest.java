@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,56 +34,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.openide.filesystems;
 
-/*
-* CustomerDB stub
-*/
+import java.io.File;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.logging.Logger;
+import org.netbeans.junit.NbTestCase;
 
-function CustomerDBSpring() {}
+/**
+ *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
+ */
+public class FileChangeImplTest extends NbTestCase {
+    
+    public FileChangeImplTest(String n) {
+        super(n);
+    }
 
-function CustomerDBSpring(uri_) {
-    this.uri = uri_;
-}
+    @Override
+    protected void setUp() throws Exception {
+        clearWorkDir();
+    }
+    
 
-CustomerDBSpring.prototype = {
-
-   uri : 'http://localhost:8080/CustomerDBSpring/resources',
-
-   resources : new Array(),
-   
-   initialized : false,
-
-   getUri : function() {
-      return this.uri;
-   },
-
-   getResources : function() {
-      if(!this.initialized)
-          this.init();
-      return this.resources;
-   },
-
-   init : function() {
-      this.resources[0] = new DiscountCodes(this.uri+'/customerdb.discountcode/');
-      this.resources[1] = new Customers(this.uri+'/customerdb.customer/');
-
-      this.initialized = true;
-   },
-
-   flush : function(resources_) {
-      for(j=0;j<resources_.length;j++) {
-        var r = resources_[j];
-        r.flush();
-      }
-   },
-   
-   getProxy : function() {
-       return rjsSupport.getHttpProxy();
-   },
-   
-   setProxy : function(proxy_) {
-       rjsSupport.setHttpProxy(proxy_);
-   },
-
+    public void testReferringTransparency() throws Exception {
+        File dir = new File(getWorkDir(), "dir");
+        
+        FileChangeListener fcl = new FileChangeAdapter();
+        DeepListener dl1 = FileChangeImpl.addRecursiveListener(fcl, dir, null, null);
+        FileChangeImpl.removeRecursiveListener(fcl, dir);
+        
+        DeepListener dl2 = FileChangeImpl.addRecursiveListener(fcl, dir, null, null);
+        
+        Reference<?> ref = new WeakReference<Object>(dl1);
+        dl1 = null;
+        assertGC("Nobody holds the old listener", ref);
+        
+        // Used to throw
+        // java.lang.IllegalArgumentException: Was not listening to ...
+        FileChangeImpl.removeRecursiveListener(fcl, dir);
+    }
 }
