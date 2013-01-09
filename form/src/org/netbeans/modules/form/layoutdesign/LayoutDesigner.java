@@ -1361,7 +1361,7 @@ public final class LayoutDesigner implements LayoutConstants {
      * @return true if repaint is needed (selection changed)
      */
     public boolean selectInside(Point p) {
-        if (!paintGaps) {
+        if (!paintGaps || !visualStateUpToDate) {
             return false;
         }
 

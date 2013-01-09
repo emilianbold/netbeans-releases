@@ -148,12 +148,8 @@ public class BookmarkManager {
     /**
      * Load bookmarks for the given projects (if not loaded yet).
      */
-    public void loadOpenProjectsBookmarks() {
-        List<Project> lastOpenProjects = BookmarksPersistence.get().lastOpenProjects();
-        for (Project project : lastOpenProjects) {
-            // Force project's bookmarks loading
-            getProjectBookmarks(project, true, true);
-        }
+    public void keepOpenProjectsBookmarksLoaded() {
+        BookmarksPersistence.get().keepOpenProjectsBookmarksLoaded();
     }
     
     public BookmarkInfo findBookmarkByNameOrKey(String nameOrKey, boolean byKey) {

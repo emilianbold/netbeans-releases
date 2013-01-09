@@ -1,1 +1,1 @@
-Cast ...get(...) to String
+[AddCastFix:...get(...):String]

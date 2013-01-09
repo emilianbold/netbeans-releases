@@ -203,7 +203,8 @@ public final class BookmarkUtils {
     }
     
     public static URI getRelativeURI(ProjectBookmarks projectBookmarks, URI fileURI) {
-        return projectBookmarks.getProjectURI().relativize(fileURI);
+        URI projectURI = projectBookmarks.getProjectURI();
+        return (projectURI != null) ? projectURI.relativize(fileURI) : fileURI;
     }
     
     public static KeyStroke findKeyStroke(KeyBindingSettings kbs, String actionName) {

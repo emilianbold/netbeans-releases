@@ -109,4 +109,6 @@ public interface JsElement extends ElementHandle {
     Kind getJSKind();
     
     boolean isDeclared();
+
+    boolean isPlatform();
 }

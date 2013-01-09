@@ -75,7 +75,9 @@ public final class URLCache {
     }
 
     @CheckForNull
-    public FileObject findFileObject(final @NonNull URL url) {
+    public FileObject findFileObject(
+            final @NonNull URL url,
+            final boolean validate) {
         URI uri = null;
         try {
             uri  = url.toURI();
@@ -88,7 +90,7 @@ public final class URLCache {
             if (ref != null) {
                 f = ref.get();
             }
-            if (f != null && f.isValid()) {
+            if (f != null && f.isValid() && (!validate || f.toURI().equals(uri))) {
                 LOG.log(
                     Level.FINEST,
                     "Found: {0} in cache for: {1}", //NOI18N

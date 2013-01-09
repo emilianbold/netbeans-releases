@@ -2035,8 +2035,10 @@ public class BaseKit extends DefaultEditorKit {
                 try {
                     int caretPosition = target.getCaretPosition();
                     boolean emptySelection = !Utilities.isSelectionShowing(target);
+                    boolean disableNoSelectionCopy =
+                            Boolean.getBoolean("org.netbeans.editor.disable.no.selection.copy");
                     // If there is no selection then pre-select a current line including newline
-                    if (emptySelection) {
+                    if (emptySelection && !disableNoSelectionCopy) {
                         Element elem = ((AbstractDocument) target.getDocument()).getParagraphElement(
                                 caretPosition);
                         if (!Utilities.isRowWhite((BaseDocument) target.getDocument(), elem.getStartOffset())) {
@@ -2044,7 +2046,7 @@ public class BaseKit extends DefaultEditorKit {
                         }
                     }
                     target.copy();
-                    if (emptySelection) {
+                    if (emptySelection && !disableNoSelectionCopy) {
                         target.setCaretPosition(caretPosition);
                     }
                 } catch (BadLocationException ble) {

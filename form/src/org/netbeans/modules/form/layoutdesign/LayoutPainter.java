@@ -738,6 +738,11 @@ public class LayoutPainter implements LayoutConstants {
         int y1 = gapInfo.paintRect.y;
         int w1 = gapInfo.paintRect.width;
         int h1 = gapInfo.paintRect.height;
+        if (x1 < -Short.MAX_VALUE || x1 > 2*Short.MAX_VALUE
+                || y1 < -Short.MAX_VALUE || y1 > 2*Short.MAX_VALUE
+                || w1 > 2*Short.MAX_VALUE || h1 > 2*Short.MAX_VALUE) {
+            return; // avoid painting overload if current space is incorrectly calculated
+        }
         int x2, y2, w2, h2;
         if (gapInfo.dimension == HORIZONTAL) {
             w2 = gapInfo.minSize;
