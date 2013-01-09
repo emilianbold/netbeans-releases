@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven.classpath;
 
-import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +50,6 @@ import org.apache.maven.model.Build;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.FileUtilities;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
 
