@@ -224,6 +224,20 @@ public final class CppSwitchAction extends BaseAction {
                 }
             }
         }
+        if (namesake == null) {
+            Collection<CsmFile> includers = CsmIncludeHierarchyResolver.getDefault().getFiles(source);
+
+            for (CsmFile f : includers) {
+                if (CndFileUtils.areFilenamesEqual( getName(f.getAbsolutePath().toString()), name)) {
+                    if (CndFileUtils.areFilenamesEqual( path, trimExtension(f.getAbsolutePath().toString()) )) {
+                        return f;
+                    }
+                    if (namesake == null) {
+                        namesake = f;
+                    }
+                }
+            }
+        }
         return namesake;
     }
 
