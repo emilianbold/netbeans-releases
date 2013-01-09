@@ -48,9 +48,11 @@ sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term
 		line			-				0	-	S-	S-	S-	protoansi
 
 
-
-\ESC7		DECSC (Save Cursor)	sc		sc		-		--	ST	ST	ansi -> xterm?
-\ESC8		DECRC (Restore Cursor)	rc		rc		-		--	ST	ST	ansi -> xterm?
+----------------------------------------------------------------------------------------------------------------------------------------
+sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term
+----------------------------------------------------------------------------------------------------------------------------------------
+\ESC7		DECSC (Save Cursor)	sc		sc		-		--	ST	ST	ansix
+\ESC8		DECRC (Restore Cursor)	rc		rc		-		--	ST	ST	ansix
 \ESCD		IND (Index)		-				?	?	--	S-	S-	dtterm
 \ESCH		HTS (Horiz Tab Set)	st		hts		-	-	ST	ST	ST	N -> xterm?
 \ESCM		RI (Reverse Index/LF)	sr		ri		?	?	S	ST	ST	protoansi
@@ -66,9 +68,9 @@ sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term
 
 \ESCc		RIS (Reset to Initial State)
 					-		rs1		-	-	S-	S-	S-	protoansi	full reset
-\ESC>		DECPNM (normal keypad)	is		rmkx		-	-	?-	ST	ST	N
+\ESC>		DECPNM (normal keypad)	is		rmkx		-	-	?-	ST	ST	N -> ansix
 \ESC=		DECPAM (application keypad)
-					ks				-	-	?-	S-	ST	N
+					ks				-	-	?-	S-	ST	N -> ansix
 
 \ESC F		S7C1T (Select 7bit C1 Ctl Chars)
 					is				-	-	?-	ST	S-	N
@@ -96,7 +98,7 @@ sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term
 
 \ESC[%dI	CHT <tab forward>	ta				?	?	ST	--	ST	N
 
-\ESC[%dJ	ED (Erase in Display)	cd (cl)		ed, clear	012		ST	ST 	ST	protoansi	op_cl a bit of a mess in Term
+\ESC[%dJ	ED (Erase in Display)	cd (cl)		ed, clear	012		ST	ST 	ST	protoansi    op_cl a bit of a mess in Term
 \ESC[%dK	EL (Erase in Line)	ce		el		012 		ST	ST	ST	protoansi
 
 \ESC[%dL	IL (Insert Lines)	al (AL, kI) 	il		? 		ST	ST	ST	protoansi
@@ -186,12 +188,12 @@ sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term
 					ks				-	-	??	S-	ST	N
 \ESC[?5h	SM/DECSCNM (Enable reverse video)
 					vb				?	?	?-	ST	ST	N	used for flashing
+\ESC[?7h	SM/DECAWM (Enable Auto Wrap)
+					is		smam		-	-	?-	ST	S-	N
 \ESC[?12h	SM (Start blinking cursor)
 					vs				-	-	??	--	ST	N
 \ESC[?25h	SM/DECTCEM (Show cursor)
 					ve,vs				-	-	??	S-	ST	N
-\ESC[?7h	SM/DECAWM (Enable Auto Wrap)
-					is		smam		-	-	?-	ST	S-	N
 \ESC[?25h	SM/DECTCEM (Enable cursor visible)
 					ve,vs		cvvis				-~	ST	ST	N -> xterm?
 \ESC[?1034h	set 8th bit on meta key?		smm				??	??	??	N
@@ -231,7 +233,8 @@ sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term
 ----------------------------------------------------------------------------------------------------------------------------------------
 
 \ESC]%d;%sBEL										--	S-	S-	protoanisx	set text parameters
-									0		--	S-	S-	protoanisx	set window  title + set icon name
+									0		--	S-	S-	protoanisx	set window  title +
+																set icon name
 									1		--	S-	S-	protoanisx	set icon name
 									2		--	S-	S-	protoanisx	set window  title
 									3		--	S-	--	protoansix [ -> dtterm ]
@@ -239,7 +242,8 @@ sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term
 																cwd and persist
 
 \ESC]%d;%s\ESC\  									--	--	S-	xterm		set text parameters
-									0		--	--	S-	xterm		set window  title + set icon name
+									0		--	--	S-	xterm		set window  title +
+																set icon name
 									1		--	--	S-	xterm		set icon name
 									2		--	--	S-	xterm		set window  title
 									3		--	--	S-	N [ -> xterm ]	set X property

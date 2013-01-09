@@ -338,7 +338,17 @@ final class Line {
         }
         length = col;
     }
-    
+
+    public void clearTo(Term term, int col) {
+        if (col > length-1)
+            col = length-1;
+        for (int cx = 0; cx <= col; cx++)
+            charAtPut(cx, ' ');
+        if (attr != null) {
+            for (int cx = 0; cx <= col; cx++)
+                attr[cx] = 0;
+        }
+    }
     
     
     /*

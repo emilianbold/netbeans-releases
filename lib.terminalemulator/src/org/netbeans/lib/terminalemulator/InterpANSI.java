@@ -58,27 +58,9 @@ public class InterpANSI extends InterpProtoANSI {
     protected static class InterpTypeANSI extends InterpTypeProtoANSI {
 
 	protected InterpTypeANSI() {
-	    st_esc.setAction('7', st_base, new ACT_SC());
-	    st_esc.setAction('8', st_base, new ACT_RC());
-
 	    st_esc_lb.setAction('i', st_base, new ACT_PRINT());
 	    st_esc_lb.setAction('l', st_base, new ACT_RM());
 	    st_esc_lb.setAction('t', st_base, new ACT_GLYPH());
-	}
-
-	static final class ACT_SC implements Actor {
-	    @Override
-	    public String action(AbstractInterp ai, char c) {
-		ai.ops.op_sc();
-		return null;
-	    }
-	}
-	static final class ACT_RC implements Actor {
-	    @Override
-	    public String action(AbstractInterp ai, char c) {
-		ai.ops.op_rc();
-		return null;
-	    }
 	}
 
 	static final class ACT_RM implements Actor {

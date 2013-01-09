@@ -65,6 +65,9 @@ class InterpProtoANSIX extends InterpProtoANSI {
 	protected final Actor act_DEC_private = new ACT_DEC_PRIVATE();
 
 	protected InterpTypeProtoANSIX() {
+            st_esc.setAction('7', st_base, new ACT_SC());
+            st_esc.setAction('8', st_base, new ACT_RC());
+
 	    st_esc.setAction('D', st_base, act_D);
 
             // \ESC]%d;%s\BEL
@@ -91,6 +94,21 @@ class InterpProtoANSIX extends InterpProtoANSI {
 	    st_esc_lb.setAction('!', st_esc_lb_b, act_reset_number);
 	    st_esc_lb_b.setAction('p', st_base, new ACT_DEC_STR());
         }
+
+	static final class ACT_SC implements Actor {
+	    @Override
+	    public String action(AbstractInterp ai, char c) {
+		ai.ops.op_sc();
+		return null;
+	    }
+	}
+	static final class ACT_RC implements Actor {
+	    @Override
+	    public String action(AbstractInterp ai, char c) {
+		ai.ops.op_rc();
+		return null;
+	    }
+	}
 
 	static final class ACT_D implements Actor {
             @Override

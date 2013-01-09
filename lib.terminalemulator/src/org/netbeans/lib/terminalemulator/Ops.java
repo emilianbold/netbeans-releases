@@ -88,6 +88,8 @@ interface Ops {
     public void op_rc();	// restore saved cursor position
     public void op_margin(int from, int to);	// set vertical scroll margins
 
+    public void op_el(int code);        // Erase in Line
+
     public void op_attr(int mode);	// set ANSI attributes
     public void op_set_mode(int mode);
     public void op_reset_mode(int mode);

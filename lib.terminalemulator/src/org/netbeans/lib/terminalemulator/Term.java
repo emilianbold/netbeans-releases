@@ -3587,11 +3587,29 @@ public class Term extends JComponent implements Accessible {
         public void op_ce() {
             // clear to end of line
             if (debugOps()) {
-                System.out.println("op_ce"); // NOI18N
+                System.out.println("op_ce ="); // NOI18N
+            }
+            op_el(0);
+        }
+
+        @Override
+        public void op_el(int code) {
+            // Erase in Line
+            if (debugOps()) {
+                System.out.printf("op_el(%d)\n", code); // NOI18N
             }
             Line l = cursor_line();
-            l.clearToEndFrom(Term.this, l.cellToBuf(metrics, st.cursor.col));
-
+            switch (code) {
+                case 0:         // from cursor to end
+                    l.clearToEndFrom(Term.this, l.cellToBuf(metrics, st.cursor.col));
+                    break;
+                case 1:         // from beginning to cursor (inclusive)
+                    l.clearTo(Term.this, l.cellToBuf(metrics, st.cursor.col));
+                    break;
+                case 2:         // whole line
+                    l.clearToEndFrom(Term.this, 0);
+                    break;
+            }
             switch (sel.intersection(st.cursor.row)) {
                 case Sel.INT_NONE:
                 case Sel.INT_ABOVE:

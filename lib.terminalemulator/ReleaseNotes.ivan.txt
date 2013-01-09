@@ -1,6 +1,15 @@
 207965 - Terminal incorrectly displays prompt string
 187345 - wrong characters in Terminals
 
+	- \ESC7 and \ESC8 implementation moved from 'ansi' to 'protoansi'.
+
+	- Implement all codes (012) for \ESC[%dK.
+	  Uses new Ops.op_el(int code).
+	  Ope.op_ce() now just delegates to op_el(0).
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+
 	- Implement sequences for ProtoANSI
 		  \ESCn
 		  \ESCo
