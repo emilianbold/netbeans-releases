@@ -87,8 +87,9 @@ public final class FileBookmarks {
     public FileObject getFileObject() {
         if (fileObject == null) {
             URI fileURI;
-            if (projectBookmarks != null) {
-                fileURI = projectBookmarks.getProjectURI().resolve(relativeURI);
+            URI projectURI = projectBookmarks.getProjectURI();
+            if (projectURI != null) {
+                fileURI = projectURI.resolve(relativeURI);
             } else {
                 fileURI = relativeURI;
             }

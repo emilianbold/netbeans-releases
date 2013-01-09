@@ -181,6 +181,7 @@ class LayoutFeeder implements LayoutConstants {
         for (int dim=overlapDim, dc=0; dc < DIM_COUNT; dim^=1, dc++) {
             dimension = dim;
             addingInterval = addingInts[dim];
+            assert addingInterval.getParent() == null : layoutModel.dump(addingInterval, dim) + " " + dc; // is bug #223709 present here already? // NOI18N
             solveOverlap = overlapDim == dim;
             LayoutInterval root = dragger.getTargetRoots()[dim];
             originalPosition = originalPositions[dim];
