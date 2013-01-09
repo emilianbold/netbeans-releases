@@ -96,4 +96,9 @@ public class JsonParser extends SanitizingParser {
         return node;
     }
 
+    @Override
+    protected String getMimeType() {
+        return JsTokenId.JSON_MIME_TYPE;
+    }
+
 }

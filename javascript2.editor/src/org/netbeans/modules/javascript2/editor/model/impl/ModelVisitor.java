@@ -73,6 +73,7 @@ import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
@@ -378,17 +379,21 @@ public class ModelVisitor extends PathNodeVisitor {
     @Override
     public Node enter(CatchNode catchNode) {
         Identifier exception = ModelElementFactory.create(parserResult, catchNode.getException());
-        DeclarationScopeImpl inScope = modelBuilder.getCurrentDeclarationScope();
-        CatchBlockImpl catchBlock  = new CatchBlockImpl(inScope, exception,
-                ModelUtils.documentOffsetRange(parserResult, catchNode.getStart(), catchNode.getFinish()));
-        inScope.addDeclaredScope(catchBlock);
-        modelBuilder.setCurrentObject(catchBlock);
+        if (exception != null) {
+            DeclarationScopeImpl inScope = modelBuilder.getCurrentDeclarationScope();
+            CatchBlockImpl catchBlock  = new CatchBlockImpl(inScope, exception,
+                    ModelUtils.documentOffsetRange(parserResult, catchNode.getStart(), catchNode.getFinish()));
+            inScope.addDeclaredScope(catchBlock);
+            modelBuilder.setCurrentObject(catchBlock);
+        }
         return super.enter(catchNode);
     }
 
     @Override
     public Node leave(CatchNode catchNode) {
-        modelBuilder.reset();
+        if (!JsEmbeddingProvider.containsGeneratedIdentifier(catchNode.getException().getName())) {
+            modelBuilder.reset();
+        }
         return super.leave(catchNode);
     }
 
