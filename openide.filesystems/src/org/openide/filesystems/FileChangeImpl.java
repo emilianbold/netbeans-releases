@@ -251,15 +251,19 @@ final class FileChangeImpl extends WeakReference<FileChangeListener> implements 
                 throw new IllegalArgumentException(listener + " was not listening to " + path + "; only to " + f2H.keySet());
             }
             FileChangeImpl h = f2H.remove(path);
+            if (f2H.isEmpty()) {
+                holders.remove(listener);
+            }
             h.run();
             return h.get();
         }
     }
     
-    static void addRecursiveListener(FileChangeListener listener, File path, FileFilter recurseInto, Callable<Boolean> stop) {
+    static DeepListener addRecursiveListener(FileChangeListener listener, File path, FileFilter recurseInto, Callable<Boolean> stop) {
         final DeepListener deep = new DeepListener(listener, path, recurseInto, stop);
         deep.init();
         FileChangeImpl.addFileChangeListenerImpl(DeepListener.LOG, deep, path);
+        return deep;
     }
 
     static void removeRecursiveListener(FileChangeListener listener, File path) {
