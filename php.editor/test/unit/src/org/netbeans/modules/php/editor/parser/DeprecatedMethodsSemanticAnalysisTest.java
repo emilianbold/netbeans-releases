@@ -65,6 +65,14 @@ public class DeprecatedMethodsSemanticAnalysisTest extends PHPCodeCompletionTest
         checkSemantic("testfiles/semantic/deprecatedMethods/deprecatedMethodDeclarations.php");
     }
 
+    public void testDeprecatedPrivateTraitMethod() throws Exception {
+        checkSemantic("testfiles/semantic/deprecatedMethods/deprecatedPrivateTraitMethod.php");
+    }
+
+    public void testDeprecatedPrivateClassMethod() throws Exception {
+        checkSemantic("testfiles/semantic/deprecatedMethods/deprecatedPrivateClassMethod.php");
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(

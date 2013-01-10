@@ -254,6 +254,22 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         public void visit(Program program) {
             scan(program.getStatements());
             scan(program.getComments());
+            // are there unused private methods?
+            for (ASTNodeColoring item : privateUnusedMethods.values()) {
+                if (item.coloring.contains(ColoringAttributes.STATIC)) {
+                    if (item.coloring.contains(ColoringAttributes.DEPRECATED)) {
+                        addOffsetRange(item.identifier, DEPRECATED_UNUSED_STATIC_METHOD_SET);
+                    } else {
+                        addOffsetRange(item.identifier, UNUSED_STATIC_METHOD_SET);
+                    }
+                } else {
+                    if (item.coloring.contains(ColoringAttributes.DEPRECATED)) {
+                        addOffsetRange(item.identifier, DEPRECATED_UNUSED_METHOD_SET);
+                    } else {
+                        addOffsetRange(item.identifier, UNUSED_METHOD_SET);
+                    }
+                }
+            }
         }
 
         @Override
@@ -288,24 +304,6 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                             addOffsetRange(item.identifier, DEPRECATED_UNUSED_FIELD_SET);
                         } else {
                             addOffsetRange(item.identifier, UNUSED_FIELD_SET);
-                        }
-                    }
-
-                }
-
-                // are there unused private methods?
-                for (ASTNodeColoring item : privateUnusedMethods.values()) {
-                    if (item.coloring.contains(ColoringAttributes.STATIC)) {
-                        if (item.coloring.contains(ColoringAttributes.DEPRECATED)) {
-                            addOffsetRange(item.identifier, DEPRECATED_UNUSED_STATIC_METHOD_SET);
-                        } else {
-                            addOffsetRange(item.identifier, UNUSED_STATIC_METHOD_SET);
-                        }
-                    } else {
-                        if (item.coloring.contains(ColoringAttributes.DEPRECATED)) {
-                            addOffsetRange(item.identifier, DEPRECATED_UNUSED_METHOD_SET);
-                        } else {
-                            addOffsetRange(item.identifier, UNUSED_METHOD_SET);
                         }
                     }
                 }
