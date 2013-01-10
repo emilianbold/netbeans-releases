@@ -955,7 +955,7 @@ public class AbstractLookup extends Lookup implements Serializable {
                 return;
             }
 
-            setReferences(2, c.toArray(new Pair[0]));
+            setReferences(2, c.toArray(new Pair[c.size()]));
         }
         
         private void setReferences(int index, Object value) {
