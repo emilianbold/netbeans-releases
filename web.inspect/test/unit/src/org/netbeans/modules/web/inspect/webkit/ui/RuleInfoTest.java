@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,60 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor;
+package org.netbeans.modules.web.inspect.webkit.ui;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
+ * Test of class {@code RuleInfo}.
  *
- * @author Petr Pisl
+ * @author Jan Stola
  */
-public class JsStructureScannerIssue223891Test extends JsTestBase {
-    
-    public JsStructureScannerIssue223891Test(String testName) {
-        super(testName);
+public class RuleInfoTest {
+
+    /**
+     * Test of {@code isOverriden} method.
+     */
+    @Test
+    public void testIsOverriden() {
+        String propertyName = "color"; // NOI18N
+        RuleInfo instance = new RuleInfo();
+        boolean expResult = false;
+        boolean result = instance.isOverriden(propertyName);
+        assertEquals(expResult, result);
     }
-    
-    @Override
-    protected void assertDescriptionMatches(FileObject fileObject,
-            String description, boolean includeTestName, String ext, boolean goldenFileInTestFileDir) throws IOException {
-        super.assertDescriptionMatches(fileObject, description, includeTestName, ext, true);
+
+    /**
+     * Test of {@code setOverriden} method.
+     */
+    @Test
+    public void testSetOverriden() {
+        String propertyName = "color"; // NOI18N
+        RuleInfo instance = new RuleInfo();
+        instance.markAsOverriden(propertyName);
+        boolean expResult = true;
+        boolean result = instance.isOverriden(propertyName);
+        assertEquals(expResult, result);
+        propertyName = "border"; // NOI18N
+        expResult = false;
+        result = instance.isOverriden(propertyName);
+        assertEquals(expResult, result);
     }
-    
-    public void testIssue223602() throws Exception {
-        checkStructure("testfiles/structure/issue223891/issue223891.js");
+
+    /**
+     * Test of {@code isInherited} and {@code setInherited} methods.
+     */
+    @Test
+    public void testInherited() {
+        RuleInfo instance = new RuleInfo();
+        boolean result = instance.isInherited();
+        assertFalse(result);
+        instance.setInherited(true);
+        result = instance.isInherited();
+        assertTrue(result);
     }
-    
-    @Override
-    protected Map<String, ClassPath> createClassPathsForTest() {
-        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
-        
-        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/structure/issue223891")));
-        return Collections.singletonMap(
-            JS_SOURCE_ID,
-            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
-        );
-    }
+
 }
