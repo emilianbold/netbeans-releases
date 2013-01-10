@@ -206,7 +206,11 @@ public class JsDocumentationCompleter {
                 }
             }
         }
-        return fqn.toString().substring(1);
+        if (fqn.length() > 0) {
+            return fqn.toString().substring(1);
+        } else {
+            return "";
+        }
     }
 
     private static void generateFieldComment(BaseDocument doc, int offset, int indent, JsParserResult jsParserResult, JsObject jsObject) throws BadLocationException {
