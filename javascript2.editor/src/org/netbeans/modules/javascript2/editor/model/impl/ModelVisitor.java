@@ -853,9 +853,10 @@ public class ModelVisitor extends PathNodeVisitor {
 
     @Override
     public Node enter(ReferenceNode referenceNode) {
-        if (referenceNode.getReference() instanceof FunctionNode) {
+        FunctionNode reference = referenceNode.getReference();
+        if (reference != null) {
             addToPath(referenceNode);
-            ((FunctionNode) referenceNode.getReference()).accept(this);
+            reference.accept(this);
             removeFromPathTheLast();
             return null;
         }
