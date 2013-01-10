@@ -787,19 +787,16 @@ class LayoutFeeder implements LayoutConstants {
 
     private boolean plainAlignmentChange(IncludeDesc ndesc, IncludeDesc odesc) {
         if (closedSpace != null && odesc.snappedParallel != null) {
-            LayoutInterval ogroup = (odesc.snappedParallel == odesc.parent) ? odesc.parent : null;
             if (restoreDimension()) {
-                if (ogroup == null) {
-                    ogroup = odesc.snappedParallel.getParent();
-                }
-                LayoutInterval moved = dragger.getMovingComponents()[0].getLayoutInterval(dimension);
-                for (Iterator<LayoutInterval> it=ogroup.getSubIntervals(); it.hasNext(); ) {
-                    LayoutInterval li = it.next();
-                    if (li == moved || li.isParentOf(moved)) {
+                LayoutInterval li = dragger.getMovingComponents()[0].getLayoutInterval(dimension);;
+                while (li.getParent() != null) {
+                    if (li.getParent().isParallel()) {
                         layoutModel.setIntervalAlignment(li, ndesc.alignment);
-                        return true;
+                        break;
                     }
+                    li = li.getParent();
                 }
+                return true;
             }
         }
         return false;

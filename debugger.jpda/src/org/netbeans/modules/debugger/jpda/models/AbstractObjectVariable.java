@@ -105,6 +105,8 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
     // Cloneable for fixed watches
     
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI18N
+    
+    static int MAX_STRING_LENGTH = 1000000; // Limit retrieved String length to 1M characters to limit memory consumption.
 
     private String          genericType;
     private Field[]         fields;
@@ -464,6 +466,7 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
             boolean addQuotation = false;
             boolean addDots = false;
             StringReference sr;
+            maxLength = (maxLength > 0 && maxLength < MAX_STRING_LENGTH) ? maxLength : MAX_STRING_LENGTH;
             if (maxLength > 0 && maxLength < Integer.MAX_VALUE) {
                 Method toStringMethod = ClassTypeWrapper.concreteMethodByName(ct,
                      "toString", "()Ljava/lang/String;");  // NOI18N
