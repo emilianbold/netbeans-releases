@@ -74,8 +74,11 @@ public class ClassPathProviderImpl implements ClassPathProvider {
     public static final String BOOT_CP = "classpath/javascript-boot"; //NOI18N
     public static final AtomicBoolean JS_CLASSPATH_REGISTERED = new AtomicBoolean(false);
 
-    // GuardedBy(this)
+    // GuardedBy(ClassPathProviderImpl.class)
     private static ClassPath cachedBootClassPath;
+
+    // GuardedBy(ClassPathProviderImpl.class)
+    private static FileObject[] roots;
 
     /** Names of JavaScript signature bundles. */
     private static final StubsBundle[] STUBS_BUNDLES = {
@@ -100,7 +103,11 @@ public class ClassPathProviderImpl implements ClassPathProvider {
     }
 
     public static synchronized FileObject[] getJsStubs() {
-        List<FileObject> roots = new LinkedList<FileObject>();
+        if (roots != null) {
+            return roots;
+        }
+
+        List<FileObject> result = new LinkedList<FileObject>();
         for (StubsBundle bundle : STUBS_BUNDLES) {
             File stubFile = InstalledFileLocator.getDefault().locate("jsstubs/" + bundle.getNameOfDocumented(), "org.netbeans.modules.javascript2.editor", false); //NOI18N
             if (stubFile == null || !stubFile.exists()) {
@@ -118,10 +125,11 @@ public class ClassPathProviderImpl implements ClassPathProvider {
             if (!stubFile.isFile() || !stubFile.exists()) {
                 LOG.log(Level.WARNING, "JavaScript stubs file was not found: {0}", stubFile.getAbsolutePath());
             } else {
-                roots.add(FileUtil.getArchiveRoot(FileUtil.toFileObject(stubFile)));
+                result.add(FileUtil.getArchiveRoot(FileUtil.toFileObject(stubFile)));
             }
         }
-        return roots.toArray(new FileObject[roots.size()]);
+        roots = result.toArray(new FileObject[result.size()]);
+        return roots;
     }
 
     /**
