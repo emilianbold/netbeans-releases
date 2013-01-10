@@ -137,6 +137,10 @@ public class PhpStructureScannerTest extends ParserTestBase{
         performTest("structure/issue170712");
     }
 
+    public void testDeprecatedDeclarations() throws Exception {
+        performTest("structure/deprecatedDeclarations");
+    }
+
     public void testFoldingMethod() throws Exception {
         checkFolds("testfiles/parser/foldingMethod.php");
     }
