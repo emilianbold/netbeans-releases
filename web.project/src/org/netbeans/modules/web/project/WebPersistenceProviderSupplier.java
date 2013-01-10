@@ -93,13 +93,15 @@ public class WebPersistenceProviderSupplier implements PersistenceProviderSuppli
         // can't we just use ProviderUtil.getAllProviders() ?
         candidates.add(ProviderUtil.HIBERNATE_PROVIDER);
         candidates.add(ProviderUtil.HIBERNATE_PROVIDER2_0);
+        candidates.add(ProviderUtil.HIBERNATE_PROVIDER2_1);
         candidates.add(ProviderUtil.TOPLINK_PROVIDER1_0);
         candidates.add(ProviderUtil.KODO_PROVIDER);
         candidates.add(ProviderUtil.DATANUCLEUS_PROVIDER);
         candidates.add(ProviderUtil.OPENJPA_PROVIDER);
         candidates.add(ProviderUtil.OPENJPA_PROVIDER1_0);
-        candidates.add(ProviderUtil.ECLIPSELINK_PROVIDER);
+        candidates.add(ProviderUtil.ECLIPSELINK_PROVIDER1_0);
         candidates.add(ProviderUtil.ECLIPSELINK_PROVIDER2_0);
+        candidates.add(ProviderUtil.ECLIPSELINK_PROVIDER);
         addPersistenceProviders(candidates, platform, result);
         
         return result;

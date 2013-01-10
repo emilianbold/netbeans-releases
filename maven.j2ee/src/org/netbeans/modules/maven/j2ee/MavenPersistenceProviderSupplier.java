@@ -103,11 +103,14 @@ public class MavenPersistenceProviderSupplier implements PersistenceProviderSupp
         List<Provider> result = new ArrayList<Provider>();
         addPersistenceProvider(ProviderUtil.HIBERNATE_PROVIDER, "hibernatePersistenceProviderIsDefault1.0", platform, result); // NOI18N
         addPersistenceProvider(ProviderUtil.HIBERNATE_PROVIDER2_0, "hibernatePersistenceProviderIsDefault2.0", platform, result); // NOI18N
+        addPersistenceProvider(ProviderUtil.HIBERNATE_PROVIDER2_1, "hibernatePersistenceProviderIsDefault2.1", platform, result); // NOI18N
         addPersistenceProvider(ProviderUtil.TOPLINK_PROVIDER1_0, "toplinkPersistenceProviderIsDefault", platform, result); // NOI18N
         addPersistenceProvider(ProviderUtil.KODO_PROVIDER, "kodoPersistenceProviderIsDefault", platform, result); // NOI18N
         addPersistenceProvider(ProviderUtil.OPENJPA_PROVIDER, "openJpaPersistenceProviderIsDefault2.0", platform, result); // NOI18N
         addPersistenceProvider(ProviderUtil.OPENJPA_PROVIDER1_0, "openJpaPersistenceProviderIsDefault1.0", platform, result); // NOI18N
-        addPersistenceProvider(ProviderUtil.ECLIPSELINK_PROVIDER2_0, "eclipseLinkPersistenceProviderIsDefault", platform, result); // NOI18N
+        addPersistenceProvider(ProviderUtil.ECLIPSELINK_PROVIDER1_0, "eclipseLinkPersistenceProviderIsDefault1.0", platform, result); // NOI18N
+        addPersistenceProvider(ProviderUtil.ECLIPSELINK_PROVIDER2_0, "eclipseLinkPersistenceProviderIsDefault2.0", platform, result); // NOI18N
+        addPersistenceProvider(ProviderUtil.ECLIPSELINK_PROVIDER, "eclipseLinkPersistenceProviderIsDefault2.1", platform, result); // NOI18N
         return result;
     }
     

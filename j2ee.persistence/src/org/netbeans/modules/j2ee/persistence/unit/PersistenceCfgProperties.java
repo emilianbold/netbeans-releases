@@ -170,6 +170,9 @@ public class PersistenceCfgProperties {
         possiblePropertyValues.get(ProviderUtil.HIBERNATE_PROVIDER2_0).put(ProviderUtil.HIBERNATE_PROVIDER2_0.getJdbcUsername(),null);
         possiblePropertyValues.get(ProviderUtil.HIBERNATE_PROVIDER2_0).put(ProviderUtil.HIBERNATE_PROVIDER2_0.getTableGenerationPropertyName()
                 ,new String[] {ProviderUtil.HIBERNATE_PROVIDER2_0.getTableGenerationCreateValue(),ProviderUtil.HIBERNATE_PROVIDER2_0.getTableGenerationDropCreateValue(), "validate", "update" });//NOI18N
+        //HIBERNATE 2.1 (initially just copy of 2.0)
+        possiblePropertyValues.put(ProviderUtil.HIBERNATE_PROVIDER2_1, new HashMap<String, String[]>());
+        possiblePropertyValues.get(ProviderUtil.HIBERNATE_PROVIDER2_1).putAll(possiblePropertyValues.get(ProviderUtil.HIBERNATE_PROVIDER2_0));
         //hibernate jpa 1.0
         possiblePropertyValues.put(ProviderUtil.HIBERNATE_PROVIDER, new HashMap<String, String[]>());
         possiblePropertyValues.get(ProviderUtil.HIBERNATE_PROVIDER).put(ProviderUtil.HIBERNATE_PROVIDER.getJdbcUrl(),null);
