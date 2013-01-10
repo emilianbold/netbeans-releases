@@ -111,11 +111,11 @@ made subject to such option by the copyright holder.
     </fontcolor>
    
     <!-- JavadocTokenId categories -->
-    <fontcolor name="javadoc-tag" foreColor="0000CC" default="comment">
+    <fontcolor name="javadoc-tag" foreColor="E0115F" default="comment">
         <font style="bold" />
     </fontcolor>
     <fontcolor name="javadoc-identifier" foreColor="green" default="comment"/>
     
-    <fontcolor name="html-tag" foreColor="blue" default="default"/>
+    <fontcolor name="html-tag" foreColor="E0115F" default="default"/>
 
 </fontscolors>
