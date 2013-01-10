@@ -263,7 +263,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                 } else {
                     // probably a property of an object
-                    List<Identifier> fqName = getName(aNode);
+                    List<Identifier> fqName = getName(aNode, parserResult);
                     if (fqName != null) {
                         property = ModelUtils.getJsObject(modelBuilder, fqName, true);
                         if (property.getParent().getJSKind().isFunction() && !property.getModifiers().contains(Modifier.STATIC)) {
@@ -500,9 +500,9 @@ public class ModelVisitor extends PathNodeVisitor {
                             }
                         }
                     }
-                    name = getName((BinaryNode)node);
+                    name = getName((BinaryNode)node, parserResult);
                 } else if (node instanceof VarNode) {
-                   name = getName((VarNode)node);
+                   name = getName((VarNode)node, parserResult);
                     // private method
                     // It can be only if it's in a function
                     isPrivate = functionStack.size() > 1;
@@ -701,7 +701,7 @@ public class ModelVisitor extends PathNodeVisitor {
             VarNode varNode = null;
 
             if ( lastVisited instanceof VarNode) {
-                fqName = getName((VarNode)lastVisited);
+                fqName = getName((VarNode)lastVisited, parserResult);
                 isDeclaredInParent = true;
                 JsObject declarationScope = modelBuilder.getCurrentDeclarationFunction();
                 varNode = (VarNode)lastVisited;
@@ -726,7 +726,7 @@ public class ModelVisitor extends PathNodeVisitor {
                             varNode = (VarNode) lastVisited;
                         }
                     }
-                    fqName = getName(binNode);
+                    fqName = getName(binNode, parserResult);
                     if (binNode.lhs() instanceof IdentNode || (binNode.lhs() instanceof AccessNode
                             && ((AccessNode) binNode.lhs()).getBase() instanceof IdentNode
                             && ((IdentNode) ((AccessNode) binNode.lhs()).getBase()).getName().equals("this"))) {
@@ -1028,6 +1028,11 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
             }
         }
+        return getName(propertyNode, parserResult);
+    }
+
+    private static List<Identifier> getName(PropertyNode propertyNode, JsParserResult parserResult) {
+        List<Identifier> name = new ArrayList(1);
         if (propertyNode.getKey() instanceof IdentNode) {
             IdentNode ident = (IdentNode) propertyNode.getKey();
             name.add(new IdentifierImpl(ident.getName(),
@@ -1040,18 +1045,18 @@ public class ModelVisitor extends PathNodeVisitor {
         return name;
     }
 
-    private List<Identifier> getName(VarNode varNode) {
+    private static List<Identifier> getName(VarNode varNode, JsParserResult parserResult) {
         List<Identifier> name = new ArrayList();
         name.add(new IdentifierImpl(varNode.getName().getName(),
                 ModelUtils.documentOffsetRange(parserResult, varNode.getName().getStart(), varNode.getName().getFinish())));
         return name;
     }
 
-    private List<Identifier> getName(BinaryNode binaryNode) {
+    private static List<Identifier> getName(BinaryNode binaryNode, JsParserResult parserResult) {
         List<Identifier> name = new ArrayList();
         Node lhs = binaryNode.lhs();
         if (lhs instanceof AccessNode) {
-            name = getName((AccessNode)lhs);
+            name = getName((AccessNode)lhs, parserResult);
         } else if (lhs instanceof IdentNode) {
             IdentNode ident = (IdentNode) lhs;
             name.add(new IdentifierImpl(ident.getName(),
@@ -1059,9 +1064,9 @@ public class ModelVisitor extends PathNodeVisitor {
         } else if (lhs instanceof IndexNode) {
             IndexNode indexNode = (IndexNode)lhs;
             if (indexNode.getBase() instanceof AccessNode) {
-                List<Identifier> aName = getName((AccessNode)indexNode.getBase());
+                List<Identifier> aName = getName((AccessNode)indexNode.getBase(), parserResult);
                 if (aName != null) {
-                    name.addAll(getName((AccessNode)indexNode.getBase()));
+                    name.addAll(getName((AccessNode)indexNode.getBase(), parserResult));
                 }
                 else {
                     return null;
@@ -1076,7 +1081,7 @@ public class ModelVisitor extends PathNodeVisitor {
         return name;
     }
 
-    private List<Identifier> getName(AccessNode aNode) {
+    private static List<Identifier> getName(AccessNode aNode, JsParserResult parserResult) {
         List<Identifier> name = new ArrayList();
         name.add(new IdentifierImpl(aNode.getProperty().getName(),
                 ModelUtils.documentOffsetRange(parserResult, aNode.getProperty().getStart(), aNode.getProperty().getFinish())));
@@ -1106,15 +1111,15 @@ public class ModelVisitor extends PathNodeVisitor {
      * @param node examined node for getting its name
      * @return name of the node if it supports it
      */
-    public List<Identifier> getNodeName(Node node) {
+    public static List<Identifier> getNodeName(Node node, JsParserResult parserResult) {
         if (node instanceof AccessNode) {
-            return getName((AccessNode) node);
+            return getName((AccessNode) node, parserResult);
         } else if (node instanceof BinaryNode) {
-            return getName((BinaryNode) node);
+            return getName((BinaryNode) node, parserResult);
         } else if (node instanceof VarNode) {
-            return getName((VarNode) node);
+            return getName((VarNode) node, parserResult);
         } else if (node instanceof PropertyNode) {
-            return getName((PropertyNode) node);
+            return getName((PropertyNode) node, parserResult);
         } else if (node instanceof FunctionNode) {
             if (((FunctionNode) node).getKind() == FunctionNode.Kind.SCRIPT) {
                 return Collections.<Identifier>emptyList();
