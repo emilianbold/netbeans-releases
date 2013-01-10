@@ -132,7 +132,7 @@ public class AVD implements Device {
     @Override
     public void addProperties(Properties props) {
         final MobilePlatform android = getPlatform();
-        props.put("android.build.target", android.getPrefferedTarget());//NOI18N
+        props.put("android.build.target", android.getPrefferedTarget().getName());//NOI18N
         props.put("android.sdk.home", android.getSdkLocation());//NOI18N
         props.put("android.target.device.arg", isEmulator() ? "-e" : "-d");//NOI18N
     }
