@@ -60,10 +60,9 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.embedder.MavenEmbedder.ModelDescription;
-import org.openide.cookies.EditCookie;
+import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 
 @EditorActionRegistration(
@@ -120,12 +119,8 @@ public final class GoToImplementation extends BaseAction {
                                 //in sources
                                 FileObject fobj = FileUtil.toFileObject(f);
                                 if (fobj != null) {
-
-                                    DataObject dobj = DataObject.find(fobj);
-                                    EditCookie edit = dobj.getLookup().lookup(EditCookie.class);
-                                    if (edit != null) {
-                                        edit.edit();
-                                    }
+                                    //for files in local repo, fake read-only state..
+                                    NodeUtils.openPomFile(fobj);
                                 }
                             } 
                         } else {

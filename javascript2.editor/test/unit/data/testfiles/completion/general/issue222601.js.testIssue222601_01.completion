@@ -2,25 +2,25 @@ Code completion result for source line:
 b222601.get|Date();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-METHOD     getDate(): Number               [PUBLIC]   stub_CORE_Date.js
-METHOD     getDay(): Number                [PUBLIC]   stub_CORE_Date.js
-METHOD     getFullYear(): Number           [PUBLIC]   stub_CORE_Date.js
-METHOD     getHours(): Number              [PUBLIC]   stub_CORE_Date.js
-METHOD     getMilliseconds(): Number       [PUBLIC]   stub_CORE_Date.js
-METHOD     getMinutes(): Number            [PUBLIC]   stub_CORE_Date.js
-METHOD     getMonth(): Number              [PUBLIC]   stub_CORE_Date.js
-METHOD     getOwnPropertyDescriptor(O: Ob  [PUBLIC,   stub_CORE_Object.js
-METHOD     getOwnPropertyNames(O: Object)  [PUBLIC,   stub_CORE_Object.js
-METHOD     getPrototypeOf(O: Object): Obj  [PUBLIC,   stub_CORE_Object.js
-METHOD     getSeconds(): Number            [PUBLIC]   stub_CORE_Date.js
-METHOD     getTime(): Number               [PUBLIC]   stub_CORE_Date.js
-METHOD     getTimezoneOffset(): Number     [PUBLIC]   stub_CORE_Date.js
-METHOD     getUTCDate(): Number            [PUBLIC]   stub_CORE_Date.js
-METHOD     getUTCDay(): Number             [PUBLIC]   stub_CORE_Date.js
-METHOD     getUTCFullYear(): Number        [PUBLIC]   stub_CORE_Date.js
-METHOD     getUTCHours(): Number           [PUBLIC]   stub_CORE_Date.js
-METHOD     getUTCMilliseconds(): Number    [PUBLIC]   stub_CORE_Date.js
-METHOD     getUTCMinutes(): Number         [PUBLIC]   stub_CORE_Date.js
-METHOD     getUTCMonth(): Number           [PUBLIC]   stub_CORE_Date.js
-METHOD     getUTCSeconds(): Number         [PUBLIC]   stub_CORE_Date.js
-METHOD     getYear(): Number               [PUBLIC]   stub_CORE_Date.js
+METHOD     getDate(): Number               [PUBLIC]   JS Platform
+METHOD     getDay(): Number                [PUBLIC]   JS Platform
+METHOD     getFullYear(): Number           [PUBLIC]   JS Platform
+METHOD     getHours(): Number              [PUBLIC]   JS Platform
+METHOD     getMilliseconds(): Number       [PUBLIC]   JS Platform
+METHOD     getMinutes(): Number            [PUBLIC]   JS Platform
+METHOD     getMonth(): Number              [PUBLIC]   JS Platform
+METHOD     getOwnPropertyDescriptor(O: Ob  [PUBLIC,   JS Platform
+METHOD     getOwnPropertyNames(O: Object)  [PUBLIC,   JS Platform
+METHOD     getPrototypeOf(O: Object): Obj  [PUBLIC,   JS Platform
+METHOD     getSeconds(): Number            [PUBLIC]   JS Platform
+METHOD     getTime(): Number               [PUBLIC]   JS Platform
+METHOD     getTimezoneOffset(): Number     [PUBLIC]   JS Platform
+METHOD     getUTCDate(): Number            [PUBLIC]   JS Platform
+METHOD     getUTCDay(): Number             [PUBLIC]   JS Platform
+METHOD     getUTCFullYear(): Number        [PUBLIC]   JS Platform
+METHOD     getUTCHours(): Number           [PUBLIC]   JS Platform
+METHOD     getUTCMilliseconds(): Number    [PUBLIC]   JS Platform
+METHOD     getUTCMinutes(): Number         [PUBLIC]   JS Platform
+METHOD     getUTCMonth(): Number           [PUBLIC]   JS Platform
+METHOD     getUTCSeconds(): Number         [PUBLIC]   JS Platform
+METHOD     getYear(): Number               [PUBLIC]   JS Platform

@@ -37,7 +37,7 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
-import com.oracle.nashorn.ir.FunctionNode;
+import jdk.nashorn.internal.ir.FunctionNode;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,6 +52,7 @@ import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -61,6 +62,8 @@ public abstract class SanitizingParser extends Parser {
 
     private static final Logger LOGGER = Logger.getLogger(JsParser.class.getName());
 
+    private static final long MAX_FILE_SIZE_TO_PARSE = 1024 * 1024;
+    
     private final Language<JsTokenId> language;
 
     private JsParserResult lastResult = null;
@@ -86,17 +89,29 @@ public abstract class SanitizingParser extends Parser {
 
     protected abstract FunctionNode parseSource(Snapshot snapshot, String name, String text, JsErrorManager errorManager) throws Exception;
 
+    protected abstract String getMimeType();
+    
     private JsParserResult parseSource(Snapshot snapshot, SourceModificationEvent event,
             Sanitize sanitizing, JsErrorManager errorManager) throws Exception {
         
+        FileObject fo = snapshot.getSource().getFileObject();
         long startTime = System.nanoTime();
         String scriptName;
-        if (snapshot.getSource().getFileObject() != null) {
+        Long size;
+        boolean isEmbeded = !getMimeType().equals(snapshot.getMimePath().getPath());
+        if (fo != null) {
             scriptName = snapshot.getSource().getFileObject().getNameExt();
+            size = fo.getSize();
         } else {
+            size = (long)snapshot.getText().length();
             scriptName = getDefaultScriptName();
         }
-        
+        if (size > MAX_FILE_SIZE_TO_PARSE && !isEmbeded) {
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "The file {0} was not parsed because the size is too big.", scriptName);
+            }
+            return new JsParserResult(snapshot, null);
+        }
         int caretOffset = GsfUtilities.getLastKnownCaretOffset(snapshot, event);
         
         JsParserResult result = parseContext(new Context(scriptName, snapshot, caretOffset),

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.classpath;
 
+import java.util.List;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 
@@ -50,7 +51,7 @@ import org.openide.util.RequestProcessor;
  */
 public class ClasspathProviderImplAccessor {
     
-    public static FileObject[] getJsStubs() {
+    public static List<FileObject> getJsStubs() {
         return ClassPathProviderImpl.getJsStubs();
     }
 

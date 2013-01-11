@@ -166,6 +166,10 @@ public class Hacks {
     }
 
     public static @CheckForNull TypeMirror parseFQNType(@NonNull CompilationInfo info, @NonNull String spec) {
+        if (spec.length() == 0) {
+            return null;
+        }
+        
         TypeElement jlObject = info.getElements().getTypeElement("java.lang.Object");
         
         //XXX:

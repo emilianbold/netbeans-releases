@@ -294,6 +294,9 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
     private FileObject getTargetFolderFromGUI (WizardDescriptor wd) {
         assert gui != null;
         FileObject rootFolder = gui.getRootFolder();
+        if (!rootFolder.isValid()) {
+            return null;
+        }
         FileObject folder = null;
         if (type != Type.PACKAGE) {
             String packageFileName = gui.getPackageFileName();
@@ -328,6 +331,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
                 }
                 catch( IOException e ) {
                     Exceptions.printStackTrace(e);
+                    folder = null;
                 }
             }
         }

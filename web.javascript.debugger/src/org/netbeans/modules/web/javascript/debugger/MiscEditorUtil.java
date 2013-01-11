@@ -52,6 +52,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -189,7 +190,16 @@ public final class MiscEditorUtil {
             LOG.log(Level.INFO, "No line cookie for \"{0}\"", fileObject);
             return null;
         }
-        return lineCookie.getLineSet().getCurrent(lineNumber);
+        try {
+            return lineCookie.getLineSet().getCurrent(lineNumber);
+        } catch (IndexOutOfBoundsException ioob) {
+            List<? extends Line> lines = lineCookie.getLineSet().getLines();
+            if (lines.size() > 0) {
+                return lines.get(lines.size() - 1);
+            } else {
+                return null;
+            }
+        }
     }
 
     public static Line getLine(final FileObject fileObject, final int lineNumber) {
@@ -198,7 +208,16 @@ public final class MiscEditorUtil {
             if (lineCookie != null) {
                 Line.Set ls = lineCookie.getLineSet();
                 if (ls != null) {
-                    return ls.getCurrent(lineNumber - 1);
+                    try {
+                        return ls.getCurrent(lineNumber - 1);
+                    } catch (IndexOutOfBoundsException ioob) {
+                        List<? extends Line> lines = ls.getLines();
+                        if (lines.size() > 0) {
+                            return lines.get(lines.size() - 1);
+                        } else {
+                            return null;
+                        }
+                    }
                 }
             }
         }

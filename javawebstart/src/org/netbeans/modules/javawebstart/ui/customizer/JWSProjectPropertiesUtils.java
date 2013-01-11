@@ -300,7 +300,7 @@ public final class JWSProjectPropertiesUtils {
         }
     }
 
-    private static void copyTemplate(Project proj) throws IOException {
+    public static void copyTemplate(Project proj) throws IOException {
         boolean isJnlpCurrent = true;
         FileObject projDir = proj.getProjectDirectory();
         FileObject jnlpBuildFile = projDir.getFileObject("nbproject/jnlp-impl.xml"); // NOI18N

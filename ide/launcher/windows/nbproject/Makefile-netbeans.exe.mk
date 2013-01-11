@@ -66,17 +66,17 @@ netbeans.exe: ${OBJECTFILES}
 ${OBJECTDIR}/netbeans.o: netbeans.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -s -DNBEXEC_DLL=\"/lib/nbexec.dll\" -DARCHITECTURE=32 -MMD -MP -MF $@.d -o ${OBJECTDIR}/netbeans.o netbeans.cpp
+	$(COMPILE.cc) -O2 -s -DARCHITECTURE=32 -DNBEXEC_DLL=\"/lib/nbexec.dll\" -MMD -MP -MF $@.d -o ${OBJECTDIR}/netbeans.o netbeans.cpp
 
 ${OBJECTDIR}/nblauncher.o: nblauncher.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -s -DNBEXEC_DLL=\"/lib/nbexec.dll\" -DARCHITECTURE=32 -MMD -MP -MF $@.d -o ${OBJECTDIR}/nblauncher.o nblauncher.cpp
+	$(COMPILE.cc) -O2 -s -DARCHITECTURE=32 -DNBEXEC_DLL=\"/lib/nbexec.dll\" -MMD -MP -MF $@.d -o ${OBJECTDIR}/nblauncher.o nblauncher.cpp
 
 ${OBJECTDIR}/_ext/1413142467/utilsfuncs.o: ../../../o.n.bootstrap/launcher/windows/utilsfuncs.cpp 
 	${MKDIR} -p ${OBJECTDIR}/_ext/1413142467
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -s -DNBEXEC_DLL=\"/lib/nbexec.dll\" -DARCHITECTURE=32 -MMD -MP -MF $@.d -o ${OBJECTDIR}/_ext/1413142467/utilsfuncs.o ../../../o.n.bootstrap/launcher/windows/utilsfuncs.cpp
+	$(COMPILE.cc) -O2 -s -DARCHITECTURE=32 -DNBEXEC_DLL=\"/lib/nbexec.dll\" -MMD -MP -MF $@.d -o ${OBJECTDIR}/_ext/1413142467/utilsfuncs.o ../../../o.n.bootstrap/launcher/windows/utilsfuncs.cpp
 
 # Subprojects
 .build-subprojects:

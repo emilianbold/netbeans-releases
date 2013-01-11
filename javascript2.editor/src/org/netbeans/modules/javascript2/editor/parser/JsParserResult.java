@@ -37,7 +37,7 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
-import com.oracle.nashorn.ir.FunctionNode;
+import jdk.nashorn.internal.ir.FunctionNode;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.api.Error;

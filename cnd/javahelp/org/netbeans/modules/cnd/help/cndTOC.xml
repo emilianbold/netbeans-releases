@@ -86,6 +86,7 @@
 				<tocitem text="Overview of C/C++ Remote Development" target="RemoteDevelopment" />
 				<tocitem text="Configuring C/C++ Remote Build Hosts" target="RemoteDevelopmentConfigureHost" />
 				<tocitem text="Setting Remote Host Properties" target="RemoteDevelopmentManageHosts" />
+				<tocitem text="C/C++ Remote Development Modes" target="RemoteModes" />
 				<tocitem text="Sharing Files With Remote Build Hosts" target="RemoteDevelopmentFileSharing" />
 				<tocitem text="Setting Up C/C++ Projects for Remote Development" target="RemoteDevelopmentProjects" />
 				<tocitem text="Opening a Terminal Window for a Build Host" target="RemoteDevelopmentTerminal" />

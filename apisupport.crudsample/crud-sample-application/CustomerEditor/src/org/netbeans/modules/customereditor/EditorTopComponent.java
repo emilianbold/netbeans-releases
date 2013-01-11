@@ -341,18 +341,20 @@ public final class EditorTopComponent extends TopComponent implements LookupList
                 fire(false);
                 EntityManager entityManager = Persistence.createEntityManagerFactory("CustomerDBAccessPU").createEntityManager();
                 entityManager.getTransaction().begin();
-                if (customer.getCustomerId() != null) {
+                if (customer!=null && customer.getCustomerId() != null) {
                     Customer c = entityManager.find(Customer.class, customer.getCustomerId());
                     c.setName(jTextField1.getText());
                     c.setCity(jTextField2.getText());
                     entityManager.getTransaction().commit();
                 } else {
                     Query query = entityManager.createQuery("SELECT MAX(c.customerId) FROM Customer c");
+                    Query zipCodeQuery = entityManager.createQuery("SELECT m.zipCode FROM MicroMarket m").setMaxResults(1);
                     Integer newId = (Integer) query.getSingleResult() + 1;
+                    customer = new Customer();
                     customer.setCustomerId(newId);
                     customer.setName(jTextField1.getText());
                     customer.setCity(jTextField2.getText());
-                    customer.setZip("12345");
+                    customer.setZip((String)zipCodeQuery.getSingleResult());
                     customer.setDiscountCode(entityManager.find(DiscountCode.class, 'H'));
                     entityManager.persist(customer);
                     entityManager.getTransaction().commit();

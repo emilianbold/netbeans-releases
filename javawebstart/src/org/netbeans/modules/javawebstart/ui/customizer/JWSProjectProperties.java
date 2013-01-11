@@ -95,6 +95,7 @@ import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -574,6 +575,16 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
             props.setProperty(name, value);
         } else {
             props.remove(name);
+        }
+    }
+    
+    public void updateJnlpImpl() {
+        if (project != null) {
+            try {
+                JWSProjectPropertiesUtils.copyTemplate(project);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
         }
     }
     

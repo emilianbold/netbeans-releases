@@ -274,7 +274,7 @@ public class GridBagInfoProvider implements GridInfoProvider {
     public boolean isGapEvent(FormModelEvent event) {
         if(event.getChangeType() == FormModelEvent.CONTAINER_LAYOUT_CHANGED) {
             String propName = event.getPropertyName();
-            if( propName.equals("columnWidths") || propName.equals("columnHeights")) {
+            if ((propName != null) && (propName.equals("columnWidths") || propName.equals("rowHeights"))) { // NOI18N
                 return true;
             }
         }

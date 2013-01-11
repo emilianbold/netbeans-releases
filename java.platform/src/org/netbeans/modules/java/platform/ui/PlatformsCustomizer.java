@@ -67,6 +67,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -617,8 +618,17 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         
         public @Override Image getOpenedIcon(int type) {
             return this.iconDelegate.getOpenedIcon (type);
-        }                        
-        
+        }
+
+        @Override
+        public boolean hasCustomizer() {
+            return true;
+        }
+
+        @Override
+        public Component getCustomizer() {
+            return new JPanel();
+        }        
     }
     
     private static class PlatformCategoriesChildren extends Children.Keys<PlatformCategoriesDescriptor> {

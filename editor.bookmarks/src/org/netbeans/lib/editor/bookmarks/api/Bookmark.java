@@ -95,8 +95,6 @@ public final class Bookmark {
 
     private Line            line;
     private AAnnotation     annotation;
-    private Map<BookmarkList,LineListener>
-                            bookmarkListToLineListener = new WeakHashMap<BookmarkList,LineListener> ();
     
     /**
      * Construct new instance of bookmark.
@@ -129,14 +127,7 @@ public final class Bookmark {
         line = NbEditorUtilities.getLine (bookmarkList.getDocument (), offset, false);
         if (line != null) { // In tests it may be null
             annotation = new AAnnotation ();
-            lineToAnnotation.put (line, new WeakReference<AAnnotation>(annotation));
             annotation.attach (line);
-            LineListener lineListener = bookmarkListToLineListener.get (bookmarkList);
-            if (lineListener == null) {
-                lineListener = new LineListener (bookmarkList);
-                bookmarkListToLineListener.put (bookmarkList, lineListener);
-            }
-            line.addPropertyChangeListener (lineListener);
         }
     }
 
@@ -213,7 +204,11 @@ public final class Bookmark {
     BookmarkInfo info() {
         return info;
     }
-    
+
+    @Override
+    public String toString() {
+        return "Bookmark: " + info + "\n"; // NOI18N
+    }
     
     // innerclasses ............................................................
     
@@ -236,30 +231,6 @@ public final class Bookmark {
             return getShortDescription();
         }
     }
-
-    private static class LineListener implements PropertyChangeListener {
-
-        private WeakReference<BookmarkList> bookmarkListReference;
-
-        LineListener (BookmarkList bookmarkList) {
-            bookmarkListReference = new WeakReference<BookmarkList> (bookmarkList);
-        }
-
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            BookmarkList bookmarkList = bookmarkListReference.get ();
-            if (bookmarkList == null)
-                return;
-            List<Bookmark> bookmarks = new ArrayList<Bookmark> (bookmarkList.getBookmarks ());
-            int lineNumber = -1;
-            for (Bookmark bookmark : bookmarks) {
-                if (bookmark.getLineNumber () == lineNumber) {
-                    bookmarkList.removeBookmark (bookmark);
-                }
-                lineNumber = bookmark.getLineNumber ();
-            }
-        }
-    };
 
     private static final class BookmarkAPIAccessorImpl extends BookmarkAPIAccessor {
 
