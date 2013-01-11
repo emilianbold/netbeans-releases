@@ -2,20 +2,20 @@ Code completion result for source line:
 document.create|Attribute();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-METHOD     create(O: Object): Object       [PUBLIC,   stub_CORE_Object.js
-METHOD     createAttribute(name: String):  [PUBLIC]   stub_DOM_Document.js
-METHOD     createAttributeNS(namespaceURI  [PUBLIC]   stub_DOM_Document.js
-METHOD     createCDATASection(data: Strin  [PUBLIC]   stub_DOM_Document.js
-METHOD     createComment(data: String): C  [PUBLIC]   stub_DOM_Document.js
-METHOD     createDocumentFragment(): Docu  [PUBLIC]   stub_DOM_Document.js
-METHOD     createElement(tagName: String)  [PUBLIC]   stub_DOM_Document.js
-METHOD     createElementNS(namespaceURI:   [PUBLIC]   stub_DOM_Document.js
-METHOD     createEntityReference(name: St  [PUBLIC]   stub_DOM_Document.js
-METHOD     createEvent(type: String): Eve  [PUBLIC]   stub_DOM_document.js
-METHOD     createExpression(xpathText: St  [PUBLIC]   stub_DOM_document.js
-METHOD     createNSResolver(node: Node):   [PUBLIC]   stub_DOM_document.js
-METHOD     createNodeIterator(root: Node,  [PUBLIC]   stub_DOM_Document.js
-METHOD     createProcessingInstruction(ta  [PUBLIC]   stub_DOM_Document.js
-METHOD     createRange(): Range            [PUBLIC]   stub_DOM_document.js
-METHOD     createTextNode(data: String):   [PUBLIC]   stub_DOM_Document.js
-METHOD     createTreeWalker(root: Node, w  [PUBLIC]   stub_DOM_Document.js
+METHOD     create(O: Object): Object       [PUBLIC,   JS Platform
+METHOD     createAttribute(name: String):  [PUBLIC]   JS Platform
+METHOD     createAttributeNS(namespaceURI  [PUBLIC]   JS Platform
+METHOD     createCDATASection(data: Strin  [PUBLIC]   JS Platform
+METHOD     createComment(data: String): C  [PUBLIC]   JS Platform
+METHOD     createDocumentFragment(): Docu  [PUBLIC]   JS Platform
+METHOD     createElement(tagName: String)  [PUBLIC]   JS Platform
+METHOD     createElementNS(namespaceURI:   [PUBLIC]   JS Platform
+METHOD     createEntityReference(name: St  [PUBLIC]   JS Platform
+METHOD     createEvent(type: String): Eve  [PUBLIC]   JS Platform
+METHOD     createExpression(xpathText: St  [PUBLIC]   JS Platform
+METHOD     createNSResolver(node: Node):   [PUBLIC]   JS Platform
+METHOD     createNodeIterator(root: Node,  [PUBLIC]   JS Platform
+METHOD     createProcessingInstruction(ta  [PUBLIC]   JS Platform
+METHOD     createRange(): Range            [PUBLIC]   JS Platform
+METHOD     createTextNode(data: String):   [PUBLIC]   JS Platform
+METHOD     createTreeWalker(root: Node, w  [PUBLIC]   JS Platform

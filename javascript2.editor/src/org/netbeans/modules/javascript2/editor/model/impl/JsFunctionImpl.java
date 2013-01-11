@@ -154,10 +154,16 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         return result;
     }
 
+    private boolean areReturnTypesResolved = false;
+    
     @Override
     public Collection<? extends TypeUsage> getReturnTypes() {
+        if (areReturnTypesResolved) {
+            return Collections.EMPTY_LIST;
+        }
         Collection<TypeUsage> returns = new HashSet();
         HashSet<String> nameReturnTypes = new HashSet<String>();
+        areReturnTypesResolved = true;
         for(TypeUsage type : returnTypes) {
              if (((TypeUsageImpl)type).isResolved()) {
                  if (!nameReturnTypes.contains(type.getType())){
@@ -166,12 +172,15 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
                  }
             } else {
                  if (type.getType().startsWith("@")) {
-                     Collection<TypeUsage> resolved = ModelUtils.resolveTypeFromSemiType(this, type);
-                     for (TypeUsage typeResolved : resolved) {
-                         if (!nameReturnTypes.contains(type.getType())) {
-                             returns.add(typeResolved);
-                             nameReturnTypes.add(typeResolved.getType());
-                         }
+                     String typeName = type.getType();
+                     if (!(typeName.endsWith(getName()) && typeName.startsWith("@call"))) {
+                        Collection<TypeUsage> resolved = ModelUtils.resolveTypeFromSemiType(this, type);
+                        for (TypeUsage typeResolved : resolved) {
+                            if (!nameReturnTypes.contains(type.getType())) {
+                                returns.add(typeResolved);
+                                nameReturnTypes.add(typeResolved.getType());
+                            }
+                        }
                      }
                  } else {
                     JsObject jsObject = ModelUtils.getJsObjectByName(this,type.getType());
@@ -187,6 +196,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
                  }
             }
         }
+        areReturnTypesResolved = false;
         return returns;
     }    
         

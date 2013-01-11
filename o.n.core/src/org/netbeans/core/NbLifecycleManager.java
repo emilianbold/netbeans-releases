@@ -53,7 +53,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import org.netbeans.core.startup.ModuleLifecycleManager;
+import org.netbeans.core.startup.ModuleSystem;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
@@ -63,7 +63,6 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
-import org.openide.windows.WindowManager;
 
 /**
  * Default implementation of the lifecycle manager interface that knows
@@ -79,7 +78,7 @@ public final class NbLifecycleManager extends LifecycleManager {
     /** @GuardedBy("NbLifecycleManager.class") */
     private static CountDownLatch onExit;
     private volatile JDialog dialog;
-    private volatile Thread onExitThread;
+    private volatile boolean isExitOnEventQueue;
     
     @Override
     public void saveAll() {
@@ -146,15 +145,18 @@ public final class NbLifecycleManager extends LifecycleManager {
     private void finishExitState(CountDownLatch[] cdl, boolean clean) {
         LOG.log(Level.FINE, "finishExitState {0} clean: {1}", new Object[]{Thread.currentThread(), clean});
         if (EventQueue.isDispatchThread()) {
-            onExitThread = Thread.currentThread();
-            try {
-                LOG.log(Level.FINE, "waiting in EDT: {0} own: {1}", new Object[]{onExit, cdl[0]});
-                if (cdl[0].await(5, TimeUnit.SECONDS)) {
-                    LOG.fine("wait is over, return");
-                    return;
+            boolean prev = isExitOnEventQueue;
+            if (!prev) {
+                isExitOnEventQueue = true;
+                try {
+                    LOG.log(Level.FINE, "waiting in EDT: {0} own: {1}", new Object[]{onExit, cdl[0]});
+                    if (cdl[0].await(5, TimeUnit.SECONDS)) {
+                        LOG.fine("wait is over, return");
+                        return;
+                    }
+                } catch (InterruptedException ex) {
+                    LOG.log(Level.FINE, null, ex);
                 }
-            } catch (InterruptedException ex) {
-                LOG.log(Level.FINE, null, ex);
             }
             JDialog d = new JDialog((JFrame)null, true);
             d.setUndecorated(true);
@@ -167,7 +169,7 @@ public final class NbLifecycleManager extends LifecycleManager {
             } finally {
                 LOG.log(Level.FINE, "Disposing dialog: {0}", dialog);
                 dialog = null;
-                onExitThread = null;
+                isExitOnEventQueue = prev;
             }
         }
         LOG.log(Level.FINE, "About to block on {0}", cdl[0]);
@@ -190,18 +192,28 @@ public final class NbLifecycleManager extends LifecycleManager {
     @Override
     public void exit(int status) {
         LOG.log(Level.FINE, "Initiating exit with status {0}", status);
-        if (onExitThread == Thread.currentThread()) {
-            LOG.log(Level.FINE, "Already in process of exiting {0}, return", onExitThread);
-            return;
+        if (EventQueue.isDispatchThread()) {
+            if (isExitOnEventQueue) {
+                LOG.log(Level.FINE, "Already in process of exiting {0}, return", isExitOnEventQueue);
+                return;
+            } else {
+                isExitOnEventQueue = true;
+            }
         }
-        CountDownLatch[] cdl = { null };
-        if (blockForExit(cdl)) {
-            finishExitState(cdl, false);
-            return;
+        try {
+            CountDownLatch[] cdl = { null };
+            if (blockForExit(cdl)) {
+                finishExitState(cdl, false);
+                return;
+            }
+            NbLifeExit action = new NbLifeExit(0, status, cdl[0]);
+            Mutex.EVENT.readAccess(action);
+            finishExitState(cdl, true);
+        } finally {
+            if (EventQueue.isDispatchThread()) {
+                isExitOnEventQueue = false;
+            }
         }
-        NbLifeExit action = new NbLifeExit(0, status, cdl[0]);
-        Mutex.EVENT.readAccess(action);
-        finishExitState(cdl, true);
     }
     
     public static boolean isExiting() {
@@ -210,6 +222,6 @@ public final class NbLifecycleManager extends LifecycleManager {
 
     @Override
     public void markForRestart() throws UnsupportedOperationException {
-        new ModuleLifecycleManager().markForRestart();
+        ModuleSystem.markForRestart();
     }
 }

@@ -378,13 +378,22 @@ implements Executor {
         lock.lock();
         try {
             st.setInStep(false, null);
+            removeStepRequests (tr);
+            try {
+                boolean suspended = ThreadReferenceWrapper.isSuspended0(tr);
+                if (!suspended) {
+                    // The thread was already resumed in the mean time by someone else.
+                    return false;
+                }
+            } catch (IllegalThreadStateExceptionWrapper itsex) {
+                return false;
+            }
             /*if (stepWatch != null) {
                 stepWatch.done();
                 stepWatch = null;
             }*/
             String className = ReferenceTypeWrapper.name(LocationWrapper.declaringType(LocatableWrapper.location(event)));
             setLastOperation(tr);
-            removeStepRequests (tr);
             //S ystem.out.println("/nStepAction.exec");
 
             int suspendPolicy = getDebuggerImpl().getSuspend();
@@ -533,7 +542,7 @@ implements Executor {
                     status == ThreadReference.THREAD_STATUS_ZOMBIE ||
                     status == ThreadReference.THREAD_STATUS_NOT_STARTED)) {
                     
-                    Exceptions.printStackTrace(Exceptions.attachMessage(itsex, "Thread's status = "+status));
+                    Exceptions.printStackTrace(Exceptions.attachMessage(itsex, "Thread's status = "+status+", suspended = "+ThreadReferenceWrapper.isSuspended0(tr)));
                 }
             } catch (IllegalThreadStateExceptionWrapper ex) {
                 // A bad state - ignore

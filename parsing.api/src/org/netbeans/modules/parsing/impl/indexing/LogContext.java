@@ -195,8 +195,25 @@ import org.openide.util.Utilities;
     void log() {
         log(true, true);
     }
+    
+    /**
+     * org.netbeans.modules.parsing.impl.indexing.LogContext.cancelTreshold specifies
+     * the mandatory delay for scanning reports in seconds.
+     */
+    private static final long EXEC_TRESHOLD = Integer.getInteger(LogContext.class.getName() + ".cancelTreshold", 
+            3 /* mins */ * 60) * 1000 /* millis */;
 
     void log(boolean cancel, boolean logAbsorbed) {
+        // prevent logging of events within 3 minutes from the start of scan. Do not freeze...
+        if (cancel && (executed > 0) && (System.currentTimeMillis() - executed) < EXEC_TRESHOLD) {
+            final LogRecord r = new LogRecord(Level.INFO,  LOG_MESSAGE_EARLY);
+            r.setParameters(new Object[]{this});
+            r.setResourceBundle(NbBundle.getBundle(LogContext.class));
+            r.setResourceBundleName(LogContext.class.getPackage().getName() + ".Bundle"); //NOI18N
+            r.setLoggerName(LOG.getName());
+            LOG.log(r);
+            return;
+        }
         freeze();
         final LogRecord r = new LogRecord(Level.INFO, 
                 cancel ? LOG_MESSAGE : LOG_EXCEEDS_RATE); //NOI18N
@@ -834,7 +851,8 @@ import org.openide.util.Utilities;
     }
 
     private static final Logger LOG = Logger.getLogger(LogContext.class.getName());
-    private static final String LOG_MESSAGE = "SCAN_CANCELLED"; //NOI18N
+    private static final String LOG_MESSAGE = "SCAN_CANCELLED"; //NOI18
+    private static final String LOG_MESSAGE_EARLY = "SCAN_CANCELLED_EARLY"; //NOI18N
     private static final String LOG_EXCEEDS_RATE = "SCAN_EXCEEDS_RATE {0}"; //NOI18N
     
     /**

@@ -339,7 +339,7 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         
     }
 
-    private class FileObjectComparator implements java.util.Comparator {
+    private static class FileObjectComparator implements java.util.Comparator {
         public int compare(Object o1, Object o2) {
             FileObject fo1 = (FileObject)o1;
             FileObject fo2 = (FileObject)o2;

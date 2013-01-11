@@ -153,6 +153,15 @@ public final class LayeredDocumentIndex implements DocumentIndex.Transactional {
         }
     }
 
+    @Override
+    public void clear() throws IOException {
+        if (isTransientUpdate()) {
+            clearOverlay();
+        } else {
+            base.clear();
+        }
+    }
+
 
     @Override
     public Collection<? extends IndexDocument> query(String fieldName, String value, QueryKind kind, String... fieldsToLoad) throws IOException, InterruptedException {

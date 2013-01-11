@@ -152,6 +152,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
     private static final String XHTML_MIME_TYPE = "text/xhtml"; // NOI18N
     private static final String PHP_MIME_TYPE = "text/x-php5"; // NOI18N
     private static final String TPL_MIME_TYPE = "text/x-tpl"; // NOI18N
+    private static final String TWIG_MIME_TYPE = "text/x-twig"; // NOI18N
     //private static final String GSP_TAG_MIME_TYPE = "application/x-gsp"; // NOI18N
     private static final Map<String, Translator> translators = new HashMap<String, Translator>();
 
@@ -163,6 +164,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         translators.put(XHTML_MIME_TYPE, new XhtmlTranslator());
         translators.put(PHP_MIME_TYPE, new PhpTranslator());
         translators.put(TPL_MIME_TYPE, new TplTranslator());
+        translators.put(TWIG_MIME_TYPE, new TwigTranslator());
     }
     // If you change this, update the testcase reference
     private static final String GENERATED_IDENTIFIER = "__UNKNOWN__"; // NOI18N
@@ -177,7 +179,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         this.translator = translator;
     }
 
-    private interface Translator {
+    protected interface Translator {
 
         public List<Embedding> translate(Snapshot snapshot);
     } // End of Translator interface
@@ -331,7 +333,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         }
     } // End of PhpTranslator class
 
-    private static final class TplTranslator implements Translator {
+    protected static final class TplTranslator implements Translator {
 
         @Override
         public List<Embedding> translate(Snapshot snapshot) {
@@ -368,7 +370,13 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                         boolean hasNext;
                         while (hasNext = tokenSequence.moveNext()) {
                             Token<? extends TokenId> innerToken = tokenSequence.token();
-                            if (!innerToken.id().name().equals("T_HTML")) { //NOI18N
+                            if (CharSequenceUtilities.textEquals("ldelim", innerToken.text())) {        //NOI18N
+                                wasInLiteral = true;
+                                embeddings.add(snapshot.create("{", JsTokenId.JAVASCRIPT_MIME_TYPE));   //NOI18N
+                            } else if (CharSequenceUtilities.textEquals("rdelim", innerToken.text())) { //NOI18N
+                                wasInLiteral = true;
+                                embeddings.add(snapshot.create("}", JsTokenId.JAVASCRIPT_MIME_TYPE));   //NOI18N
+                            } else if (!innerToken.id().name().equals("T_HTML")) { //NOI18N
                                 wasInTpl = true;
                                 if (CharSequenceUtilities.indexOf(innerToken.text(), "literal") > -1) { //NOI18N
                                     wasInLiteral = true;
@@ -393,6 +401,37 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
             return embeddings;
         }
     } // End of TplTranslator class
+
+    private static final class TwigTranslator implements Translator {
+
+        @Override
+        public List<Embedding> translate(Snapshot snapshot) {
+            TokenHierarchy<?> th = snapshot.getTokenHierarchy();
+            if (th == null) {
+                //likely the twig language couldn't be found
+                LOG.info("Cannot get TokenHierarchy from snapshot " + snapshot); //NOI18N
+                return Collections.emptyList();
+            }
+
+            TokenSequence<? extends TokenId> tokenSequence = th.tokenSequence();
+            List<Embedding> embeddings = new ArrayList<Embedding>();
+
+            JsAnalyzerState state = new JsAnalyzerState();
+            while (tokenSequence.moveNext()) {
+                Token<? extends TokenId> token = tokenSequence.token();
+
+                if (token.id().name().equals("T_HTML") || token.id().name().equals("T_TWIG_RAW")) { //NOI18N
+                    TokenSequence<? extends HTMLTokenId> ts = tokenSequence.embedded(HTMLTokenId.language());
+                    if (ts == null) {
+                        continue;
+                    }
+                    extractJavaScriptFromHtml(snapshot, ts, state, embeddings);
+                }
+            }
+
+            return embeddings;
+        }
+    } // End of TwigTranslator class
 
     private static final class RhtmlTranslator implements Translator {
 
@@ -725,6 +764,27 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
 
     protected static List<EmbeddingPosition> extractJsEmbeddings(String text, int sourceStart) {
         List<EmbeddingPosition> embeddings = new LinkedList<EmbeddingPosition>();
+        // beggining comment around the script
+        int start = 0;
+        for (; start < text.length(); start++) {
+            char c = text.charAt(start);
+            if (!Character.isWhitespace(c)) {
+                break;
+            }
+        }
+        if (start < text.length() && text.startsWith("<!--", start)) { //NOI18N
+            int lineEnd = text.indexOf('\n', start); //NOI18N
+            if (isHtmlCommentStartToSkip(text, start, lineEnd)) {
+                if (start > 0) {
+                    embeddings.add(new EmbeddingPosition(sourceStart, start));
+                }
+                lineEnd++; //skip the \n
+                sourceStart += lineEnd;
+                text = text.substring(lineEnd);
+            }
+        }
+
+        // inline comments inside script
         Scanner scanner = new Scanner(text).useDelimiter("(<!--).*(-->)"); //NOI18N
         while (scanner.hasNext()) {
             scanner.next();
@@ -732,6 +792,20 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
             embeddings.add(new EmbeddingPosition(sourceStart + match.start(), match.group().length()));
         }
         return embeddings;
+    }
+
+    private static boolean isHtmlCommentStartToSkip(String text, int start, int lineEnd) {
+        if (lineEnd != -1) {
+            // issue #223883 - one of suggested constructs: http://lachy.id.au/log/2005/05/script-comments (Example 4)
+            if (text.startsWith("<!--//-->", start)) { //NOI18N
+                return true;
+            } else {
+                //    embedded delimiter - issue #217081 || one line comment - issue #223883
+                return (text.indexOf("-->", start) == -1 || lineEnd < text.indexOf("-->", start)); //NOI18N
+            }
+        } else {
+            return false;
+        }
     }
 
     private static final class JsAnalyzerState {

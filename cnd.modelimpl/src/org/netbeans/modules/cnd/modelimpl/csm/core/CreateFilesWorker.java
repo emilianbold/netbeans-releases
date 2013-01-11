@@ -66,7 +66,7 @@ final class CreateFilesWorker {
     private FileModel lwm;
     private boolean lwmInited;
     private final ProjectBase project;
-    private final RequestProcessor PROJECT_FILES_WORKER = new RequestProcessor("Project Files", CndUtils.getNumberCndWorkerThreads()); // NOI18N
+    private final RequestProcessor PROJECT_FILES_WORKER;
     private final Set<FileImpl> reparseOnEdit = Collections.synchronizedSet(new HashSet<FileImpl>());
     private final Set<NativeFileItem> reparseOnPropertyChanged = Collections.synchronizedSet(new HashSet<NativeFileItem>());
     private final AtomicBoolean failureDetected = new AtomicBoolean(false);
@@ -76,6 +76,7 @@ final class CreateFilesWorker {
         this.project = project;
         this.removedFiles = removedFiles;
         this.validator = validator;
+        this.PROJECT_FILES_WORKER = new RequestProcessor("CreateFilesWorker " + project.getDisplayName(), CndUtils.getNumberCndWorkerThreads()); // NOI18N
     }
 
     private synchronized FileModel getLWM() {

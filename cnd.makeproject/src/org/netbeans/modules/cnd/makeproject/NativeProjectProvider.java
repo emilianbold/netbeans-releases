@@ -794,6 +794,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                 startedProcess.waitFor();
                 reader1.close();
                 reader2.close();
+                startedProcess = null;
+                errorTask = null;
                 return new NativeExitStatus(0, output.toString(), "");
             } catch (IOException ioe) {
                 throw ioe;

@@ -56,6 +56,8 @@ public interface Device {
     public static String DEVICE_PROP = "device";
     public static String DEVICE = "device";
     public static String VIRTUAL_DEVICE_PROP = "virtual.device";
+    public static String BROWSER_PROP = "browser";
+
     public static final String TYPE_PROP = "type";
 
     public boolean isEmulator();

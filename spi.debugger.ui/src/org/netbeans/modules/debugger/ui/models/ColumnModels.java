@@ -109,6 +109,7 @@ public class ColumnModels {
 
         Properties properties = Properties.getDefault ().
             getProperties ("debugger").getProperties ("views");
+        private Properties viewProperties = null;
 
         public AbstractColumn(String id, String displayName, String shortDescription,
                               Class type) {
@@ -143,6 +144,10 @@ public class ColumnModels {
         public String getID() {
             return id;
         }
+        
+        public void setViewPath(String viewPath) {
+            viewProperties = properties.getProperties(viewPath);
+        }
 
         public String getDisplayName() {
             return NbBundle.getBundle (ColumnModels.class).getString(displayName);
@@ -164,7 +169,7 @@ public class ColumnModels {
          */
         @Override
         public void setVisible (boolean visible) {
-            properties.setBoolean (getID () + ".visible", visible);
+            setBooleanProperty(".visible", visible);
         }
 
         /**
@@ -175,7 +180,7 @@ public class ColumnModels {
         @Override
         public void setSorted (boolean sorted) {
             if (sortable) {
-                properties.setBoolean (getID () + ".sorted", sorted);
+                setBooleanProperty(".sorted", sorted);
             }
         }
 
@@ -188,10 +193,7 @@ public class ColumnModels {
         @Override
         public void setSortedDescending (boolean sortedDescending) {
             if (sortable) {
-                properties.setBoolean (
-                    getID () + ".sortedDescending",
-                    sortedDescending
-                 );
+                setBooleanProperty(".sortedDescending", sortedDescending);
             }
         }
 
@@ -202,7 +204,7 @@ public class ColumnModels {
          */
         @Override
         public int getCurrentOrderNumber () {
-            int cn = properties.getInt (getID () + ".currentOrderNumber", -1);
+            int cn = getIntProperty(".currentOrderNumber", -1);
             if (cn >= 0 && !properties.getBoolean("outlineOrdering", false)) {
                 cn++; // Shift the old TreeTable ordering, which did not count the first nodes column.
             }
@@ -216,10 +218,7 @@ public class ColumnModels {
          */
         @Override
         public void setCurrentOrderNumber (int newOrderNumber) {
-            properties.setInt (
-                getID () + ".currentOrderNumber",
-                newOrderNumber
-            );
+            setIntProperty(".currentOrderNumber", newOrderNumber);
             properties.setBoolean("outlineOrdering", true);
         }
 
@@ -230,7 +229,7 @@ public class ColumnModels {
          */
         @Override
         public int getColumnWidth () {
-            return properties.getInt (getID () + ".columnWidth", 150);
+            return getIntProperty(".columnWidth", 150);
         }
 
         /**
@@ -240,7 +239,7 @@ public class ColumnModels {
          */
         @Override
         public void setColumnWidth (int newColumnWidth) {
-            properties.setInt (getID () + ".columnWidth", newColumnWidth);
+            setIntProperty(".columnWidth", newColumnWidth);
         }
 
         /**
@@ -250,7 +249,7 @@ public class ColumnModels {
          */
         @Override
         public boolean isVisible () {
-            return properties.getBoolean (getID () + ".visible", defaultVisible);
+            return getBooleanProperty(".visible", defaultVisible);
         }
 
         @Override
@@ -266,7 +265,7 @@ public class ColumnModels {
         @Override
         public boolean isSorted () {
             if (sortable) {
-                return properties.getBoolean (getID () + ".sorted", false);
+                return getBooleanProperty(".sorted", false);
             } else {
                 return false;
             }
@@ -281,10 +280,7 @@ public class ColumnModels {
         @Override
         public boolean isSortedDescending () {
             if (sortable) {
-                return properties.getBoolean (
-                    getID () + ".sortedDescending",
-                    false
-                );
+                return getBooleanProperty(".sortedDescending", false);
             } else {
                 return false;
             }
@@ -306,7 +302,47 @@ public class ColumnModels {
         public TableCellEditor getTableCellEditor() {
             return useTableCellEditor ? new WatchesTableCellEditor() : null;
         }
+        
+        private boolean getBooleanProperty(String propName, boolean defaultValue) {
+            propName = getID () + propName;
+            if (viewProperties != null &&
+                viewProperties.getBoolean(propName, true) == viewProperties.getBoolean(propName, false)) {
+                // it is defined in the view:
+                return viewProperties.getBoolean (propName, defaultValue);
+            } else {
+                return properties.getBoolean (propName, defaultValue);
+            }
+        }
+        
+        private void setBooleanProperty(String propName, boolean value) {
+            propName = getID () + propName;
+            if (viewProperties != null) {
+                viewProperties.setBoolean(propName, value);
+            } else {
+                properties.setBoolean(propName, value);
+            }
+        }
+        
+        private int getIntProperty(String propName, int defaultValue) {
+            propName = getID () + propName;
+            if (viewProperties != null &&
+                viewProperties.getInt(propName, 0) == viewProperties.getInt(propName, -1)) {
+                // it is defined in the view:
+                return viewProperties.getInt (propName, defaultValue);
+            } else {
+                return properties.getInt (propName, defaultValue);
+            }
+        }
 
+        private void setIntProperty(String propName, int value) {
+            propName = getID () + propName;
+            if (viewProperties != null) {
+                viewProperties.setInt(propName, value);
+            } else {
+                properties.setInt(propName, value);
+            }
+        }
+        
     }
 
     /**

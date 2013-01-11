@@ -50,6 +50,7 @@ import java.awt.Toolkit;
 import java.awt.event.AWTEventListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.BorderFactory;
@@ -72,7 +73,6 @@ public class ToolbarWithOverflow extends JToolBar {
     private JButton overflowButton;
     private JPopupMenu popup;
     private JToolBar overflowToolbar;
-    private int visibleButtons;
     private boolean displayOverflowOnHover = true;
     private final String toolbarArrowHorizontal = "org/openide/awt/resources/toolbar_arrow_horizontal.png"; //NOI18N
     private final String toolbarArrowVertical = "org/openide/awt/resources/toolbar_arrow_vertical.png"; //NOI18N
@@ -137,68 +137,83 @@ public class ToolbarWithOverflow extends JToolBar {
         overflowToolbar = new JToolBar("overflowToolbar", orientation == HORIZONTAL ? VERTICAL : HORIZONTAL);
         overflowToolbar.setFloatable(false);
         overflowToolbar.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
-        componentAdapter = new ComponentAdapter() {
-	    @Override
-	    public void componentResized(ComponentEvent e) {
-		maybeAddOverflow();
-	    }
-	};
-        awtEventListener = new AWTEventListener() {
-            @Override
-            public void eventDispatched(AWTEvent event) {
-                MouseEvent e = (MouseEvent) event;
-                if(isVisible() && !isShowing() && popup.isShowing()) {
-                    popup.setVisible(false);
-                    return;
+    }
+
+    private ComponentListener getComponentListener() {
+        if (componentAdapter == null) {
+            componentAdapter = new ComponentAdapter() {
+                @Override
+                public void componentResized(ComponentEvent e) {
+                    maybeAddOverflow();
                 }
-                if (event.getSource() == popup) {
-                    if (popup.isShowing() && e.getID() == MouseEvent.MOUSE_EXITED) {
-                        int minX = popup.getLocationOnScreen().x;
-                        int maxX = popup.getLocationOnScreen().x + popup.getWidth();
-                        int minY = popup.getLocationOnScreen().y;
-                        int maxY = popup.getLocationOnScreen().y + popup.getHeight();
-                        if (e.getXOnScreen() < minX || e.getXOnScreen() >= maxX || e.getYOnScreen() < minY || e.getYOnScreen() >= maxY) {
-                            popup.setVisible(false);
+            };
+        }
+        return componentAdapter;
+    }
+
+    private AWTEventListener getAWTEventListener() {
+        if (awtEventListener == null) {
+            awtEventListener = new AWTEventListener() {
+                @Override
+                public void eventDispatched(AWTEvent event) {
+                    MouseEvent e = (MouseEvent) event;
+                    if(isVisible() && !isShowing() && popup.isShowing()) {
+                        popup.setVisible(false);
+                        return;
+                    }
+                    if (event.getSource() == popup) {
+                        if (popup.isShowing() && e.getID() == MouseEvent.MOUSE_EXITED) {
+                            int minX = popup.getLocationOnScreen().x;
+                            int maxX = popup.getLocationOnScreen().x + popup.getWidth();
+                            int minY = popup.getLocationOnScreen().y;
+                            int maxY = popup.getLocationOnScreen().y + popup.getHeight();
+                            if (e.getXOnScreen() < minX || e.getXOnScreen() >= maxX || e.getYOnScreen() < minY || e.getYOnScreen() >= maxY) {
+                                popup.setVisible(false);
+                            }
+                        }
+                    } else {
+                        if (popup.isShowing() && overflowButton.isShowing() && (e.getID() == MouseEvent.MOUSE_MOVED || e.getID() == MouseEvent.MOUSE_EXITED)) {
+                            int minX = overflowButton.getLocationOnScreen().x;
+                            int maxX_ob = minX + overflowButton.getWidth();
+                            int maxX = getOrientation() == HORIZONTAL ? minX + popup.getWidth()
+                                    : minX + overflowButton.getWidth() + popup.getWidth();
+                            int minY = overflowButton.getLocationOnScreen().y;
+                            int maxY_ob = minY + overflowButton.getHeight();
+                            int maxY = getOrientation() == HORIZONTAL ? minY + overflowButton.getHeight() + popup.getHeight()
+                                    : minY + popup.getHeight();
+                            if (e.getXOnScreen() < minX || e.getYOnScreen() < minY || e.getXOnScreen() > maxX || e.getYOnScreen() > maxY
+                                    || (getOrientation() == HORIZONTAL && e.getXOnScreen() > maxX_ob
+                                            && e.getYOnScreen() >= minY && e.getYOnScreen() < maxY_ob)
+                                    || (getOrientation() == VERTICAL && e.getXOnScreen() >= minX && e.getXOnScreen() < maxX_ob
+                                            && e.getYOnScreen() > maxY_ob)) {
+                                popup.setVisible(false);
+                            }
                         }
                     }
-                } else {
-                    if (popup.isShowing() && overflowButton.isShowing() && (e.getID() == MouseEvent.MOUSE_MOVED || e.getID() == MouseEvent.MOUSE_EXITED)) {
-                        int minX = overflowButton.getLocationOnScreen().x;
-                        int maxX_ob = minX + overflowButton.getWidth();
-                        int maxX = getOrientation() == HORIZONTAL ? minX + popup.getWidth()
-                                : minX + overflowButton.getWidth() + popup.getWidth();
-                        int minY = overflowButton.getLocationOnScreen().y;
-                        int maxY_ob = minY + overflowButton.getHeight();
-                        int maxY = getOrientation() == HORIZONTAL ? minY + overflowButton.getHeight() + popup.getHeight()
-                                : minY + popup.getHeight();
-			if (e.getXOnScreen() < minX || e.getYOnScreen() < minY || e.getXOnScreen() > maxX || e.getYOnScreen() > maxY
-				|| (getOrientation() == HORIZONTAL && e.getXOnScreen() > maxX_ob
-					&& e.getYOnScreen() >= minY && e.getYOnScreen() < maxY_ob)
-				|| (getOrientation() == VERTICAL && e.getXOnScreen() >= minX && e.getXOnScreen() < maxX_ob
-					&& e.getYOnScreen() > maxY_ob)) {
-			    popup.setVisible(false);
-			}
-                    }
                 }
-            }
-        };
+            };
+        }
+        return awtEventListener;
     }
 
     @Override
     public void addNotify() {
         super.addNotify();
-	Object disable = getClientProperty(PROP_JDEV_DISABLE_OVERFLOW);
-	if (disable == null || Boolean.FALSE.equals(disable)) {
-	    addComponentListener(componentAdapter);
-	    Toolkit.getDefaultToolkit().addAWTEventListener(awtEventListener, AWTEvent.MOUSE_EVENT_MASK | AWTEvent.MOUSE_MOTION_EVENT_MASK);
+        if (!Boolean.TRUE.equals(getClientProperty(PROP_JDEV_DISABLE_OVERFLOW))) {
+	    addComponentListener(getComponentListener());
+	    Toolkit.getDefaultToolkit().addAWTEventListener(getAWTEventListener(), AWTEvent.MOUSE_EVENT_MASK | AWTEvent.MOUSE_MOTION_EVENT_MASK);
 	}
     }
 
     @Override
     public void removeNotify() {
         super.removeNotify();
-	removeComponentListener(componentAdapter);
-        Toolkit.getDefaultToolkit().removeAWTEventListener(awtEventListener);
+        if (componentAdapter != null) {
+            removeComponentListener(componentAdapter);
+        }
+        if (awtEventListener != null) {
+            Toolkit.getDefaultToolkit().removeAWTEventListener(awtEventListener);
+        }
     }
 
     /**
@@ -258,11 +273,13 @@ public class ToolbarWithOverflow extends JToolBar {
     
     @Override
     public void validate() {
-        computeVisibleButtons();
-        if (visibleButtons == -1) {
-            handleOverflowRemoval();
-        } else {
-            handleOverflowAddittion();
+        if (!Boolean.TRUE.equals(getClientProperty(PROP_JDEV_DISABLE_OVERFLOW))) {
+            int visibleButtons = computeVisibleButtons();
+            if (visibleButtons == -1) {
+                handleOverflowRemoval();
+            } else {
+                handleOverflowAddittion(visibleButtons);
+            }
         }
         super.validate();
     }
@@ -303,11 +320,7 @@ public class ToolbarWithOverflow extends JToolBar {
         repaint();
     }
 
-    private void computeVisibleButtons() {
-	Object disable = getClientProperty(PROP_JDEV_DISABLE_OVERFLOW);
-	if (Boolean.TRUE.equals(disable)) {
-	    visibleButtons = -1;
-	}
+    private int computeVisibleButtons() {
         if (isShowing()) {
             int w = getOrientation() == HORIZONTAL ? overflowButton.getIcon().getIconWidth() + 4 : getWidth() - getInsets().left - getInsets().right;
             int h = getOrientation() == HORIZONTAL ? getHeight() - getInsets().top - getInsets().bottom : overflowButton.getIcon().getIconHeight() + 4;
@@ -320,7 +333,8 @@ public class ToolbarWithOverflow extends JToolBar {
         int sizeSoFar = 0;
         int maxSize = getOrientation() == HORIZONTAL ? getWidth() : getHeight();
         int overflowButtonSize = getOrientation() == HORIZONTAL ? overflowButton.getPreferredSize().width : overflowButton.getPreferredSize().height;
-        int showingButtons = 0;
+        int showingButtons = 0; // all that return true from isVisible()
+        int visibleButtons = 0; // all visible that fit into the given space (maxSize)
         Insets insets = getInsets();
         if( null != insets ) {
             sizeSoFar = getOrientation() == HORIZONTAL ? insets.left+insets.right : insets.top+insets.bottom;
@@ -330,49 +344,48 @@ public class ToolbarWithOverflow extends JToolBar {
             if( !comp.isVisible() ) {
 		continue;
 	    }
+            if (showingButtons == visibleButtons) {
+                int size = getOrientation() == HORIZONTAL ? comp.getPreferredSize().width : comp.getPreferredSize().height;
+                if (sizeSoFar + size <= maxSize) {
+                    sizeSoFar += size;
+                    visibleButtons++;
+                }
+            }
             showingButtons++;
-            sizeSoFar += getOrientation() == HORIZONTAL ? comp.getPreferredSize().width : comp.getPreferredSize().height;
-            if (sizeSoFar > maxSize) {
-                visibleButtons = i;
-                break;
-            } else {
-                if (sizeSoFar + overflowButtonSize > maxSize && i + 1 != comps.length) {
-                    visibleButtons = i;
-                    break;
-                } else {
-                    visibleButtons = i + 1;
-                }
-            }
         }
-        if(visibleButtons == 0 && comps.length > 0) {            
-            if (comps[0] instanceof JComponent) {
-                if (Boolean.TRUE.equals(((JComponent) comps[0]).getClientProperty(PROP_DRAGGER))) {
-                    visibleButtons = 1;
-                    return;
-                }
-            }
+        if (visibleButtons < showingButtons && visibleButtons > 0 && sizeSoFar + overflowButtonSize > maxSize) {
+            // overflow button needed but would not have enough space, remove one more button
+            visibleButtons--;
         }
-        if (visibleButtons >= showingButtons) {
+        if (visibleButtons == 0 && comps.length > 0
+                && comps[0] instanceof JComponent
+                && Boolean.TRUE.equals(((JComponent) comps[0]).getClientProperty(PROP_DRAGGER))) {
+            visibleButtons = 1; // always include the dragger if present
+        }
+        if (visibleButtons == showingButtons) {
             visibleButtons = -1;
         }
+        return visibleButtons;
     }
 
-    private void handleOverflowAddittion() {
+    private void handleOverflowAddittion(int visibleButtons) {
         Component[] comps = getAllComponents();
-        if (visibleButtons <= comps.length) {
-            removeAll();
-            overflowToolbar.setOrientation(getOrientation() == HORIZONTAL ? VERTICAL : HORIZONTAL);
-            popup.removeAll();
+        removeAll();
+        overflowToolbar.setOrientation(getOrientation() == HORIZONTAL ? VERTICAL : HORIZONTAL);
+        popup.removeAll();
 
-            for (int i = 0; i < visibleButtons; i++) {
-                add(comps[i]);
+        for (Component comp : comps) {
+            if (visibleButtons > 0) {
+                add(comp);
+                if (comp.isVisible()) {
+                    visibleButtons--;
+                }
+            } else {
+                overflowToolbar.add(comp);
             }
-            for (int i = visibleButtons; i < comps.length; i++) {
-                overflowToolbar.add(comps[i]);
-            }
-            popup.add(overflowToolbar);
-            add(overflowButton);
         }
+        popup.add(overflowToolbar);
+        add(overflowButton);
     }
 
     private void handleOverflowRemoval() {

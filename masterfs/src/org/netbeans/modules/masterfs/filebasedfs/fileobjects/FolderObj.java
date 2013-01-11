@@ -489,7 +489,10 @@ public final class FolderObj extends BaseFileObj {
             final FileNaming child = entry.getKey();
             final Integer operationId = entry.getValue();
 
-            BaseFileObj newChild = (operationId == ChildrenCache.ADDED_CHILD) ? factory.getFileObject(new FileInfo(child.getFile()), FileObjectFactory.Caller.Others) : factory.getCachedOnly(child.getFile());
+            BaseFileObj newChild = (operationId == ChildrenCache.ADDED_CHILD) ? 
+                factory.getFileObject(new FileInfo(child.getFile()), FileObjectFactory.Caller.Refresh) 
+                : 
+                factory.getCachedOnly(child.getFile());
             newChild = (BaseFileObj) ((newChild != null) ? newChild : getFileObject(child.getName()));
             if (operationId == ChildrenCache.ADDED_CHILD && newChild != null) {
 
@@ -508,11 +511,12 @@ public final class FolderObj extends BaseFileObj {
             } else if (operationId == ChildrenCache.REMOVED_CHILD) {
                 if (newChild != null) {
                     if (newChild.isValid()) {
-                        newChild.setValid(false);
                         if (newChild instanceof FolderObj) {
                             getProvidedExtensions().deletedExternally(newChild);
                             ((FolderObj)newChild).refreshImpl(expected, fire);
+                            newChild.setValid(false);
                         } else {
+                            newChild.setValid(false);
                             if (fire) {
                                 getProvidedExtensions().deletedExternally(newChild);
                                 newChild.fireFileDeletedEvent(expected);
@@ -543,8 +547,7 @@ public final class FolderObj extends BaseFileObj {
         }
         boolean validityFlag = FileChangedManager.getInstance().exists(getFileName().getFile());
         if (!validityFlag) {
-            //fileobject is invalidated                
-            setValid(false);
+            getFactory().invalidateSubtree(this);
             if (fire) {
                 fireFileDeletedEvent(expected);
             }
@@ -648,6 +651,15 @@ public final class FolderObj extends BaseFileObj {
         }
     }
     
+    @Override
+    protected void afterRename() {
+        synchronized (FolderChildrenCache.class) {
+            if (folderChildren != null) {
+                folderChildren = folderChildren.cloneFor(getFileName());
+            }
+        }
+    }
+    
     public final boolean hasRecursiveListener() {
         FileObjectKeeper k = keeper;
         return k != null && k.isOn();
@@ -702,6 +714,12 @@ public final class FolderObj extends BaseFileObj {
         @Override
         public void removeChild(FileNaming childName) {
             removeChild(getFileName(), childName);
+        }
+
+        final FolderChildrenCache cloneFor(FileNaming fileName) {
+            FolderChildrenCache newCache = new FolderChildrenCache();
+            copyTo(newCache, getFileName());
+            return newCache;
         }
     }
 

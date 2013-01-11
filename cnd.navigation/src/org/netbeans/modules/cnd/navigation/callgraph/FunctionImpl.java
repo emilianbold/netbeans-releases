@@ -81,8 +81,8 @@ public class FunctionImpl implements Function {
     public FunctionImpl(CsmFunction function) {
         this.function = function;
         cachedFunctionDefinition = initDefinition();
-        isVirtual = initVirtual();
         cachedFunctionDeclaration = initDeclaration();
+        isVirtual = initVirtual();
         icon = initIcon();
     }
 

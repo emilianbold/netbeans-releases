@@ -667,12 +667,14 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
 
     @Override
     boolean valid(WizardDescriptor settings) {
-        if (task != null || !JavaFXPlatformUtils.isJavaFXEnabled(getSelectedPlatform())) {
+        if (task != null) {
             setBottomPanelAreaVisible(false);
-            if(detectPlatformTaskPerformed) {
-                settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                    NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.notFXPlatform")); // NOI18N
-            }
+            return false;
+        }
+        if (task == null && detectPlatformTaskPerformed && !JavaFXPlatformUtils.isJavaFXEnabled(getSelectedPlatform())) {
+            setBottomPanelAreaVisible(false);
+            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.notFXPlatform")); // NOI18N
             return false;
         }
         setBottomPanelAreaVisible(true);
@@ -832,7 +834,6 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
 
             @Override
             public void run() {
-                detectPlatformTaskPerformed = true;
                 assert progressHandle != null;
                 progressHandle.finish();
                 progressPanel.setVisible(false);
@@ -843,6 +844,7 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
                     // select javafx platform
                     selectJavaFXEnabledPlatform();
                 }
+                detectPlatformTaskPerformed = true;
                 panel.fireChangeEvent();
             }
         });

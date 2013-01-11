@@ -50,13 +50,10 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
-import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
-import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -109,11 +106,11 @@ public class JsStructureScanner implements StructureScanner {
                 if (function.isAnonymous()) {
                     collectedItems.addAll(children);
                 } else {
-                    if (function.isDeclared()) {
+                    if (function.isDeclared() && !(jsObject.isAnonymous() && function.getModifiers().contains(Modifier.PRIVATE))) {
                         collectedItems.add(new JsFunctionStructureItem(function, children, result));
                     }
                 }
-            } else if ((child.getJSKind() == JsElement.Kind.OBJECT || child.getJSKind() == JsElement.Kind.OBJECT_LITERAL || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) 
+            } else if (((child.getJSKind() == JsElement.Kind.OBJECT && hasDeclaredProperty(child)) || child.getJSKind() == JsElement.Kind.OBJECT_LITERAL || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) 
                     && (children.size() > 0 || child.isDeclared())) {
                 collectedItems.add(new JsObjectStructureItem(child, children, result));
             } else if (child.getJSKind() == JsElement.Kind.PROPERTY) {
@@ -121,6 +118,7 @@ public class JsStructureScanner implements StructureScanner {
                         || !(jsObject.getParent() instanceof JsFunction)))
                 collectedItems.add(new JsSimpleStructureItem(child, "prop-", result)); //NOI18N
             } else if (child.getJSKind() == JsElement.Kind.VARIABLE && child.isDeclared()
+                    && !jsObject.isAnonymous()
                     /*&& (jsObject.getJSKind() == JsElement.Kind.FILE || jsObject.getJSKind() == JsElement.Kind.CONSTRUCTOR)*/) {
                 collectedItems.add(new JsSimpleStructureItem(child, "var-", result)); //NOI18N
             }
@@ -221,14 +219,12 @@ public class JsStructureScanner implements StructureScanner {
 
     private boolean hasDeclaredProperty(JsObject jsObject) {
         boolean result =  false;
-        if (jsObject.isDeclared()) {
-            result = true;
-        } else {
-            Iterator <? extends JsObject> it = jsObject.getProperties().values().iterator();
-            while (!result && it.hasNext()) {
-                result = hasDeclaredProperty(it.next());
-            }
+        
+        Iterator<? extends JsObject> it = jsObject.getProperties().values().iterator();
+        while (!result && it.hasNext()) {
+            result = it.next().isDeclared();
         }
+
         return result;
     }
     
@@ -372,7 +368,14 @@ public class JsStructureScanner implements StructureScanner {
             if (function == null) {
                 return;
             }
+            boolean isDeprecated = getFunctionScope().isDeprecated();
+            if (isDeprecated) {
+                formatter.deprecated(true);
+            }
             formatter.appendText(getFunctionScope().getDeclarationName().getName());
+            if (isDeprecated) {
+                formatter.deprecated(false);
+            }
             formatter.appendText("(");   //NOI18N
             boolean addComma = false;
             for(JsObject jsObject : function.getParameters()) {
@@ -443,7 +446,14 @@ public class JsStructureScanner implements StructureScanner {
             if (object == null) {
                 return;
             }
+            boolean isDeprecated = object.isDeprecated();
+            if (isDeprecated) {
+                formatter.deprecated(true);
+            }
             formatter.appendText(object.getName());
+            if (isDeprecated) {
+                formatter.deprecated(false);
+            }
         }
 
     }
@@ -460,7 +470,15 @@ public class JsStructureScanner implements StructureScanner {
         @Override
         public String getHtml(HtmlFormatter formatter) {
             formatter.reset();
+            boolean isDeprecated = object.isDeprecated();
+            if (isDeprecated) {
+                formatter.deprecated(true);
+            }
             formatter.appendText(getElementHandle().getName());
+            if (isDeprecated) {
+                formatter.deprecated(false);
+            }
+            
             Collection<? extends TypeUsage> assignmentForOffset = object.getAssignmentForOffset(object.getDeclarationName().getOffsetRange().getEnd());
             Collection<TypeUsage> types = ModelUtils.resolveTypes(assignmentForOffset, parserResult);
             appendTypeInfo(formatter, types);

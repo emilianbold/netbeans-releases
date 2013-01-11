@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.formatter;
 
-import com.oracle.nashorn.ir.FunctionNode;
+import jdk.nashorn.internal.ir.FunctionNode;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -165,7 +165,7 @@ public class JsFormatter implements Formatter {
                 for (int i = 0; i < tokens.size(); i++) {
                     FormatToken token = tokens.get(i);
 
-                    if (processed.contains(token)) {
+                    if (processed.remove(token)) {
                         continue;
                     }
 
@@ -244,7 +244,6 @@ public class JsFormatter implements Formatter {
                         updateIndentationLevel(token, formatContext);
                     } else if (token.getKind() == FormatToken.Kind.SOURCE_START
                             || token.getKind() == FormatToken.Kind.EOL) {
-                        processed.clear();
                         // XXX refactor eol token WRAP_IF_LONG handling
                         if (token.getKind() != FormatToken.Kind.SOURCE_START) {
                             // search for token which will be present just before eol
@@ -1659,7 +1658,10 @@ public class JsFormatter implements Formatter {
                 if (!indentOnly) {
                     TokenSequence<? extends JsTokenId> inner = LexUtilities.getPositionedSequence(doc, ts.offset(), language);
                     // skip whitespaces and newlines
-                    Token<? extends JsTokenId> nextToken = LexUtilities.findNextNonWsNonComment(inner);
+                    Token<? extends JsTokenId> nextToken = null;
+                    if (inner != null) {
+                        nextToken = LexUtilities.findNextNonWsNonComment(inner);
+                    }
                     TokenId tokenId = nextToken == null ? null : nextToken.id();
                     if (tokenId == JsTokenId.BRACKET_RIGHT_CURLY) {
                         // if it is end of 'switch'

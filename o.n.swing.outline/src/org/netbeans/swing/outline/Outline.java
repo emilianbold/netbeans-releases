@@ -54,6 +54,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -73,6 +74,7 @@ import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JToolTip;
 import javax.swing.JViewport;
+import javax.swing.KeyStroke;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
@@ -700,6 +702,19 @@ public class Outline extends ETable {
         return tp;
     }
     
+    private KeyStroke lastProcessedKeyStroke;
+    
+    @Override
+    protected boolean processKeyBinding(KeyStroke ks, KeyEvent e,
+                                        int condition, boolean pressed) {
+        lastProcessedKeyStroke = ks;
+        try {
+            return super.processKeyBinding(ks, e, condition, pressed);
+        } finally {
+            lastProcessedKeyStroke = null;
+        }
+    }
+    
     @Override
     public boolean editCellAt (int row, int column, EventObject e) {
         //If it was on column 0, it may be a request to expand a tree
@@ -767,6 +782,16 @@ public class Outline extends ETable {
             // It may be a request to check/uncheck a check-box
             if (checkAt(row, column, me)) {
                 return false;
+            }
+        } else if (isTreeColumn && e instanceof ActionEvent) {
+            if (((ActionEvent) e).getModifiers() == 0 &&
+                lastProcessedKeyStroke != null) {
+                
+                if (lastProcessedKeyStroke.getKeyCode() == KeyEvent.VK_SPACE) {
+                    if (checkAt(row, column, null)) {
+                        return false;
+                    }
+                }
             }
         }
             

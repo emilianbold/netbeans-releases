@@ -54,6 +54,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -72,6 +73,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.libraries.LibraryChooser.Filter;
 import org.openide.filesystems.FileObject;
@@ -391,7 +393,7 @@ public final class EditMediator implements ActionListener, ListSelectionListener
             Set<Library> added = LibraryChooser.showDialog(manager,
                     createLibraryFilter(), empty ? refHelper.getLibraryChooserImportHandler() : refHelper.getLibraryChooserImportHandler(librariesFolder));
             if (added != null) {
-                Set<Library> includedLibraries = new HashSet<Library>();
+                final Set<Library> includedLibraries = getIncludedLibraries(listModel);
                int[] newSelection = ClassPathUiSupport.addLibraries(listModel, list.getSelectedIndices(), 
                        added.toArray(new Library[added.size()]), includedLibraries, callback);
                list.setSelectedIndices( newSelection );
@@ -435,6 +437,20 @@ public final class EditMediator implements ActionListener, ListSelectionListener
     private static Preferences getPreferences() {
         return NbPreferences.forModule(EditMediator.class);
     }
+
+    private Set<Library> getIncludedLibraries(@NonNull DefaultListModel model) {
+        final Set<Library> inc = new HashSet<Library>();
+        for (final Object item : model.toArray()) {
+            if (item instanceof ClassPathSupport.Item) {
+                final ClassPathSupport.Item cpItem = (ClassPathSupport.Item) item;
+                if (cpItem.getType() == ClassPathSupport.Item.TYPE_LIBRARY && cpItem.getLibrary() != null) {
+                    inc.add(cpItem.getLibrary());
+                }
+            }
+        }
+        return Collections.unmodifiableSet(inc);
+    }
+
     public static File getLastUsedClassPathFolder () {
         return new File(getPreferences().get(LAST_USED_CP_FOLDER, System.getProperty("user.home")));
     }

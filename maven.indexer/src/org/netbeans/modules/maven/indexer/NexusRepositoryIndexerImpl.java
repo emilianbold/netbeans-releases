@@ -1297,14 +1297,24 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             } catch (IllegalArgumentException iae) {
                                 //#204651 only escape when problems occur
                                 String clsname = QueryParser.escape(one.replace(".", "/")); //NOI18N
-                                q = indexer.constructQuery(MAVEN.CLASSNAMES, new StringSearchExpression(clsname.toLowerCase(Locale.ENGLISH)));
+                                try {
+                                    q = indexer.constructQuery(MAVEN.CLASSNAMES, new StringSearchExpression(clsname.toLowerCase(Locale.ENGLISH)));
+                                } catch (IllegalArgumentException iae2) {
+                                    //#224088
+                                    continue;
+                                }
                             }
                         } else if (ArtifactInfo.ARTIFACT_ID.equals(fieldName)) {
                             try {
                                 q = indexer.constructQuery(MAVEN.ARTIFACT_ID, new StringSearchExpression(one));
                             } catch (IllegalArgumentException iae) {
                                 //#204651 only escape when problems occur
-                                q = indexer.constructQuery(MAVEN.ARTIFACT_ID, new StringSearchExpression(QueryParser.escape(one)));
+                                try {
+                                    q = indexer.constructQuery(MAVEN.ARTIFACT_ID, new StringSearchExpression(QueryParser.escape(one)));
+                                } catch (IllegalArgumentException iae2) {
+                                    //#224088
+                                    continue;
+                                }
                             }
                         } else {
                             if (field.getMatch() == QueryField.MATCH_EXACT) {

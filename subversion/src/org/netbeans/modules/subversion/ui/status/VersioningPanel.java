@@ -343,7 +343,11 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     }
     
     private SyncFileNode [] getNodes(Context context, int includeStatus) {
-        SvnFileNode [] fnodes = SvnUtils.getNodes(context, includeStatus);
+        File [] files = Subversion.getInstance().getStatusCache().listFiles(context.getRootFiles(), includeStatus);
+        SvnFileNode [] fnodes = new SvnFileNode[files.length];
+        for (int i = 0; i < files.length; i++) {
+            fnodes[i] = new SvnFileNode(files[i]);
+        }
         SyncFileNode [] nodes = new SyncFileNode[fnodes.length];
         for (int i = 0; i < fnodes.length; i++) {
             if (Thread.interrupted()) return null;

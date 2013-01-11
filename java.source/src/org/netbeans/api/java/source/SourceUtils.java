@@ -97,6 +97,7 @@ import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import static org.netbeans.api.java.source.SourceUtils.getDependentRootsImpl;
 import org.netbeans.api.java.source.matching.Matcher;
 import org.netbeans.api.java.source.matching.Occurrence;
 import org.netbeans.api.java.source.matching.Pattern;
@@ -682,12 +683,30 @@ public class SourceUtils {
     public static Set<URL> getDependentRoots (final URL root) {
         final Map<URL, List<URL>> sourceDeps = IndexingController.getDefault().getRootDependencies();
         final Map<URL, List<URL>> binaryDeps = IndexingController.getDefault().getBinaryRootDependencies();
-        return getDependentRootsImpl (root, sourceDeps, binaryDeps);
+        return getDependentRootsImpl (root, sourceDeps, binaryDeps, true);
     }
     
+    /**
+     * Returns the dependent source path roots for given source root. It returns
+     * all the source roots which have either direct or transitive dependency on
+     * the given source root.
+     *
+     * @param root to find the dependent roots for
+     * @param filterNonOpenedProjects true if the results should only contain roots for
+     * opened projects
+     * @return {@link Set} of {@link URL}s containing at least the incoming
+     * root, never returns null.
+     * @since 0.110
+     */
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = {"DMI_COLLECTION_OF_URLS"}/*,justification="URLs have never host part"*/)    //NOI18N
+    public static Set<URL> getDependentRoots(final URL root, boolean filterNonOpenedProjects) {
+        final Map<URL, List<URL>> sourceDeps = IndexingController.getDefault().getRootDependencies();
+        final Map<URL, List<URL>> binaryDeps = IndexingController.getDefault().getBinaryRootDependencies();
+        return getDependentRootsImpl(root, sourceDeps, binaryDeps, filterNonOpenedProjects);
+    }
 
     @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}/*,justification="URLs have never host part"*/)    //NOI18N
-    static Set<URL> getDependentRootsImpl (final URL root, final Map<URL, List<URL>> sourceDeps, Map<URL, List<URL>> binaryDeps) {
+    static Set<URL> getDependentRootsImpl (final URL root, final Map<URL, List<URL>> sourceDeps, Map<URL, List<URL>> binaryDeps, boolean filterNonOpenedProjects) {
         Set<URL> urls;
 
         if (sourceDeps.containsKey(root)) {
@@ -710,15 +729,16 @@ public class SourceUtils {
             }
         }
 
-        //Filter non opened projects
-        Set<ClassPath> cps = GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE);
-        Set<URL> toRetain = new HashSet<URL>();
-        for (ClassPath cp : cps) {
-            for (ClassPath.Entry e : cp.entries()) {
-                toRetain.add(e.getURL());
+        if(filterNonOpenedProjects) {
+            Set<ClassPath> cps = GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE);
+            Set<URL> toRetain = new HashSet<URL>();
+            for (ClassPath cp : cps) {
+                for (ClassPath.Entry e : cp.entries()) {
+                    toRetain.add(e.getURL());
+                }
             }
+            urls.retainAll(toRetain);
         }
-        urls.retainAll(toRetain);
         return urls;
     }    
     

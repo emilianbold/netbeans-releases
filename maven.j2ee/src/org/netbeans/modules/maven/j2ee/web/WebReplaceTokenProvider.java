@@ -63,6 +63,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
@@ -370,9 +371,15 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
     /*
      * Created as  fix for IZ#172931 - [68cat] AWT thread blocked for 29229 ms.
      */
-    private static void setServletClasses( final List<String> servletClasses, final FileObject orig , WebModule module ) {
+    private static void setServletClasses( final List<String> servletClasses, 
+            final FileObject orig , WebModule module ) 
+    {
         JavaSource javaSource = JavaSource.forFileObject(orig);
         if (javaSource == null) {
+            return;
+        }
+        final Project project = FileOwnerQuery.getOwner(orig);
+        if ( project == null ){
             return;
         }
         try {
@@ -389,10 +396,27 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
                         if (typeElem == null) {
                             continue;
                         }
-                        ElementHandle<TypeElement> handle = ElementHandle.create(typeElem);
-                        FileObject fileObject = SourceUtils.getFile(handle, controller.getClasspathInfo());
-                        if (fileObject != null && !Boolean.TRUE.equals(fileObject.getAttribute(IS_SERVLET_FILE))) {
-                            fileObject.setAttribute(IS_SERVLET_FILE, Boolean.TRUE);
+                        ElementHandle<TypeElement> handle = ElementHandle.
+                                create(typeElem);
+                        FileObject fileObject = SourceUtils.getFile(handle, 
+                                controller.getClasspathInfo());
+                        if (fileObject != null && 
+                                !Boolean.TRUE.equals(fileObject.getAttribute(
+                                        IS_SERVLET_FILE))) 
+                        {
+                            Sources sources = project.getLookup().lookup(Sources.class);
+                            if ( sources != null ){
+                                SourceGroup[] sourceGroups = sources.getSourceGroups(
+                                        JavaProjectConstants.SOURCES_TYPE_JAVA );
+                                for (SourceGroup group : sourceGroups) {
+                                    FileObject root = group.getRootFolder();
+                                    if ( FileUtil.isParentOf(root, fileObject)){
+                                        fileObject.setAttribute(IS_SERVLET_FILE, 
+                                                Boolean.TRUE);
+                                        break;
+                                    }
+                                }
+                            }
                         }
                     }
                 }

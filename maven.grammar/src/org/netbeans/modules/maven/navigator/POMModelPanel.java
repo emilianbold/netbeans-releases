@@ -367,7 +367,6 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                                 continue;
                             }
                         }
-                        pom = FileUtil.normalizeFile(pom);
                         FileUtil.refreshFor(pom);
                         FileObject fo = FileUtil.toFileObject(pom);
                         if (fo != null) {

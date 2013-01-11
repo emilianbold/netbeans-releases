@@ -52,11 +52,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
+import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.util.*;
 import org.netbeans.modules.cnd.modelutil.AntiLoop;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
 /**
  * utilities to merge/get inheritance information
@@ -354,10 +360,19 @@ public final class CsmInheritanceUtilities {
         }
     }
 
+    /** Can we convert child to parent */
     public static boolean isAssignableFrom(CsmClass child, CsmClass parent) {
         assert (parent != null);
         if (areEqualClasses(parent, child)) {
             return true;
+        }
+        if (CsmKindUtilities.isTemplate(child) && CsmKindUtilities.isTemplateInstantiation(parent)) {
+            Collection<CsmOffsetableDeclaration> baseTemplates = CsmInstantiationProvider.getDefault().getBaseTemplate(child);
+            CsmInstantiation parentInstantiation = (CsmInstantiation) parent;
+            CsmOffsetableDeclaration parentTemplateDeclaration = parentInstantiation.getTemplateDeclaration();            
+            if (baseTemplates.contains(parentTemplateDeclaration)) {
+                return true;
+            }
         }
         List<CsmInheritance> chain = CsmInheritanceUtilities.findInheritanceChain(child, parent);
         return chain != null;

@@ -453,7 +453,11 @@ public final class IndexManager {
 
         @Override
         public void run() {
-            indexes.remove(folder);
+            synchronized (indexes) {
+                if (indexes.get(folder) == this) {
+                    indexes.remove(folder);
+                }
+            }
         }
     }
 

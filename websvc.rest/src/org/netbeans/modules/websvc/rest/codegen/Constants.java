@@ -120,19 +120,10 @@ public class Constants {
     public static final String FQN_REQUESTED_SCOPE ="javax.enterprise.context." // NOI18N
                 +REQUESTED_SCOPE;
     
-    public static final Modifier[] PUBLIC = new Modifier[] { Modifier.PUBLIC };
+    static final Modifier[] PUBLIC = new Modifier[] { Modifier.PUBLIC };
     
     public static final Modifier[] PRIVATE = new Modifier[] { Modifier.PRIVATE };
     
-    public static final Modifier[] PROTECTED = new Modifier[] { Modifier.PROTECTED };
-    
-    public static final Modifier[] PRIVATE_STATIC = new Modifier[] {
-        Modifier.PRIVATE, Modifier.STATIC };
-    
-    public static final Modifier[] PUBLIC_STATIC = new Modifier[] {
-        Modifier.PUBLIC, Modifier.STATIC
-    };
-   
     public static final Modifier[] PUBLIC_STATIC_FINAL = new Modifier[] {
         Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL
     };

@@ -4,6 +4,7 @@
     <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
     <class>org.netbeans.modules.crudsampleapplication.dbaccess.Customer</class>
     <class>org.netbeans.modules.crudsampleapplication.dbaccess.DiscountCode</class>
+    <class>org.netbeans.modules.crudsampleapplication.dbaccess.MicroMarket</class>
     <properties>
       <property name="javax.persistence.jdbc.url" value="jdbc:derby://localhost:1527/sample"/>
       <property name="javax.persistence.jdbc.password" value="app"/>

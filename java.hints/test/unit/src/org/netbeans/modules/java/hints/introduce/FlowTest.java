@@ -878,6 +878,28 @@ public class FlowTest extends NbTestCase {
                     "List<Boolean> args");
     }
     
+    public void test224028() throws Exception {
+        performTest("package test;\n" +
+                    "import java.io.*;\n" +
+                    "import java.util.*;\n" +
+                    "public class Test {\n" +
+                    "    private void doSomething(Properties props) {\n" +
+                    "        Properties props = new Properties();\n" +
+                    "        try {\n" +
+                    "            canThrow();\n" +
+                    "        } catch (EmptyStackException | IOException ex) {\n" +
+                    "            props = null;\n" +
+                    "        }\n" +
+                    "        pro`ps.clear();\n" +
+                    "    }\n" +
+                    "    private void canThrow() throws EmptyStackException, IOException {\n" +
+                    "    }\n" +
+                    "}\n",
+                    true,
+                    "new Properties()",
+                    "null");
+    }
+    
     public void testDeadBranch207514() throws Exception {
         performDeadBranchTest("package test;\n" +
                               "public class Test {\n" +

@@ -2930,7 +2930,7 @@ public final class TreeMaker {
                     comments = set.getTrailingComments();
                 }
                 
-                if (comments.size() > index) {
+                if (comments.size() >= index) {
                     comments.add(index, comment);
                 } else {
                     throw new IllegalArgumentException("Index out of bounds, index=" + index + ", length=" + comments.size());

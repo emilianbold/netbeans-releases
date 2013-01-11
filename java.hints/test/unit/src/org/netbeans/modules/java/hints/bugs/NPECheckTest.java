@@ -160,11 +160,19 @@ public class NPECheckTest extends NbTestCase {
     }
     
     public void testAssignNullToNotNull() throws Exception {
-        performAnalysisTest("test/Test.java", "package test; class Test {private void test() {s = null;} @NotNull private String s; @interface NotNull {}}", "0:47-0:55:verifier:ANNNV");
+        HintTest.create()
+                .preference(NPECheck.KEY_ENABLE_FOR_FIELDS, true)
+                .input("package test; class Test {private void test() {s = null;} @NotNull private String s; @interface NotNull {}}")
+                .run(NPECheck.class)
+                .assertWarnings("0:47-0:55:verifier:ANNNV");
     }
     
     public void testPossibleAssignNullToNotNull() throws Exception {
-        performAnalysisTest("test/Test.java", "package test; class Test {private void test(int i) {String s2 = null; if (i == 0) {s2 = \"\";} s = s2;} @NotNull private String s; @interface NotNull {}}", "0:93-0:99:verifier:PANNNV");
+        HintTest.create()
+                .preference(NPECheck.KEY_ENABLE_FOR_FIELDS, true)
+                .input("package test; class Test {private void test(int i) {String s2 = null; if (i == 0) {s2 = \"\";} s = s2;} @NotNull private String s; @interface NotNull {}}")
+                .run(NPECheck.class)
+                .assertWarnings("0:93-0:99:verifier:PANNNV");
     }
     
     public void testAssignNullToNotNullVarInitializer1() throws Exception {
@@ -976,6 +984,66 @@ public class NPECheckTest extends NbTestCase {
                        "}")
                 .run(NPECheck.class)
                 .assertWarnings("6:33-6:41:verifier:Possibly Dereferencing null");
+    }
+    
+    public void test224028() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import java.io.*;\n" +
+                       "import java.util.*;\n" +
+                       "class Test {\n" +
+                       "    private void doSomething(Properties props) {\n" +
+                       "        if (props == null) {\n" +
+                       "            props = new Properties();\n" +
+                       "        }\n" +
+                       "        props.clear();\n" +
+                       "        try {\n" +
+                       "            canThrow();\n" +
+                       "        } catch (EmptyStackException | IOException ex) {\n" +
+                       "        }\n" +
+                       "        props.clear();\n" +
+                       "    }\n" +
+                       "    private void canThrow() throws EmptyStackException, IOException {\n" +
+                       "    }\n" +
+                       "}")
+                .sourceLevel("1.7")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void testFields1() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import java.io.*;\n" +
+                       "import java.util.*;\n" +
+                       "class Test {\n" +
+                       "    private String str;\n" +
+                       "    private void text() {\n" +
+                       "        str = null;\n" +
+                       "        System.err.println(str.length());\n" +
+                       "    }\n" +
+                       "}")
+                .sourceLevel("1.7")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void testFields2() throws Exception {
+        HintTest.create()
+                .preference(NPECheck.KEY_ENABLE_FOR_FIELDS, true)
+                .input("package test;\n" +
+                       "import java.io.*;\n" +
+                       "import java.util.*;\n" +
+                       "class Test {\n" +
+                       "    private String str;\n" +
+                       "    private void text() {\n" +
+                       "        str = null;\n" +
+                       "        System.err.println(str.length());\n" +
+                       "    }\n" +
+                       "}")
+                .sourceLevel("1.7")
+                .run(NPECheck.class)
+                .assertWarnings("7:31-7:37:verifier:DN");
     }
     
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {

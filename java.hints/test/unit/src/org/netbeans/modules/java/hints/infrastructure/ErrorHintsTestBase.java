@@ -227,6 +227,10 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
     protected void performAnalysisTest(String fileName, String code, int pos, String... golden) throws Exception {
         prepareTest(fileName, code);
         
+        if (pos == (-1)) {
+            pos = positionForErrors();
+        }
+        
         TreePath path = info.getTreeUtilities().pathFor(pos);
         
         List<Fix> fixes = computeFixes(info, pos, path);
@@ -264,11 +268,14 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
     protected void performFixTest(String fileName, String code, int pos, String fixCode, String goldenFileName, String golden) throws Exception {
         prepareTest(fileName, code);
         
+        TreePath path;
+        
         if (pos == (-1)) {
             pos = positionForErrors();
+            path = info.getTreeUtilities().pathFor(pos + 1);
+        } else {
+            path = info.getTreeUtilities().pathFor(pos);
         }
-        
-        TreePath path = info.getTreeUtilities().pathFor(pos);
 
         List<Fix> fixes = computeFixes(info, pos, path);
         List<String> fixesNames = new LinkedList<String>();

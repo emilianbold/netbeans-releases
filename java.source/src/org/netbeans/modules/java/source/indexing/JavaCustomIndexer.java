@@ -317,14 +317,25 @@ public class JavaCustomIndexer extends CustomIndexer {
                         context.addSupplementaryFiles(entry.getKey(), entry.getValue());
                     }
                 }
-                javaContext.store();
+                try {
+                    javaContext.store();
+                } catch (JavaParsingContext.BrokenIndexException bi) {
+                    JavaIndex.LOG.log(
+                        Level.WARNING,
+                        "Broken index for root: {0} reason {1}, recovering.",  //NOI18N
+                        new Object[] {
+                            context.getRootURI()
+                        });
+                    final PersistentIndexTransaction piTx = txCtx.get(PersistentIndexTransaction.class);
+                    piTx.setBroken();
+                }
                 ciTx.addedTypes(context.getRootURI(), _at);
                 ciTx.removedTypes(context.getRootURI(), _rt);
                 ciTx.changedTypes(context.getRootURI(), compileResult.addedTypes);
                 if (!context.checkForEditorModifications()) { // #152222
                     ciTx.addedCacheFiles(context.getRootURI(), compileResult.createdFiles);
                     ciTx.removedCacheFiles(context.getRootURI(), removedFiles);
-                }
+                }                
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
@@ -368,14 +379,15 @@ public class JavaCustomIndexer extends CustomIndexer {
         File root = null;
         if (!context.checkForEditorModifications() && "file".equals(indexable.getURL().getProtocol()) && (root = FileUtil.toFile(context.getRoot())) != null) { //NOI18N
             try {
-                File file = Utilities.toFile(indexable.getURL().toURI());
-                return new CompileTuple(FileObjects.fileFileObject(file, root, javaContext.getJavaFileFilter(), javaContext.getEncoding()), indexable);
+                return new CompileTuple(
+                    FileObjects.fileFileObject(
+                        indexable,
+                        root,
+                        javaContext.getJavaFileFilter(),
+                        javaContext.getEncoding()),
+                    indexable);
             } catch (Exception ex) {
-            } catch (AssertionError ae) {
-                //Add more debug messages
-                throw Exceptions.attachMessage(ae, "Root FileObject: " + FileUtil.getFileDisplayName(context.getRoot()) +   //NOI18N
-                                                   " Indexable URL: " + indexable.getURL() +    //NOI18N
-                                                   " Normalized root: " + FileUtil.normalizeFile(root).getAbsolutePath());  //NOI18N
+                //pass
             }
         }
         FileObject fo = URLMapper.findFileObject(indexable.getURL());
@@ -407,7 +419,20 @@ public class JavaCustomIndexer extends CustomIndexer {
                 for (Map.Entry<URL, Set<URL>> entry : findDependent(context.getRootURI(), removedTypes, false).entrySet()) {
                     context.addSupplementaryFiles(entry.getKey(), entry.getValue());
                 }
-                javaContext.store();
+                try {
+                    javaContext.store();
+                } catch (JavaParsingContext.BrokenIndexException bi) {
+                    JavaIndex.LOG.log(
+                        Level.WARNING,
+                        "Broken index for root: {0} reason: {1}, recovering.",  //NOI18N
+                        new Object[] {
+                            context.getRootURI(),
+                            bi.getMessage()
+                        });
+                    final PersistentIndexTransaction piTx = txCtx.get(PersistentIndexTransaction.class);
+                    assert piTx != null;
+                    piTx.setBroken();
+                }
                 ciTx.removedCacheFiles(context.getRootURI(), removedFiles);
                 ciTx.removedTypes(context.getRootURI(), removedTypes);
             } finally {

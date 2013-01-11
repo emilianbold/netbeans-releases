@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.Stack;
+import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 
 /**
@@ -80,6 +81,14 @@ public final class ModelBuilder {
     
     DeclarationScopeImpl getCurrentDeclarationScope() {
         return functionStack.isEmpty() ? globalObject : functionStack.peek();
+    }
+    
+    JsFunctionImpl getCurrentDeclarationFunction() {
+        JsObject declarationScope = getCurrentDeclarationScope();
+        while(!(declarationScope instanceof JsFunctionImpl)) {
+            declarationScope = declarationScope.getParent();
+        }
+        return (JsFunctionImpl)declarationScope;
     }
     
     /**

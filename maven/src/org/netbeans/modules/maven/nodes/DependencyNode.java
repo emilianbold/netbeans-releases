@@ -60,6 +60,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import javax.swing.AbstractAction;
@@ -67,6 +69,7 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.Artifact;
@@ -155,6 +158,10 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     private boolean longLiving;
     private PropertyChangeListener listener;
     private ChangeListener listener2;
+    private java.util.concurrent.atomic.AtomicReference<FileObject> fileObject;
+    private java.util.concurrent.atomic.AtomicBoolean sourceExists = new AtomicBoolean(false);
+    private java.util.concurrent.atomic.AtomicBoolean javadocExists = new AtomicBoolean(false);
+    
     private volatile String iconBase = DEPENDENCY_ICON;
     
     private static String toolTipJavadoc = "<img src=\"" + DependencyNode.class.getClassLoader().getResource(JAVADOC_BADGE_ICON) + "\">&nbsp;" //NOI18N
@@ -175,34 +182,39 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     @NonNull
     private static Lookup createLookup(@NonNull final Project project, @NonNull final Artifact art, @NullAllowed final Node nodeDelegate) {
         final PathFinder pathFinderDelegate = nodeDelegate == null ? null : nodeDelegate.getLookup().lookup(PathFinder.class);
-        return Lookups.fixed(project, art, PathFinders.createDelegatingPathFinder(pathFinderDelegate));
+        final FileObject fo = nodeDelegate == null ? null : nodeDelegate.getLookup().lookup(FileObject.class);
+        if (fo != null) {
+            return Lookups.fixed(project, art, PathFinders.createDelegatingPathFinder(pathFinderDelegate), fo);
+        } else {
+            return Lookups.fixed(project, art, PathFinders.createDelegatingPathFinder(pathFinderDelegate));
+        }
     }
 
     @CheckForNull
-    private static Node createNodeDelegate(@NonNull final Artifact art, final boolean longLiving) {
-        assert art.getFile() != null;
+    private static Node createNodeDelegate(@NonNull final Artifact art, FileObject fo, final boolean longLiving) {
         if (!longLiving) {
             return null;
         }
-        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(art.getFile()));
-        if (fo != null && FileUtil.isArchiveFile(fo)) {
+        //artifact.getFile() should be eagerly normalized
+        if (fo != null) {
             return PackageView.createPackageView(new ArtifactSourceGroup(art));
         }
         return null;        
     }
-
-    public DependencyNode(NbMavenProjectImpl project, Artifact art, boolean isLongLiving) {
-        this(project, art, isLongLiving, createNodeDelegate(art, isLongLiving));
+    public DependencyNode(NbMavenProjectImpl project, Artifact art, FileObject fo, boolean isLongLiving) {
+        this(project, art, fo, isLongLiving, createNodeDelegate(art, fo, isLongLiving));
     }
 
     private DependencyNode(
             NbMavenProjectImpl project,
-            Artifact art,
+            final Artifact art,
+            final FileObject fo,
             boolean isLongLiving,
             Node nodeDelegate) {
         super(createChildren(nodeDelegate), createLookup(project, art, nodeDelegate));
         this.project = project;
         this.art = art;
+        this.fileObject = new AtomicReference<FileObject>(fo);
         longLiving = isLongLiving;
         if (longLiving) {
             listener = new PropertyChangeListener() {
@@ -217,7 +229,14 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             listener2 = new ChangeListener() {
                 @Override
                 public void stateChanged(ChangeEvent event) {
-                    refreshNode();
+                    if (event instanceof MavenFileOwnerQueryImpl.GAVCHangeEvent) {
+                        MavenFileOwnerQueryImpl.GAVCHangeEvent ev = (MavenFileOwnerQueryImpl.GAVCHangeEvent) event;
+                        if (ev.matches(art)) {
+                            refreshNode();
+                        }
+                    } else {
+                        refreshNode();
+                    }
                 }
             };
             //TODO check if this one is a performance bottleneck.
@@ -338,6 +357,14 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
 
     
     private void refreshNode() {
+        assert !SwingUtilities.isEventDispatchThread();
+        FileObject fo = FileUtil.toFileObject(art.getFile());
+        if (fo != null && !FileUtil.isArchiveFile(fo)) {
+            fo = null;
+        }
+        sourceExists.set(getSourceFile().exists());
+        javadocExists.set(getJavadocFile().exists());
+        fileObject.set(fo);
         setDisplayName(createName(longLiving));
         setIconBase(longLiving);
         fireIconChange();
@@ -348,7 +375,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         //#142784
         if (longLiving) {
             if (Children.LEAF == getChildren()) {
-                final  Node nodeDelegate = createNodeDelegate(art, true);
+                final Node nodeDelegate = createNodeDelegate(art, fo, true);
                 Children childs = createChildren(nodeDelegate);
                 if (childs != Children.LEAF) {
                     setChildren(childs);
@@ -466,13 +493,15 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     }
 
     public boolean isLocal() {
-        return art.getFile().exists() && !NbArtifactFixer.isFallbackFile(art.getFile());
+        FileObject fo = fileObject.get();
+        return fo != null && fo.isValid() && !NbArtifactFixer.isFallbackFile(art.getFile());
     }
 
     public boolean hasJavadocInRepository() {
-        return (!Artifact.SCOPE_SYSTEM.equals(art.getScope())) && getJavadocFile().exists();
+        return javadocExists.get() && (!Artifact.SCOPE_SYSTEM.equals(art.getScope())) ;
     }
 
+    //normalized
     public File getJavadocFile() {
         File artifact = art.getFile();
         String version = artifact.getParentFile().getName();
@@ -480,6 +509,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         return new File(artifact.getParentFile(), artifactId + "-" + version + (art.getClassifier() != null ? "-" + art.getClassifier() : "") + "-javadoc.jar"); //NOI18N
     }
 
+    //normalized
     public File getSourceFile() {
         File artifact = art.getFile();
         String version = artifact.getParentFile().getName();
@@ -488,10 +518,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     }
 
     public boolean hasSourceInRepository() {
-        if (Artifact.SCOPE_SYSTEM.equals(art.getScope())) {
-            return false;
-        }
-        return getSourceFile().exists();
+        return sourceExists.get() && (!Artifact.SCOPE_SYSTEM.equals(art.getScope()));
     }
 
     void downloadJavadocSources(ProgressContributor progress, boolean isjavadoc) {
@@ -1082,9 +1109,10 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             this.art = art;
         }
 
+        //art.getFile() should be normalized
         @Override
         public FileObject getRootFolder() {
-            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(art.getFile()));
+            FileObject fo = FileUtil.toFileObject(art.getFile());
             if (fo != null) {
                 return FileUtil.getArchiveRoot(fo);
             }

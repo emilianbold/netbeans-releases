@@ -100,8 +100,6 @@ public final class FileUtil extends Object {
 
     private static final RequestProcessor REFRESH_RP = new RequestProcessor("FileUtil-Refresh-All");//NOI18N
     private static RequestProcessor.Task refreshTask = null;
-    /** Contains mapping of FileChangeListener to File. */
-    private static final Map<FileChangeListener,Map<File,Holder>> holders = new WeakHashMap<FileChangeListener,Map<File,Holder>>();
 
     private static final Logger LOG = Logger.getLogger(FileUtil.class.getName());
 
@@ -135,10 +133,20 @@ public final class FileUtil extends Object {
     private static final Map<FileObject, Boolean> archiveFileCache = new WeakHashMap<FileObject,Boolean>();
     private static FileSystem diskFileSystem;
 
-    private static boolean assertNormalized(File path) {
+    static String toDebugString(File file) {
+        if (file == null) {
+            return "NULL-ref"; // NOI18N
+        } else {
+            return file.getPath() + "(" + file.getClass() + ")"; // NOI18N
+        }
+    }
+    
+    static boolean assertNormalized(File path) {
         if (path != null) {
             File np;
-            assert path.equals(np = FileUtil.normalizeFileCached(path)) : "Need to normalize " + path + " was " + np;  //NOI18N
+            assert path.getClass().getName().startsWith("sun.awt.shell") ||
+                path.equals(np = FileUtil.normalizeFileCached(path)) : 
+                "Need to normalize " + toDebugString(path) + " was " + toDebugString(np);  //NOI18N
         }
         return true;
     }
@@ -279,19 +287,7 @@ public final class FileUtil extends Object {
      * @since org.openide.filesystems 7.20
      */
     public static void addFileChangeListener(FileChangeListener listener, File path) {
-        assert assertNormalized(path);
-        LOG.log(Level.FINE, "addFileChangeListener {0} @ {1}", new Object[]{listener, path});
-        synchronized (holders) {
-            Map<File, Holder> f2H = holders.get(listener);
-            if (f2H == null) {
-                f2H = new HashMap<File, Holder>();
-                holders.put(listener, f2H);
-            }
-            if (f2H.containsKey(path)) {
-                throw new IllegalArgumentException("Already listening to " + path); // NOI18N
-            }
-            f2H.put(path, new Holder(listener, path));
-        }
+        FileChangeImpl.addFileChangeListenerImpl(LOG, listener, path);
     }
 
     /**
@@ -304,25 +300,7 @@ public final class FileUtil extends Object {
      * @since org.openide.filesystems 7.20
      */
     public static void removeFileChangeListener(FileChangeListener listener, File path) {
-        removeFileChangeListenerImpl(listener, path);
-    }
-
-    private static FileChangeListener removeFileChangeListenerImpl(FileChangeListener listener, File path) {
-        assert path.equals(FileUtil.normalizeFile(path)) : "Need to normalize " + path + "!";  //NOI18N
-        LOG.log(Level.FINE, "removeFileChangeListener {0} @ {1}", new Object[]{listener, path});
-        synchronized (holders) {
-            Map<File, Holder> f2H = holders.get(listener);
-            if (f2H == null) {
-                throw new IllegalArgumentException("Was not listening to " + path); // NOI18N
-            }
-            if (!f2H.containsKey(path)) {
-                throw new IllegalArgumentException(listener + " was not listening to " + path + "; only to " + f2H.keySet()); // NOI18N
-            }
-            // remove Holder instance from map and call run to unregister its current listener
-            Holder h = f2H.remove(path);
-            h.run();
-            return h.get();
-        }
+        FileChangeImpl.removeFileChangeListenerImpl(LOG, listener, path);
     }
     /**
      * Works like {@link #addRecursiveListener(org.openide.filesystems.FileChangeListener, java.io.File, java.io.FileFilter, java.util.concurrent.Callable) 
@@ -405,9 +383,7 @@ public final class FileUtil extends Object {
      * @since 7.61
      */
     public static void addRecursiveListener(FileChangeListener listener, File path, FileFilter recurseInto, Callable<Boolean> stop) {
-        final DeepListener deep = new DeepListener(listener, path, recurseInto, stop);
-        deep.init();
-        addFileChangeListener(deep, path);
+        FileChangeImpl.addRecursiveListener(listener, path, recurseInto, stop);
     }
 
     /**
@@ -420,173 +396,7 @@ public final class FileUtil extends Object {
      * @since org.openide.filesystems 7.28
      */
     public static void removeRecursiveListener(FileChangeListener listener, File path) {
-        final DeepListener deep = new DeepListener(listener, path, null, null);
-        // no need to deep.init()
-        DeepListener dl = (DeepListener)removeFileChangeListenerImpl(deep, path);
-        dl.run();
-    }
-
-    /** Holds FileChangeListener and File pair and handle movement of auxiliary
-     * FileChangeListener to the first existing upper folder and firing appropriate events.
-     */
-    private static final class Holder extends WeakReference<FileChangeListener> implements FileChangeListener, Runnable {
-
-        private final File path;
-        private FileObject current;
-        private File currentF;
-        /** Whether listener is seeded on target path. */
-        private boolean isOnTarget = false;
-
-        public Holder(FileChangeListener listener, File path) {
-            super(listener, Utilities.activeReferenceQueue());
-            assert path != null;
-            this.path = path;
-            locateCurrent();
-        }
-
-        private void locateCurrent() {
-            FileObject oldCurrent = current;
-            currentF = FileUtil.normalizeFile(path);
-            while (true) {
-                current = FileUtil.toFileObject(currentF);
-                if (current != null) {
-                    isOnTarget = path.equals(currentF);
-                    break;
-                }
-                currentF = currentF.getParentFile();
-                if (currentF == null) {
-                    // #47320: can happen on Windows in case the drive does not exist.
-                    // (Inside constructor for Holder.) In that case skip it.
-                    return;
-                }
-            }
-            assert current != null;
-            if (current != oldCurrent) {
-                if (oldCurrent != null) {
-                    oldCurrent.removeFileChangeListener(this);
-                }
-                current.addFileChangeListener(this);
-                current.getChildren();//to get events about children
-            }
-        }
-
-        private void someChange() {
-            FileChangeListener listener;
-            boolean wasOnTarget;
-            FileObject currentNew;
-            synchronized (this) {
-                if (current == null) {
-                    return;
-                }
-                listener = get();
-                if (listener == null) {
-                    return;
-                }
-                wasOnTarget = isOnTarget;
-                locateCurrent();
-                currentNew = current;
-            }
-            if (isOnTarget && !wasOnTarget) {
-                // fire events about itself creation (it is difference from FCL
-                // on FileOject - it cannot be fired because we attach FCL on already existing FileOject
-                if (currentNew.isFolder()) {
-                    listener.fileFolderCreated(new FileEvent(currentNew));
-                } else {
-                    listener.fileDataCreated(new FileEvent(currentNew));
-                }
-            }
-        }
-
-        public void fileChanged(FileEvent fe) {
-            if (fe.getSource() == current) {
-                if (isOnTarget) {
-                    FileChangeListener listener = get();
-                    if (listener instanceof DeepListener) {
-                        ((DeepListener)listener).fileChanged(fe, true);
-                    } else if (listener != null) {
-                        listener.fileChanged(fe);
-                    }
-                } else {
-                    someChange();
-                }
-            }
-        }
-
-        public void fileDeleted(FileEvent fe) {
-            if (fe.getSource() == current) {
-                if (isOnTarget) {
-                    FileChangeListener listener = get();
-                    if (listener instanceof DeepListener) {
-                        ((DeepListener)listener).fileDeleted(fe, true);
-                    } else if (listener != null) {
-                        listener.fileDeleted(fe);
-                    }
-                }
-                someChange();
-            }
-        }
-
-        public void fileDataCreated(FileEvent fe) {
-            if (fe.getSource() == current) {
-                if (isOnTarget) {
-                    FileChangeListener listener = get();
-                    if (listener instanceof DeepListener) {
-                        ((DeepListener)listener).fileDataCreated(fe, true);
-                    } else if (listener != null) {
-                        listener.fileDataCreated(fe);
-                    }
-                } else {
-                    someChange();
-                }
-            }
-        }
-
-        public void fileFolderCreated(FileEvent fe) {
-            if (fe.getSource() == current) {
-                if (isOnTarget) {
-                    FileChangeListener listener = get();
-                    if (listener instanceof DeepListener) {
-                        ((DeepListener)listener).fileFolderCreated(fe, true);
-                    } else if (listener != null) {
-                        listener.fileFolderCreated(fe);
-                    }
-                } else {
-                    someChange();
-                }
-            }
-        }
-
-        public void fileRenamed(FileRenameEvent fe) {
-            if (fe.getSource() == current) {
-                if (isOnTarget) {
-                    FileChangeListener listener = get();
-                    if (listener instanceof DeepListener) {
-                        ((DeepListener)listener).fileRenamed(fe, true);
-                    } else if (listener != null) {
-                        listener.fileRenamed(fe);
-                    }
-                }
-                someChange();
-            }
-        }
-
-        public void fileAttributeChanged(FileAttributeEvent fe) {
-            if (fe.getSource() == current) {
-                if (isOnTarget) {
-                    FileChangeListener listener = get();
-                    if (listener != null) {
-                        listener.fileAttributeChanged(fe);
-                    }
-                }
-            }
-        }
-
-        public synchronized void run() {
-            if (current != null) {
-                current.removeFileChangeListener(this);
-                current = null;
-            }
-        }
+        FileChangeImpl.removeRecursiveListener(listener, path);
     }
 
     /**
@@ -1053,7 +863,7 @@ public final class FileUtil extends Object {
             File normFile = normalizeFile(file);
             if (!file.equals(normFile)) {
                 final String msg = "Parameter file was not " + // NOI18N   
-                    "normalized. Was " + file + " instead of " + normFile;
+                    "normalized. Was " + toDebugString(file) + " instead of " + toDebugString(normFile); // NOI18N
                 LOG.log(Level.WARNING, msg);
                 LOG.log(Level.INFO, msg, new IllegalArgumentException(msg));
             }
@@ -1101,8 +911,7 @@ public final class FileUtil extends Object {
         if (!file.equals(normalizeFile(file))) {
             throw new IllegalArgumentException(
                 "Parameter file was not " + // NOI18N
-                "normalized. Was " + file + " instead of " + normalizeFile(file)
-            ); // NOI18N
+                "normalized. Was " + toDebugString(file) + " instead of " + toDebugString(normalizeFile(file)));  // NOI18N
         }
 
         try {

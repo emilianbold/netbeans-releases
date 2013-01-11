@@ -151,6 +151,9 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     
     private FileObject lastInspectedFileObject;
     
+    private int expandDepth;
+    private int EXPAND_BY_DEFAULT = 100000; //100K and smaller files expand by default 
+    
     
     private final PropertyChangeListener pageInspectorListener = new PropertyChangeListener() {
         @Override
@@ -361,9 +364,10 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                 refreshDOM();
             }
         };
-        domDescription.addChangeListener(WeakListeners.change(changeListener, domDescription));
-        if (((root.getFileObject() == null && inspectedFileObject == null)) || 
-                (inspectedFileObject!=null && inspectedFileObject.equals(root.getFileObject()))) {
+        if (domDescription !=null)
+            domDescription.addChangeListener(WeakListeners.change(changeListener, domDescription));
+        if (root !=null && domDescription != null && (((root.getFileObject() == null && inspectedFileObject == null)) || 
+                (inspectedFileObject!=null && inspectedFileObject.equals(root.getFileObject())))) {
             root.setDescription(domDescription);
         } else {
             root.setDescription(WebKitNodeDescription.empty(WebKitNodeDescription.DOM));
@@ -535,6 +539,8 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
      */
     public void setParserResult(HtmlParserResult result) {
         FileObject file = result.getSnapshot().getSource().getFileObject();
+        int length = result.getSnapshot().getText().length();
+        expandDepth = length < EXPAND_BY_DEFAULT ? -1:3;
         setSourceDescription(new HtmlElementDescription(null, result.root(), file));
     }
     
@@ -577,8 +583,6 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                     manager.setRootContext(root);
                     
                     LOGGER.fine("refresh() - new file, set new explorer root node");
-
-                    int expandDepth = -1;
 
                     // impl hack: Node expansion is synced by VisualizerNode to the AWT thread, possibly delayed
                     expandNodeByDefaultRecursively(manager.getRootContext(), 0, expandDepth);
@@ -631,7 +635,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
 
     private void expandNodeByDefaultRecursively(Node node) {
         // using 0, -1 since we cannot quickly resolve currentDepth
-        expandNodeByDefaultRecursively(node, 0, -1);
+        expandNodeByDefaultRecursively(node, 0, expandDepth);
     }
 
     private void expandNodeByDefaultRecursively(Node node, int currentDepth, int maxDepth) {
@@ -655,7 +659,11 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
 
     private Project getCurrentProject() {
         if (inspectedFileObject != null) {
-            return FileOwnerQuery.getOwner(lastInspectedFileObject=inspectedFileObject);
+            final Project owner = FileOwnerQuery.getOwner(inspectedFileObject);
+            if (owner!=null) {
+                lastInspectedFileObject=inspectedFileObject;
+                return owner;
+            }
         }
         if (getRootNode()!=null && getRootNode().getFileObject()!=null) {
                 return FileOwnerQuery.getOwner(lastInspectedFileObject=getRootNode().getFileObject());

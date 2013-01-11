@@ -614,7 +614,8 @@ public final class TriggeredTakeSnapshotProfilingPoint extends TriggeredGlobalPr
         }
 
         if (heapdumpTaken) {
-            ProfilerControlPanel2.getDefault().refreshSnapshotsList();
+            if (ProfilerControlPanel2.hasDefault())
+                ProfilerControlPanel2.getDefault().refreshSnapshotsList();
 
             try {
                 return new File(dumpFileName).toURI().toURL().toExternalForm();

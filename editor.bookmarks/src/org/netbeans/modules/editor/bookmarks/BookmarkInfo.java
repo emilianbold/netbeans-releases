@@ -56,7 +56,7 @@ public final class BookmarkInfo {
     /**
      * Special entry used in popup switcher to represent jumping to bookmarks view.
      */
-    public final static BookmarkInfo BOOKMARKS_WINDOW = new BookmarkInfo(0, "Bookmarks Window", 0, "", null); // NOI18N
+    public final static BookmarkInfo BOOKMARKS_WINDOW = new BookmarkInfo(0, "Bookmarks Window", 0, ""); // NOI18N
     
     public static final Comparator<BookmarkInfo> CURRENT_LINE_COMPARATOR = new Comparator<BookmarkInfo>() {
 
@@ -68,14 +68,10 @@ public final class BookmarkInfo {
     };
     
     public static BookmarkInfo create(int id, String name, int lineIndex, String key) {
-        return create(id, name, lineIndex, key, null);
+        return new BookmarkInfo(id, name, lineIndex, key);
     }
 
-    public static BookmarkInfo create(int id, String name, int lineIndex, String key, FileBookmarks fileBookmarks) {
-        return new BookmarkInfo(id, name, lineIndex, key, fileBookmarks);
-    }
-
-    private final Integer id;
+    private int id;
     
     private String name;
 
@@ -87,7 +83,7 @@ public final class BookmarkInfo {
 
     private FileBookmarks fileBookmarks;
     
-    private BookmarkInfo(Integer id, String name, int lineIndex, String key, FileBookmarks fileBookmarks) {
+    private BookmarkInfo(int id, String name, int lineIndex, String key) {
         this.id = id;
         if (name == null) {
             throw new IllegalArgumentException("Null name not allowed"); // NOI18N
@@ -98,11 +94,14 @@ public final class BookmarkInfo {
             throw new IllegalArgumentException("Null key not allowed"); // NOI18N
         }
         this.key = key;
-        this.fileBookmarks = fileBookmarks;
     }
     
     public int getId() {
         return id;
+    }
+
+    void shiftId(int byCount) {
+        id += byCount;
     }
 
     public String getName() {
@@ -176,9 +175,14 @@ public final class BookmarkInfo {
     }
     
     public String getFullPathDescription() {
-        return (this != BOOKMARKS_WINDOW)
-                ? getFileBookmarks().getFileObject().getPath()
-                : NbBundle.getMessage(BookmarkInfo.class, "CTL_BookmarksWindowDescription");
+        if (this != BOOKMARKS_WINDOW) {
+            FileObject fo = getFileBookmarks().getFileObject();
+            return (fo != null)
+                    ? fo.getPath()
+                    : NbBundle.getMessage(BookmarkInfo.class, "LBL_NonExistentFile");
+        } else {
+            return NbBundle.getMessage(BookmarkInfo.class, "CTL_BookmarksWindowDescription");
+        }
     }
     
     private String getBookmarksWindowDisplayName() {

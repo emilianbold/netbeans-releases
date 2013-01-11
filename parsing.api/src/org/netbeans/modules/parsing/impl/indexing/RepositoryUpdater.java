@@ -69,8 +69,6 @@ import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
@@ -88,7 +86,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.editor.AtomicLockEvent;
 import org.netbeans.editor.AtomicLockListener;
 import org.netbeans.editor.BaseDocument;
@@ -1557,7 +1554,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         for (URL root : clone) {
             try {
-                FileObject rootFo = URLCache.getInstance().findFileObject(root);
+                FileObject rootFo = URLCache.getInstance().findFileObject(root, false);
                 if (rootFo != null) {
                     if (rootFo.equals(file) || FileUtil.isParentOf(rootFo,file)) {
                         owningSourceRootUrl = root;
@@ -2304,15 +2301,33 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     }
                 }
             } finally {
-                for(Pair<SourceIndexerFactory,Context> entry : ctxToFinish) {
-                    storeChanges(
-                            entry.first.getIndexerName(),
-                            entry.second,
-                            isSteady(),
-                            usedIterables.get(),
-                            finished);
+                try {
+                    boolean indexOk = true;
+                    for(Pair<SourceIndexerFactory,Context> entry : ctxToFinish) {
+                        indexOk &= storeChanges(
+                                entry.first.getIndexerName(),
+                                entry.second,
+                                isSteady(),
+                                usedIterables.get(),
+                                finished);
+                    }
+                    if (!indexOk) {
+                        final Context ctx = ctxToFinish.iterator().next().second;
+                        RepositoryUpdater.getDefault().addIndexingJob(
+                            ctx.getRootURI(),
+                            null,
+                            false,
+                            false,
+                            false,
+                            true,
+                            true,
+                            LogContext.create(
+                                LogContext.EventType.UI,
+                                "Broken Index Found."));    //NOI18N
+                    }
+                } finally {
+                    InjectedTasksSupport.clear();
                 }
-                InjectedTasksSupport.clear();
             }
         }
 
@@ -2658,8 +2673,16 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     index++;
                 }
             } finally {
+                boolean indexOk = true;
                 for(Context ctx : contexts.values()) {
-                    storeChanges(null, ctx, isSteady(), null, finished);
+                    indexOk &= storeChanges(null, ctx, isSteady(), null, finished);
+                }
+                if (!indexOk) {
+                    RepositoryUpdater.getDefault().addBinaryJob(
+                        contexts.values().iterator().next().getRootURI(),
+                        LogContext.create(
+                            LogContext.EventType.UI,
+                            "Broken Index Found."));    //NOI18N);
                 }
             }
         }
@@ -3188,8 +3211,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             return result;
         }
 
-        protected final void storeChanges(
-                @NonNull final String indexerName,
+        protected final boolean storeChanges(
+                @NullAllowed final String indexerName,
                 @NonNull final Context ctx,
                 final boolean optimize,
                 @NullAllowed final Iterable<? extends Indexable> indexables,
@@ -3210,6 +3233,17 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     } else {
                         rollBackChanges(index);
                     }
+                } catch (IOException ioe ) {
+                    //Broken index, reschedule idexing.
+                    LOGGER.log(
+                        Level.WARNING,
+                        "Broken index for root: {0} reason: {1}, recovering.",  //NOI18N
+                        new Object[] {
+                            ctx.getRootURI(),
+                            ioe.getMessage()
+                        });
+                    index.clear();
+                    return false;
                 } finally {
                     final DocumentIndexCache cache = SPIAccessor.getInstance().getIndexFactory(ctx).getCache(ctx);
                     if (cache instanceof ClusteredIndexables.AttachableDocumentIndexCache) {
@@ -3217,6 +3251,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     }
                 }
             }
+            return true;
         }
 
        private void storeChanges(
@@ -3973,7 +4008,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                 }
 
                                 // check roots that own a suspect
-                                FileObject rootFo = URLCache.getInstance().findFileObject(root);
+                                FileObject rootFo = URLCache.getInstance().findFileObject(root, true);
                                 if (rootFo != null) {
                                     if (f.first == rootFo || FileUtil.isParentOf(rootFo, f.first)) {
                                         depCtx.newBinariesToScan.add(root);
@@ -3989,7 +4024,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         Set<Pair<FileObject, Boolean>> containers = new HashSet<Pair<FileObject, Boolean>>();
                         Map<URL, Pair<FileObject, Boolean>> sourceRootsToScan = new HashMap<URL, Pair<FileObject, Boolean>>();
                         for(URL root : scannedRoots2Dependencies.keySet()) {
-                            FileObject rootFo = URLCache.getInstance().findFileObject(root);
+                            FileObject rootFo = URLCache.getInstance().findFileObject(root, true);
                             if (rootFo != null) {
                                 for(Pair<FileObject, Boolean> f : suspects) {
                                     if (f.first == rootFo || FileUtil.isParentOf(f.first, rootFo)) {
@@ -4031,7 +4066,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         checkTimestampFiles = new HashMap<URL, Set<FileObject>>();
                         for(Pair<FileObject, Boolean> f : suspects) {
                             for(URL root : scannedRoots2Dependencies.keySet()) {
-                                FileObject rootFo = URLCache.getInstance().findFileObject(root);
+                                FileObject rootFo = URLCache.getInstance().findFileObject(root, true);
                                 if (rootFo != null && (f.first == rootFo || FileUtil.isParentOf(rootFo, f.first))) {
                                     Map<URL, Set<FileObject>> map = f.second ? fullRescanFiles : checkTimestampFiles;
                                     Set<FileObject> files = map.get(root);
@@ -4106,13 +4141,13 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             } else if (newWork instanceof FileListWork) {
                 FileListWork flw = (FileListWork) newWork;
                 if (flw.files.isEmpty()) {
-                    suspectFilesOrFileObjects.add(Pair.<Object, Boolean>of(URLCache.getInstance().findFileObject(flw.root), flw.forceRefresh));
+                    suspectFilesOrFileObjects.add(Pair.<Object, Boolean>of(URLCache.getInstance().findFileObject(flw.root, false), flw.forceRefresh));
                 } else {
                     addSuspects(flw.files, flw.forceRefresh);
                 }
                 return true;
             } else if (newWork instanceof DeleteWork) {
-                suspectFilesOrFileObjects.add(Pair.<Object, Boolean>of(URLCache.getInstance().findFileObject(((DeleteWork) newWork).root), false));
+                suspectFilesOrFileObjects.add(Pair.<Object, Boolean>of(URLCache.getInstance().findFileObject(((DeleteWork) newWork).root, false), false));
                 return true;
             }
             return false;
@@ -4898,7 +4933,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 // no indexing.
                 return nopCustomIndexers(root, indexers, sourceForBinaryRoot);
             } else {
-                final FileObject rootFo = URLCache.getInstance().findFileObject(root);
+                final FileObject rootFo = URLCache.getInstance().findFileObject(root, true);
                 if (rootFo != null) {
                     LogContext lctx = getLogContext();
                     long t = System.currentTimeMillis();
@@ -5045,11 +5080,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
         
         public @Override boolean getDone() {
-            try {
-                if (indexers == null) {
-                    indexers = SourceIndexers.load(true);
-                }
-
+            try {                
                 if (waitForProjects) {
                     boolean retry = true;
                     suspendProgress(NbBundle.getMessage(RepositoryUpdater.class, "MSG_OpeningProjects"));
@@ -5066,6 +5097,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             retry = false;
                         }
                     }
+                }
+                
+                if (indexers == null) {
+                    indexers = SourceIndexers.load(true);
                 }
 
                 return super.getDone();

@@ -81,8 +81,6 @@ public final class ModuleNode extends AbstractNode implements Node.Cookie {
     /** Package-private for unit tests <strong>only</strong>. */
     static final String MODULE_NODE_NAME = "module.node"; // NOI18N
     
-    private static Action[] actions;
-    
     private final FileObject projectDirectory;
     private final ClassPathSupport.Item key;
     private ClassPathSupport cs;
@@ -97,26 +95,24 @@ public final class ModuleNode extends AbstractNode implements Node.Cookie {
         this.key = key;
         this.projectDirectory = projectDirectory;
         setName(ModuleNode.MODULE_NODE_NAME);
-        isWAR = project.evaluator().evaluate(key.getReference()).endsWith(".war"); // NOI18N
+        String value = project.evaluator().evaluate(key.getReference());
+        isWAR = value != null && value.endsWith(".war"); // NOI18N
         String dispName = EarProjectProperties.getCompletePathInArchive(project, key);
         setDisplayName(dispName);
         setShortDescription(NbBundle.getMessage(ModuleNode.class, "HINT_ModuleNode"));
         this.project = project;
         this.updateHelper = updateHelper;
         this.cs = cs;
+        getCookieSet().add(this);
     }
     
     // Create the popup menu:
     @Override
     public Action[] getActions(boolean context) {
-        if (null == actions) {
-            actions = new Action[] {
+        return new Action[] {
                 SystemAction.get(OpenModuleProjectAction.class),
                 SystemAction.get(RemoveAction.class)
             };
-            getCookieSet().add(this);
-        }
-        return actions;
     }
     
     @Override

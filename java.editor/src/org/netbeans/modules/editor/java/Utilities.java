@@ -393,13 +393,13 @@ public final class Utilities {
             case DOUBLE_LITERAL:
             case FLOAT_LITERAL:
             case FLOAT_LITERAL_INVALID:
+            case LONG_LITERAL:
                 if (ts.token().text().charAt(0) == '.')
                     break;
             case CHAR_LITERAL:
             case INT_LITERAL:
             case INVALID_COMMENT_END:
             case JAVADOC_COMMENT:
-            case LONG_LITERAL:
             case LINE_COMMENT:
             case BLOCK_COMMENT:
                 return false;

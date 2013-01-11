@@ -243,4 +243,12 @@ public class WhereUsedSupportTest extends FindUsagesTestBase {
         findUsages("class Foo implements Another^Face {}");
     }
 
+    public void testIssue224176_01() throws Exception {
+        findUsages("public function TestFunc(Test $fr^ed) {");
+    }
+
+    public void testIssue224176_02() throws Exception {
+        findUsages("public function TestFunc($fr^ed) {");
+    }
+
 }

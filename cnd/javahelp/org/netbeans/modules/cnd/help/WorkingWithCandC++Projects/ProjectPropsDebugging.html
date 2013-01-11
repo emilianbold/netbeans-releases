@@ -3,64 +3,103 @@
 Copyright &copy; 2007, 2012 Oracle and/or its affiliates. All rights reserved.
  -->
 <html>
-<head>
+  <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <link rel="StyleSheet" href="/org/netbeans/modules/usersguide/ide.css" 
 type="text/css">
-<title>C/C++ Project Properties Dialog Box: Debug</title>
-</head>
-<body>
-<h2>C/C++ Project Properties Dialog Box: Debug</h2>
-<p><small><a href="#seealso">See Also</a>&nbsp; </small>
-<p>The Debug panel lets you specify properties that are used whn you debug your 
-project in the IDE. 
-</p>
-<p><b>Debug command.</b> By default, the IDE uses the run command 
-to run your project under the debugger. You can specify a 
-command for the IDE to use for debugging instead of the run 
-command.</p>
-<p><b>Working dir.</b> By default, the IDE uses the run directory 
-as the working directory when debugging your project. You can 
-specify a different working directory for the IDE to use for 
-debugging.</p>
-<p><b>Gdb Init File.</b> By default, the IDE uses the <tt>.gdbinit</tt> 
-file in your home directory. You can specify a different <tt>.gdbinit</tt> 
-file for gdb commands to be executed before the debugging 
-session starts.
-</p>
-<p><b>Source dirs.</b> You can specify directories to be added to the
-beginning of the search path for source files. </p>
-<p><b>Substitute Path.</b> You can map your compile time and debug 
-time file paths if they are different.</p>
-
-
-<table>
-<tr>
-<th colspan="2" align="left"><a name="seealso">See also</a></th>
-</tr>
-<tr>
-<td width="23"></td>
-<td>
-C/C++ Project Properties Dialog Box:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="ProjectPropsBuild.html">Build</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="ProjectPropsLinkerGeneral.html">Linker</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="ProjectPropsGeneral.html">General</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="ProjectPropsCompilerGeneral.html">Compiler</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="ProjectPropsRunning.html">Run</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="ProjectPropsPackaging.html">Packaging</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="ProjectPropsMake.html">Make</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="ProjectPropsRequired.html">Required Projects</a><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="ProjectPropsParser.html">Code Assistance</a>
-</td>
-</tr>
-</table>
-<hr>
-<small>
-<a href="../credits.html">Legal Notices</a></small>
-<table border="0" cellpadding="20">
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
-</table>
-</body>
+    <title>C/C++ Project Properties Dialog Box: Debug</title>
+  </head>
+  <body>
+    <h2>
+       C/C++ Project Properties Dialog Box: Debug
+    </h2>
+    <p>
+       <a href="#seealso"><small>See Also</small></a><small>&nbsp;</small>
+    </p>
+    <p>
+       The Debug panel lets you specify properties that are used when you debug your project in the
+      IDE.
+    </p>
+    <p>
+       <b>Debug command.</b> By default, the IDE uses the run command to run your project under the
+      debugger. You can specify a command for the IDE to use for debugging instead of the run
+      command.
+    </p>
+    <p>
+       <b>Working dir.</b> By default, the IDE uses the run directory as the working directory when
+      debugging your project. You can specify a different working directory for the IDE to use for
+      debugging.
+    </p>
+    <p>
+       <b>Gdb Init File.</b> By default, the IDE uses the <tt>.gdbinit</tt> file in your home
+      directory. You can specify a different <tt>.gdbinit</tt> file for gdb commands to be executed
+      before the debugging session starts.
+    </p>
+    <p>
+       <b>Source dirs.</b> You can specify directories to be added to the beginning of the search
+      path for source files.
+    </p>
+    <p>
+       <b>Follow Fork Mode.</b> Specify whether to follow the parent or child process after a call
+      to fork or vfork.
+    </p>
+    <p>
+       <b>Detach On Fork.</b> Set to <b>on</b> to make the debugger detach from one process after it
+      forks, or <b>off</b> to stay attached to both processes.
+    </p>
+    <p>
+       <b>Substitute Path.</b> You can map your compile time and debug time file paths if they are
+      different.
+    </p>
+    <table>
+      <tr>
+        <th align="left" colspan="2">
+          <a name="seealso">See also</a> 
+        </th>
+      </tr>
+      <tr>
+        <td width="23">
+          &nbsp;
+        </td>
+        <td>
+          C/C++ Project Properties Dialog Box:<br>
+           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="ProjectPropsBuild.html">Build</a><br>
+           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=
+          "ProjectPropsLinkerGeneral.html">Linker</a><br>
+           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="ProjectPropsGeneral.html">General</a><br>
+           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=
+          "ProjectPropsCompilerGeneral.html">Compiler</a><br>
+           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="ProjectPropsRunning.html">Run</a><br>
+           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=
+          "ProjectPropsPackaging.html">Packaging</a><br>
+           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="ProjectPropsMake.html">Make</a><br>
+           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="ProjectPropsRequired.html">Required
+          Projects</a><br>
+           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="ProjectPropsParser.html">Code
+          Assistance</a> 
+        </td>
+      </tr>
+    </table>
+    <hr>
+    <p>
+       <a href="../credits.html"><small>Legal Notices</small></a>
+    </p>
+    <table cellpadding="20" border="0">
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+      <tr>
+        <td>
+          &nbsp;
+        </td>
+      </tr>
+    </table>
+  </body>
 </html>

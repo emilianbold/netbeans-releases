@@ -97,6 +97,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -424,8 +425,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
                     if (a.getGroupId().equals(d.getGroupId()) &&
                             a.getArtifactId().equals(d.getArtifactId()) &&
                             StringUtils.equals(a.getClassifier(), d.getClassifier())) {
-                        File fil = a.getFile();
-                        URI uri = FileUtilities.convertStringToUri(FileUtil.normalizeFile(fil).getAbsolutePath());
+                        URI uri = Utilities.toURI(FileUtil.normalizeFile(a.getFile()));
                         //#174744 - it's of essence we use the URI based method. items in local repo might not be available yet.
                         Project owner = FileOwnerQuery.getOwner(uri);
                         boolean found = false;
@@ -481,8 +481,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
                     if (a.getGroupId().equals(d.getGroupId()) &&
                             a.getArtifactId().equals(d.getArtifactId()) &&
                             StringUtils.equals(a.getClassifier(), d.getClassifier())) {
-                        File fil = a.getFile();
-                        URI uri = FileUtilities.convertStringToUri(FileUtil.normalizeFile(fil).getAbsolutePath());
+                        URI uri = Utilities.toURI(FileUtil.normalizeFile(a.getFile()));
                         //#174744 - it's of essence we use the URI based method. items in local repo might not be available yet.
                         Project owner = FileOwnerQuery.getOwner(uri);
                         if (owner != null) {

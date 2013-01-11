@@ -161,10 +161,13 @@ public class AbstractVariable implements JDIVariable, Customizer, Cloneable {
         if (v instanceof PrimitiveValue)
             return v.toString ();
         try {
-            if (v instanceof StringReference)
-                return "\"" +
-                    StringReferenceWrapper.value((StringReference) v)
-                    + "\"";
+            if (v instanceof StringReference) {
+                String str = StringReferenceWrapper.value((StringReference) v);
+                if (str.length() > AbstractObjectVariable.MAX_STRING_LENGTH) {
+                    str = str.substring(0, AbstractObjectVariable.MAX_STRING_LENGTH) + "..."; // NOI18N
+                }
+                return "\"" + str + "\"";
+            }
             if (v instanceof ClassObjectReference)
                 return "class " + ReferenceTypeWrapper.name(ClassObjectReferenceWrapper.reflectedType((ClassObjectReference) v));
             if (v instanceof ArrayReference)

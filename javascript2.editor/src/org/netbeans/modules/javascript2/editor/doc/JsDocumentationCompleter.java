@@ -41,13 +41,13 @@
  */
 package org.netbeans.modules.javascript2.editor.doc;
 
-import com.oracle.nashorn.ir.AccessNode;
-import com.oracle.nashorn.ir.BinaryNode;
-import com.oracle.nashorn.ir.FunctionNode;
-import com.oracle.nashorn.ir.IdentNode;
-import com.oracle.nashorn.ir.Node;
-import com.oracle.nashorn.ir.PropertyNode;
-import com.oracle.nashorn.ir.VarNode;
+import jdk.nashorn.internal.ir.AccessNode;
+import jdk.nashorn.internal.ir.BinaryNode;
+import jdk.nashorn.internal.ir.FunctionNode;
+import jdk.nashorn.internal.ir.IdentNode;
+import jdk.nashorn.internal.ir.Node;
+import jdk.nashorn.internal.ir.PropertyNode;
+import jdk.nashorn.internal.ir.VarNode;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -206,7 +206,11 @@ public class JsDocumentationCompleter {
                 }
             }
         }
-        return fqn.toString().substring(1);
+        if (fqn.length() > 0) {
+            return fqn.toString().substring(1);
+        } else {
+            return "";
+        }
     }
 
     private static void generateFieldComment(BaseDocument doc, int offset, int indent, JsParserResult jsParserResult, JsObject jsObject) throws BadLocationException {

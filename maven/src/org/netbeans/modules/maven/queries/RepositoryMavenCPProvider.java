@@ -57,6 +57,7 @@ import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.project.ProjectBuildingResult;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.modules.maven.NbMavenProjectFactory;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
@@ -79,6 +80,13 @@ public class RepositoryMavenCPProvider implements ClassPathProvider {
     
     @Override
     public ClassPath findClassPath(FileObject file, String type) {
+        //#223841 at least one project opened is a stronger condition, embedder gets sometimes reset.
+        //once we have the project loaded, not loaded embedder doesn't matter anymore, we have to process.
+        // sometimes the embedder is loaded even though a maven project is not yet loaded, it doesn't hurt to proceed then.
+        if (!NbMavenProjectFactory.isAtLeastOneMavenProjectAround() && !EmbedderFactory.isProjectEmbedderLoaded()) { 
+            return null;
+        }
+        
         FileObject archive = FileUtil.getArchiveFile(file);
         if (archive != null && archive.getNameExt().endsWith("-sources.jar")) { //first simple check
             File sourceFile = FileUtil.toFile(archive);
@@ -172,8 +180,7 @@ public class RepositoryMavenCPProvider implements ClassPathProvider {
         if (project != null) {
             for (Artifact s : project.getCompileArtifacts()) {
                 if (s.getFile() == null) continue;
-                File f = FileUtil.normalizeFile(s.getFile());
-                items.add(ClassPathSupport.createResource(FileUtil.urlForArchiveOrDir(f)));
+                items.add(ClassPathSupport.createResource(FileUtil.urlForArchiveOrDir(s.getFile())));
             }
         }
         return ClassPathSupport.createClassPathImplementation(items);
@@ -185,8 +192,7 @@ public class RepositoryMavenCPProvider implements ClassPathProvider {
         if (project != null) {
             for (Artifact s : project.getRuntimeArtifacts()) {
                 if (s.getFile() == null) continue;
-                File f = FileUtil.normalizeFile(s.getFile());
-                items.add(ClassPathSupport.createResource(FileUtil.urlForArchiveOrDir(f)));
+                items.add(ClassPathSupport.createResource(FileUtil.urlForArchiveOrDir(s.getFile())));
             }
         }
         return ClassPathSupport.createClassPathImplementation(items);

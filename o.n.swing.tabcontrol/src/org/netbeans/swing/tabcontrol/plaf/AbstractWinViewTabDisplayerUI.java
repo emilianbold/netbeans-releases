@@ -169,7 +169,7 @@ abstract class AbstractWinViewTabDisplayerUI extends AbstractViewTabDisplayerUI 
                 } else {
                     buttons.setVisible( true );
                     txtWidth = width - (buttonsSize.width + ICON_X_PAD + 2*TXT_X_PAD);
-                    buttons.setLocation( x + txtWidth+2*TXT_X_PAD, y + (height-buttonsSize.height)/2 );
+                    buttons.setLocation( x + txtWidth+2*TXT_X_PAD, y + (height-buttonsSize.height)/2+getButtonYPadding() );
                 }
             }
         } else {
@@ -305,6 +305,10 @@ abstract class AbstractWinViewTabDisplayerUI extends AbstractViewTabDisplayerUI 
             return false;
         return ((OwnController) getController()).getMouseIndex() == index
                 && !isSelected(index);
+    }
+
+    int getButtonYPadding() {
+        return 0;
     }
 
     /**

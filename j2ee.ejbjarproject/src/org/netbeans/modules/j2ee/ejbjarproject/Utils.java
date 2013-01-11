@@ -118,7 +118,7 @@ public class Utils {
                 step = component.getName();
             }
             component.putClientProperty (WIZARD_PANEL_CONTENT_DATA, resultSteps);
-            component.putClientProperty(WIZARD_PANEL_CONTENT_SELECTED_INDEX, new Integer(i));
+            component.putClientProperty(WIZARD_PANEL_CONTENT_SELECTED_INDEX, i);
             component.getAccessibleContext().setAccessibleDescription (step);
             resultSteps[i + offset] = step;
         }

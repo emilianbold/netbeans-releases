@@ -133,7 +133,9 @@ public class EntityWizardDescriptor implements WizardDescriptor.FinishablePanel,
             } else {
                 p.setPersistenceUnitButtonVisibility(false);
             }
-        } catch (InvalidPersistenceXmlException ipx){
+        } catch (InvalidPersistenceXmlException ipx){ 
+            p.setPersistenceUnitButtonVisibility(false);
+        } catch (RuntimeException ipx){ 
             p.setPersistenceUnitButtonVisibility(false);
         }
     }

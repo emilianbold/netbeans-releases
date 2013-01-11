@@ -229,11 +229,11 @@ public abstract class CatalogRepoProvider implements ArchetypeProvider {
                 catalog.getParentFile().mkdirs();
                 AuthenticationInfo wagonAuth = null;
 //        //this comes from maven-compat
-                MirrorSelector mrri = embedder.getPlexus().lookup(MirrorSelector.class);
+                MirrorSelector mrri = embedder.lookupComponent(MirrorSelector.class);
 
                 // handle mirroring
                 ArtifactRepositoryLayout layout = (ArtifactRepositoryLayout) embedder.getPlexus().lookup(ArtifactRepositoryLayout.ROLE, "default"); //NOI18N
-                ArtifactRepositoryFactory arf = embedder.getPlexus().lookup(ArtifactRepositoryFactory.class);
+                ArtifactRepositoryFactory arf = embedder.lookupComponent(ArtifactRepositoryFactory.class);
 
                 //what is the update policy?
                 ArtifactRepositoryPolicy policy = new ArtifactRepositoryPolicy(true, ArtifactRepositoryPolicy.UPDATE_POLICY_DAILY, ArtifactRepositoryPolicy.UPDATE_POLICY_DAILY);

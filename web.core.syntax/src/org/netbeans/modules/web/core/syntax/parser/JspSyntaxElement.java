@@ -50,7 +50,7 @@ public abstract class JspSyntaxElement {
 
     public enum Kind {
 
-        TEXT, COMMENT,/* EL, SCRIPTING, */ ERROR, ENDTAG, OPENTAG, DIRECTIVE;
+        TEXT, COMMENT,/* EL,*/ SCRIPTING, ERROR, ENDTAG, OPENTAG, DIRECTIVE;
     }
     private CharSequence source;
     private int from, to;
@@ -143,17 +143,17 @@ public abstract class JspSyntaxElement {
 
     }
 
-//    public static class Scripting extends JspSyntaxElement {
-//
-//        public Scripting(CharSequence source, int from, int to) {
-//            super(source, from, to);
-//        }
-//
-//        @Override
-//        public Kind kind() {
-//            return Kind.SCRIPTING;
-//        }
-//    }
+    public static class Scripting extends JspSyntaxElement {
+
+        public Scripting(CharSequence source, int from, int to) {
+            super(source, from, to);
+        }
+
+        @Override
+        public Kind kind() {
+            return Kind.SCRIPTING;
+        }
+    }
 
     public static class Error extends JspSyntaxElement {
 

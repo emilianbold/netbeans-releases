@@ -592,11 +592,8 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         if (tool == PredefinedToolKind.CCompiler
                 || tool == PredefinedToolKind.CCCompiler) {
             if (item != null) {
-                FileObject fileObject = item.getFileObject();
-                if (fileObject != null) {
-                    if ("pc".equalsIgnoreCase(fileObject.getExt())) { // NOI18N
-                        return true;
-                    }
+                if (item.getName().toLowerCase().endsWith(".pc")) { //NOI18N
+                    return true;
                 }
             }
         }

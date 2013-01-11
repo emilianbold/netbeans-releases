@@ -49,6 +49,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.lucene.document.Document;
@@ -75,15 +76,15 @@ public class DocumentIndexImpl implements DocumentIndex, Runnable {
     /**
      * Transactional extension to the index
      */
-    private final Index.Transactional txLuceneIndex;
+    final Index.Transactional txLuceneIndex;
             
     private static final Convertor<IndexDocument,Document> ADD_CONVERTOR = Convertors.newIndexDocumentToDocumentConvertor();
     private static final Convertor<String,Query> REMOVE_CONVERTOR = Convertors.newSourceNameToQueryConvertor();
     private static final Convertor<Document,IndexDocumentImpl> QUERY_CONVERTOR = Convertors.newDocumentToIndexDocumentConvertor();
     private static final Logger LOGGER = Logger.getLogger(DocumentIndexImpl.class.getName());
     
-    //@GuardedBy (this)    
-    private final Set<String> dirtyKeys = new HashSet<String>();
+    private final Set</*@GuardedBy("this")*/String> dirtyKeys = new HashSet<String>();
+    final AtomicBoolean requiresRollBack = new AtomicBoolean();
 
     private DocumentIndexImpl (
             @NonNull final Index index,
@@ -116,7 +117,9 @@ public class DocumentIndexImpl implements DocumentIndex, Runnable {
                 store(false, true);
                 System.gc();
             } catch (IOException ioe) {
-                LOGGER.log(Level.WARNING, null, ioe);
+                //Reindexed in RU.storeChanges
+                LOGGER.log(Level.WARNING, ioe.getMessage());
+                requiresRollBack.set(true);
             }
         }
     }
@@ -136,7 +139,9 @@ public class DocumentIndexImpl implements DocumentIndex, Runnable {
                 LOGGER.fine("Extra flush forced"); //NOI18N
                 store(false, true);
             } catch (IOException ioe) {
-                LOGGER.log(Level.WARNING, null, ioe);
+                //Reindexed in RU.storeChanges
+                LOGGER.log(Level.WARNING, ioe.getMessage());
+                requiresRollBack.set(true);
             }
         }
     }
@@ -160,6 +165,7 @@ public class DocumentIndexImpl implements DocumentIndex, Runnable {
     
     @Override
     public void store(boolean optimize) throws IOException {
+        checkRollBackNeeded();
         store(optimize, false);
     }
 
@@ -216,7 +222,14 @@ public class DocumentIndexImpl implements DocumentIndex, Runnable {
     }
 
     private void commitImpl() throws IOException {
+        checkRollBackNeeded();
         txLuceneIndex.commit();
+    }
+
+    private void checkRollBackNeeded() throws IOException {
+        if (requiresRollBack.get()) {
+            throw new IOException("Index requires rollback.");   //NOI18N
+        }
     }
 
     @Override
@@ -315,7 +328,14 @@ public class DocumentIndexImpl implements DocumentIndex, Runnable {
 
         @Override
         public void rollback() throws IOException {
-            super.txLuceneIndex.rollback();
+            this.requiresRollBack.set(false);
+            this.txLuceneIndex.rollback();
+        }
+
+        @Override
+        public void clear() throws IOException {
+            this.requiresRollBack.set(false);
+            this.txLuceneIndex.clear();
         }
 
         @Override

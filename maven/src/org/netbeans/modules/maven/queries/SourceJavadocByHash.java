@@ -50,6 +50,7 @@ import java.util.prefs.Preferences;
 import org.codehaus.plexus.util.StringUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbPreferences;
 
@@ -80,7 +81,7 @@ class SourceJavadocByHash {
         String[] split = StringUtils.split(v, "||");
         List<File> toRet = new ArrayList<File>();
         for (String vv : split) {
-            File f = FileUtil.normalizeFile(new File(vv));
+            File f = FileUtilities.convertStringToFile(vv);
             if (f.isFile()) {
                 toRet.add(f);
             } else {

@@ -50,6 +50,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Build;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
@@ -82,22 +83,17 @@ public class TestRuntimeClassPathImpl extends AbstractProjectClassPathImpl {
         if (build != null) {
             String testOutputDirectory = build.getTestOutputDirectory();
             if (testOutputDirectory != null) {
-                File fil = new File(testOutputDirectory);
-                fil = FileUtil.normalizeFile(fil);
-                lst.add(Utilities.toURI(fil));
+                lst.add(FileUtilities.convertStringToUri(testOutputDirectory));
             }
             String outputDirectory = build.getOutputDirectory();
             if (outputDirectory != null) {
-                File fil = new File(outputDirectory);
-                fil = FileUtil.normalizeFile(fil);
-                lst.add(Utilities.toURI(fil));
+                lst.add(FileUtilities.convertStringToUri(outputDirectory));
             }
         }
         List<Artifact> arts = prj.getTestArtifacts();
         for (Artifact art : arts) {
             if (art.getFile() != null) {
-                File fil = FileUtil.normalizeFile(art.getFile());
-                lst.add(Utilities.toURI(fil));
+                lst.add(Utilities.toURI(art.getFile()));
             } else {
               //NOPMD   //null means dependencies were not resolved..
             }
