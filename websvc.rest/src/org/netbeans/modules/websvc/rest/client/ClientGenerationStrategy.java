@@ -68,6 +68,7 @@ import org.netbeans.modules.websvc.saas.model.wadl.Response;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 
 
@@ -266,7 +267,61 @@ abstract class ClientGenerationStrategy {
         }
     }
     
-    protected void addQueryAndHeaderParams(TreeMaker maker, HttpParams httpParams, 
+    protected void buildQueryParams( StringBuilder body, HttpMethod httpMethod, 
+            List<VariableTree> paramList , TreeMaker maker)
+    {
+        Map<String, String> queryParams = httpMethod.getQueryParams();
+        if ( queryParams.size() == 0 ){
+            return;
+        }
+        for (Entry<String, String> entry : queryParams.entrySet()) {
+            String paramName = entry.getKey();
+            // default value is not needed in the client code
+            //String defaultValue = entry.getValue();
+            if ( paramName == null ){
+                continue;
+            }
+            String clientParam = getClientParamName( paramName , paramList );
+            Tree typeTree = maker.Identifier("String"); //NOI18N
+            ModifiersTree fieldModifier = maker.Modifiers(Collections.<Modifier>emptySet());
+            VariableTree fieldTree = maker.Variable(fieldModifier, clientParam, 
+                    typeTree, null); //NOI18N
+            paramList.add(fieldTree);
+            
+            body.append("if (");                                //NOI18N
+            body.append(clientParam);
+            body.append("!=null){");                            //NOI18N
+            body.append("resource = resource.queryParam(\"");   //NOI18N
+            body.append(paramName);
+            body.append("\",");                                 //NOI18N
+            body.append(clientParam);
+            body.append(");}");                                 //NOI18N
+        }
+    }
+
+    protected String getClientParamName( String paramName,
+            List<VariableTree> paramList )
+    {
+        return getClientParamName(paramName, paramList, 0);
+    }
+    
+    protected String getClientParamName( String paramName,
+            List<VariableTree> paramList , int index)
+    {
+        String result = paramName;
+        if ( index !=0 ){
+            result = paramName +index;
+        }
+        for(VariableTree var: paramList ) {
+            String name = var.getName().toString();
+            if ( name.equals( result)){
+                return getClientParamName(paramName, paramList, index +1);
+            }
+        }
+        return result;
+    }
+    
+    protected void addQueryParams(TreeMaker maker, HttpParams httpParams, 
             Security security,  List<VariableTree> paramList, 
             StringBuilder queryP, StringBuilder queryParamPart, 
             StringBuilder commentBuffer) 
@@ -423,9 +478,14 @@ abstract class ClientGenerationStrategy {
                 }
                 queryP.append(".queryParams(getQParams(optionalQueryParams))"); //NOI18N
             }
-
-
         }
+    }
+
+    protected void addHeaderParams( TreeMaker maker, HttpParams httpParams,
+            List<VariableTree> paramList, StringBuilder queryP,
+            StringBuilder commentBuffer )
+    {
+        ModifiersTree paramModifier = maker.Modifiers(Collections.<Modifier>emptySet());
         // add header params
         if (httpParams.hasHeaderParams()) {
             for (String headerParam : httpParams.getHeaderParams()) {
@@ -443,6 +503,7 @@ abstract class ClientGenerationStrategy {
             }
         }
     }
+    
     
     static PathFormat getPathFormat(String path) {
         String p = normalizePath(path); //NOI18N
