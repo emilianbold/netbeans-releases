@@ -41,71 +41,41 @@
  */
 package org.netbeans.modules.php.symfony2.annotations.validators;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
-import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTagProvider;
 import org.openide.util.NbBundle;
 
-// http://symfony.com/doc/current/book/validation.html#validation-constraints
-public class Symfony2ValidatorsAnnotationsProvider extends AnnotationCompletionTagProvider {
+public class CountTag extends AnnotationCompletionTag {
 
-    @NbBundle.Messages("Symfony2ValidatorsAnnotationsProvider.name=Symfony2 Validators")
-    public Symfony2ValidatorsAnnotationsProvider() {
-        super("Symfony2 Validators Annotations", // NOI18N
-                Bundle.Symfony2ValidatorsAnnotationsProvider_name(),
-                null);
+    public CountTag() {
+        super("Count", // NOI18N
+                "@Count(min=${min}, max=${max}, minMessage=\"${minMessage}\", maxMessage=\"${maxMessage}\", exactMessage=\"${exactMessage}\")", // NOI18N
+                NbBundle.getMessage(CountTag.class, "CountTag.documentation"));
     }
 
     @Override
-    public List<AnnotationCompletionTag> getFunctionAnnotations() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public List<AnnotationCompletionTag> getTypeAnnotations() {
-        return Arrays.<AnnotationCompletionTag>asList(new UniqueEntityTag());
-    }
-
-    @Override
-    public List<AnnotationCompletionTag> getFieldAnnotations() {
-        return getFieldOrMethodValidatorTags();
-    }
-
-    @Override
-    public List<AnnotationCompletionTag> getMethodAnnotations() {
-        return getFieldOrMethodValidatorTags();
-    }
-
-    private List<AnnotationCompletionTag> getFieldOrMethodValidatorTags() {
-        return Arrays.<AnnotationCompletionTag>asList(
-                new NotBlankTag(),
-                new BlankTag(),
-                new NotNullTag(),
-                new NullTag(),
-                new TrueTag(),
-                new FalseTag(),
-                new TypeTag(),
-                new EmailTag(),
-                new MinLengthTag(),
-                new MaxLengthTag(),
-                new LengthTag(),
-                new UrlTag(),
-                new RegexTag(),
-                new IpTag(),
-                new MaxTag(),
-                new MinTag(),
-                new RangeTag(),
-                new DateTag(),
-                new DateTimeTag(),
-                new TimeTag(),
-                new ChoiceTag(),
-                new CollectionTag(),
-                new CountTag(),
-                new LanguageTag(),
-                new LocaleTag(),
-                new CountryTag());
+    public void formatParameters(HtmlFormatter formatter) {
+        formatter.appendText("(min="); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("min"); //NOI18N
+        formatter.parameters(false);
+        formatter.appendText(", max="); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("max"); //NOI18N
+        formatter.parameters(false);
+        formatter.appendText(", minMessage="); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("\"minMessage\""); //NOI18N
+        formatter.parameters(false);
+        formatter.appendText(", maxMessage="); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("\"maxMessage\""); //NOI18N
+        formatter.parameters(false);
+        formatter.appendText(", meexactMessagessage="); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("\"exactMessage\""); //NOI18N
+        formatter.parameters(false);
+        formatter.appendText(")"); //NOI18N
     }
 
 }
