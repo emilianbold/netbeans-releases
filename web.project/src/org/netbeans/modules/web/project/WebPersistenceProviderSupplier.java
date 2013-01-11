@@ -88,16 +88,18 @@ public class WebPersistenceProviderSupplier implements PersistenceProviderSuppli
         }
         List<Provider> result = new ArrayList<Provider>();
         
-        Set<Provider> candidates = new HashSet<Provider>();
+        List<Provider> candidates = new ArrayList<Provider>();
         // TODO why we are selecting only some of them  ?
         // can't we just use ProviderUtil.getAllProviders() ?
         candidates.add(ProviderUtil.HIBERNATE_PROVIDER);
+        candidates.add(ProviderUtil.HIBERNATE_PROVIDER2_1);
         candidates.add(ProviderUtil.HIBERNATE_PROVIDER2_0);
         candidates.add(ProviderUtil.TOPLINK_PROVIDER1_0);
         candidates.add(ProviderUtil.KODO_PROVIDER);
         candidates.add(ProviderUtil.DATANUCLEUS_PROVIDER);
         candidates.add(ProviderUtil.OPENJPA_PROVIDER);
         candidates.add(ProviderUtil.OPENJPA_PROVIDER1_0);
+        candidates.add(ProviderUtil.ECLIPSELINK_PROVIDER1_0);
         candidates.add(ProviderUtil.ECLIPSELINK_PROVIDER);
         candidates.add(ProviderUtil.ECLIPSELINK_PROVIDER2_0);
         addPersistenceProviders(candidates, platform, result);
@@ -105,11 +107,15 @@ public class WebPersistenceProviderSupplier implements PersistenceProviderSuppli
         return result;
     }
     
-    private void addPersistenceProviders(Set<Provider> providers, J2eePlatform platform, List<Provider> result){
+    private void addPersistenceProviders(List<Provider> providers, J2eePlatform platform, List<Provider> result){
         JpaSupport jpaSupport = JpaSupport.getInstance(platform);
         Map<String, JpaProvider> map = new HashMap<String, JpaProvider>();
         for (JpaProvider provider : jpaSupport.getProviders()) {
             map.put(provider.getClassName(), provider);
+        }
+        JpaProvider dprovider = jpaSupport.getDefaultProvider();
+        if(dprovider!=null) {
+            map.put(dprovider.getClassName(), dprovider);
         }
         for (Provider provider : providers) {
             JpaProvider jpa = map.get(provider.getProviderClass());

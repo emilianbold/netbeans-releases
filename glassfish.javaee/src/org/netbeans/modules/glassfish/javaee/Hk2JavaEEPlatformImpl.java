@@ -205,7 +205,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
         if("defaultPersistenceProviderJavaEE5".equals(toolName)) {  //NOI18N
             return true;
         }
-        if("eclipseLinkPersistenceProviderIsDefault".equals(toolName)) {
+        if("eclipseLinkPersistenceProviderIsDefault2.0".equals(toolName)) {
             return true;
         }
         String gfRootStr = dm.getProperties().getGlassfishRoot();
