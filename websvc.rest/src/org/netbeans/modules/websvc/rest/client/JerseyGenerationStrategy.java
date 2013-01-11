@@ -47,8 +47,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.lang.model.element.Modifier;
@@ -264,8 +262,9 @@ class JerseyGenerationStrategy extends ClientGenerationStrategy {
         StringBuilder commentBuffer = new StringBuilder("@param responseType Class representing the response\n"); //NOI18N
 
         if (httpParams.hasQueryParams() || httpParams.hasHeaderParams()) {
-            addQueryAndHeaderParams(maker, httpParams, security, paramList, queryP, queryParamPart, commentBuffer);
+            addQueryParams(maker, httpParams, security, paramList, queryP, queryParamPart, commentBuffer);
         }
+        addHeaderParams(maker, httpParams, paramList, queryP, commentBuffer);
 
         commentBuffer.append("@return response object (instance of responseType class)"); //NOI18N
         String body =
@@ -348,9 +347,10 @@ class JerseyGenerationStrategy extends ClientGenerationStrategy {
         if (httpParams.hasFormParams() || httpParams.hasQueryParams() || 
                 httpParams.hasHeaderParams()) 
         {
-            addQueryAndHeaderParams(maker, httpParams, security, paramList, 
+            addQueryParams(maker, httpParams, security, paramList, 
                     queryP, queryParamPart, commentBuffer);
         }
+        addHeaderParams(maker, httpParams, paramList, queryP, commentBuffer);
 
         if (requestMimeType != null) {
             if (requestMimeType == HttpMimeType.FORM && httpParams.hasFormParams()) {
@@ -566,67 +566,13 @@ class JerseyGenerationStrategy extends ClientGenerationStrategy {
                 responseTree,
                 typeParams,
                 paramList,
-                Collections.<ExpressionTree>singletonList(throwsTree), //throws
+                Collections.<ExpressionTree>singletonList(throwsTree), 
                 body.toString(),
-                null); //NOI18N
+                null); 
         result.add( method );
         return result;
     }
     
-    private static void buildQueryParams( StringBuilder body, HttpMethod httpMethod, 
-            List<VariableTree> paramList , TreeMaker maker)
-    {
-        Map<String, String> queryParams = httpMethod.getQueryParams();
-        if ( queryParams.size() == 0 ){
-            return;
-        }
-        for (Entry<String, String> entry : queryParams.entrySet()) {
-            String paramName = entry.getKey();
-            // default value is not needed in the client code
-            //String defaultValue = entry.getValue();
-            if ( paramName == null ){
-                continue;
-            }
-            String clientParam = getClientParamName( paramName , paramList );
-            Tree typeTree = maker.Identifier("String"); //NOI18N
-            ModifiersTree fieldModifier = maker.Modifiers(Collections.<Modifier>emptySet());
-            VariableTree fieldTree = maker.Variable(fieldModifier, clientParam, 
-                    typeTree, null); //NOI18N
-            paramList.add(fieldTree);
-            
-            body.append("if (");                                //NOI18N
-            body.append(clientParam);
-            body.append("!=null){");                            //NOI18N
-            body.append("resource = resource.queryParam(\"");   //NOI18N
-            body.append(paramName);
-            body.append("\",");                                 //NOI18N
-            body.append(clientParam);
-            body.append(");}");                                 //NOI18N
-        }
-    }
-
-    private static String getClientParamName( String paramName,
-            List<VariableTree> paramList )
-    {
-        return getClientParamName(paramName, paramList, 0);
-    }
-    
-    private static String getClientParamName( String paramName,
-            List<VariableTree> paramList , int index)
-    {
-        String result = paramName;
-        if ( index !=0 ){
-            result = paramName +index;
-        }
-        for(VariableTree var: paramList ) {
-            String name = var.getName().toString();
-            if ( name.equals( result)){
-                return getClientParamName(paramName, paramList, index +1);
-            }
-        }
-        return result;
-    }
-
     @Override
     MethodTree generateHttpPOSTMethod(WorkingCopy copy, HttpMethod httpMethod, 
             HttpMimeType requestMimeType, boolean multipleMimeTypes) 

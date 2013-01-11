@@ -52,14 +52,17 @@ import java.util.Set;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 
+import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.modules.websvc.rest.client.ClientJavaSourceHelper.HttpMimeType;
 import org.netbeans.modules.websvc.rest.client.ClientJavaSourceHelper.PathFormat;
 import org.netbeans.modules.websvc.rest.model.api.HttpMethod;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.oauth.Metadata;
+import org.netbeans.modules.websvc.saas.model.wadl.Response;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
@@ -269,7 +272,7 @@ class JaxRsGenerationStrategy extends ClientGenerationStrategy {
         // create param list
 
         List<VariableTree> paramList = new ArrayList<VariableTree>();
-        String bodyParam = "";
+        String bodyParam = "null";
         if (requestMimeType != null) {
             if (requestMimeType == HttpMimeType.FORM) {
                 // PENDING
@@ -277,7 +280,8 @@ class JaxRsGenerationStrategy extends ClientGenerationStrategy {
                 VariableTree objectParam = maker.Variable(paramModifier, 
                         "requestEntity", maker.Identifier("Object"), null); //NOI18N
                 paramList.add(objectParam);
-                bodyParam= "requestEntity"; //NOI18N
+                bodyParam= "javax.ws.rs.client.Entity.entity(requestEntity,"+
+                        requestMimeType.getMediaType()+")"; //NOI18N
             }
         }
         
@@ -382,8 +386,93 @@ class JaxRsGenerationStrategy extends ClientGenerationStrategy {
             HttpMethod httpMethod, HttpMimeType mimeType,
             boolean multipleMimeTypes )
     {
-        // TODO Auto-generated method stub
-        return null;
+        Collection<MethodTree> result = new ArrayList<MethodTree>(2);
+        String responseType = httpMethod.getReturnType();
+        String path = httpMethod.getPath();
+        String methodName = httpMethod.getName() + (multipleMimeTypes ? 
+                "_"+mimeType.name() : ""); //NOI18N
+
+        TreeMaker maker = copy.getTreeMaker();
+        ModifiersTree methodModifier = maker.Modifiers(
+                Collections.<Modifier>singleton(Modifier.PUBLIC));
+        ModifiersTree paramModifier = maker.Modifiers(
+                Collections.<Modifier>emptySet());
+
+        VariableTree classParam = null;
+        ExpressionTree responseTree = null;
+        String bodyParam = ""; //NOI18N
+        List<TypeParameterTree> typeParams =  null;
+
+        if (String.class.getName().equals(responseType)) { 
+            responseTree = maker.Identifier("String"); //NOI18N
+            bodyParam="String.class"; //NOI18N
+            typeParams =  Collections.<TypeParameterTree>emptyList();
+        } else {
+            responseTree = maker.Identifier("T"); //NOI18N
+            bodyParam="responseType"; //NOI18N
+            classParam = maker.Variable(paramModifier, "responseType", 
+                    maker.Identifier("Class<T>"), null); //NOI18N
+            typeParams = Collections.<TypeParameterTree>singletonList(
+                    maker.TypeParameter("T", 
+                            Collections.<ExpressionTree>emptyList())); //NOI18N
+        }
+
+        List<VariableTree> paramList = new ArrayList<VariableTree>();
+        if (classParam != null) {
+            paramList.add(classParam);
+        }
+
+        ExpressionTree throwsTree = JavaSourceHelper.createTypeTree(copy, 
+                "javax.ws.rs.client.ClientException"); //NOI18N
+
+        StringBuilder body = new StringBuilder(
+                "{ WebTarget resource = webTarget;");           // NOI18N
+        StringBuilder resourceBuilder = new StringBuilder();
+        if (path.length() == 0) {
+            if ( mimeType != null ){
+                resourceBuilder.append(".request(");  // NOI18N
+                resourceBuilder.append(mimeType.getMediaType());
+                resourceBuilder.append(')');
+            }
+            buildQueryParams( body , httpMethod, paramList , maker );
+        } 
+        else {
+            PathFormat pf = getPathFormat(path);
+            for (String arg : pf.getArguments()) {
+                Tree typeTree = maker.Identifier("String"); //NOI18N
+                ModifiersTree fieldModifier = maker.Modifiers(Collections.<Modifier>emptySet());
+                VariableTree fieldTree = maker.Variable(fieldModifier, arg, typeTree, null); //NOI18N
+                paramList.add(fieldTree);
+            }
+            buildQueryParams( body , httpMethod, paramList , maker );
+            
+            body.append("resource=resource.path(");     // NOI18N
+            body.append(getPathExpression(pf));
+            body.append(')');
+            if ( mimeType != null ){
+                resourceBuilder.append(".request(");                   // NOI18N
+                resourceBuilder.append(mimeType.getMediaType());
+                resourceBuilder.append(')');
+            }
+
+        }
+        body.append( "return resource");                   // NOI18N
+        body.append(resourceBuilder);
+        body.append(".get(");                              // NOI18N
+        body.append(bodyParam);
+        body.append(");");                                 // NOI18N
+        body.append('}');                                  // NOI18N
+        MethodTree method = maker.Method (
+                methodModifier,
+                methodName,
+                responseTree,
+                typeParams,
+                paramList,
+                Collections.<ExpressionTree>singletonList(throwsTree), 
+                body.toString(),
+                null); 
+        result.add( method );
+        return result;
     }
 
     @Override
@@ -391,17 +480,186 @@ class JaxRsGenerationStrategy extends ClientGenerationStrategy {
             WadlSaasMethod saasMethod, HttpMimeType mimeType,
             boolean multipleMimeTypes, HttpParams httpParams, Security security )
     {
-        // TODO Auto-generated method stub
-        return null;
+        String methodName = Wadl2JavaHelper.makeJavaIdentifier(saasMethod.getName()) + 
+                (multipleMimeTypes ? "_"+mimeType.name() : ""); //NOI18N
+
+        TreeMaker maker = copy.getTreeMaker();
+        ModifiersTree methodModifier = maker.Modifiers(
+                Collections.<Modifier>singleton(Modifier.PUBLIC));
+        ModifiersTree paramModifier = maker.Modifiers(Collections.<Modifier>emptySet());
+
+        VariableTree classParam = maker.Variable(paramModifier, 
+                "responseType", maker.Identifier("Class<T>"), null); //NOI18N
+        ExpressionTree responseTree = maker.Identifier("T");
+        String bodyParam = "responseType"; //NOI18N
+        List<TypeParameterTree> typeParams = Collections.<TypeParameterTree>
+            singletonList(maker.TypeParameter("T", Collections.<ExpressionTree>emptyList()));
+
+        List<VariableTree> paramList = new ArrayList<VariableTree>();
+        if (classParam != null) {
+            paramList.add(classParam);
+        }
+
+        StringBuilder queryP = new StringBuilder();
+        StringBuilder queryParamPart = new StringBuilder();
+        StringBuilder commentBuffer = new StringBuilder("@param responseType Class representing the response\n"); //NOI18N
+
+        if (httpParams.hasQueryParams() || httpParams.hasHeaderParams()) {
+            addQueryParams(maker, httpParams, security, paramList, queryP, queryParamPart, commentBuffer);
+        }
+
+        commentBuffer.append("@return response object (instance of responseType class)"); //NOI18N
+
+        if ( mimeType== null){
+            queryP.append(".request()");
+        }
+        else {
+            queryP.append(".request(");
+            queryP.append(mimeType.getMediaType());
+            queryP.append(')');
+        }
+        addHeaderParams(maker, httpParams, paramList, queryP, commentBuffer);
+        String body =
+                "{"+queryParamPart+                                         //NOI18N
+                    "   return webTarget" +queryP +".get("+bodyParam+");"+  //NOI18N
+                "}";                                                        //NOI18N
+        
+        List<ExpressionTree> throwsList = new ArrayList<ExpressionTree>();
+        ExpressionTree throwsTree = JavaSourceHelper.createTypeTree(copy, 
+                "javax.ws.rs.client.ClientException"); //NOI18N
+        throwsList.add(throwsTree);
+        if (Security.Authentication.SESSION_KEY == security.getAuthentication()) 
+        {
+            ExpressionTree ioExceptionTree = JavaSourceHelper.createTypeTree(copy, 
+                    "java.io.IOException"); //NOI18N
+            throwsList.add(ioExceptionTree);
+        }
+
+        MethodTree method = maker.Method (
+                            methodModifier,
+                            methodName,
+                            responseTree,
+                            typeParams,
+                            paramList,
+                            throwsList,
+                            body,
+                            null);
+        if (method != null) {
+            Comment comment = Comment.create(Style.JAVADOC, commentBuffer.toString());
+            maker.addComment(method, comment, true);
+        }
+        return method;
     }
 
     @Override
     MethodTree generateHttpPOSTMethod( WorkingCopy copy,
-            WadlSaasMethod saasMethod, HttpMimeType mimeType,
+            WadlSaasMethod saasMethod, HttpMimeType requestMimeType,
             boolean multipleMimeTypes, HttpParams httpParams, Security security )
     {
-        // TODO Auto-generated method stub
-        return null;
+        String methodName = saasMethod.getName() + 
+                (multipleMimeTypes ? "_"+requestMimeType.name() : ""); //NOI18N
+        String methodPrefix = saasMethod.getWadlMethod().getName().toLowerCase();
+
+        TreeMaker maker = copy.getTreeMaker();
+        ModifiersTree methodModifier = maker.Modifiers(
+                Collections.<Modifier>singleton(Modifier.PUBLIC));
+        ModifiersTree paramModifier = maker.Modifiers(Collections.<Modifier>emptySet());
+
+        List<Response> response = saasMethod.getWadlMethod().getResponse();
+
+        List<VariableTree> paramList = new ArrayList<VariableTree>();
+        ExpressionTree responseTree = null;
+        List<TypeParameterTree> typeParams = null;
+        String bodyParam1 = "";
+        String bodyParam = "null";              //NOI18N
+        String ret = ""; 
+
+        if (response != null && !response.isEmpty()) {
+            VariableTree classParam = maker.Variable(paramModifier, 
+                    "responseType", maker.Identifier("Class<T>"), null); //NOI18N
+            responseTree = maker.Identifier("T");
+            bodyParam1 = "responseType"; //NOI18N
+            typeParams =   Collections.<TypeParameterTree>singletonList(
+                    maker.TypeParameter("T", Collections.<ExpressionTree>emptyList()));
+            if (classParam != null) {
+                paramList.add(classParam);
+            }
+            ret = "return "; //NOI18N
+        } else {
+            responseTree = maker.Identifier("void");
+            typeParams = Collections.<TypeParameterTree>emptyList();
+        }
+
+        StringBuilder queryP = new StringBuilder();
+        StringBuilder queryParamPart = new StringBuilder();
+        StringBuilder commentBuffer = new StringBuilder("@param responseType Class representing the response\n"); //NOI18N
+
+        if (httpParams.hasFormParams() || httpParams.hasQueryParams() || 
+                httpParams.hasHeaderParams()) 
+        {
+            addQueryParams(maker, httpParams, security, paramList, 
+                    queryP, queryParamPart, commentBuffer);
+        }
+        
+        if (requestMimeType != null) {
+            if (requestMimeType == HttpMimeType.FORM && httpParams.hasFormParams()) {
+                bodyParam="getQueryOrFormParams(formParamNames, formParamValues)"; //NOI18N
+            } 
+            else {
+                VariableTree objectParam = maker.Variable(paramModifier, 
+                        "requestEntity", maker.Identifier("Object"), null); //NOI18N
+                paramList.add(0, objectParam);
+                bodyParam="javax.ws.rs.client.Entity.entity(requestEntity)"; //NOI18N
+                commentBuffer.append("@param requestEntity request data");
+            }
+        }
+
+        commentBuffer.append("@return response object (instance of responseType class)"); //NOI18N
+
+        List<ExpressionTree> throwsList = new ArrayList<ExpressionTree>();
+        ExpressionTree throwsTree = JavaSourceHelper.createTypeTree(copy, 
+                "javax.ws.rs.client.ClientException"); //NOI18N
+        throwsList.add(throwsTree);
+
+        if (Security.Authentication.SESSION_KEY == security.getAuthentication()) {
+            ExpressionTree ioExceptionTree = JavaSourceHelper.createTypeTree(copy, 
+                    "java.io.IOException"); //NOI18N
+            throwsList.add(ioExceptionTree);
+        }
+
+        if ( requestMimeType== null){
+            queryP.append(".request()");
+        }
+        else {
+            queryP.append(".request(");
+            queryP.append(requestMimeType.getMediaType());
+            queryP.append(')');
+        }
+        addHeaderParams(maker, httpParams, paramList, queryP, commentBuffer);
+        
+        if ( bodyParam.length()>0 ){
+            bodyParam +=',';
+        }
+        String body =
+            "{"+queryParamPart + //NOI18N
+                    "   "+ret+"webResource"+queryP+"."+methodPrefix+"("+
+                    bodyParam+bodyParam1+");" +  //NOI18N
+            "}"; //NOI18N
+
+        MethodTree method = maker.Method (
+                methodModifier,
+                methodName,
+                responseTree,
+                typeParams,
+                paramList,
+                throwsList,
+                body,
+                null); //NOI18N
+        if (method != null) {
+            Comment comment = Comment.create(Style.JAVADOC, commentBuffer.toString());
+            maker.addComment(method, comment, true);
+        }
+        return method;
     }
 
     @Override
