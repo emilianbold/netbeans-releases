@@ -72,8 +72,10 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
     private Lookup lookup;
     private static final String ADMIN_URL = "/web-console/"; //NOI18N
     private static final String ADMIN_URL_60 = "/admin-console/"; //NOI18N
+    private static final String ADMIN_URL_70 = "/console"; //NOI18N
     private static final String JMX_CONSOLE_URL = "/jmx-console/"; //NOI18N
     private static final String HTTP_HEADER = "http://";
+    private Boolean as7;
     
     public JBManagerNode(Children children, Lookup lookup) {
         super(children);
@@ -96,9 +98,11 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
     
     public String  getAdminURL() {
         Version version = getDeploymentManager().getProperties().getServerVersion();
-        if (version != null && JBPluginUtils.JBOSS_6_0_0.compareTo(version) <= 0) {
+        if (version != null && JBPluginUtils.JBOSS_7_0_0.compareTo(version) <= 0) {
+            return HTTP_HEADER+getDeploymentManager().getHost()+":"+getDeploymentManager().getPort()+ ADMIN_URL_70;
+        } else if (version != null && JBPluginUtils.JBOSS_6_0_0.compareTo(version) <= 0) {
             return HTTP_HEADER+getDeploymentManager().getHost()+":"+getDeploymentManager().getPort()+ ADMIN_URL_60;
-        }
+        } 
         return HTTP_HEADER+getDeploymentManager().getHost()+":"+getDeploymentManager().getPort()+ ADMIN_URL;
     }
     
@@ -199,8 +203,18 @@ public class JBManagerNode extends AbstractNode implements Node.Cookie {
         return sheet;
     }
     
+    boolean isAs7() {
+        if (as7 == null) {
+            as7 = getDeploymentManager().getProperties().isVersion(JBPluginUtils.JBOSS_7_0_0);
+        }
+        return as7;
+    }
+        
     public Image getIcon(int type) {
         if (type == BeanInfo.ICON_COLOR_16x16) {
+            if (isAs7()) {
+                return ImageUtilities.loadImage("org/netbeans/modules/j2ee/jboss4/resources/as7_16x16.png"); // NOI18N
+            }
             return ImageUtilities.loadImage("org/netbeans/modules/j2ee/jboss4/resources/16x16.gif"); // NOI18N
         }
         return super.getIcon(type);
