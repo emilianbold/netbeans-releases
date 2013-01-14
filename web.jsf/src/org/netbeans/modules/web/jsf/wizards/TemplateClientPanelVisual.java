@@ -54,12 +54,12 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
-import org.netbeans.modules.html.editor.lib.api.elements.Element;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -69,7 +69,9 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.common.api.LexerUtils;
+import org.netbeans.modules.web.jsf.JsfConstants;
 import org.netbeans.modules.web.jsf.dialogs.BrowseFolders;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -77,6 +79,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -189,33 +192,126 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
         templateData = Collections.EMPTY_SET;
         fireChangeEvent();
     }//GEN-LAST:event_jtfTemplateKeyReleased
-    
-    private void jbBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbBrowseActionPerformed
 
-        Sources sources = (Sources) Templates.getProject(wizardDescriptor).getLookup().lookup(org.netbeans.api.project.Sources.class);
-        SourceGroup[] sourceGroups = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
-        
-        org.openide.filesystems.FileObject fo = BrowseFolders.showDialog(sourceGroups);
+    @Messages({
+        "TemplateClientPanelVisual.lbl.resource.library.contract=Resource library contract",
+        "TemplateClientPanelVisual.lbl.document.root=Document root"
+    })
+    private void jbBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbBrowseActionPerformed
+        BrowseFolders bf = new BrowseFolders(getFaceletTemplateRoots(), new BrowseFolders.Naming() {
+            @Override
+            public String getName(String path, String folderName) {
+                if (path.contains(JsfConstants.CONTRACTS_FOLDER)) {
+                    return folderName + " :" + Bundle.TemplateClientPanelVisual_lbl_resource_library_contract(); //NOI18N
+                } else {
+                    return folderName + " :" + Bundle.TemplateClientPanelVisual_lbl_document_root(); //NOI18N
+                }
+            }
+        });
+        org.openide.filesystems.FileObject fo = bf.showDialog();
         if (fo != null) {
-            File file = FileUtil.toFile(fo);
-            jtfTemplate.setText(file.getAbsolutePath());
+            String path = fo.getPath();
+            // presume resource library contract
+            if (path.contains(JsfConstants.CONTRACTS_FOLDER)) {
+                jtfTemplate.setText(getRelativePathInsideResourceLibrary(path));
+            } else {
+                jtfTemplate.setText(path);
+            }
             templateData = Collections.EMPTY_SET;
         }
         fireChangeEvent();
     }//GEN-LAST:event_jbBrowseActionPerformed
-    
+
+    private FileObject[] getFaceletTemplateRoots() {
+        List<FileObject> roots = new ArrayList<FileObject>();
+        Project project = Templates.getProject(wizardDescriptor);
+        Sources sources = (Sources) project.getLookup().lookup(Sources.class);
+        SourceGroup[] sourceGroups = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
+
+        // web project document roots
+        roots.addAll(getSourceRoots(sourceGroups));
+        // web project contracts roots
+        roots.addAll(getProjectContractsRoots(sourceGroups));
+        // libraries contracts roots
+        roots.addAll(getLibContractsRoots(sourceGroups, project));
+
+        return roots.toArray(new FileObject[roots.size()]);
+    }
+
+    /**
+     * Gets templates from the document roots of the project.
+     */
+    private static Collection<? extends FileObject> getSourceRoots(SourceGroup[] sourceGroups) {
+        List<FileObject> roots = new ArrayList<FileObject>();
+        for (SourceGroup sourceGroup : sourceGroups) {
+            roots.add(sourceGroup.getRootFolder());
+        }
+        return roots;
+    }
+
+    /**
+     * Gets templates from contracts folders of the external .JARs.
+     */
+    private static Collection<? extends FileObject> getLibContractsRoots(SourceGroup[] sourceGroups, Project project) {
+        List<FileObject> roots = new ArrayList<FileObject>();
+        if (sourceGroups.length > 0) {
+            ClassPathProvider cpp = project.getLookup().lookup(ClassPathProvider.class);
+            for (SourceGroup sourceGroup : sourceGroups) {
+                ClassPath cp = cpp.findClassPath(sourceGroup.getRootFolder(), ClassPath.COMPILE);
+                for (FileObject root : cp.getRoots()) {
+                    FileObject contracts = root.getFileObject("META-INF/" + JsfConstants.CONTRACTS_FOLDER); //NOI18N
+                    if (contracts != null && contracts.isValid() && contracts.isFolder()) {
+                        for (FileObject contract : contracts.getChildren()) {
+                            roots.add(contract);
+                        }
+                    }
+                }
+            }
+        }
+        return roots;
+    }
+
+    /**
+     * Gets templates from contracts folders of the document roots.
+     */
+    private static Collection<? extends FileObject> getProjectContractsRoots(SourceGroup[] sourceGroups) {
+        List<FileObject> roots = new ArrayList<FileObject>();
+        for (SourceGroup sourceGroup : sourceGroups) {
+            FileObject contractsRoot = sourceGroup.getRootFolder().getFileObject(JsfConstants.CONTRACTS_FOLDER);
+            if (contractsRoot.isValid() && contractsRoot.isFolder()) {
+                for (FileObject fileObject : contractsRoot.getChildren()) {
+                    if (fileObject.isValid() && fileObject.isFolder()) {
+                        roots.add(fileObject);
+                    }
+                }
+            }
+        }
+        return roots;
+    }
+
+    private static String getRelativePathInsideResourceLibrary(String fullPath) {
+        int rootIndex = fullPath.indexOf(JsfConstants.CONTRACTS_FOLDER) + JsfConstants.CONTRACTS_FOLDER.length() + 1;
+        int nextSlashOffset = fullPath.indexOf("/", rootIndex); //NOI18N
+        // root folder selected
+        if (nextSlashOffset != -1) {
+            String resourceLibraryName = fullPath.substring(rootIndex, nextSlashOffset);
+            return fullPath.substring(fullPath.indexOf(resourceLibraryName) + resourceLibraryName.length());
+        }
+        return fullPath;
+    }
+
     protected boolean validateTemplate() {
         if (templateData != null && templateData.size() != 0) {
             return true;
         }
         String message = null;
-        String name = jtfTemplate.getText();
-        if (name == null || "".equals(name)) {
+        String path = jtfTemplate.getText();
+        if (path == null || "".equals(path)) {
             message = "MSG_NoTemplateSelected"; //NOI18N
         } else {
-            File file = new File (name);
+            File file = new File(path);
             if (file.exists()) {
-                if (!file.isDirectory()){
+                if (!file.isDirectory()) {
                     FileObject fo = FileUtil.toFileObject(file);
                     Source source = Source.create(fo);
                     final int startOffset = 0;
@@ -234,7 +330,7 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
                                         for (OpenTag node : foundNodes) {
                                             Attribute attr = node.getAttribute(VALUE_NAME);
                                             if (attr !=null) {
-                                                String value = attr.unquotedValue().toString();
+                                                 String value = attr.unquotedValue().toString();
                                                 if (value != null && !"".equals(value)) {   //NOI18N
                                                     templateData.add(value);
                                                 }
@@ -338,5 +434,5 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
     private javax.swing.JRadioButton jrbHtml;
     private javax.swing.JTextField jtfTemplate;
     // End of variables declaration//GEN-END:variables
-    
+
 }
