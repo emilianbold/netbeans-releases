@@ -2,7 +2,7 @@
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-  Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+  Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
   Oracle and Java are registered trademarks of Oracle and/or its affiliates.
   Other names may be trademarks of their respective owners.
@@ -2222,8 +2222,8 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="generate-jdk7-bundles" if="do.build.jdk7">
         <!-- JavaSE + JDK7 bundles -->
 	<antcall target="generate-jdk-bundle-single">
-	    <param name="jdk.bundle.files.prefix"     value="jdk-7u10"/>
-	    <param name="jdk.full.version"            value="1.7.0.10.18"/>
+	    <param name="jdk.bundle.files.prefix"     value="jdk-7u11"/>
+	    <param name="jdk.full.version"            value="1.7.0.11.21"/>
             <param name="bundled.jvm.file.prefix"     value="jre-7u4"/>
 	    <param name="license.resource"            value="$S{nbi.overall.license.jdk7.resource}"/>
 	</antcall>
