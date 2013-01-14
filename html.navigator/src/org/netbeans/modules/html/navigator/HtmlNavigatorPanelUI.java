@@ -237,9 +237,14 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
      * Refresh DOM tree to empty
      */
     private void pageModelRemoved() {
-        HtmlElementNode root = getRootNode();
+        final HtmlElementNode root = getRootNode();
         if (root != null) {
-            root.setDescription(Description.empty(Description.DOM));
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    root.setDescription(Description.empty(Description.DOM));
+                }
+            });
         }
     }
 
@@ -263,13 +268,19 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     }
     
     private void inspectedFileChanged() {
-        HtmlElementNode root = getRootNode();
+        final HtmlElementNode root = getRootNode();
         if(root != null) {
             if(root.getFileObject() == null || root.getFileObject().equals(inspectedFileObject)) {
                 //the inspected file no more corresponds to the navigator's active file
                 refreshDOM();
             } else {
-                root.setDescription(Description.empty(Description.DOM));
+                RP.post(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        root.setDescription(Description.empty(Description.DOM));
+                    }
+                });
             }
         }
     }
