@@ -66,6 +66,31 @@ public final class ImportUtils {
                 } else if (rest.startsWith("'")){ // NOI18N
                     rest = "\""+rest+"\""; // NOI18N
                 } else {
+                    if (rest.indexOf('\\') >= 0) {
+                        StringBuilder buf = new StringBuilder();
+                        for(int j = 0; j < rest.length(); ) {
+                            char c = rest.charAt(j);
+                            switch (c) {
+                                case '\\': //NOI18N
+                                    j++;
+                                    if (j < rest.length()) {
+                                        char c2 = rest.charAt(j);
+                                        if (c2 == ' ' || c == ':' || c == '*') {
+                                            j++;
+                                            buf.append(c2);
+                                        }
+                                    } else {
+                                        buf.append(c);
+                                    }
+                                    continue;
+                                default:
+                                    j++;
+                                    buf.append(c);
+                                    continue;
+                            }
+                        }
+                        rest = buf.toString();
+                    }
                     if (rest.indexOf(' ')>0 || rest.indexOf('=')>0) { // NOI18N
                         rest = "\""+rest+"\""; // NOI18N
                     }
@@ -117,7 +142,7 @@ public final class ImportUtils {
         StringBuilder key = new StringBuilder();
         StringBuilder value = new StringBuilder();
         int inQuote = 0;
-        int q = 0;
+        int q;
         boolean inValue = false;
         for(int i = 0; i < s.length(); ) {
             char c = s.charAt(i);
@@ -135,6 +160,7 @@ public final class ImportUtils {
                     }
                     i++;
                     q = 0;
+                    char prev = 0;
                     for(;i < s.length(); i++){
                         c = s.charAt(i);
                         if (c == '"' || c == '\''){ //NOI18N
@@ -144,12 +170,19 @@ public final class ImportUtils {
                                 q = 0;
                             }
                         }
-                        if (q == 0 && c == ' '){ //NOI18N
-                            break;
+                        if (q == 0 && (c == ' ' || c == '(' || c == ')')) { //NOI18N
+                            if (prev != '\\') { //NOI18N
+                                break;
+                            } else {
+                                if (!onlyEnv) {
+                                    key.setLength(key.length()-1);
+                                }
+                            }
                         }
                         if (!onlyEnv) {
                             key.append(c);
                         }
+                        prev = c;
                     }
                     continue;
                 case ' ': //NOI18N
@@ -220,6 +253,26 @@ public final class ImportUtils {
                         }
                     }
                     i++;
+                    continue;
+                case '\\': //NOI18N
+                    i++;
+                    if (i < s.length()) {
+                        char c2 = s.charAt(i);
+                        if (c2 == ' ') {
+                            i++;
+                            if (inValue) {
+                                value.append(c2);
+                            } else {
+                                key.append(c2);
+                            }
+                            continue;
+                        } 
+                    }
+                    if (inValue) {
+                        value.append(c);
+                    } else {
+                        key.append(c);
+                    }
                     continue;
                 default:
                     if (inValue) {

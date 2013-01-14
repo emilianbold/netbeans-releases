@@ -170,6 +170,9 @@ public class RemoteServices {
         ObjectReference bcl;
         do {
             bcl = cl;
+            if ("sun.misc.Launcher$AppClassLoader".equals(cl.referenceType().name())) {     // NOI18N
+                break;
+            }
             cl = (ObjectReference) ObjectReferenceWrapper.invokeMethod(cl, tawt, getParent, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
         } while (cl != null);
         return bcl;

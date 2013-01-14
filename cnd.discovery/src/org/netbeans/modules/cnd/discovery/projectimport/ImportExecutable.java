@@ -238,6 +238,7 @@ public class ImportExecutable implements PropertyChangeListener {
                 map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, lastSelectedProject.getProjectDirectory().getPath()); // NOI18N
             }
             model = CsmModelAccessor.getModel();
+            switchModel(model, false, lastSelectedProject);
             extension = Lookup.getDefault().lookup(IteratorExtension.class);
             OpenProjects.getDefault().open(new Project[]{lastSelectedProject}, false);
         } catch (IOException ex) {

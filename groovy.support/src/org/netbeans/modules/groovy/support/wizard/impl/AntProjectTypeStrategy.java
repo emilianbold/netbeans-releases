@@ -116,7 +116,9 @@ public class AntProjectTypeStrategy extends ProjectTypeStrategy {
     private boolean existsFolder(List<SourceGroup> groups, String folderName) {
         for (SourceGroup group : groups) {
             final String groupPath = group.getRootFolder().getPath();
-            if (groupPath.endsWith(File.separator + folderName) || groupPath.contains(File.separator + folderName + File.separator)) {
+            
+            // Two check because of issue #221727
+            if (groupPath.endsWith("/" + folderName) || groupPath.contains("/" + folderName + "/")) { // NOI18N
                 return true;
             }
         }

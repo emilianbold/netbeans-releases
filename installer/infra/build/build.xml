@@ -2,7 +2,7 @@
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-  Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+  Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
   Oracle and Java are registered trademarks of Oracle and/or its affiliates.
   Other names may be trademarks of their respective owners.
@@ -260,7 +260,7 @@
         -->
 
 	<set property="nb.full.version"
-             value="7.3.0.0.${nb.build.number}"/>
+             value="8.0.0.0.${nb.build.number}"/>
 
         <set property="nb.zip.files.prefix"
              value="${nb.files.prefix}-${build.number}"/>
@@ -281,7 +281,7 @@
          value="${nb.files.prefix}"/>
 
     <set property="weblogic.bundle.files.suffix"
-         value="nb-7_3"/>
+         value="nb-8_0"/>
 
         <condition property="do.build.jdk">
              <or>

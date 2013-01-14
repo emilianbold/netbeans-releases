@@ -1445,15 +1445,6 @@ public class SvnUtils {
         return ret;
     }
 
-    public static SvnFileNode [] getNodes(Context context, int includeStatus) {
-        File [] files = Subversion.getInstance().getStatusCache().listFiles(context, includeStatus);
-        SvnFileNode [] nodes = new SvnFileNode[files.length];
-        for (int i = 0; i < files.length; i++) {
-            nodes[i] = new SvnFileNode(files[i]);
-        }
-        return nodes;
-    }
-
     public static SVNRevision toSvnRevision(String revision) {
         SVNRevision svnrevision;
         if (Setup.REVISION_HEAD.equals(revision) || SVNRevision.HEAD.toString().equals(revision)) {
