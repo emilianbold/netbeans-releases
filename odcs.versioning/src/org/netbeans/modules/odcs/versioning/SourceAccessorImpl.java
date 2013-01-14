@@ -278,7 +278,7 @@ public class SourceAccessorImpl extends VCSAccessor {
         List<SourceHandle> handlesList = new ArrayList<SourceHandle>();
         
         try {
-            if (project != null) {
+            if (project != null && project.hasScm()) {
                 Collection<ScmRepository> repositories = project.getRepositories();
                 for (ScmRepository repository : repositories) {
                     if (repositoryName != null && !repositoryName.equals(repository.getName())) {
