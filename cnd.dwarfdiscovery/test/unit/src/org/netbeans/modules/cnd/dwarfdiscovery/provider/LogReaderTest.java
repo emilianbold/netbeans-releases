@@ -98,7 +98,7 @@ public class LogReaderTest extends TestCase {
     
     public void testArtifatC() {
         testLanguageArtifact("c++", "gcc -x c++ -g3 -gdwarf-2 -o qq qq.cc");
-        //testLanguageArtifact("c++", "gcc -xc++ -g3 -gdwarf-2 -o qq qq.cc");
+        testLanguageArtifact("c++", "gcc -xc++ -g3 -gdwarf-2 -o qq qq.cc");
         testLanguageArtifact("c99", "cc -g3 -gdwarf-2 -xc99 -o qq qq.cc");
         testLanguageArtifact("c99", "gcc -g3 -gdwarf-2 -std=c99 -o qq qq.cc");
         testLanguageArtifact("c89", "gcc -g3 -gdwarf-2 -std=c89 -o qq qq.cc");
@@ -106,7 +106,7 @@ public class LogReaderTest extends TestCase {
 
     public void testArtifatCpp() {
         testLanguageArtifact("c", "g++ -x c -g3 -gdwarf-2 -o qq qq.cc");
-        //testLanguageArtifact("c", "g++ -xc -g3 -gdwarf-2 -o qq qq.cc");
+        testLanguageArtifact("c", "g++ -xc -g3 -gdwarf-2 -o qq qq.cc");
         testLanguageArtifact("c++11", "g++ -g3 -std=c++0x -gdwarf-2 -o qq qq.cc");
         testLanguageArtifact("c++11", "g++ -g3 -std=c++11 -gdwarf-2 -o qq qq.cc");
         testLanguageArtifact("c++11", "g++ -g3 -std=gnu++0x -gdwarf-2 -o qq qq.cc");
