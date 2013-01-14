@@ -1,5 +1,0 @@
-<?php
-
-$object->giveMeArray()["test"][];
-
-?>

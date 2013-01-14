@@ -86,10 +86,11 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
     private Scope inScope;
     protected ElementHandle indexedElement;
     private final String filenameUrl;
+    private final boolean isDeprecated;
 
     //new contructors
-    ModelElementImpl(Scope inScope, ASTNodeInfo info, PhpModifiers modifiers) {
-        this(inScope, info.getName(), inScope.getFile(), info.getRange(), info.getPhpElementKind(), modifiers);
+    ModelElementImpl(Scope inScope, ASTNodeInfo info, PhpModifiers modifiers, boolean isDeprecated) {
+        this(inScope, info.getName(), inScope.getFile(), info.getRange(), info.getPhpElementKind(), modifiers, isDeprecated);
     }
 
     ModelElementImpl(Scope inScope, PhpElement element, PhpElementKind kind) {
@@ -99,19 +100,20 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
                 Union2.<String, FileObject>createFirst(element.getFilenameUrl()),
                 new OffsetRange(element.getOffset(), element.getOffset() + element.getName().length()),
                 kind,
-                PhpModifiers.fromBitMask(element.getFlags()));
+                PhpModifiers.fromBitMask(element.getFlags()),
+                element.isDeprecated());
         this.indexedElement = element;
     }
 
     //old contructors
     ModelElementImpl(Scope inScope, String name, Union2<String/*url*/, FileObject> file,
-            OffsetRange offsetRange, PhpElementKind kind) {
-        this(inScope, name, file, offsetRange, kind, PhpModifiers.noModifiers());
+            OffsetRange offsetRange, PhpElementKind kind, boolean isDeprecated) {
+        this(inScope, name, file, offsetRange, kind, PhpModifiers.noModifiers(), isDeprecated);
     }
 
     ModelElementImpl(Scope inScope, String name,
             Union2<String/*url*/, FileObject> file, OffsetRange offsetRange, PhpElementKind kind,
-            PhpModifiers modifiers) {
+            PhpModifiers modifiers, boolean isDeprecated) {
         if (name == null || file == null || kind == null || modifiers == null) {
             throw new IllegalArgumentException("null for name | fo | kind: " + name + " | " + file + " | " + kind);
         }
@@ -129,6 +131,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         this.kind = kind;
         this.file = file;
         this.modifiers = modifiers;
+        this.isDeprecated = isDeprecated;
         if (inScope instanceof ScopeImpl && !(this instanceof AssignmentImpl)/* && !(inScope instanceof IndexScope)*/) {
             ((ScopeImpl) inScope).addElement(this);
         }
@@ -411,6 +414,11 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean isDeprecated() {
+        return isDeprecated;
     }
 
     /**
