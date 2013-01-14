@@ -78,6 +78,7 @@ import org.netbeans.modules.cnd.api.toolchain.ui.LocalToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
@@ -973,18 +974,13 @@ public final class MakeActionProvider implements ActionProvider {
                             command = command.substring(i+1).trim();
                         }
                     }
-                    if (command.indexOf('"') > 0) {// NOI18N
-                        int i = command.indexOf("\\\"");// NOI18N
-                        if (i < 0) {
-                            command = command.replace("\"", "\\\"");// NOI18N
-                        }
-                    }
                     profile.setArgs(command);
                     String compilerPath = convertPath(ccCompiler.getPath(), conf.getDevelopmentHost().getExecutionEnvironment());
                     ExecutionEnvironment ee = conf.getDevelopmentHost().getExecutionEnvironment();
                     if (ee.isLocal() && Utilities.isWindows()) {
                         try {
                             compilerPath = compilerPath.replace('\\', '/'); // NOI18N
+                            command = escapeQuotes(command);
                             profile.setArgs(new String[]{"-c", "\"'"+compilerPath+"' "+command+"\""}); // NOI18N
                             HostInfo hostInfo = HostInfoUtils.getHostInfo(ee);
                             compilerPath = hostInfo.getShell();
@@ -1005,12 +1001,27 @@ public final class MakeActionProvider implements ActionProvider {
                 RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
                 profile.setRunDirectory(makeArtifact.getWorkingDirectory());
                 String command = compileLine.trim();
-                if (command.indexOf('"') > 0) {// NOI18N
-                    int i = command.indexOf("\\\"");// NOI18N
-                    if (i < 0) {
-                        command = command.replace("\"", "\\\"");// NOI18N
+                List<String> parseArgs = ImportUtils.parseArgs(command);
+                StringBuilder buf = new StringBuilder();
+                for (int i = 0; i < parseArgs.size(); i++) {
+                    String s = parseArgs.get(i);
+                    String s2 = CndPathUtilitities.quoteIfNecessary(s);
+                    if (s.equals(s2)) {
+                        if (s.indexOf('"') > 0) {// NOI18N
+                            int j = s.indexOf("\\\"");// NOI18N
+                            if (j < 0) {
+                                s = s.replace("\"", "\\\"");// NOI18N
+                            }
+                        }
+                    } else {
+                        s = s2;
                     }
+                    if (buf.length()>0) {
+                        buf.append(' ');
+                    }
+                    buf.append(s);
                 }
+                command = buf.toString();
                 command = command+" -o "+getDevNull(conf.getDevelopmentHost().getExecutionEnvironment(), compilerSet); // NOI18N
                 String source = item.getAbsolutePath();
                 ExecutionEnvironment ee = conf.getDevelopmentHost().getExecutionEnvironment();
@@ -1027,6 +1038,7 @@ public final class MakeActionProvider implements ActionProvider {
                     try {
                         HostInfo hostInfo = HostInfoUtils.getHostInfo(ee);
                         compilerPath = compilerPath.replace('\\', '/'); // NOI18N
+                        command = escapeQuotes(command);
                         profile.setArgs(new String[]{"-c", "\"'"+compilerPath+"' "+command+"\""}); // NOI18N
                         Shell shell = WindowsSupport.getInstance().getActiveShell();
                         String shellPath = hostInfo.getShell();
@@ -1054,6 +1066,22 @@ public final class MakeActionProvider implements ActionProvider {
             }
         }
         return false;
+    }
+
+    private String escapeQuotes(String command) {
+        StringBuilder buf = new StringBuilder();
+        for(int i = 0; i < command.length(); i++) {
+            char c = command.charAt(i);
+            if (c == '\"') { // NOI18N
+                buf.append("\\\""); // NOI18N
+            } else if (c == '\\') { // NOI18N
+                buf.append("\\\\"); // NOI18N
+            } else {
+                buf.append(c);
+            }
+        }
+        command = buf.toString();
+        return command;
     }
     
     private String getDevNull(ExecutionEnvironment execEnv, CompilerSet compilerSet) {

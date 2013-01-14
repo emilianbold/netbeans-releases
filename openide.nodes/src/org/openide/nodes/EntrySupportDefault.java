@@ -298,7 +298,18 @@ class EntrySupportDefault extends EntrySupport {
 
     private void checkInfo(Info info, Entry entry, Collection<? extends Entry> entries, java.util.Map<Entry, Info> map) {
         if (info == null) {
-            throw new IllegalStateException("Error in " + getClass().getName() + " with entry " + entry + " from among " + entries + " in " + map + " probably caused by faulty key implementation." + " The key hashCode() and equals() methods must behave as for an IMMUTABLE object" + " and the hashCode() must return the same value for equals() keys."); // NOI18N
+            StringBuilder sb = new StringBuilder();
+            sb.append("Error in ").append(getClass().getName()).
+                append(" with entry ").append(entry).append(" from among entries:");
+            for (Entry e : entries) {
+                sb.append("\n  ").append(e).append(" contained: ").append(map.containsKey(e));
+            }
+            sb.append("\nprobably caused by faulty key implementation. The key hashCode() and equals() methods must behave as for an IMMUTABLE object" + " and the hashCode() must return the same value for equals() keys."); // NOI18N
+            sb.append("\nmapping:");
+            for (Map.Entry<Entry, Info> ei : map.entrySet()) {
+                sb.append("\n  ").append(ei.getKey()).append(" => ").append(ei.getValue());
+            }
+            throw new IllegalStateException(sb.toString());
         }
     }
 
