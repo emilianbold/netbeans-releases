@@ -1075,7 +1075,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                         //#183928 -  Extend model to allow CTRL + click for 'view/action' variables
                         proposals.put(name, new PHPCompletionItem.VariableItem(
                                 VariableElementImpl.create(name, 0, realFileObject,
-                                varName.getElementQuery(), TypeResolverImpl.forNames(qualifiedNames)), request) {
+                                varName.getElementQuery(), TypeResolverImpl.forNames(qualifiedNames), varName.isDeprecated()), request) {
                             @Override
                             public boolean isSmart() {
                                 return true;
@@ -1084,7 +1084,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     } else {
                         proposals.put(name, new PHPCompletionItem.VariableItem(
                                 VariableElementImpl.create(name, 0, request.currentlyEditedFileURL,
-                                varName.getElementQuery(), TypeResolverImpl.forNames(qualifiedNames)), request));
+                                varName.getElementQuery(), TypeResolverImpl.forNames(qualifiedNames), varName.isDeprecated()), request));
                     }
                 }
             }

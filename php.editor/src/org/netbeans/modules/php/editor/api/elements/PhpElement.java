@@ -63,4 +63,5 @@ public interface PhpElement extends ElementHandle {
     int getOffset();
     int getFlags();
     boolean isPlatform();
+    boolean isDeprecated();
 }

@@ -106,7 +106,7 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
     }
 
     NamespaceScopeImpl(FileScopeImpl inScope, NamespaceDeclarationInfo info) {
-        super(inScope, info, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), info.getOriginalNode().getBody());
+        super(inScope, info, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), info.getOriginalNode().getBody(), inScope.isDeprecated());
         isDefault = false;
     }
 
@@ -116,7 +116,8 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
                 NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME,
                 inScope.getFile(),
                 inScope.getNameRange(),
-                PhpElementKind.NAMESPACE_DECLARATION);
+                PhpElementKind.NAMESPACE_DECLARATION,
+                inScope.isDeprecated());
         isDefault = true;
     }
 
