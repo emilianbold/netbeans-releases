@@ -57,7 +57,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URLClassLoader;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.concurrent.Callable;
@@ -86,14 +85,17 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginProperties;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
+import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Kirill Sorokin
+ * @author Petr Hejl
  */
 public class JBDeploymentManager implements DeploymentManager {
 
     private static final Logger LOGGER = Logger.getLogger(JBDeploymentManager.class.getName());
+
+    private final RequestProcessor rp = new RequestProcessor("JBoss Background Processor", 1); // NOI18N
     
     private final String realUri;
 
@@ -161,41 +163,73 @@ public class JBDeploymentManager implements DeploymentManager {
         return instanceProperties;
     }
 
-    private synchronized <T> T executeAction(final Action<T> action) throws Exception {
-        return invokeLocalAction(new Callable<T>() {
+    private <T> T executeAction(final Action<T> action) throws Exception {
+        if (!Thread.currentThread().isDaemon()) {
+            // why are we doing this ?
+            // this is ugly and fragile workaround to make new threads
+            // created by XNIO library in JB deamon threads
+            return rp.submit(new Callable<T>() {
 
-            @Override
-            public T call() throws Exception {
-                DeploymentManager manager = null;
-                try {
-                    manager = getDeploymentManager(jbUri,
-                            getInstanceProperties().getProperty(InstanceProperties.USERNAME_ATTR),
-                            getInstanceProperties().getProperty(InstanceProperties.PASSWORD_ATTR));
-
-                    return action.execute(manager);
-                } catch (DeploymentManagerCreationException ex) {
-                    throw new ExecutionException(ex);
+                @Override
+                public T call() throws Exception {
+                    return executeAction(action);
                 }
-            }
-        });
+            }).get();
+        }
+
+        synchronized (JBDeploymentManager.this) {
+            return invokeLocalAction(new Callable<T>() {
+
+                @Override
+                public T call() throws Exception {
+                    DeploymentManager manager = null;
+                    try {
+                        manager = getDeploymentManager(jbUri,
+                                getInstanceProperties().getProperty(InstanceProperties.USERNAME_ATTR),
+                                getInstanceProperties().getProperty(InstanceProperties.PASSWORD_ATTR));
+
+                        return action.execute(manager);
+                    } catch (DeploymentManagerCreationException ex) {
+                        throw new ExecutionException(ex);
+                    } finally {
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            for (Thread t : Thread.getAllStackTraces().keySet()) {
+                                if (t.getName().startsWith("Remoting")) { // NOI18N
+                                    LOGGER.log(Level.FINE, "Remoting thread: {0}; deamon: {1}",
+                                            new Object[] {t.getName(), t.isDaemon()});
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
     }
 
     private synchronized DeploymentManager getDeploymentManager(String uri,
             String username, String password) throws DeploymentManagerCreationException {
 
         if (manager != null) {
-            // this should work even if some older WL release does not have this
-            // method in such case DM is created always from scratch
+            // this should work even if some older JB release does not have this
+            // field in such case DM is created always from scratch
             try {
                 Field f = manager.getClass().getDeclaredField("isConnected"); // NOI18N
                 f.setAccessible(true);
                 Object o = f.get(manager);
                 if ((o instanceof Boolean) && ((Boolean) o).booleanValue()) {
-                    //manager.getTargets();
                     return manager;
                 }
             } catch (Exception ex) {
                 // go through to release
+                LOGGER.log(Level.FINE, null, ex);
+            }
+            try {
+                Target[] targets = manager.getTargets();
+                if (targets != null) {
+                    closeTargets(targets);
+                }
+            } catch (Exception ex) {
+                LOGGER.log(Level.FINE, null, ex);
             }
             manager.release();
         }
@@ -667,31 +701,6 @@ public class JBDeploymentManager implements DeploymentManager {
                 public Target[] execute(DeploymentManager manager) throws ExecutionException {
                     try {
                         return manager.getTargets();
-//                        Target[] server = manager.getTargets();
-//                        if (server == null) {
-//                            server = new Target[]{};
-//                        }
-//                        synchronized (JBDeploymentManager.this) {
-//                            boolean changed = false;
-//                            if (server.length != targets.size()) {
-//                                changed = true;
-//                            } else {
-//                                for (Target t : server) {
-//                                    if (!targets.containsKey(t.getName())) {
-//                                        changed = true;
-//                                        break;
-//                                    }
-//                                }
-//                            }
-//                            if (changed) {
-//                                closeTargets(targets.values());
-//                                targets.clear();
-//                                for (Target t : server) {
-//                                    targets.put(t.getName(), t);
-//                                }
-//                            }
-//                            return targets.values().toArray(new Target[targets.size()]);
-//                        }
                     } catch (IllegalStateException ex) {
                         throw new ExecutionException(ex);
                     }
@@ -778,7 +787,7 @@ public class JBDeploymentManager implements DeploymentManager {
         return ret;
     }
 
-    private static void closeTargets(Iterable<Target> targets) {
+    private static void closeTargets(Target[] targets) {
         if (targets == null) {
             return;
         }
