@@ -239,7 +239,7 @@ public class KenaiPopupActionsProvider implements PopupMenuProvider {
                     TeamUIUtils.activateTeamDashboard();
                 }
             });
-            RequestProcessor.getDefault().post(new Runnable() {
+            Utilities.getRequestProcessor().post(new Runnable() {
 
                 @Override
                 public void run() {

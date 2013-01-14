@@ -315,10 +315,16 @@ public abstract class QueryParameter {
 
     static class TextFieldParameter extends QueryParameter {
         private final JTextField txt;
+        private final boolean allWords;
         public TextFieldParameter(JTextField txt, String parameter, String encoding) {
+            this(txt, parameter, encoding, false);
+        }
+        public TextFieldParameter(JTextField txt, String parameter, String encoding, boolean allWords) {
             super(parameter, encoding);
             this.txt = txt;
+            this.allWords = allWords;
         }
+        
         @Override
         public ParameterValue[] getValues() {
             String value = txt.getText();
@@ -330,7 +336,9 @@ public abstract class QueryParameter {
             for (int i = 0; i < split.length; i++) {
                 String s = split[i];
                 sb.append(s);
-                if(i < split.length - 1) sb.append("+"); // NOI18N
+                if(i < split.length - 1) {
+                    sb.append(allWords ? " " : "+"); // NOI18N
+                } 
             }
             String v = sb.toString();
             return new ParameterValue[] { new ParameterValue(v, v) };
@@ -341,7 +349,11 @@ public abstract class QueryParameter {
             if(pvs.length == 0 || pvs[0] == null) {
                 return;
             }
-            txt.setText(pvs[0].getValue().replace("+", " ")); // NOI18N
+            String value = pvs[0].getValue();
+            if(!allWords) {
+                value = value.replace("+", " "); // NOI18N
+            } 
+            txt.setText(value); 
         }
         @Override
         void setEnabled(boolean  b) {
@@ -349,6 +361,12 @@ public abstract class QueryParameter {
         }
     }
 
+    static class AllWordsTextFieldParameter extends TextFieldParameter {
+        public AllWordsTextFieldParameter(JTextField txt, String parameter, String encoding) {
+            super(txt, parameter, encoding, true);
+        }
+    }
+        
     static class CheckBoxParameter extends QueryParameter {
         private ParameterValue[] selected = new ParameterValue[] {new ParameterValue("1")}; // NOI18N
         private final JCheckBox chk;

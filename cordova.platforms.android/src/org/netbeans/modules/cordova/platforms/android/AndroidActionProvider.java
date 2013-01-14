@@ -43,6 +43,8 @@ package org.netbeans.modules.cordova.platforms.android;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.options.OptionsDisplayer;
@@ -73,6 +75,7 @@ import org.openide.windows.WindowManager;
 public class AndroidActionProvider implements ActionProvider {
 
     private final Project p;
+    private static final Logger LOGGER = Logger.getLogger(AndroidActionProvider.class.getName());
 
     public AndroidActionProvider(Project p) {
         this.p = p;
@@ -145,6 +148,7 @@ public class AndroidActionProvider implements ActionProvider {
                             try {
                                 build.startDebugging(device, p);
                             } catch (IllegalStateException ex) {
+                                LOGGER.log(Level.INFO, ex.getMessage(), ex);
                                 SwingUtilities.invokeLater(new Runnable() {
 
                                     @Override

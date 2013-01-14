@@ -46,6 +46,7 @@ package org.netbeans.modules.hudson.api;
 
 import java.util.Collection;
 import java.util.prefs.Preferences;
+import javax.swing.Action;
 import org.openide.awt.ActionReference;
 
 /**
@@ -146,6 +147,7 @@ public interface HudsonInstance extends Comparable<HudsonInstance> {
                 new Persistence(true);
         private boolean isPersistent;
         private String info;
+        private Action newJobAction = null;
 
         /**
          * Constructor for persistence settings that use default info message.
@@ -157,10 +159,13 @@ public interface HudsonInstance extends Comparable<HudsonInstance> {
 
         /**
          * Constructor for persistence settings that use custom info message.
+         *
+         * @since 1.27.
          */
-        public Persistence(boolean isPersistent, String info) {
+        public Persistence(boolean isPersistent, String info, Action newJob) {
             this.isPersistent = isPersistent;
             this.info = (info == null ? "" : info);                     //NOI18N
+            this.newJobAction = newJob;
         }
 
         /**
@@ -181,7 +186,17 @@ public interface HudsonInstance extends Comparable<HudsonInstance> {
          * Transient instance with a custom info message.
          */
         public static Persistence tranzient(String info) {
-            return new Persistence(false, info);
+            return new Persistence(false, info, null);
+        }
+
+        /**
+         * Transient instance with a custom info message and custom "New Build"
+         * action.
+         *
+         * @since 1.27
+         */
+        public static Persistence tranzient(String info, Action newJob) {
+            return new Persistence(false, info, newJob);
         }
 
         /**
@@ -215,6 +230,14 @@ public interface HudsonInstance extends Comparable<HudsonInstance> {
          */
         public boolean isPersistent() {
             return isPersistent;
+        }
+
+        /**
+         * @return Custom "New Build" action, can be null.
+         * @since 1.27
+         */
+        public Action getNewJobAction() {
+            return newJobAction;
         }
     }
 }

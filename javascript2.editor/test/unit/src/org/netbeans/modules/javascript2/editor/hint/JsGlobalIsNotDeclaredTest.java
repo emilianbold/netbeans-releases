@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.hint;
 
+import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.javascript2.editor.hints.GlobalIsNotDefined;
 
@@ -54,9 +55,17 @@ public class JsGlobalIsNotDeclaredTest extends HintTestBase {
         super(testName);
     }
     
+    private static class GlobalIsNotDefinedHint extends GlobalIsNotDefined {
+        @Override
+        public HintSeverity getDefaultSeverity() {
+            return HintSeverity.WARNING;
+        }
+        
+    }
     
     private Rule createRule() {
-        return new GlobalIsNotDefined();
+        GlobalIsNotDefined gind = new GlobalIsNotDefinedHint();
+        return gind;
     }
     
     public void testSimple01() throws Exception {

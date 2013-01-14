@@ -99,11 +99,16 @@ public class TplCompletionProvider implements CompletionProvider {
         }
 
         @Override
-        protected void doQuery(CompletionResultSet resultSet, Document doc, int caretOffset) {
+        protected void doQuery(CompletionResultSet resultSet, final Document doc, final int caretOffset) {
             try {
-                TplCompletionQuery.CompletionResult result = new TplCompletionQuery(doc).query();
+                final TplCompletionQuery.CompletionResult result = new TplCompletionQuery(doc).query();
                 if (result != null) {
-                    items = getItems(result, doc, caretOffset);
+                    doc.render(new Runnable() {
+                        @Override
+                        public void run() {
+                            items = getItems(result, doc, caretOffset);
+                        }
+                    });
                 } else {
                     items = Collections.<TplCompletionItem>emptySet();
                 }

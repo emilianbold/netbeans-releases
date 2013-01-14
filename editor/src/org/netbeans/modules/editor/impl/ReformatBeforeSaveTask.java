@@ -237,9 +237,9 @@ public class ReformatBeforeSaveTask implements OnSaveTask {
                         if (add) {
                             try {
                                 if (startOffset != endOffset) {
-                                    PositionRegion last = formatBlocks.peekLast();
+                                    PositionRegion last = formatBlocks.peek();
                                     if (last != null && startOffset <= last.getEndOffset()) {
-                                        formatBlocks.removeLast();
+                                        formatBlocks.remove();
                                         if (LOG.isLoggable(Level.FINE)) {
                                             LOG.fine("Reformat-at-save: remove block=" + last);
                                         }
@@ -249,7 +249,7 @@ public class ReformatBeforeSaveTask implements OnSaveTask {
                                     if (LOG.isLoggable(Level.FINE)) {
                                         LOG.fine("Reformat-at-save: add block=" + block);
                                     }
-                                    formatBlocks.add(block);
+                                    formatBlocks.addFirst(block);
                                 }
                             } catch (BadLocationException ex) {
                                 Exceptions.printStackTrace(ex);

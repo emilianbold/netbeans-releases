@@ -972,7 +972,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                             "select-all", null);                        //NOI18N
                 case FIND:
                     return KeyStrokeUtils.getKeyStrokesForAction(
-                            "find", null);                              //NOI18N
+                            "org.openide.actions.FindAction", null);    //NOI18N
                 case FIND_NEXT:
                     return KeyStrokeUtils.getKeyStrokesForAction(
                             "find-next", null);                         //NOI18N

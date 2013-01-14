@@ -157,7 +157,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
                         @Override
                         public void run() {
                             new AddInstanceAction(TeamServerProviderImpl.getDefault(), CTL_AddInstance()).actionPerformed(e);
-                            panel.setKenai(((Kenai) kenaiCombo.getSelectedItem()));
+                            panel.setKenai(((KenaiServer) kenaiCombo.getSelectedItem()).getKenai());
                             refreshUsername();
                             updatePrjNamePreview();
                         }
@@ -243,7 +243,8 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         if (panel.getKenai()==null)
             return;
 
-        RequestProcessor.getDefault().post(new Runnable() {
+        Utilities.getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 Collection<KenaiLicense> licenses = null;
                 try {

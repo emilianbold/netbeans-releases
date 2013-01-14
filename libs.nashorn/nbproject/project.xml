@@ -6,11 +6,15 @@
             <code-name-base>org.netbeans.libs.nashorn</code-name-base>
             <module-dependencies/>
             <public-packages>
-                <subpackages>com.oracle.nashorn</subpackages>
+                <subpackages>jdk.nashorn</subpackages>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/nashorn.jar</runtime-relative-path>
-                <binary-origin>external/nashorn.jar</binary-origin>
+                <runtime-relative-path>ext/nashorn-5f2db2d8a7fa-patched.jar</runtime-relative-path>
+                <binary-origin>external/nashorn-5f2db2d8a7fa-patched.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/asm-all-4.0.jar</runtime-relative-path>
+                <binary-origin>external/asm-all-4.0.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

@@ -52,7 +52,6 @@ import javax.swing.ImageIcon;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.CompletionContextFinder.CompletionContext;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
@@ -62,6 +61,7 @@ import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -108,15 +108,21 @@ public class JsCompletionItem implements CompletionProposal {
         return formatter.getText();
     }
 
+    @Messages("JsCompletionItem.lbl.js.platform=JS Platform")
     @Override
     public String getRhsHtml(HtmlFormatter formatter) {
-        String url = getFileNameURL();
-        if (url == null) {
+        String location = null;
+        if (element instanceof JsElement && ((JsElement) element).isPlatform()) {
+            location = Bundle.JsCompletionItem_lbl_js_platform();
+        } else {
+            location = getFileNameURL();
+        }
+        if (location == null) {
             return null;
         }
 
         formatter.reset();
-        formatter.appendText(url);
+        formatter.appendText(location);
         return formatter.getText();
     }
 
@@ -378,15 +384,17 @@ public class JsCompletionItem implements CompletionProposal {
                 if (!assignment.isEmpty()) {
                     Collection<TypeUsage> resolved = new ArrayList<TypeUsage>(assignment);
                     resolved = ModelUtils.resolveTypes(resolved, request.result);
-                    formatter.type(true);
-                    formatter.appendText(": ");  //NOI18N
-                    for (Iterator<? extends TypeUsage> it = resolved.iterator(); it.hasNext();) {
-                        formatter.appendText(it.next().getType());
-                        if (it.hasNext()) {
-                            formatter.appendText("|");   //NOI18N
+                    if (!resolved.isEmpty()) {
+                        formatter.type(true);
+                        formatter.appendText(": ");  //NOI18N
+                        for (Iterator<? extends TypeUsage> it = resolved.iterator(); it.hasNext();) {
+                            formatter.appendText(it.next().getType());
+                            if (it.hasNext()) {
+                                formatter.appendText("|");   //NOI18N
+                            }
                         }
+                        formatter.type(false);
                     }
-                    formatter.type(false);
                 }
             }
             return formatter.getText();

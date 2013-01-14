@@ -1,2 +1,2 @@
-Cast ...toArray(...) to JButton[]
+[AddCastFix:...toArray(...):JButton[]]
 Change type of s to Object[]

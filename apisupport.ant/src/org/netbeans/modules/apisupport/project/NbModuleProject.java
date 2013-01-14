@@ -61,6 +61,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -170,6 +171,8 @@ public final class NbModuleProject implements Project {
     
     public static final String SOURCES_TYPE_JAVAHELP = "javahelp"; // NOI18N
     static final String[] COMMON_TEST_TYPES = {"unit", "qa-functional"}; // NOI18N
+    
+    public static final String OPENIDE_MODULE_NAME = "OpenIDE-Module-Name"; // NOI18N
     
     private final AntProjectHelper helper;
     private final Evaluator eval;
@@ -497,6 +500,17 @@ public final class NbModuleProject implements Project {
         }
     }
     
+    private String getModuleName() {
+        Manifest m = getManifest();
+        if (m != null) {
+            String moduleName = m.getMainAttributes().getValue(OPENIDE_MODULE_NAME);
+            if (moduleName != null) {
+                return moduleName;
+            }
+        }
+        return null;
+    }
+    
     public @CheckForNull String getSpecVersion() {
         //TODO shall we check for illegal cases like "none-defined" or "both-defined" here?
         Manifest m = getManifest();
@@ -807,15 +821,22 @@ public final class NbModuleProject implements Project {
         private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
 
         private final String name;
+        private final String openideModuleName;
         private String displayName;
         
         Info() {
             String cnb = getCodeNameBase();
             name = cnb != null ? cnb : /* #70490 */getProjectDirectory().toString();
+            String omn = getModuleName();
+            openideModuleName = omn;
         }
         
         @Override public String getName() {
             return name;
+        }
+
+        private String getOpenideModuleName() {
+            return openideModuleName;
         }
         
         @Override public String getDisplayName() {
@@ -824,6 +845,9 @@ public final class NbModuleProject implements Project {
                 if (bundleInfo != null) {
                     displayName = bundleInfo.getDisplayName();
                 }
+            }
+            if (displayName == null) {
+                displayName = getOpenideModuleName();
             }
             if (/* #70490 */displayName == null) {
                 displayName = getName();

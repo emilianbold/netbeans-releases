@@ -53,7 +53,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import org.netbeans.core.startup.ModuleLifecycleManager;
+import org.netbeans.core.startup.ModuleSystem;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
@@ -222,6 +222,6 @@ public final class NbLifecycleManager extends LifecycleManager {
 
     @Override
     public void markForRestart() throws UnsupportedOperationException {
-        new ModuleLifecycleManager().markForRestart();
+        ModuleSystem.markForRestart();
     }
 }

@@ -67,7 +67,8 @@ public interface JsElement extends ElementHandle {
         ANONYMOUS_OBJECT(10),
         PROPERTY_GETTER(11),
         PROPERTY_SETTER(12),
-        OBJECT_LITERAL(13);
+        OBJECT_LITERAL(13),
+        CATCH_BLOCK(14);
         
         private final int id;
         private static Map<Integer, Kind> lookup = new HashMap<Integer, Kind>();
@@ -108,4 +109,6 @@ public interface JsElement extends ElementHandle {
     Kind getJSKind();
     
     boolean isDeclared();
+
+    boolean isPlatform();
 }

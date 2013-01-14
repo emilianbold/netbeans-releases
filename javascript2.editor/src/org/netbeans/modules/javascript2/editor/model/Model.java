@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.javascript2.editor.model;
 
-import com.oracle.nashorn.ir.FunctionNode;
-import com.oracle.nashorn.ir.Node;
+import jdk.nashorn.internal.ir.FunctionNode;
+import jdk.nashorn.internal.ir.Node;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -134,7 +134,7 @@ public final class Model {
      * @return name of the node if it supports it
      */
     public List<Identifier> getNodeName(Node node) {
-        return getModelVisitor().getNodeName(node);
+        return ModelVisitor.getNodeName(node, parserResult);
     }
 
 }

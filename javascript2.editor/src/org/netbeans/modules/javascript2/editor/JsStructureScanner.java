@@ -110,7 +110,7 @@ public class JsStructureScanner implements StructureScanner {
                         collectedItems.add(new JsFunctionStructureItem(function, children, result));
                     }
                 }
-            } else if ((child.getJSKind() == JsElement.Kind.OBJECT || child.getJSKind() == JsElement.Kind.OBJECT_LITERAL || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) 
+            } else if (((child.getJSKind() == JsElement.Kind.OBJECT && hasDeclaredProperty(child)) || child.getJSKind() == JsElement.Kind.OBJECT_LITERAL || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) 
                     && (children.size() > 0 || child.isDeclared())) {
                 collectedItems.add(new JsObjectStructureItem(child, children, result));
             } else if (child.getJSKind() == JsElement.Kind.PROPERTY) {
@@ -219,14 +219,12 @@ public class JsStructureScanner implements StructureScanner {
 
     private boolean hasDeclaredProperty(JsObject jsObject) {
         boolean result =  false;
-        if (jsObject.isDeclared()) {
-            result = true;
-        } else {
-            Iterator <? extends JsObject> it = jsObject.getProperties().values().iterator();
-            while (!result && it.hasNext()) {
-                result = hasDeclaredProperty(it.next());
-            }
+        
+        Iterator<? extends JsObject> it = jsObject.getProperties().values().iterator();
+        while (!result && it.hasNext()) {
+            result = it.next().isDeclared();
         }
+
         return result;
     }
     

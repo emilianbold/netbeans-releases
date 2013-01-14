@@ -48,12 +48,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.javascript2.editor.hints.JsHintsProvider.JsRuleContext;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
+import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.openide.util.NbBundle;
 
@@ -66,7 +68,8 @@ public class GlobalIsNotDefined extends JsAstRule {
     private static List<String> knownGlobalObjects = Arrays.asList("window", "document", "console",
             "clearInterval", "clearTimeout", "event", "frames", "history",
             "Image", "location", "name", "navigator", "Option", "parent", "screen", "setInterval", "setTimeout",
-            "XMLHttpRequest"); //NOI18N
+            "XMLHttpRequest", "JSON", "Date", "undefined",  //NOI18N
+            Type.ARRAY, Type.OBJECT, Type.BOOLEAN, Type.NULL, Type.NUMBER, Type.REGEXP, Type.STRING, Type.UNDEFINED, Type.UNRESOLVED);
     
     @Override
     void computeHints(JsRuleContext context, List<Hint> hints, HintsProvider.HintsManager manager) {
@@ -116,6 +119,16 @@ public class GlobalIsNotDefined extends JsAstRule {
     @Override
     public String getDisplayName() {
         return Bundle.JsGlobalIsNotDefinedDN();
+    }
+
+    @Override
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.CURRENT_LINE_WARNING;
+    }
+   
+    @Override
+    public boolean getDefaultEnabled() {
+        return true;
     }
     
 }

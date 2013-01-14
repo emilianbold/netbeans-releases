@@ -1518,6 +1518,26 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
             setInteractionRestrictionsEnabled(true);
         }
     }
+
+    void selectLocation(FileObject locationFO) {
+	Object[] srcRootsToOffer;
+        if ((allTestSourceGroups.length == 1) || (srcGroup == null)) {
+            srcRootsToOffer = allTestSourceGroups;
+        } else {
+            srcRootsToOffer = sourcesToTestsMap.get(srcGroup);
+        }
+	NamedObject namedObject = new NamedObject(srcRootsToOffer[0], "");
+	for (int i = 0; i < srcRootsToOffer.length; i++) {
+	    Object srcRootToOffer = srcRootsToOffer[i];
+	    if(((SourceGroup)srcRootToOffer).getRootFolder().equals(locationFO)) {
+		namedObject = new NamedObject(srcRootsToOffer[i], ((SourceGroup)srcRootToOffer).getDisplayName());
+		break;
+	    }
+	}
+        cboxLocation.setSelectedItem(namedObject);
+        updateTargetFolderData();
+        updateCreatedFileName();
+    }
     
     /**
      */
