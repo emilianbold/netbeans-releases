@@ -635,6 +635,9 @@ public class DOM {
         synchronized (this) {
             int nodeId = ((Number)params.get("nodeId")).intValue(); // NOI18N
             node = nodes.get(nodeId);
+            if (node == null) {
+                return;
+            }
             name = (String)params.get("name"); // NOI18N
             node.removeAttribute(name);
         }
@@ -646,6 +649,9 @@ public class DOM {
         synchronized (this) {
             int nodeId = ((Number)params.get("nodeId")).intValue(); // NOI18N
             node = nodes.get(nodeId);
+            if (node == null) {
+                return;
+            }
             String characterData = (String)params.get("characterData"); // NOI18N
             node.setNodeValue(characterData);
         }
