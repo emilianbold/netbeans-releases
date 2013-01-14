@@ -71,6 +71,71 @@ public class ExecutionSupportTest extends NbTestCase {
     protected int timeOut() {
         return 500000;
     }
+    
+    public void testExecutionSupport3() throws Exception {
+        String source = "-DMA='main' -DEXT='\"ExternalClass.h\"' -DQQ='namespace qq {' -DQQ_CLOSE='}'";
+        List<String> res = ImportUtils.parseArgs(source);
+        assert res.size() == 4;
+        for(int i = 0; i < res.size(); i++){
+            String p = res.get(i);
+            if (TRACE) {
+                System.err.println(p);
+            }
+            if (i==0){
+                assert "-DMA='main'".equals(p);
+            } else if (i==1) {
+                assert "-DEXT='\"ExternalClass.h\"'".equals(p);
+            } else if (i == 2) {
+                assert "-DQQ='namespace qq {'".equals(p);
+            } else if (i == 3) {
+                assert "-DQQ_CLOSE='}'".equals(p);
+            }
+        }
+    }
+    
+    public void testExecutionSupport2() throws Exception {
+        String source = "./configure -DM=CPU\\ =\\ 6 CXXFLAGS=-g3\\ -gdwarf-2 -G Unix\\ Makefiles";
+        List<String> res = ImportUtils.parseEnvironment(source);
+        assert res.size() == 1;
+        for(int i = 0; i < res.size(); i++){
+            String p = res.get(i);
+            if (TRACE) {
+                System.err.println(p);
+            }
+            if (i == 0) {
+                assert "CXXFLAGS=-g3 -gdwarf-2".equals(p);
+            }
+        }
+        res = ImportUtils.quoteList(res);
+        for(int i = 0; i < res.size(); i++){
+            String p = res.get(i);
+            if (TRACE) {
+                System.err.println(p);
+            }
+            if (i == 0) {
+                assert "CXXFLAGS=\"-g3 -gdwarf-2\"".equals(p);
+            }
+        }
+        res = ImportUtils.parseArgs(source);
+        assert res.size() == 5;
+        for(int i = 0; i < res.size(); i++){
+            String p = res.get(i);
+            if (TRACE) {
+                System.err.println(p);
+            }
+            if (i==0){
+                assert "./configure".equals(p);
+            } else if (i==1) {
+                assert "-DM=CPU = 6".equals(p);
+            } else if (i == 2) {
+                assert "CXXFLAGS=-g3 -gdwarf-2".equals(p);
+            } else if (i == 3) {
+                assert "-G".equals(p);
+            } else if (i == 4) {
+                assert "Unix Makefiles".equals(p);
+            }
+        }
+    }
 
     public void testExecutionSupport1() throws Exception {
         String source = "CXX=CC CFLAGS=\"-g -xinstrument=datarace\" CXXFLAGS=\"-g -xinstrument=datarace\"";
