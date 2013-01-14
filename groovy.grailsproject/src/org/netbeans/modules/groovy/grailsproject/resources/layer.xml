@@ -34,18 +34,4 @@
             
         </folder>
     </folder>
-
-    <folder name="Editors">
-        <folder name="text">
-            <folder name="x-gsp">
-                <folder name="Popup">
-                    <folder name="goto">
-                        <attr name="displayName" bundlevalue="org.netbeans.modules.groovy.grailsproject.Bundle#Editors/text/x-gsp/Popup/goto"/>
-                        <attr name="position" intvalue="100"/>
-                    </folder>
-                </folder>
-            </folder>
-        </folder>
-    </folder>
-
 </filesystem>
