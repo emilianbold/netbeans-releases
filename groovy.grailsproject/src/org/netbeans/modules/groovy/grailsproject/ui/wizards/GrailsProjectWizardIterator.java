@@ -30,58 +30,53 @@
  */
 package org.netbeans.modules.groovy.grailsproject.ui.wizards;
 
+import org.netbeans.modules.groovy.grailsproject.ui.wizards.impl.ProgressLineProcessor;
+import org.netbeans.modules.groovy.grailsproject.ui.wizards.impl.PanelConfigureProject;
 import java.awt.Component;
-import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.HashSet;
-import java.util.Set;
-import javax.swing.event.ChangeListener;
-import org.netbeans.api.extexecution.input.InputProcessor;
-import org.openide.WizardDescriptor;
-import org.openide.WizardDescriptor.Panel;
-import java.util.NoSuchElementException;
-import javax.swing.JComponent;
-import org.openide.util.NbBundle;
 import java.io.File;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileObject;
-import java.util.logging.Logger;
-import org.netbeans.api.progress.ProgressHandle;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grailsproject.GrailsProjectSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.Panel;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author schmidtm
  */
-public class NewGrailsProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
+public class GrailsProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
 
-    private static final Logger LOGGER = Logger.getLogger(NewGrailsProjectWizardIterator.class.getName());
-    
+    private static final Logger LOGGER = Logger.getLogger(GrailsProjectWizardIterator.class.getName());
+
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     private transient WizardDescriptor wiz;
     private PanelConfigureProject pls;
     private int baseCount;
 
-    public NewGrailsProjectWizardIterator() {
-        super();
-    }
-
-    public static NewGrailsProjectWizardIterator create() {
-        return new NewGrailsProjectWizardIterator();
-    }
 
     private WizardDescriptor.Panel[] createPanels() {
         pls = new PanelConfigureProject();
@@ -89,9 +84,10 @@ public class NewGrailsProjectWizardIterator implements WizardDescriptor.Progress
     }
 
     private String[] createSteps() {
-        return new String[] {NbBundle.getMessage(NewGrailsProjectWizardIterator.class, "LAB_ConfigureProject")};
+        return new String[] {NbBundle.getMessage(GrailsProjectWizardIterator.class, "LAB_ConfigureProject")};
     }
 
+    @Override
     public Set instantiate(final ProgressHandle handle) throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
 
@@ -104,6 +100,8 @@ public class NewGrailsProjectWizardIterator implements WizardDescriptor.Progress
             // we need a special descriptor here
             ExecutionDescriptor descriptor = new ExecutionDescriptor().frontWindow(true).inputVisible(true);
             descriptor = descriptor.outProcessorFactory(new InputProcessorFactory() {
+
+                @Override
                 public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                     return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(new ProgressLineProcessor(handle, 100, 2)));
                 }
@@ -115,7 +113,7 @@ public class NewGrailsProjectWizardIterator implements WizardDescriptor.Progress
             try {
                 Integer ret = future.get();
                 if (ret.intValue() != 0) {
-                    String msg = NbBundle.getMessage(NewGrailsProjectWizardIterator.class, "WIZARD_ERROR_MESSAGE_APPLICATION");
+                    String msg = NbBundle.getMessage(GrailsProjectWizardIterator.class, "WIZARD_ERROR_MESSAGE_APPLICATION");
                     DialogDisplayer.getDefault().notify(
                             new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
                 }
@@ -136,7 +134,7 @@ public class NewGrailsProjectWizardIterator implements WizardDescriptor.Progress
             FileObject dir = FileUtil.toFileObject(dirF);
 
             if (dir == null) {
-                LOGGER.warning("Folder was expected, but not found: " + dirF.getCanonicalPath());
+                LOGGER.log(Level.WARNING, "Folder was expected, but not found: {0}", dirF.getCanonicalPath());
             } else {
                 resultSet.add(dir);
                 GrailsProjectSettings.getDefault().setNewProjectCount(baseCount);
@@ -156,11 +154,13 @@ public class NewGrailsProjectWizardIterator implements WizardDescriptor.Progress
         return resultSet;
     }
 
+    @Override
     public Set instantiate() throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
         return resultSet;
     }
 
+    @Override
     public void initialize(WizardDescriptor wizard) {
         this.wiz = wizard;
         index = 0;
@@ -190,26 +190,31 @@ public class NewGrailsProjectWizardIterator implements WizardDescriptor.Progress
         }
     }
 
+    @Override
     public void uninitialize(WizardDescriptor wizard) {
     }
 
+    @Override
     public Panel current() {
         return panels[index];
     }
 
+    @Override
     public String name() {
-        return MessageFormat.format(NbBundle.getMessage(NewGrailsProjectWizardIterator.class, "LAB_IteratorName"),
-                new Object[]{Integer.valueOf(index + 1), Integer.valueOf(panels.length)});
+        return NbBundle.getMessage(GrailsProjectWizardIterator.class, "LAB_IteratorName", Integer.valueOf(index + 1), Integer.valueOf(panels.length));
     }
 
+    @Override
     public boolean hasNext() {
         return index < panels.length - 1;
     }
 
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
 
+    @Override
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
@@ -217,6 +222,7 @@ public class NewGrailsProjectWizardIterator implements WizardDescriptor.Progress
         index++;
     }
 
+    @Override
     public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
@@ -224,9 +230,11 @@ public class NewGrailsProjectWizardIterator implements WizardDescriptor.Progress
         index--;
     }
 
+    @Override
     public void addChangeListener(ChangeListener l) {
     }
 
+    @Override
     public void removeChangeListener(ChangeListener l) {
     }
 }

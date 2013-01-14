@@ -29,7 +29,7 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.grailsproject.ui.wizards;
+package org.netbeans.modules.groovy.grailsproject.ui.wizards.impl;
 
 import java.awt.Component;
 import javax.swing.JComponent;

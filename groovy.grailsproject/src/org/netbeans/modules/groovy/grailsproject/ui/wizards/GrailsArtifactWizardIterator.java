@@ -42,8 +42,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.grailsproject.templates;
+package org.netbeans.modules.groovy.grailsproject.ui.wizards;
 
+import org.netbeans.modules.groovy.grailsproject.ui.wizards.impl.ProgressLineProcessor;
 import java.awt.Component;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -68,13 +69,19 @@ import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.project.*;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.groovy.grails.api.ExecutionSupport;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
 import org.netbeans.modules.groovy.grailsproject.actions.RefreshProjectRunnable;
-import org.netbeans.modules.groovy.grailsproject.ui.wizards.ProgressLineProcessor;
+import org.netbeans.modules.groovy.grailsproject.ui.wizards.impl.GrailsArtifacts;
+import org.netbeans.modules.groovy.grailsproject.ui.wizards.impl.GrailsTargetChooserPanel;
 import org.netbeans.modules.groovy.support.api.GroovySources;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
@@ -89,28 +96,20 @@ import org.openide.util.NbBundle;
 /**
  * Wizard to create a new Grails artifact.
  */
-public class NewGrailsArtifactWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
+public class GrailsArtifactWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
 
     private static final long serialVersionUID = 1L;
+    private static final Logger LOG = Logger.getLogger(GrailsArtifactWizardIterator.class.getName());
 
-    private static final Logger LOG = Logger.getLogger(NewGrailsArtifactWizardIterator.class.getName());
+    private transient int index;
+    private transient WizardDescriptor.Panel[] panels;
+    private transient WizardDescriptor wiz;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
+    private SourceCategory sourceCategory;
     private GrailsProject project;
 
-    private SourceCategory sourceCategory;
-
-    private transient int index;
-
-    private transient WizardDescriptor.Panel[] panels;
-
-    private transient WizardDescriptor wiz;
-
-    /** Create a new wizard iterator. */
-    public NewGrailsArtifactWizardIterator() {
-        super();
-    }
 
     private WizardDescriptor.Panel[] createPanels(WizardDescriptor wizardDescriptor) {
         Sources sources = ProjectUtils.getSources(project);
@@ -129,7 +128,7 @@ public class NewGrailsArtifactWizardIterator implements WizardDescriptor.Progres
             };
         } else {
             return new WizardDescriptor.Panel[] {
-                GrailsTemplates.createArtifactChooser(project, group, sourceCategory.getSuffix())
+                new GrailsTargetChooserPanel(project, group, null, sourceCategory.getSuffix())
             };
         }
     }
@@ -155,7 +154,7 @@ public class NewGrailsArtifactWizardIterator implements WizardDescriptor.Progres
     }
 
     @Override
-    public Set instantiate () throws IOException {
+    public Set instantiate() throws IOException {
         assert false : "Cannot call this method if implements WizardDescriptor.ProgressInstantiatingIterator.";
         return null;
     }
@@ -219,7 +218,7 @@ public class NewGrailsArtifactWizardIterator implements WizardDescriptor.Progres
             try {
                 Integer ret = future.get();
                 if (ret.intValue() != 0) {
-                    String msg = NbBundle.getMessage(NewGrailsArtifactWizardIterator.class, "WIZARD_ERROR_MESSAGE_ARTIFACT");
+                    String msg = NbBundle.getMessage(GrailsArtifactWizardIterator.class, "WIZARD_ERROR_MESSAGE_ARTIFACT");
                     DialogDisplayer.getDefault().notify(
                             new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
                 }
@@ -372,7 +371,7 @@ public class NewGrailsArtifactWizardIterator implements WizardDescriptor.Progres
 
         @Override
         public void processLine(String line) {
-            Writer answerWriter = null;
+            Writer answerWriter;
             synchronized (this) {
                 answerWriter = writer;
             }
@@ -381,7 +380,7 @@ public class NewGrailsArtifactWizardIterator implements WizardDescriptor.Progres
                 Matcher matcher = OVERWRITE_PATTERN.matcher(line);
                 if (matcher.matches()) {
                     NotifyDescriptor d = new NotifyDescriptor.Confirmation(
-                            NbBundle.getMessage(NewGrailsArtifactWizardIterator.class, "MSG_overwrite_file", matcher.group(1)),
+                            NbBundle.getMessage(GrailsArtifactWizardIterator.class, "MSG_overwrite_file", matcher.group(1)),
                             NotifyDescriptor.YES_NO_OPTION);
 
                     try {

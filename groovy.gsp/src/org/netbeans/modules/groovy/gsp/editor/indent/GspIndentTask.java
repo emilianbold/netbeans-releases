@@ -42,19 +42,44 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.gsp;
+package org.netbeans.modules.groovy.gsp.editor.indent;
 
+import javax.swing.text.BadLocationException;
 import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
- * Indent task factory for GSP files
+ * Indent task for GSP.
  *
- * @author Tor Norbye
+ * @author Martin Janicek
  */
-public class GspIndentTaskFactory implements IndentTask.Factory {
+public class GspIndentTask implements IndentTask, Lookup.Provider {
 
-    public IndentTask createTask(Context context) {
-        return new GspIndentTask(context);
+    private final GspIndenter indenter;
+    private final Lookup lookup;
+
+
+    GspIndentTask(Context context) {
+        indenter = new GspIndenter(context);
+        lookup = Lookups.singleton(indenter.createFormattingContext());
+    }
+
+
+    @Override
+    public void reindent() throws BadLocationException {
+        indenter.reindent();
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return lookup;
+    }
+
+    @Override
+    public ExtraLock indentLock() {
+        return null;
     }
 }

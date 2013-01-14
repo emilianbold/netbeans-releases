@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.grailsproject.ui.wizards;
+package org.netbeans.modules.groovy.grailsproject.ui.wizards.impl;
 
 import javax.swing.JPanel;
 import org.openide.WizardDescriptor;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,49 +37,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.grailsproject.ui.wizards;
+package org.netbeans.modules.groovy.gsp.lexer;
 
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.extexecution.input.LineProcessor;
+import junit.framework.TestCase;
 
 /**
  *
- * @author Petr Hejl
+ * @author Martin Janicek
  */
-public class ProgressLineProcessor implements LineProcessor {
+public class GspTokenIdTest extends TestCase {
 
-    private final ProgressHandle progress;
-
-    private final int max;
-
-    private final int step;
-
-    private int value;
-
-    public ProgressLineProcessor(ProgressHandle progress, int max, int step) {
-        this.progress = progress;
-        this.max = max;
-        this.step = step;
+    public GspTokenIdTest(String testName) {
+        super(testName);
     }
 
-    public void processLine(String line) {
-        value += step;
-        if (value > max) {
-            value = max;
+    public void testIsCommentMethod() {
+        for (GspTokenId gspTokenId : GspTokenId.values()) {
+            if (gspTokenId == GspTokenId.COMMENT_GSP_STYLE_START
+                    || gspTokenId == GspTokenId.COMMENT_GSP_STYLE_CONTENT
+                    || gspTokenId == GspTokenId.COMMENT_GSP_STYLE_END
+                    || gspTokenId == GspTokenId.COMMENT_JSP_STYLE_START
+                    || gspTokenId == GspTokenId.COMMENT_JSP_STYLE_CONTENT
+                    || gspTokenId == GspTokenId.COMMENT_JSP_STYLE_END
+                    || gspTokenId == GspTokenId.COMMENT_HTML_STYLE_START
+                    || gspTokenId == GspTokenId.COMMENT_HTML_STYLE_CONTENT
+                    || gspTokenId == GspTokenId.COMMENT_HTML_STYLE_END) {
+                assertTrue(gspTokenId.isComment());
+            } else {
+                assertFalse(gspTokenId.isComment());
+            }
         }
-
-        progress.progress(value);
-    }
-
-    public void reset() {
-        // noop
-    }
-
-    public void close() {
-        value = max;
-        progress.progress(max);
     }
 }

@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.groovy.grailsproject.ui.wizards;
+package org.netbeans.modules.groovy.grailsproject.ui.wizards.impl;
 
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -66,21 +66,21 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     boolean valid(WizardDescriptor settings) {
         if (projectNameTextField.getText().trim().length() == 0) {
             settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                NbBundle.getMessage(NewGrailsProjectWizardIterator.class,
+                NbBundle.getMessage(PanelProjectLocationVisual.class,
                 "GetProjectLocationPanel.EmptyProjectName"));
             return false;
         }
 
         if(!new File(projectLocationTextField.getText().trim()).isDirectory()) {
             settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                NbBundle.getMessage(NewGrailsProjectWizardIterator.class,
+                NbBundle.getMessage(PanelProjectLocationVisual.class,
                 "GetProjectLocationPanel.LocationNotDirectory"));
             return false;
         }
 
         if (new File(projectFolderTextField.getText().trim()).exists()) {
             settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                NbBundle.getMessage(NewGrailsProjectWizardIterator.class,
+                NbBundle.getMessage(PanelProjectLocationVisual.class,
                 "GetProjectLocationPanel.FileAlreadyExists"));
             return false;
         }

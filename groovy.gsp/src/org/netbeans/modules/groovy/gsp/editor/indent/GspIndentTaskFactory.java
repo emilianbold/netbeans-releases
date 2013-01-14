@@ -42,58 +42,25 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.editor.options;
+package org.netbeans.modules.groovy.gsp.editor.indent;
 
-import java.util.prefs.Preferences;
-import javax.swing.text.Document;
-import org.netbeans.api.editor.settings.SimpleValueNames;
-import org.netbeans.modules.editor.indent.api.IndentUtils;
-import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.editor.indent.spi.IndentTask;
+import org.netbeans.modules.groovy.gsp.GspLanguage;
 
-/** 
- *  XXX add support for profiles
- *  XXX get the preferences node from somewhere else in odrer to be able not to
- *      use the getters and to be able to write to it.
- * 
- * @author Dusan Balek, Martin Janicek
+/**
+ *
+ * @author Martin Janicek
  */
-public final class CodeStyle {
+@MimeRegistration(
+    mimeType = GspLanguage.GSP_MIME_TYPE,
+    service = IndentTask.Factory.class
+)
+public class GspIndentTaskFactory implements IndentTask.Factory {
 
-    private static final String continuationIndentSize = "continuationIndentSize"; //NOI18N
-    private static final String reformatComments = "reformatComments"; //NOI18N
-    private static final String indentHtml = "indentHtml"; //NOI18N
-    private static final String rightMargin = SimpleValueNames.TEXT_LIMIT_WIDTH;
-
-    private final Preferences preferences;
-    private final Document doc;
-
-
-    private CodeStyle(Document doc) {
-        this.preferences = CodeStylePreferences.get(doc).getPreferences();
-        this.doc = doc;
-    }
-
-    public static CodeStyle get(Document doc) {
-        return new CodeStyle(doc);
-    }
-
-    public int getIndentSize() {
-        return IndentUtils.indentLevelSize(doc);
-    }
-
-    public int getContinuationIndentSize() {
-        return preferences.getInt(continuationIndentSize, 4);
-    }
-
-    public boolean isReformatComments() {
-        return preferences.getBoolean(reformatComments, false);
-    }
-
-    public boolean isIndentHtml() {
-        return preferences.getBoolean(indentHtml, true);
-    }
-    
-    public int getRightMargin() {
-        return preferences.getInt(rightMargin, 80);
+    @Override
+    public IndentTask createTask(Context context) {
+        return new GspIndentTask(context);
     }
 }
