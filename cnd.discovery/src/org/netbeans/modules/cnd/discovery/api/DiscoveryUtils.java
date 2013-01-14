@@ -508,9 +508,9 @@ public class DiscoveryUtils {
                     languageArtifacts.add(lang);
                 }
             } else if (option.equals("-xc")){ // NOI18N
-                languageArtifacts.add("c");
+                languageArtifacts.add("c"); // NOI18N	
             } else if (option.equals("-xc++")){ // NOI18N
-                languageArtifacts.add("c++");
+                languageArtifacts.add("c++"); // NOI18N
             } else if (option.equals("-std=c89")){ // NOI18N
                 languageArtifacts.add("c89"); // NOI18N
             } else if (option.equals("-xc99") || // NOI18N
