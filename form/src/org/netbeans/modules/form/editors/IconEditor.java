@@ -340,8 +340,7 @@ public class IconEditor extends PropertyEditorSupport
     private String getDefaultResourcePackage() {
         FileObject folder = getDefaultResourceFolder();
         ClassPath cp = ClassPath.getClassPath(folder, ClassPath.SOURCE);
-        FileObject root = cp.findOwnerRoot(folder);
-        return FileUtil.getRelativePath(root, folder);
+        return cp != null ? FileUtil.getRelativePath(cp.findOwnerRoot(folder), folder) : null;
     }
 
     /**
