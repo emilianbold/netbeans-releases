@@ -81,7 +81,32 @@ import com.sun.source.tree.VariableTree;
  *
  */
 class JaxRsGenerationStrategy extends ClientGenerationStrategy {
-
+    
+    @Override
+    protected void buildQueryFormParams(StringBuilder queryString){
+        queryString.append(";\n javax.ws.rs.core.Form form =");                     // NOI18N
+        queryString.append("getQueryOrFormParams(queryParamNames, queryParamValues);\n");// NOI18N
+        queryString.append("javax.ws.rs.core.MultivaluedMap<String,String> map = form.asMap();\n");// NOI18N
+        queryString.append("for(java.util.Entry<String,java.util.List<String>> entry: ");   // NOI18N
+        queryString.append("map.entrySet()){\n");                           // NOI18N
+        queryString.append("java.util.List<String> list = entry.getValue();\n");// NOI18N
+        queryString.append("String[] values = list.toArray(new String[list.size()]);\n");// NOI18N
+        queryString.append("webTarget = webTarget.queryParam(entry.getKey(),values);\n");// NOI18N
+        queryString.append("}");// NOI18N
+    }
+    
+    @Override
+    protected void buildQParams(StringBuilder queryString){
+        queryString.append("javax.ws.rs.core.MultivaluedMap<String,String> map = "); // NOI18N
+        queryString.append("getQParams(optionalQueryParams);\n");           // NOI18N
+        queryString.append("for(java.util.Entry<String,java.util.List<String>> entry: ");   // NOI18N
+        queryString.append("map.entrySet()){\n");                           // NOI18N
+        queryString.append("java.util.List<String> list = entry.getValue();\n");// NOI18N
+        queryString.append("String[] values = list.toArray(new String[list.size()]);\n");// NOI18N
+        queryString.append("webTarget = webTarget.queryParam(entry.getKey(),values);\n");// NOI18N
+        queryString.append("}");// NOI18N
+    }
+    
     /* (non-Javadoc)
      * @see org.netbeans.modules.websvc.rest.client.ClientGenerationStrategy#generateFields(org.netbeans.api.java.source.TreeMaker, org.netbeans.api.java.source.WorkingCopy, com.sun.source.tree.ClassTree, java.lang.String, org.netbeans.modules.websvc.rest.client.Security)
      */
@@ -505,8 +530,12 @@ class JaxRsGenerationStrategy extends ClientGenerationStrategy {
         StringBuilder commentBuffer = new StringBuilder("@param responseType Class representing the response\n"); //NOI18N
 
         if (httpParams.hasQueryParams() || httpParams.hasHeaderParams()) {
+            queryP.append("webTarget = webTarget");
             addQueryParams(maker, httpParams, security, paramList, queryP, queryParamPart, commentBuffer);
+            queryP.append(";\n");
         }
+        
+        queryP.append("return webTarget");
 
         commentBuffer.append("@return response object (instance of responseType class)"); //NOI18N
 
@@ -520,8 +549,8 @@ class JaxRsGenerationStrategy extends ClientGenerationStrategy {
         }
         addHeaderParams(maker, httpParams, paramList, queryP, commentBuffer);
         String body =
-                "{"+queryParamPart+                                         //NOI18N
-                    "   return webTarget" +queryP +".get("+bodyParam+");"+  //NOI18N
+                "{"+queryParamPart+ queryP+                                        //NOI18N
+                    ".get("+bodyParam+");"+  //NOI18N
                 "}";                                                        //NOI18N
         
         List<ExpressionTree> throwsList = new ArrayList<ExpressionTree>();
@@ -597,13 +626,19 @@ class JaxRsGenerationStrategy extends ClientGenerationStrategy {
         if (httpParams.hasFormParams() || httpParams.hasQueryParams() || 
                 httpParams.hasHeaderParams()) 
         {
+            queryP.append("webTarget = webTarget");
             addQueryParams(maker, httpParams, security, paramList, 
                     queryP, queryParamPart, commentBuffer);
+            queryP.append("\n;");
         }
+        
+        queryP.append(ret);
+        queryP.append(" webTarget");
         
         if (requestMimeType != null) {
             if (requestMimeType == HttpMimeType.FORM && httpParams.hasFormParams()) {
-                bodyParam="getQueryOrFormParams(formParamNames, formParamValues)"; //NOI18N
+                bodyParam="javax.ws.rs.client.Entity.form(" +
+                		"getQueryOrFormParams(formParamNames, formParamValues))"; //NOI18N
             } 
             else {
                 VariableTree objectParam = maker.Variable(paramModifier, 
@@ -641,8 +676,8 @@ class JaxRsGenerationStrategy extends ClientGenerationStrategy {
             bodyParam +=',';
         }
         String body =
-            "{"+queryParamPart + //NOI18N
-                    "   "+ret+"webResource"+queryP+"."+methodPrefix+"("+
+            "{"+queryParamPart + queryP+
+                    "."+methodPrefix+"("+
                     bodyParam+bodyParam1+");" +  //NOI18N
             "}"; //NOI18N
 
@@ -664,14 +699,70 @@ class JaxRsGenerationStrategy extends ClientGenerationStrategy {
 
     @Override
     MethodTree generateFormMethod( TreeMaker maker, WorkingCopy copy ) {
-        // TODO Auto-generated method stub
-        return null;
+        String form = "javax.ws.rs.core.Form"; //NOI18N
+        TypeElement mvMapEl = copy.getElements().getTypeElement(form);
+        String mvType = mvMapEl == null ? form : "Form"; //NOI18N
+
+        String body =
+        "{"+ //NOI18N
+            mvType+" form = new javax.ws.rs.core.Form();"+ //NOI18N
+            "for (int i=0;i< paramNames.length;i++) {" + //NOI18N
+            "    if (paramValues[i] != null) {"+ //NOI18N
+            "        form = form.param(paramNames[i], paramValues[i]);"+ //NOI18N
+            "    }"+ //NOI18N
+            "}"+ //NOI18N
+            "return form;"+ //NOI18N
+        "}"; //NOI18N
+        ModifiersTree methodModifier = maker.Modifiers(
+                Collections.<Modifier>singleton(Modifier.PRIVATE));
+        ExpressionTree returnTree =
+                    copy.getTreeMaker().Identifier("javax.ws.rs.core.Form");//NOI18N
+        List<VariableTree> paramList = new ArrayList<VariableTree>();
+        ModifiersTree paramModifier = maker.Modifiers(Collections.<Modifier>emptySet());
+        paramList.add(maker.Variable(paramModifier, "paramNames", maker.Identifier("String[]"), null)); //NOI18N
+        paramList.add(maker.Variable(paramModifier, "paramValues", maker.Identifier("String[]"), null)); //NOI18N
+        return maker.Method (
+                methodModifier,
+                "getQueryOrFormParams", //NOI18N
+                returnTree,
+                Collections.<TypeParameterTree>emptyList(),
+                paramList,
+                Collections.<ExpressionTree>emptyList(),
+                body,
+                null); //NOI18N
     }
 
     @Override
     MethodTree generateOptionalFormMethod( TreeMaker maker, WorkingCopy copy ) {
-        // TODO Auto-generated method stub
-        return null;
+        String mvMapClass = "javax.ws.rs.core.MultivaluedMap"; //NOI18N
+        TypeElement mvMapEl = copy.getElements().getTypeElement(mvMapClass);
+        String mvType = mvMapEl == null ? mvMapClass : "MultivaluedMap"; //NOI18N
+
+        String body =
+        "{"+ //NOI18N
+            mvType+"<String,String> qParams = new javax.ws.rs.core.MultivaluedHashMap<String,String>();"+ //NOI18N
+           "for (String qParam : optionalParams) {" + //NOI18N
+            "    String[] qPar = qParam.split(\"=\");"+ //NOI18N
+            "    if (qPar.length > 1) qParams.add(qPar[0], qPar[1])"+ //NOI18N
+            "}"+ //NOI18N
+            "return qParams;"+ //NOI18N
+        "}"; //NOI18N
+        ModifiersTree methodModifier = maker.Modifiers(Collections.<Modifier>singleton(Modifier.PRIVATE));
+        ExpressionTree returnTree =
+                mvMapEl == null ?
+                    copy.getTreeMaker().Identifier(mvMapClass) :
+                    copy.getTreeMaker().QualIdent(mvMapEl);
+        ModifiersTree paramModifier = maker.Modifiers(Collections.<Modifier>emptySet());
+        VariableTree param = maker.Variable(paramModifier, "optionalParams", maker.Identifier("String..."), null); //NOI18N
+        return maker.Method (
+                methodModifier,
+                "getQParams", //NOI18N
+                returnTree,
+                Collections.<TypeParameterTree>emptyList(),
+                Collections.<VariableTree>singletonList(param),
+                Collections.<ExpressionTree>emptyList(),
+                body,
+                null); //NOI18N
     }
 
     @Override
