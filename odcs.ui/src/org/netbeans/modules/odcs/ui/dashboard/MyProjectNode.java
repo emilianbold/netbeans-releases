@@ -181,7 +181,8 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
                     @Override
                     public void run() {
                         dashboard.myProjectsProgressStarted();
-                        allIssuesQuery = qaccessor == null ? null : qaccessor.getAllIssuesQuery(project);
+                        allIssuesQuery = qaccessor == null || !project.getTeamProject().hasTasks() 
+                                ? null : qaccessor.getAllIssuesQuery(project);
                         if (allIssuesQuery != null) {
                             allIssuesQuery.addPropertyChangeListener(projectListener);
                             List<QueryResultHandle> queryResults = qaccessor.getQueryResults(allIssuesQuery);
