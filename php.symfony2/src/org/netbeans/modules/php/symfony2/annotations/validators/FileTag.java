@@ -41,73 +41,33 @@
  */
 package org.netbeans.modules.php.symfony2.annotations.validators;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
-import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTagProvider;
 import org.openide.util.NbBundle;
 
-// http://symfony.com/doc/current/book/validation.html#validation-constraints
-public class Symfony2ValidatorsAnnotationsProvider extends AnnotationCompletionTagProvider {
+public class FileTag extends AnnotationCompletionTag {
 
-    @NbBundle.Messages("Symfony2ValidatorsAnnotationsProvider.name=Symfony2 Validators")
-    public Symfony2ValidatorsAnnotationsProvider() {
-        super("Symfony2 Validators Annotations", // NOI18N
-                Bundle.Symfony2ValidatorsAnnotationsProvider_name(),
-                null);
+    public FileTag() {
+        super("File", // NOI18N
+                "@File(maxSize=\"${maxSize}\", mimeTypes={\"${mimeTypes}\"}, mimeTypesMessage=\"${mimeTypesMessage}\")", // NOI18N
+                NbBundle.getMessage(FileTag.class, "FileTag.documentation"));
     }
 
     @Override
-    public List<AnnotationCompletionTag> getFunctionAnnotations() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public List<AnnotationCompletionTag> getTypeAnnotations() {
-        return Arrays.<AnnotationCompletionTag>asList(new UniqueEntityTag());
-    }
-
-    @Override
-    public List<AnnotationCompletionTag> getFieldAnnotations() {
-        return getFieldOrMethodValidatorTags();
-    }
-
-    @Override
-    public List<AnnotationCompletionTag> getMethodAnnotations() {
-        return getFieldOrMethodValidatorTags();
-    }
-
-    private List<AnnotationCompletionTag> getFieldOrMethodValidatorTags() {
-        return Arrays.<AnnotationCompletionTag>asList(
-                new NotBlankTag(),
-                new BlankTag(),
-                new NotNullTag(),
-                new NullTag(),
-                new TrueTag(),
-                new FalseTag(),
-                new TypeTag(),
-                new EmailTag(),
-                new MinLengthTag(),
-                new MaxLengthTag(),
-                new LengthTag(),
-                new UrlTag(),
-                new RegexTag(),
-                new IpTag(),
-                new MaxTag(),
-                new MinTag(),
-                new RangeTag(),
-                new DateTag(),
-                new DateTimeTag(),
-                new TimeTag(),
-                new ChoiceTag(),
-                new CollectionTag(),
-                new CountTag(),
-                new LanguageTag(),
-                new LocaleTag(),
-                new CountryTag(),
-                new FileTag(),
-                new ImageTag());
+    public void formatParameters(HtmlFormatter formatter) {
+        formatter.appendText("(maxSize="); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("\"maxSize\""); //NOI18N
+        formatter.parameters(false);
+        formatter.appendText(", mimeTypes={"); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("\"mimeTypes\""); //NOI18N
+        formatter.parameters(false);
+        formatter.appendText("}, mimeTypesMessage="); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("\"mimeTypesMessage\""); //NOI18N
+        formatter.parameters(false);
+        formatter.appendText(")"); //NOI18N
     }
 
 }
