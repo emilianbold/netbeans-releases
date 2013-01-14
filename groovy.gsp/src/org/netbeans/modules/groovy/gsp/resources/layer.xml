@@ -28,7 +28,6 @@
             <folder name="x-gsp">
 
                 <folder name="BracesMatchers">
-                    <file name="org-netbeans-modules-groovy-gsp-editor-bracesmatcher-GspBracerMacherFactory.instance_hidden"/>
                     <file name="org-netbeans-modules-groovy-gsp-editor-bracesmatcher-GspBracesMacherFactory.instance">
                         <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory"/>
                         <attr name="position" intvalue="0"/>
