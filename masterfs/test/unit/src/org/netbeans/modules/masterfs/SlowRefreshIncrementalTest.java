@@ -110,6 +110,7 @@ public class SlowRefreshIncrementalTest extends NbTestCase {
         }
         final FileObject parent = fld;
         FileObject fileObject1 = parent.createData("fileObject1");
+        LOG.log(Level.INFO, "Create file {0}", fileObject1);
         assertNotNull("Just to initialize the stamp", lm);
         FileObject[] arr = testFolder.getChildren();
         assertEquals("Two children", 2, arr.length);
@@ -119,7 +120,9 @@ public class SlowRefreshIncrementalTest extends NbTestCase {
         Reference<FileObject> ref = new WeakReference<FileObject>(fileObject1);
         arr = null;
         fileObject1 = null;
+        LOG.log(Level.INFO, "GCing fileobject {0}", ref.get());
         assertGC("File Object can disappear", ref);
+        LOG.log(Level.INFO, "Object for {0} is gone", file);
 
         class L extends FileChangeAdapter {
             int cnt;
