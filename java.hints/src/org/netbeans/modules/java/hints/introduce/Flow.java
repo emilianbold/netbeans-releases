@@ -131,7 +131,7 @@ import org.netbeans.spi.java.hints.HintContext;
 public class Flow {
 
     public static FlowResult assignmentsForUse(CompilationInfo info, AtomicBoolean cancel) {
-        return assignmentsForUse(info, cancel);
+        return assignmentsForUse(info, new AtomicBooleanCancel(cancel));
     }
 
     public static FlowResult assignmentsForUse(CompilationInfo info, TreePath from, AtomicBoolean cancel) {
