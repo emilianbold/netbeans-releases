@@ -65,7 +65,9 @@ public class Symfony2ValidatorsAnnotationsProvider extends AnnotationCompletionT
 
     @Override
     public List<AnnotationCompletionTag> getTypeAnnotations() {
-        return Arrays.<AnnotationCompletionTag>asList(new UniqueEntityTag());
+        return Arrays.<AnnotationCompletionTag>asList(
+                new UniqueEntityTag(),
+                new CallbackTag());
     }
 
     @Override
@@ -107,7 +109,10 @@ public class Symfony2ValidatorsAnnotationsProvider extends AnnotationCompletionT
                 new LocaleTag(),
                 new CountryTag(),
                 new FileTag(),
-                new ImageTag());
+                new ImageTag(),
+                new AllTag(),
+                new UserPasswordTag(),
+                new ValidTag());
     }
 
 }
