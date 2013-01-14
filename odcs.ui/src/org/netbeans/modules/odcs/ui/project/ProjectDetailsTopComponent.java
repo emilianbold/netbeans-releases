@@ -612,7 +612,9 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         gbc.gridwidth = GridBagConstraints.REMAINDER;
         Collection<ScmRepository> repositories = Collections.emptyList();
         try {
-            repositories = project.getRepositories();
+            if (project.hasScm()) {
+                repositories = project.getRepositories();
+            }
         } catch (ODCSException ex) {
             Utils.getLogger().warning(ex.getLocalizedMessage());
             pnlSources.add(lblError, gbc);
