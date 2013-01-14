@@ -244,6 +244,10 @@ abstract class ClientGenerationStrategy {
         }
         return httpMethods;
     }
+    
+    protected abstract void buildQueryFormParams(StringBuilder queryString);
+    
+    protected abstract void buildQParams(StringBuilder queryString);
 
     protected String getPathExpression(PathFormat pf) {
         String[] arguments = pf.getArguments();
@@ -351,9 +355,9 @@ abstract class ClientGenerationStrategy {
                         httpParams.getFixedFormParams());
             }
             queryParamPart.append("String[] formParamNames = new String[] {"+
-                    paramPair.getKey()+"}"); //NOI18N
+                    paramPair.getKey()+"};"); //NOI18N
             queryParamPart.append("String[] formParamValues = new String[] {"+
-                    paramPair.getValue()+"}"); //NOI18N
+                    paramPair.getValue()+"};"); //NOI18N
         }
         // add query params
         if (httpParams.hasQueryParams()) {
@@ -386,9 +390,9 @@ abstract class ClientGenerationStrategy {
                                 httpParams.getFixedQueryParams());
                     }
                     queryParamPart.append("String[] queryParamNames = new String[] {"+
-                            paramPair.getKey()+"}"); //NOI18N
+                            paramPair.getKey()+"};"); //NOI18N
                     queryParamPart.append("String[] queryParamValues = new String[] {"+
-                            paramPair.getValue()+"}"); //NOI18N
+                            paramPair.getValue()+"};"); //NOI18N
                     if (Security.Authentication.SESSION_KEY == 
                             security.getAuthentication() && securityParams != null) 
                     {
@@ -401,10 +405,11 @@ abstract class ClientGenerationStrategy {
                                 "(queryParamNames, queryParamValues"+optParams+
                                 ");"); //NOI18N
                         String sigParam = securityParams.getSignature();
-                        queryP.append(".queryParams(getQueryOrFormParams(queryParamNames, queryParamValues)).queryParam(\""+
+                        queryP.append(".queryParam(\""+
                                 sigParam+"\", signature)"); //NOI18N
+                        buildQueryFormParams(queryP);
                     } else {
-                        queryP.append(".queryParams(getQueryOrFormParams(queryParamNames, queryParamValues))"); //NOI18N
+                        buildQueryFormParams(queryP); 
                     }
                 } else {
                     List<String> requiredParams = httpParams.getRequiredQueryParams();
@@ -452,10 +457,10 @@ abstract class ClientGenerationStrategy {
                         httpParams.getOptionalQueryParams(), 
                         Collections.<String, String>emptyMap());
                 queryParamPart.append("String[] queryParamNames = new String[] {"+
-                        paramPair.getKey()+"}"); //NOI18N
+                        paramPair.getKey()+"};"); //NOI18N
                 queryParamPart.append("String[] queryParamValues = new String[] {"+
-                        paramPair.getValue()+"}"); //NOI18N
-                queryP.append(".queryParams(getQueryOrFormParams(queryParamNames, queryParamValues))"); //NOI18N
+                        paramPair.getValue()+"};"); //NOI18N
+                buildQueryFormParams(queryP);
             }
 
             // add optional params (only when there are also some required params)
@@ -476,11 +481,11 @@ abstract class ClientGenerationStrategy {
                     commentBuffer.append("<LI>"+key+" [OPTIONAL, DEFAULT VALUE: \""+
                             defaultParams.get(key)+"\"]\n"); //NOI18N
                 }
-                queryP.append(".queryParams(getQParams(optionalQueryParams))"); //NOI18N
+                buildQParams(queryP); 
             }
         }
     }
-
+    
     protected void addHeaderParams( TreeMaker maker, HttpParams httpParams,
             List<VariableTree> paramList, StringBuilder queryP,
             StringBuilder commentBuffer )

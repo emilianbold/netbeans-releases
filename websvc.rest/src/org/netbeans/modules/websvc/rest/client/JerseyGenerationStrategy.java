@@ -112,6 +112,19 @@ class JerseyGenerationStrategy extends ClientGenerationStrategy {
         return modifiedClass;
     }
     
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.websvc.rest.client.ClientGenerationStrategy#buildQueryFormParams(java.lang.StringBuilder)
+     */
+    @Override
+    protected void buildQueryFormParams( StringBuilder queryString ) {
+        queryString.append(".queryParams(getQueryOrFormParams(queryParamNames, queryParamValues))");//NOI18N
+    }
+    
+    @Override
+    protected void buildQParams(StringBuilder queryString){
+        queryString.append( ".queryParams(getQParams(optionalQueryParams))");//NOI18N
+    }
+    
     @Override
     MethodTree generateConstructor(TreeMaker maker, WorkingCopy copy,
             ClassTree classTree, PathFormat pf, Security security)
