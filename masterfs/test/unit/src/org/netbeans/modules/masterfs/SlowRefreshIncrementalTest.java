@@ -80,7 +80,7 @@ public class SlowRefreshIncrementalTest extends NbTestCase {
 
     @Override
     protected int timeOut() {
-        return 15000;
+        return 55000;
     }
 
     @Override
