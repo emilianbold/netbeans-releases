@@ -490,7 +490,9 @@ class LayoutOperations implements LayoutConstants {
                 continue;
             }
             if (li.isParallel()) {
-                setParallelSameSize(li, alignedComp, dimension);
+                if (li.getGroupAlignment() == LEADING || li.getGroupAlignment() == TRAILING) { // not for baseline group
+                    setParallelSameSize(li, alignedComp, dimension);
+                }
             } else {
                 LayoutInterval sub = getOneNonEmpty(li);
                 if (sub != null
@@ -498,7 +500,9 @@ class LayoutOperations implements LayoutConstants {
                     && !LayoutInterval.wantResize(li)) {
                     // viusally aligned subinterval
                     if (sub.isParallel()) {
-                        setParallelSameSize(sub, alignedComp, dimension);
+                        if (sub.getGroupAlignment() == LEADING || sub.getGroupAlignment() == TRAILING) { // not for baseline group
+                            setParallelSameSize(sub, alignedComp, dimension);
+                        }
                     } else if (!isPressurizedComponent(sub)) {
                         // make this component filling the group - effectively keeping same size
                         if (!LayoutInterval.isAlignedAtBorder(li, aligned.getAlignment())) {
