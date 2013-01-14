@@ -180,7 +180,7 @@ public class NewProjectWizardIterator implements WizardDescriptor.ProgressInstan
             try {
                 String repositoryUrl = null;
                 Collection<ScmRepository> repositories = project.getRepositories();
-                if (!repositories.isEmpty()) {
+                if (repositories != null && !repositories.isEmpty()) {
                     repositoryUrl = repositories.iterator().next().getUrl();
                 }
                 if (repositoryUrl != null) {
