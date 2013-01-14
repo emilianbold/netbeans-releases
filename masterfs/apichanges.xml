@@ -49,6 +49,22 @@ made subject to such option by the copyright holder.
         <apidef name="masterfs">MasterFileSystem API</apidef>
     </apidefs>
     <changes>
+        <change id="org.netbeans.io.suspend">
+            <api name="masterfs"/>
+            <summary>A property to suspend native listeners</summary>
+            <version major="2" minor="42"/>
+            <date day="11" month="1" year="2013"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes" binary="compatible" 
+                source="compatible" semantic="compatible" 
+                deprecation="no" deletion="no" modification="no"
+            />
+            <description>
+                A <a href="architecture-summary.html#systemproperty-org.netbeans.io.suspend">
+                way</a> to temporarily suspend native listeners.
+            </description>
+            <issue number="222193"/>
+        </change>
         <change id="fileLocked.io.exception">
             <api name="masterfs"/>
             <summary>fileLocked method can throw <code>IOException</code></summary>
