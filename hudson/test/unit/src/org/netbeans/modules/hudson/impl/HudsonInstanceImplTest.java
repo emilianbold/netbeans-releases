@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,49 +37,26 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.hudson.impl;
 
-package org.netbeans.modules.maven.classpath;
-
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import org.apache.maven.artifact.Artifact;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.openide.util.Utilities;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
- * @author  Milos Kleint 
+ * @author jhavlin
  */
-class TestCompileClassPathImpl extends AbstractProjectClassPathImpl {
-    
-    /** Creates a new instance of SrcClassPathImpl */
-    public TestCompileClassPathImpl(NbMavenProjectImpl proj) {
-        super(proj);
-        
+public class HudsonInstanceImplTest {
+
+    /**
+     * Test fix for bug 224857.
+     */
+    @Test
+    public void testHudsonInstanceImplPersistenceIsNotNull() {
+        HudsonInstanceImpl impl = HudsonInstanceImpl.createHudsonInstance(
+                "Test", "http://test/", "1");
+        assertNotNull(impl.getPersistence());
     }
-    
-    @Override
-    URI[] createPath() {
-        List<URI> lst = new ArrayList<URI>();
-        //TODO we shall add the test class output as well. how?
-        // according the current 2.1 sources this is almost the same as getCompileClasspath()
-        //except for the fact that multiproject references are not redirected to their respective
-        // output folders.. we lways retrieve stuff from local repo..
-        List<Artifact> arts = getMavenProject().getOriginalMavenProject().getTestArtifacts();
-        for (Artifact art : arts) {
-            if (art.getFile() != null) {
-                lst.add(Utilities.toURI(art.getFile()));
-            } else { //NOPMD
-                //null means dependencies were not resolved..
-            } 
-        }
-        lst.add(0, Utilities.toURI(getMavenProject().getProjectWatcher().getOutputDirectory(false)));
-        URI[] uris = new URI[lst.size()];
-        uris = lst.toArray(uris);
-        return uris;
-    }    
-    
 }
