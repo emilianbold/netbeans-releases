@@ -507,10 +507,10 @@ public class DiscoveryUtils {
                     String lang = st.next();
                     languageArtifacts.add(lang);
                 }
-            //} else if (option.equals("-xc")){ // NOI18N
-            //    languageArtifacts.add("c");
-            //} else if (option.equals("-xc++")){ // NOI18N
-            //    languageArtifacts.add("c++");
+            } else if (option.equals("-xc")){ // NOI18N
+                languageArtifacts.add("c");
+            } else if (option.equals("-xc++")){ // NOI18N
+                languageArtifacts.add("c++");
             } else if (option.equals("-std=c89")){ // NOI18N
                 languageArtifacts.add("c89"); // NOI18N
             } else if (option.equals("-xc99") || // NOI18N
