@@ -121,9 +121,9 @@ public final class Files {
         InputStream stream = Files.class.getResourceAsStream(resourceName);
         String content = null;
         if (stream != null) {
+            BufferedReader br = new BufferedReader(new InputStreamReader(stream));
             try {
                 StringBuilder sb = new StringBuilder(stream.available());
-                BufferedReader br = new BufferedReader(new InputStreamReader(stream));
                 String line;
                 while ((line = br.readLine()) != null) {
                     sb.append(line).append('\n');
@@ -133,7 +133,7 @@ public final class Files {
                 LOGGER.log(Level.INFO, null, ioex);
             } finally {
                 try {
-                    stream.close();
+                    br.close();
                 } catch (IOException ex) {
                     LOGGER.log(Level.INFO, null, ex);
                 }
