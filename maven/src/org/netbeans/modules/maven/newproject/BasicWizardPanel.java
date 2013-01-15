@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven.newproject;
 
-import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.maven.api.archetype.Archetype;

@@ -121,7 +121,7 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
     private HudsonInstanceImpl(HudsonInstanceProperties properties, boolean interactive, BuilderConnector builderConnector, Persistence persistence) {
         this.builderConnector = builderConnector;
         this.properties = properties;
-        this.persistence = persistence;
+        this.persistence = persistence != null ? persistence : Persistence.persistent();
 
         RP = new RequestProcessor(getUrl(), 1, true);
         final AtomicBoolean firstSynch = new AtomicBoolean(interactive); // #200643
