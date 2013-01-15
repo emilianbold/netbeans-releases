@@ -44,8 +44,6 @@ public class JB7Deployer extends JBDeployer {
         File toDeploy = new File(deployDir + File.separator + fileName);
         if (toDeploy.exists()) {
             toDeploy.delete();
-            new File(deployDir + File.separator + fileName + ".deployed").delete(); // NOI18N
-            new File(deployDir + File.separator + fileName + ".failed").delete(); // NOI18N
         }
 
         fileName = fileName.substring(0, fileName.lastIndexOf('.'));
@@ -65,25 +63,40 @@ public class JB7Deployer extends JBDeployer {
                         }
                     }
                 }
-
             }
 
+            final long deployTime = toDeploy.lastModified();
             final String finalWebUrl = webUrl;
             //Deploy file
-            boolean deployed = dm.invokeLocalAction(new Callable<Boolean>() {
+            String errorMessage = dm.invokeLocalAction(new Callable<String>() {
 
                 @Override
-                public Boolean call() throws Exception {
+                public String call() throws Exception {
                     File statusFile = new File(deployDir, file.getName() + ".deployed"); // NOI18N
                     File failedFile = new File(deployDir, file.getName() + ".failed"); // NOI18N
+                    File progressFile = new File(deployDir, file.getName() + ".isdeploying"); // NOI18N
 
-                    for (int i = 0, limit = (int) TIMEOUT / POLLING_INTERVAL; i < limit
-                            && !statusFile.exists() && !failedFile.exists(); i++) {
+                    int i = 0;
+                    int limit = ((int) TIMEOUT / POLLING_INTERVAL);
+                    do {
                         Thread.sleep(POLLING_INTERVAL);
-                    }
+                        i++;
+                    // what this condition says
+                    // we are waiting and either there is progress file
+                    // or (there is not a new enough status file
+                    // and there is not a new enough failed file)
+                    } while (i < limit && progressFile.exists()
+                            || ((!statusFile.exists() || statusFile.lastModified() < deployTime)
+                                && (!failedFile.exists() || failedFile.lastModified() < deployTime)));
 
-                    if (!statusFile.isFile() || failedFile.isFile()) {
-                        return false;
+                    if (failedFile.isFile()) {
+                        FileObject fo = FileUtil.toFileObject(failedFile);
+                        if (fo != null) {
+                            return fo.asText();
+                        }
+                        return NbBundle.getMessage(JBDeployer.class, "MSG_FAILED");
+                    } else if (!statusFile.isFile()) {
+                        return NbBundle.getMessage(JBDeployer.class, "MSG_TIMEOUT");
                     }
                     Target[] targets = dm.getTargets();
                     ModuleType moduleType = getModuleType(file.getName().substring(file.getName().lastIndexOf(".") + 1));
@@ -94,12 +107,12 @@ public class JB7Deployer extends JBDeployer {
                             break;
                         }
                     }
-                    return true;
+                    return null;
                 }
             });
 
-            if (!deployed) {
-                fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, "Failed"));
+            if (errorMessage != null) {
+                fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, errorMessage));
                 return;
             }
 

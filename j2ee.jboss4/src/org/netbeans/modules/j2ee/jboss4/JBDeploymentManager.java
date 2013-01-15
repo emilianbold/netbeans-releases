@@ -753,18 +753,18 @@ public class JBDeploymentManager implements DeploymentManager {
             TargetModuleID[] ret = new TargetModuleID[ids.length];
             for (int i = 0; i < ids.length; i++) {
                 File testFile = new File(deployDir, ids[i].getModuleID());
-                if (testFile.exists()) {
+//                if (testFile.exists()) {
                     // XXX is this needed ?
-                    File markFile = new File(deployDir, ids[i].getModuleID() + ".deployed"); // NOI18N
-                    if (markFile.isFile()) {
+//                    File markFile = new File(deployDir, ids[i].getModuleID() + ".deployed"); // NOI18N
+//                    if (markFile.isFile()) {
                         try {
                             ret[i] = new WrappedTargetModuleID(ids[i], null, testFile.toURI().toURL().toString(), null);
                             continue;
                         } catch (MalformedURLException ex) {
                             LOGGER.log(Level.FINE, null, ex);
                         }
-                    }
-                }
+//                    }
+//                }
                 ret[i] = ids[i];
             }
             return ret;
