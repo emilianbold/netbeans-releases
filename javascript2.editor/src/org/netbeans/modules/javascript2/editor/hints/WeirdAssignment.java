@@ -47,6 +47,7 @@ import jdk.nashorn.internal.ir.Node;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import jdk.nashorn.internal.parser.TokenType;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.Rule;
@@ -109,7 +110,7 @@ public class WeirdAssignment extends JsAstRule {
 
         @Override
         public Node enter(BinaryNode binaryNode) {
-            if (binaryNode.lhs().toString().equals(binaryNode.rhs().toString())) {
+            if (binaryNode.tokenType() == TokenType.ASSIGN && binaryNode.lhs().toString().equals(binaryNode.rhs().toString())) {
                 hints.add(new Hint(rule, Bundle.JsWeirdAssignmentDN(),
                         context.getJsParserResult().getSnapshot().getSource().getFileObject(),
                         ModelUtils.documentOffsetRange(context.getJsParserResult(), binaryNode.getStart(), binaryNode.getFinish()), null, 500));
