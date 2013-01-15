@@ -824,22 +824,29 @@ public class ModelUtils {
     }
 
     public static Collection<String> findPrototypeChain(String fqn, JsIndex jsIndex) {
+        return findPrototypeChain(fqn, jsIndex, new HashSet<String>());
+    }
+
+    private static Collection<String> findPrototypeChain(String fqn, JsIndex jsIndex, Set<String> alreadyCheck) {
         Collection<String> result = new ArrayList<String>();
-        Collection<IndexedElement> properties = jsIndex.getProperties(fqn);
-        for (IndexedElement property : properties) {
-            if("prototype".equals(property.getName())) {  //NOI18N
-                Collection<? extends IndexResult> indexResults = jsIndex.findFQN(property.getFQN());
-                for (IndexResult indexResult : indexResults) {
-                    Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
-                    for (TypeUsage typeUsage : assignments) {
-                        result.add(typeUsage.getType());
-                    }
-                    for (TypeUsage typeUsage : assignments) {
-                        result.addAll(findPrototypeChain(typeUsage.getType(), jsIndex));
+        if (!alreadyCheck.contains(fqn)) {
+            alreadyCheck.add(fqn);
+            Collection<IndexedElement> properties = jsIndex.getProperties(fqn);
+            for (IndexedElement property : properties) {
+                if("prototype".equals(property.getName())) {  //NOI18N
+                    Collection<? extends IndexResult> indexResults = jsIndex.findFQN(property.getFQN());
+                    for (IndexResult indexResult : indexResults) {
+                        Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
+                        for (TypeUsage typeUsage : assignments) {
+                            result.add(typeUsage.getType());
+                        }
+                        for (TypeUsage typeUsage : assignments) {
+                            result.addAll(findPrototypeChain(typeUsage.getType(), jsIndex, alreadyCheck));
+                        }
                     }
                 }
-            }
-        }
+            } 
+        } 
         return result;
     }
     

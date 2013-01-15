@@ -56,6 +56,7 @@ import org.netbeans.modules.php.spi.framework.PhpModuleExtender;
 import org.netbeans.modules.php.spi.framework.PhpModuleIgnoredFilesExtender;
 import org.netbeans.modules.php.symfony2.annotations.extra.Symfony2ExtraAnnotationsProvider;
 import org.netbeans.modules.php.symfony2.annotations.security.Symfony2SecurityAnnotationsProvider;
+import org.netbeans.modules.php.symfony2.annotations.validators.Symfony2ValidatorsAnnotationsProvider;
 import org.netbeans.modules.php.symfony2.commands.Symfony2CommandSupport;
 import org.netbeans.modules.php.symfony2.commands.Symfony2Script;
 import org.netbeans.modules.php.symfony2.preferences.Symfony2Preferences;
@@ -172,7 +173,8 @@ public final class Symfony2PhpFrameworkProvider extends PhpFrameworkProvider {
     public List<AnnotationCompletionTagProvider> getAnnotationsCompletionTagProviders(PhpModule phpModule) {
         return Arrays.<AnnotationCompletionTagProvider>asList(
                 new Symfony2ExtraAnnotationsProvider(),
-                new Symfony2SecurityAnnotationsProvider());
+                new Symfony2SecurityAnnotationsProvider(),
+                new Symfony2ValidatorsAnnotationsProvider());
     }
 
 }

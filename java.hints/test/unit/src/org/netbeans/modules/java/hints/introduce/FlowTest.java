@@ -900,6 +900,25 @@ public class FlowTest extends NbTestCase {
                     "null");
     }
     
+    public void testLoops() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "     public Test getParent() {\n" +
+                    "          return this;\n" +
+                    "     }\n" +
+                    "     public static void t(Iterable<? extends Test> tps) {\n" +
+                    "          for (Test tp : tps) {\n" +
+                    "               Test toResume = tp;\n" +
+                    "               while (toR`esume != null) {\n" +
+                    "                    toResume = toResume.getParent();\n" +
+                    "               }\n" +
+                    "          }\n" +
+                    "     }\n" +
+                    "}\n",
+                    "tp",
+                    "toResume.getParent()");
+    }
+    
     public void testDeadBranch207514() throws Exception {
         performDeadBranchTest("package test;\n" +
                               "public class Test {\n" +

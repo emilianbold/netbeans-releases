@@ -120,7 +120,7 @@ public class CppTBIFactory implements TypedBreakInterceptor.Factory {
     }
 
     public static Object doWork(BaseDocument doc, int dotPos, Caret caret, MutableContext context) {
-        if (BracketCompletion.posWithinString(doc, dotPos)) {
+        if (BracketCompletion.posWithinNonRawString(doc, dotPos)) {
             try {
                 if ((dotPos >= 1 && DocumentUtilities.getText(doc).charAt(dotPos - 1) != '\\')
                         || (dotPos >= 2 && DocumentUtilities.getText(doc).charAt(dotPos - 2) == '\\')) {

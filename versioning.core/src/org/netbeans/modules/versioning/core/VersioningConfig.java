@@ -80,6 +80,10 @@ public class VersioningConfig {
     }
     
     public Preferences getPreferences() {
+        return getPrefs();
+    }
+    
+    private static Preferences getPrefs () {
         return NbPreferences.root().node("org/netbeans/modules/versioning"); // NOI18N
     }
 
@@ -180,7 +184,7 @@ public class VersioningConfig {
 
     private static Map<String, Set<String>> initializeDisconnectedRepositories () {
         Map<String, Set<String>> disconnectedFolders = new HashMap<String, Set<String>>(5);
-        List<String> list = Utils.getStringList(NbPreferences.forModule(VersioningConfig.class), PREF_KEY);
+        List<String> list = Utils.getStringList(getPrefs(), PREF_KEY);
         for (String s : list) {
             String[] disconnectedFolder = s.split(SEP);
             if (disconnectedFolder.length == 2) {
@@ -205,6 +209,6 @@ public class VersioningConfig {
                 }
             }
         }
-        Utils.put(NbPreferences.forModule(VersioningConfig.class), PREF_KEY, list);
+        Utils.put(getPreferences(), PREF_KEY, list);
     }
 }
