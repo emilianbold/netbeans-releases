@@ -36,9 +36,6 @@ public class JB7Deployer extends JBDeployer {
 
     @Override
     public void run() {
-        if (dm == null) {
-            return;
-        }
         final String deployDir = InstanceProperties.getInstanceProperties(uri).getProperty(JBPluginProperties.PROPERTY_DEPLOY_DIR);
         FileObject foIn = FileUtil.toFileObject(file);
         FileObject foDestDir = FileUtil.toFileObject(new File(deployDir));
@@ -47,6 +44,8 @@ public class JB7Deployer extends JBDeployer {
         File toDeploy = new File(deployDir + File.separator + fileName);
         if (toDeploy.exists()) {
             toDeploy.delete();
+            new File(deployDir + File.separator + fileName + ".deployed").delete(); // NOI18N
+            new File(deployDir + File.separator + fileName + ".failed").delete(); // NOI18N
         }
 
         fileName = fileName.substring(0, fileName.lastIndexOf('.'));
@@ -71,16 +70,21 @@ public class JB7Deployer extends JBDeployer {
 
             final String finalWebUrl = webUrl;
             //Deploy file
-            dm.invokeLocalAction(new Callable<Void>() {
+            boolean deployed = dm.invokeLocalAction(new Callable<Boolean>() {
 
                 @Override
-                public Void call() throws Exception {
-                    File statusFile = new File(deployDir, file.getName() + ".deployed");
+                public Boolean call() throws Exception {
+                    File statusFile = new File(deployDir, file.getName() + ".deployed"); // NOI18N
+                    File failedFile = new File(deployDir, file.getName() + ".failed"); // NOI18N
 
-                    for (int i = 0, limit = (int) TIMEOUT / POLLING_INTERVAL; i < limit && !statusFile.exists(); i++) {
+                    for (int i = 0, limit = (int) TIMEOUT / POLLING_INTERVAL; i < limit
+                            && !statusFile.exists() && !failedFile.exists(); i++) {
                         Thread.sleep(POLLING_INTERVAL);
                     }
 
+                    if (!statusFile.isFile() || failedFile.isFile()) {
+                        return false;
+                    }
                     Target[] targets = dm.getTargets();
                     ModuleType moduleType = getModuleType(file.getName().substring(file.getName().lastIndexOf(".") + 1));
                     TargetModuleID[] modules = dm.getAvailableModules(moduleType, targets);
@@ -90,14 +94,26 @@ public class JB7Deployer extends JBDeployer {
                             break;
                         }
                     }
-                    return null;
+                    return true;
                 }
             });
+
+            if (!deployed) {
+                fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, "Failed"));
+                return;
+            }
 
             if (webUrl != null) {
                 URL url = new URL(webUrl);
                 String waitingMsg = NbBundle.getMessage(JBDeployer.class, "MSG_Waiting_For_Url", url);
                 fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
+
+//                //wait until the url becomes active
+//                boolean ready = waitForUrlReady(deployedModuleID != null ? deployedModuleID : mainModuleID,
+//                        toDeploy, null, TIMEOUT);
+//                if (!ready) {
+//                    LOGGER.log(Level.INFO, "URL wait timeouted after {0}", TIMEOUT); // NOI18N
+//                }
             }
         } catch (MalformedURLException ex) {
             LOGGER.log(Level.INFO, null, ex);
@@ -138,6 +154,6 @@ public class JB7Deployer extends JBDeployer {
 
     @Override
     public TargetModuleID[] getResultTargetModuleIDs() {
-        return new TargetModuleID[]{deployedModuleID};
+        return new TargetModuleID[]{deployedModuleID != null ? deployedModuleID : mainModuleID};
     }
 }

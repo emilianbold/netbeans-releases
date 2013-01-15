@@ -274,7 +274,7 @@ public class JBDeployer implements ProgressObject, Runnable {
      * started. As a fallback it asks the jboss for the MBean of the
      * warfile (name of the war is expected to be <code>moduleID.getModuleID()</code>).
      */
-    private boolean waitForUrlReady(TargetModuleID moduleID, File deployedFile,
+    protected final boolean waitForUrlReady(TargetModuleID moduleID, File deployedFile,
             Long previousDeploymentTime, long timeout) throws InterruptedException {
 
         if (Thread.currentThread().isInterrupted()) {
