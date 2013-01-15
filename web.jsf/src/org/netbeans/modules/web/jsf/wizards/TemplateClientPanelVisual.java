@@ -55,7 +55,7 @@ import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
@@ -71,6 +71,7 @@ import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.jsf.JsfConstants;
 import org.netbeans.modules.web.jsf.dialogs.BrowseFolders;
+import org.netbeans.modules.web.jsf.wizards.TemplateClientPanel.TemplateEntry;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -80,6 +81,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -224,26 +226,28 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
 
     private FileObject[] getFaceletTemplateRoots() {
         List<FileObject> roots = new ArrayList<FileObject>();
-        Project project = Templates.getProject(wizardDescriptor);
-        Sources sources = (Sources) project.getLookup().lookup(Sources.class);
-        SourceGroup[] sourceGroups = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
-
         // web project document roots
-        roots.addAll(getSourceRoots(sourceGroups));
+        roots.addAll(getSourceRoots());
         // web project contracts roots
-        roots.addAll(getProjectContractsRoots(sourceGroups));
+        roots.addAll(getProjectContractsRoots());
         // libraries contracts roots
-        roots.addAll(getLibContractsRoots(sourceGroups, project));
+        roots.addAll(getLibContractsRoots());
 
         return roots.toArray(new FileObject[roots.size()]);
+    }
+
+    private SourceGroup[] getProjectDocumentSourceGroups() {
+        Sources sources = ProjectUtils.getSources(Templates.getProject(wizardDescriptor));
+        SourceGroup[] sourceGroups = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
+        return sourceGroups;
     }
 
     /**
      * Gets templates from the document roots of the project.
      */
-    private static Collection<? extends FileObject> getSourceRoots(SourceGroup[] sourceGroups) {
+    private List<FileObject> getSourceRoots() {
         List<FileObject> roots = new ArrayList<FileObject>();
-        for (SourceGroup sourceGroup : sourceGroups) {
+        for (SourceGroup sourceGroup : getProjectDocumentSourceGroups()) {
             roots.add(sourceGroup.getRootFolder());
         }
         return roots;
@@ -252,11 +256,11 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
     /**
      * Gets templates from contracts folders of the external .JARs.
      */
-    private static Collection<? extends FileObject> getLibContractsRoots(SourceGroup[] sourceGroups, Project project) {
+    private List<FileObject> getLibContractsRoots() {
         List<FileObject> roots = new ArrayList<FileObject>();
-        if (sourceGroups.length > 0) {
-            ClassPathProvider cpp = project.getLookup().lookup(ClassPathProvider.class);
-            for (SourceGroup sourceGroup : sourceGroups) {
+        if (getProjectDocumentSourceGroups().length > 0) {
+            ClassPathProvider cpp = Templates.getProject(wizardDescriptor).getLookup().lookup(ClassPathProvider.class);
+            for (SourceGroup sourceGroup : getProjectDocumentSourceGroups()) {
                 ClassPath cp = cpp.findClassPath(sourceGroup.getRootFolder(), ClassPath.COMPILE);
                 for (FileObject root : cp.getRoots()) {
                     FileObject contracts = root.getFileObject("META-INF/" + JsfConstants.CONTRACTS_FOLDER); //NOI18N
@@ -274,11 +278,11 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
     /**
      * Gets templates from contracts folders of the document roots.
      */
-    private static Collection<? extends FileObject> getProjectContractsRoots(SourceGroup[] sourceGroups) {
+    private List<FileObject> getProjectContractsRoots() {
         List<FileObject> roots = new ArrayList<FileObject>();
-        for (SourceGroup sourceGroup : sourceGroups) {
+        for (SourceGroup sourceGroup : getProjectDocumentSourceGroups()) {
             FileObject contractsRoot = sourceGroup.getRootFolder().getFileObject(JsfConstants.CONTRACTS_FOLDER);
-            if (contractsRoot.isValid() && contractsRoot.isFolder()) {
+            if (contractsRoot != null && contractsRoot.isValid() && contractsRoot.isFolder()) {
                 for (FileObject fileObject : contractsRoot.getChildren()) {
                     if (fileObject.isValid() && fileObject.isFolder()) {
                         roots.add(fileObject);
@@ -289,7 +293,15 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
         return roots;
     }
 
-    private static String getRelativePathInsideResourceLibrary(String fullPath) {
+    /**
+     * Gets relative path inside the resource library contract if available. Otherwise it returns the entered full path.
+     * @param fullPath to detect inside contracts
+     * @return relative path within contract if any, full path otherwise
+     */
+    protected static String getRelativePathInsideResourceLibrary(String fullPath) {
+        if (!fullPath.contains(JsfConstants.CONTRACTS_FOLDER)) {
+            return fullPath;
+        }
         int rootIndex = fullPath.indexOf(JsfConstants.CONTRACTS_FOLDER) + JsfConstants.CONTRACTS_FOLDER.length() + 1;
         int nextSlashOffset = fullPath.indexOf("/", rootIndex); //NOI18N
         // root folder selected
@@ -300,8 +312,20 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
         return fullPath;
     }
 
+    private FileObject obtainContractTemplate(String path) {
+        List<FileObject> contractsRoots = getProjectContractsRoots();
+        contractsRoots.addAll(getLibContractsRoots());
+        for (FileObject contract : contractsRoots) {
+            FileObject fileObject = contract.getFileObject(path);
+            if (fileObject != null && fileObject.isValid() && !fileObject.isFolder()) {
+                return fileObject;
+            }
+        }
+        return null;
+    }
+
     protected boolean validateTemplate() {
-        if (templateData != null && templateData.size() != 0) {
+        if (templateData != null && !templateData.isEmpty()) {
             return true;
         }
         String message = null;
@@ -313,44 +337,23 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
             if (file.exists()) {
                 if (!file.isDirectory()) {
                     FileObject fo = FileUtil.toFileObject(file);
-                    Source source = Source.create(fo);
-                    final int startOffset = 0;
-                    templateData = new LinkedHashSet<String>();
-                    try {
-                        ParserManager.parse(Collections.singleton(source), new UserTask() {
-
-                            @Override
-                            public void run(ResultIterator resultIterator) throws Exception {
-                                Result result = resultIterator.getParserResult(startOffset);
-                                if (result.getSnapshot().getMimeType().equals("text/html")) {
-                                    HtmlParserResult htmlResult = (HtmlParserResult)result;
-                                    if (htmlResult.getNamespaces().containsKey(NAME_SPACE)) {
-                                        List<OpenTag> foundNodes = findValue(htmlResult.root(NAME_SPACE).children(OpenTag.class), TAG_NAME, new ArrayList<OpenTag>());
-
-                                        for (OpenTag node : foundNodes) {
-                                            Attribute attr = node.getAttribute(VALUE_NAME);
-                                            if (attr !=null) {
-                                                 String value = attr.unquotedValue().toString();
-                                                if (value != null && !"".equals(value)) {   //NOI18N
-                                                    templateData.add(value);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        });
-                    } catch (ParseException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    if (templateData == null || templateData.size()==0) {
-                              message = "MSG_NoFaceletsTemplate"; //NOI18N
+                    parseTemplateData(fo);
+                    if (templateData == null || templateData.isEmpty()) {
+                       message = "MSG_NoFaceletsTemplate"; //NOI18N
                     }
                 } else {
-                    message = "MSG_TemplateHasToBeFile";   //NO18N
+                    message = "MSG_TemplateHasToBeFile";   //NOI18N
                 }
             } else {
-                message = "MSG_EneterExistingTemplate";    //NOI18N
+                FileObject contractFO = obtainContractTemplate(path);
+                if (contractFO == null) {
+                    message = "MSG_EneterExistingTemplate";    //NOI18N
+                } else {
+                    parseTemplateData(contractFO);
+                    if (templateData == null || templateData.isEmpty()) {
+                       message = "MSG_NoFaceletsTemplate"; //NOI18N
+                    }
+                }
             }
         }
         if (message != null){
@@ -358,6 +361,39 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
                     NbBundle.getMessage(TemplateClientPanelVisual.class, message));
         }
         return (message == null);
+    }
+
+    private void parseTemplateData(FileObject fo) {
+        Parameters.notNull("fileObject", fo); //NOI18N
+        Source source = Source.create(fo);
+        try {
+            ParserManager.parse(Collections.singleton(source), new UserTask() {
+
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    templateData = new LinkedHashSet<String>();
+                    Result result = resultIterator.getParserResult(0);
+                    if (result.getSnapshot().getMimeType().equals("text/html")) {
+                        HtmlParserResult htmlResult = (HtmlParserResult)result;
+                        if (htmlResult.getNamespaces().containsKey(NAME_SPACE)) {
+                            List<OpenTag> foundNodes = findValue(htmlResult.root(NAME_SPACE).children(OpenTag.class), TAG_NAME, new ArrayList<OpenTag>());
+
+                            for (OpenTag node : foundNodes) {
+                                Attribute attr = node.getAttribute(VALUE_NAME);
+                                if (attr !=null) {
+                                     String value = attr.unquotedValue().toString();
+                                    if (value != null && !"".equals(value)) {   //NOI18N
+                                        templateData.add(value);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     private List<OpenTag> findValue(Collection<OpenTag> nodes, String tagName, List<OpenTag> foundNodes) {
@@ -391,15 +427,21 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
     public Collection<String> getTemplateData(){
         return templateData;
     }
-    
-    public FileObject getTemplate(){
-        FileObject template = null;
-        String name = jtfTemplate.getText();
-        if (name != null && !"".equals(name)){
-            File file = new File (name);
-            template = FileUtil.toFileObject(file);
+
+    public TemplateEntry getTemplate() {
+        TemplateEntry templateEntry = new TemplateEntry(null);
+        String path = jtfTemplate.getText();
+        if (path != null && !"".equals(path)) {
+            File file = new File(path);
+            FileObject template = FileUtil.toFileObject(file);
+            if (template == null || !template.isValid() || template.isFolder()) {
+                template = obtainContractTemplate(path);
+                templateEntry = new TemplateEntry(template, true);
+            } else {
+                templateEntry = new TemplateEntry(template);
+            }
         }
-        return template;
+        return templateEntry;
     }
     
     protected void addChangeListener(ChangeListener l) {
