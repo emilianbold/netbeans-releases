@@ -77,7 +77,9 @@ class JBStopRunnable implements Runnable {
     private static final Logger LOGGER = Logger.getLogger(JBStopRunnable.class.getName());
     
     private static final String SHUTDOWN_SH = "/bin/shutdown.sh"; // NOI18N
+    private static final String JBOSS_CLI_SH = "/bin/jboss-cli.sh"; // NOI18N
     private static final String SHUTDOWN_BAT = "/bin/shutdown.bat"; // NOI18N
+    private static final String JBOSS_CLI_BAT = "/bin/jboss-cli.bat"; // NOI18N
 
     private static final int TIMEOUT = 300000;
     
@@ -87,6 +89,10 @@ class JBStopRunnable implements Runnable {
     JBStopRunnable(JBDeploymentManager dm, JBStartServer startServer) {
         this.dm = dm;
         this.startServer = startServer;
+    }
+    
+    private boolean isJBoss7() {
+        return dm.getProperties().isVersion(JBPluginUtils.JBOSS_7_0_0);
     }
     
     private String[] createEnvironment() {
@@ -120,7 +126,7 @@ class JBStopRunnable implements Runnable {
         String serverName = ip.getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
 
         String serverLocation = ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
-        String serverStopFileName = serverLocation + (Utilities.isWindows() ? SHUTDOWN_BAT : SHUTDOWN_SH);
+        String serverStopFileName = serverLocation + (isJBoss7() ? Utilities.isWindows() ? JBOSS_CLI_BAT : JBOSS_CLI_SH :Utilities.isWindows() ? SHUTDOWN_BAT : SHUTDOWN_SH);
 
         File serverStopFile = new File(serverStopFileName);
         if (!serverStopFile.exists()){
@@ -131,6 +137,10 @@ class JBStopRunnable implements Runnable {
         JBProperties properties = dm.getProperties();
         StringBuilder additionalParams = new StringBuilder(32);
         int jnpPort = JBPluginUtils.getJnpPortNumber(ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR));  
+        NbProcessDescriptor pd;
+        if(isJBoss7()) {
+            pd = new NbProcessDescriptor(serverStopFileName, "--connect --command=:shutdown"); // NOI18N
+        } else {
         if (dm.getProperties().getServerVersion().compareTo(JBPluginUtils.JBOSS_6_0_0) < 0) {
             additionalParams.append(" -s jnp://localhost:").append(jnpPort); // NOI18N
         } else {
@@ -150,9 +160,9 @@ class JBStopRunnable implements Runnable {
 
         /* 2008-09-10 The usage of --halt doesn't solve the problem on Windows; it even creates another problem
                         of NB Profiler not being notified about the fact that the server was stopped */
-        NbProcessDescriptor pd = new NbProcessDescriptor(
+            pd = new NbProcessDescriptor(
                 serverStopFileName, "--shutdown " + additionalParams); // NOI18N
-
+        }
         Process stoppingProcess = null;
         try {
             String envp[] = createEnvironment();

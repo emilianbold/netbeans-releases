@@ -89,17 +89,17 @@ import org.openide.util.NbBundle;
  */
 public class JBDeployer implements ProgressObject, Runnable {
     /** timeout for waiting for URL connection */
-    private static final int TIMEOUT = 60000;
+    protected static final int TIMEOUT = 60000;
 
-    private static final int POLLING_INTERVAL = 1000;
+    protected  static final int POLLING_INTERVAL = 1000;
 
     private static final Logger LOGGER = Logger.getLogger(JBDeployer.class.getName());
 
-    private final JBDeploymentManager dm;
+    protected final JBDeploymentManager dm;
 
-    private File file;
-    private String uri;
-    private JBTargetModuleID mainModuleID;
+    protected File file;
+    protected String uri;
+    protected JBTargetModuleID mainModuleID;
 
     /** Creates a new instance of JBDeployer */
     public JBDeployer(String serverUri, JBDeploymentManager dm) {
