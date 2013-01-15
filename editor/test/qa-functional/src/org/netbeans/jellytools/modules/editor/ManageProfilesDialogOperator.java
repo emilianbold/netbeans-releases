@@ -96,6 +96,10 @@ class ManageProfilesDialogOperator extends NbDialogOperator {
     public void ok() {
         new JButtonOperator(this, "OK").push();
     }
+    
+    public void close() {
+      new JButtonOperator(this, "Close").push();
+    }
 
     @Override
     public void cancel() {
