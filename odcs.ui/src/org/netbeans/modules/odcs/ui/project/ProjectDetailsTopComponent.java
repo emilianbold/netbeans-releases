@@ -176,7 +176,9 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         };
         linkWiki = new LinkLabel(true) {
             public void mouseClicked(MouseEvent e) {
-                openUrl(this.getText());
+                if (isEnabled()) {
+                    openUrl(this.getText());
+                }
             }
         };
         pnlMaven = new javax.swing.JPanel();

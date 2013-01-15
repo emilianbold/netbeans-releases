@@ -273,7 +273,7 @@
                             </Property>
                           </Properties>
                           <AuxValues>
-                            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new LinkLabel(true) {&#xa;    public void mouseClicked(MouseEvent e) {&#xa;        openUrl(this.getText());&#xa;    }&#xa;}"/>
+                            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new LinkLabel(true) {&#xa;    public void mouseClicked(MouseEvent e) {&#xa;        if (isEnabled()) {&#xa;            openUrl(this.getText());&#xa;        }&#xa;    }&#xa;}"/>
                           </AuxValues>
                           <Constraints>
                             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
