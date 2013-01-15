@@ -601,9 +601,15 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         pnlContent.revalidate();
     }
 
+    @NbBundle.Messages("LBL_Service_Not_Enabled=Not enabled")
     private void initDetails() {
         linkProject.setText(project.getWebUrl());
-        linkWiki.setText(Utils.getRealUrl(project.getWikiUrl()));
+        if (project.hasWiki()) {
+            linkWiki.setText(Utils.getRealUrl(project.getWikiUrl()));
+        } else {
+            linkWiki.setText(Bundle.LBL_Service_Not_Enabled());
+            linkWiki.setEnabled(false);
+        }
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 0, 0, 0);
         gbc.anchor = GridBagConstraints.NORTHWEST;
