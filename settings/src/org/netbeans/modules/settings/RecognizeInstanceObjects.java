@@ -115,9 +115,13 @@ public final class RecognizeInstanceObjects extends NamedServicesProvider {
             super(delegates(path));
             this.path = path;
             try {
-                ModuleManager man = Main.getModuleSystem().getManager();
-                man.addPropertyChangeListener(WeakListeners.propertyChange(this, man));
-            } catch (Exception e) {
+                if (Main.isInitialized()) {
+                    ModuleManager man = Main.getModuleSystem().getManager();
+                    man.addPropertyChangeListener(WeakListeners.propertyChange(this, man));
+                } else {
+                    LOG.log(Level.WARNING, "Not listening on module system");
+                }
+            } catch (Throwable e) {
                 LOG.log(Level.WARNING, "Can't listen on module system", e);
             }
             try {
