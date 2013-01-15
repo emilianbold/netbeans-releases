@@ -254,6 +254,13 @@ public final class CloneDestinationDirectoryPanel extends JPanel implements Acti
                 }
             }
         }
+        
+        if (defaultDir == null) {
+            String cloneDir = HgModuleConfig.getDefault().getPreferences().get(CloneDestinationDirectoryWizardPanel.CLONE_TARGET_DIRECTORY, null);
+            if (cloneDir != null) {
+                defaultDir = new File(cloneDir);               
+            }            
+        }
 
         if (defaultDir == null) {
             File projectFolder = ProjectChooser.getProjectsFolder();
