@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,71 +37,24 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.persistence.spi.jpql;
 
-import java.util.ArrayList;
-import org.eclipse.persistence.jpa.jpql.spi.IEmbeddable;
-import org.eclipse.persistence.jpa.jpql.spi.IEntity;
-import org.eclipse.persistence.jpa.jpql.spi.IManagedTypeVisitor;
-import org.eclipse.persistence.jpa.jpql.spi.IMappedSuperclass;
+@Schema2Beans(
+    schema="../../resources/orm_2_0.xsd",
+    docRoot="entity-mappings",
+    mddFile="../../resources/orm_2_0.mdd",
+    schemaType=SchemaType.XML_SCHEMA,
+    outputType=OutputType.TRADITIONAL_BASEBEAN,
+    useInterfaces=true,
+    validate=true,
+    attrProp=true,
+    removeUnreferencedNodes=true,
+    java5=true
+)
+@org.netbeans.api.annotations.common.SuppressWarnings("NM_SAME_SIMPLE_NAME_AS_INTERFACE") // justification="Generated implementation classes"
+package org.netbeans.modules.j2ee.persistence.dd.orm.model_2_1;
 
-/**
- * visitor colecting entities, mapped superclasses and embeddables
- * @author sp153251
- */
-public class ManagedTypeVisitor implements IManagedTypeVisitor{
-
-    private ArrayList<IEmbeddable> embeddables;
-    private ArrayList<IEntity> entities;
-    private ArrayList<IMappedSuperclass> mappedSupeclasses;
-    
-    ManagedTypeVisitor(){
-    }
-    
-    @Override
-    public void visit(IEmbeddable ie) {
-        if(embeddables == null) {
-            embeddables = new ArrayList<IEmbeddable>();
-        }
-        embeddables.add(ie);
-    }
-
-    @Override
-    public void visit(IEntity ie) {
-        if(entities == null) {
-            entities = new ArrayList<IEntity>();
-        }
-        entities .add(ie);
-    }
-
-    @Override
-    public void visit(IMappedSuperclass ims) {
-        if(mappedSupeclasses == null) {
-            mappedSupeclasses = new ArrayList<IMappedSuperclass>();
-        }
-        mappedSupeclasses.add(ims);
-    }
-    
-    public ArrayList<IEntity> getEntities(){
-        if(entities == null) {
-            entities = new ArrayList<IEntity>();
-        }
-        return entities;//? make copy ?
-    }
-    
-    public ArrayList<IMappedSuperclass> getMappedSuperclasses(){
-        if(mappedSupeclasses == null) {
-            mappedSupeclasses = new ArrayList<IMappedSuperclass>();
-        }
-        return mappedSupeclasses;
-    }
-    
-    public ArrayList<IEmbeddable> getEmbeddable() {
-        if(embeddables == null) {
-            embeddables = new ArrayList<IEmbeddable>();
-        }
-        return embeddables;
-    }
-}
+import org.netbeans.modules.schema2beans.Schema2Beans;
+import org.netbeans.modules.schema2beans.Schema2Beans.OutputType;
+import org.netbeans.modules.schema2beans.Schema2Beans.SchemaType;
