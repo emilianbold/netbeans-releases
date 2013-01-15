@@ -54,6 +54,8 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.GroupLayout;
@@ -262,7 +264,9 @@ public class CSSStylesDocumentPanel extends JPanel implements ExplorerManager.Pr
                             }
                             try {
                                 manager.setSelectedNodes(selection.toArray(new Node[selection.size()]));
-                            } catch (PropertyVetoException pvex) {}
+                            } catch (PropertyVetoException pvex) {
+                                Logger.getLogger(CSSStylesDocumentPanel.class.getName()).log(Level.FINEST, null, pvex);
+                            }
                         }
                     });
                 }

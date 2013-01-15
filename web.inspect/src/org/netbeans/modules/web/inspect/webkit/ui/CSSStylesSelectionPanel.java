@@ -68,6 +68,8 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -461,7 +463,9 @@ public class CSSStylesSelectionPanel extends JPanel {
                     if (otherId != null && otherId.equals(id)) {
                         try {
                             rulePaneManager.setSelectedNodes(new Node[] { root });
-                        } catch (PropertyVetoException ex) {}
+                        } catch (PropertyVetoException ex) {
+                            Logger.getLogger(CSSStylesSelectionPanel.class.getName()).log(Level.FINEST, null, ex);
+                        }
                         return true;
                     }
                 }
