@@ -59,6 +59,8 @@ import org.openide.util.HelpCtx;
 
 public class CloneDestinationDirectoryWizardPanel implements WizardDescriptor.Panel, DocumentListener {
     
+    static final String CLONE_TARGET_DIRECTORY = "cloneDestinationStep.cloneDirectory"; //NOI18N
+    
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
@@ -192,7 +194,7 @@ public class CloneDestinationDirectoryWizardPanel implements WizardDescriptor.Pa
         if (settings instanceof WizardDescriptor) {
             String directory = ((CloneDestinationDirectoryPanel) component).getDirectory();
             String cloneName = ((CloneDestinationDirectoryPanel) component).getCloneName();
-            ((WizardDescriptor) settings).putProperty("directory", new File(directory)); //NOI18N
+            ((WizardDescriptor) settings).putProperty("directory", directory); //NOI18N
             ((WizardDescriptor) settings).putProperty("cloneName", cloneName);  //NOI18N
         }
     }

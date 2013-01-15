@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript2.editor.hints;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Error;
@@ -82,7 +83,7 @@ public class JsHintsProvider implements HintsProvider {
         }
         if (countConventionHints && !cancel) {
             JsConventionRule rule = new JsConventionRule();
-            rule.computeHints((JsRuleContext)context, hints, manager);
+            invokeHint(rule, manager, context, hints, -1);
         }
 
         // find out whether there is a documentation hint enabled
@@ -97,7 +98,7 @@ public class JsHintsProvider implements HintsProvider {
         }
         if (documentationHints && !cancel) {
             JsFunctionDocumentationRule rule = new JsFunctionDocumentationRule();
-            rule.computeHints((JsRuleContext) context, hints, manager);
+            invokeHint(rule, manager, context, hints, -1);
         }
 
         List<? extends Rule.AstRule> otherHints = allHints.get(WeirdAssignment.JS_OTHER_HINTS);
@@ -105,7 +106,7 @@ public class JsHintsProvider implements HintsProvider {
             for (Rule.AstRule astRule : otherHints) {
                 if (manager.isEnabled(astRule)) {
                     JsAstRule rule = (JsAstRule)astRule;
-                    rule.computeHints((JsRuleContext)context, hints, manager);
+                    invokeHint(rule, manager, context, hints, -1);
                 }
             }
         }
@@ -113,9 +114,27 @@ public class JsHintsProvider implements HintsProvider {
 
     @Override
     public void computeSuggestions(HintsManager manager, RuleContext context, List<Hint> suggestions, int caretOffset) {
-
+        Map<?, List<? extends Rule.AstRule>> allSuggestions = manager.getHints(true, context);
+        
+        List<? extends Rule.AstRule> otherHints = allSuggestions.get(WeirdAssignment.JS_OTHER_HINTS);
+        if (otherHints != null && !cancel) {
+            for (Rule.AstRule astRule : otherHints) {
+                if (manager.isEnabled(astRule)) {
+                    JsAstRule rule = (JsAstRule)astRule;
+                    invokeHint(rule, manager, context, suggestions, caretOffset);
+                }
+            }
+        }
     }
 
+    private void invokeHint(JsAstRule rule, HintsManager manager, RuleContext context, List<Hint> suggestions, int caretOffset) {
+        try {
+            rule.computeHints((JsRuleContext)context, suggestions, caretOffset, manager);
+        } catch (BadLocationException ble) {
+            
+        }
+    }
+    
     @Override
     public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> suggestions, int start, int end) {
 

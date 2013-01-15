@@ -49,11 +49,15 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 
 /**
  *
@@ -71,12 +75,12 @@ public final class BuildTraceSupport {
         return conf.getCodeAssistanceConfiguration().getBuildAnalyzer().getValue();
     }
     
-    public static String getTools(MakeConfiguration conf) {
+    public static String getTools(MakeConfiguration conf, ExecutionEnvironment execEnv) {
         String res = conf.getCodeAssistanceConfiguration().getTools().getValue();
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        res = prepengTool(compilerSet, PredefinedToolKind.CCompiler, res);
-        res = prepengTool(compilerSet, PredefinedToolKind.CCCompiler, res);
-        res = prepengTool(compilerSet, PredefinedToolKind.FortranCompiler, res);
+        res = prepengTool(compilerSet, execEnv, PredefinedToolKind.CCompiler, res);
+        res = prepengTool(compilerSet, execEnv, PredefinedToolKind.CCCompiler, res);
+        res = prepengTool(compilerSet, execEnv, PredefinedToolKind.FortranCompiler, res);
         return res;
     }
 
@@ -136,7 +140,7 @@ public final class BuildTraceSupport {
         return res;
     }
     
-    private static String prepengTool(CompilerSet compilerSet, PredefinedToolKind kind, String res) {
+    private static String prepengTool(CompilerSet compilerSet, ExecutionEnvironment execEnv, PredefinedToolKind kind, String res) {
         if (compilerSet == null) {
             return res;
         }
@@ -148,15 +152,33 @@ public final class BuildTraceSupport {
         if (name == null || name.isEmpty()) {
             return res;
         }
+        res = addIfNeeded(name, res);
+        String path = tool.getPath();
+        try {
+            String canonicalPath = FileSystemProvider.getCanonicalPath(execEnv, path);
+            if (canonicalPath != null) {
+                name = CndPathUtilitities.getBaseName(canonicalPath);
+                if (name != null && !name.isEmpty()) {
+                    res = addIfNeeded(name, res);
+                }
+            }
+        } catch (IOException ex) {
+        }
+        return res; 
+    }
+    
+    private static String addIfNeeded(String name, String res) {
         for(String s : res.split(SEPARATOR)) { 
             if (s.equals(name)) {
                 return res;
             }
         }
         if (res.isEmpty()) {
-            return name;
+            res = name;
+        } else {
+            res = name + SEPARATOR + res;
         }
-        return name + SEPARATOR + res; 
+        return res;
     }
     
     private static void addTool(Project project, PredefinedToolKind kind, Set<String> res) {
@@ -165,6 +187,17 @@ public final class BuildTraceSupport {
             if (projectBridge.isValid()) {
                 CompilerSet compilerSet = projectBridge.getCompilerSet();
                 if (compilerSet != null) {
+                    ExecutionEnvironment execEnv = null;
+                    ConfigurationDescriptorProvider provider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                    if (provider != null && provider.gotDescriptor()) {
+                        MakeConfigurationDescriptor descriptor = provider.getConfigurationDescriptor();
+                        if (descriptor != null) {
+                            MakeConfiguration activeConfiguration = descriptor.getActiveConfiguration();
+                            if (activeConfiguration != null) {
+                                execEnv = activeConfiguration.getDevelopmentHost().getExecutionEnvironment();
+                            }
+                        }
+                    }
                     Tool tool = compilerSet.getTool(kind);
                     if (tool != null) {
                         String name = tool.getName();
@@ -173,6 +206,22 @@ public final class BuildTraceSupport {
                                 name = name.substring(0,name.length()-4);
                             }
                             res.add(name);
+                        }
+                        if (execEnv != null) {
+                            String path = tool.getPath();
+                            try {
+                                String canonicalPath = FileSystemProvider.getCanonicalPath(execEnv, path);
+                                if (canonicalPath != null) {
+                                    name = CndPathUtilitities.getBaseName(canonicalPath);
+                                    if (name != null && !name.isEmpty()) {
+                                        if (name.endsWith(".exe")) { //NOI18N
+                                            name = name.substring(0,name.length()-4);
+                                        }
+                                        res.add(name);
+                                    }
+                                }
+                            } catch (IOException ex) {
+                            }
                         }
                     }
                 }
