@@ -71,7 +71,41 @@ public class ExecutionSupportTest extends NbTestCase {
     protected int timeOut() {
         return 500000;
     }
-    
+
+    public void testExecutionSupport4() throws Exception {
+        String source = " -DMA=main -DEXT=\\\"ExternalClass.h\\\" -DQQ=namespace\\ qq\\ {\\ namespace\\ in\\ { -DQQ_CLOSE=}}"+
+                        " -DUSE=qq\\:\\:in -DIMPL=ImplClass -DQUOTE\\(name,extension\\)=<name.extension> -DRET\\(index\\)=ret\\[index\\] -DFOO=foo\\(\\) -I.";
+        List<String> res = ImportUtils.parseArgs(source);
+        assert res.size() == 10;
+        for(int i = 0; i < res.size(); i++){
+           String p = res.get(i);
+            if (TRACE) {
+                System.err.println(p);
+            }
+            if (i==0){
+                assert "-DMA=main".equals(p);
+            } else if (i==1) {
+                assert "-DEXT=\\\"ExternalClass.h\\\"".equals(p);
+            } else if (i == 2) {
+                assert "-DQQ=namespace qq { namespace in {".equals(p);
+            } else if (i == 3) {
+                assert "-DQQ_CLOSE=}}".equals(p);
+            } else if (i == 4) {
+                assert "-DUSE=qq::in".equals(p);
+            } else if (i == 5) {
+                assert "-DIMPL=ImplClass".equals(p);
+            } else if (i == 6) {
+                assert "-DQUOTE(name,extension)=<name.extension>".equals(p);
+            } else if (i == 7) {
+                assert "-DRET(index)=ret[index]".equals(p);
+            } else if (i == 8) {
+                assert "-DFOO=foo()".equals(p);
+            } else if (i == 9) {
+                assert "-I.".equals(p);
+            }
+        }
+    }
+
     public void testExecutionSupport3() throws Exception {
         String source = "-DMA='main' -DEXT='\"ExternalClass.h\"' -DQQ='namespace qq {' -DQQ_CLOSE='}'";
         List<String> res = ImportUtils.parseArgs(source);
