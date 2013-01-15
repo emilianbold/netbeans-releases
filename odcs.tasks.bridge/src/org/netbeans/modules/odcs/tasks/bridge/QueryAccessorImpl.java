@@ -92,6 +92,9 @@ public class QueryAccessorImpl extends QueryAccessor<ODCSProject> {
 
     @Override
     public List<QueryHandle> getQueries (ProjectHandle<ODCSProject> projectHandle) {
+        if (!projectHandle.getTeamProject().hasTasks()) {
+            return null;
+        }
         Repository repo = KenaiUtil.getRepository(KenaiProjectImpl.getInstance(projectHandle.getTeamProject()));
         assert repo != null;
 
