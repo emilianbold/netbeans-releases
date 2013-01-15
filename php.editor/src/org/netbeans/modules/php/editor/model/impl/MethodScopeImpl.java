@@ -123,9 +123,16 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
     }
 
     @Override
-    public Collection<? extends TypeScope> getReturnTypes(boolean resolve) {
+    public Collection<? extends TypeScope> getReturnTypes() {
         scan();
-        return super.getReturnTypes(resolve);
+        return super.getReturnTypes();
+    }
+
+    @Override
+    public Collection<? extends TypeScope> getReturnTypes(boolean resolve, Collection<? extends TypeScope> callerTypes) {
+        assert callerTypes != null;
+        scan();
+        return super.getReturnTypes(resolve, callerTypes);
     }
 
     @Override

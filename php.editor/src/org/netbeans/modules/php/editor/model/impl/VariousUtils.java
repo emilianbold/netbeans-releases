@@ -459,7 +459,7 @@ public final class VariousUtils {
                         for (TypeScope tScope : oldRecentTypes) {
                             Collection<? extends MethodScope> inheritedMethods = IndexScopeImpl.getMethods(tScope, frag, varScope, PhpModifiers.ALL_FLAGS);
                             for (MethodScope meth : inheritedMethods) {
-                                newRecentTypes.addAll(meth.getReturnTypes(true));
+                                newRecentTypes.addAll(meth.getReturnTypes(true, recentTypes));
                             }
                         }
                         recentTypes = filterSuperTypes(newRecentTypes);
@@ -468,7 +468,7 @@ public final class VariousUtils {
                         Set<TypeScope> newRecentTypes = new HashSet<TypeScope>();
                         FunctionScope fnc = ModelUtils.getFirst(IndexScopeImpl.getFunctions(QualifiedName.create(frag), varScope));
                         if (fnc != null) {
-                            newRecentTypes.addAll(fnc.getReturnTypes(true));
+                            newRecentTypes.addAll(fnc.getReturnTypes(true, recentTypes));
                         }
                         recentTypes = newRecentTypes;
                         operation = null;
@@ -500,7 +500,7 @@ public final class VariousUtils {
                             for (ClassScope cls : classes) {
                                 Collection<? extends MethodScope> inheritedMethods = IndexScopeImpl.getMethods(cls, frgs[1], varScope, PhpModifiers.ALL_FLAGS);
                                 for (MethodScope meth : inheritedMethods) {
-                                    newRecentTypes.addAll(meth.getReturnTypes(true));
+                                    newRecentTypes.addAll(meth.getReturnTypes(true, classes));
                                 }
                             }
                         }
@@ -697,7 +697,7 @@ public final class VariousUtils {
                         } else {
                             retval.push(meth);
                         }
-                        types = meth.getReturnTypes(true);
+                        types = meth.getReturnTypes(true, types);
                         if (types == null || types.isEmpty()) {
                             break;
                         }
@@ -710,7 +710,8 @@ public final class VariousUtils {
                         } else {
                             retval.push(fnc);
                         }
-                        final Collection<? extends TypeScope> returnTypes = fnc.getReturnTypes(true);
+                        Collection<? extends TypeScope> recentTypes = stack.isEmpty() ? Collections.<TypeScope>emptyList() : stack.peek();
+                        final Collection<? extends TypeScope> returnTypes = fnc.getReturnTypes(true, recentTypes);
                         type = ModelUtils.getFirst(returnTypes);
                         if (type == null) {
                             break;
@@ -748,7 +749,8 @@ public final class VariousUtils {
                         } else {
                             retval.push(meth);
                         }
-                        final Collection<? extends TypeScope> returnTypes = meth.getReturnTypes(true);
+                        Collection<? extends TypeScope> recentTypes = stack.isEmpty() ? Collections.<TypeScope>emptyList() : stack.peek();
+                        final Collection<? extends TypeScope> returnTypes = meth.getReturnTypes(true, recentTypes);
                         type = ModelUtils.getFirst(returnTypes);
                         if (type == null) {
                             break;

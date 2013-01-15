@@ -127,8 +127,8 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
 
 
     @Override
-    public final Collection<? extends TypeScope> getReturnTypes() {
-        return getReturnTypes(false);
+    public Collection<? extends TypeScope> getReturnTypes() {
+        return getReturnTypesDescriptor(false).getModifiedResult(Collections.<TypeScope>emptyList());
     }
 
     @Override
@@ -145,10 +145,16 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         return retval;
     }
 
+    @Override
+    public Collection<? extends TypeScope> getReturnTypes(boolean resolve, Collection<? extends TypeScope> callerTypes) {
+        assert callerTypes != null;
+        return getReturnTypesDescriptor(resolve).getModifiedResult(callerTypes);
+    }
+
     private static Set<String> recursionDetection = new HashSet<String>(); //#168868
 
-    @Override
-    public Collection<? extends TypeScope> getReturnTypes(boolean resolve) {
+    private ReturnTypesDescriptor getReturnTypesDescriptor(boolean resolve) {
+        ReturnTypesDescriptor result = null;
         Collection<TypeScope> retval = Collections.<TypeScope>emptyList();
         String types;
         synchronized (this) {
@@ -163,6 +169,17 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
                     try {
                         added = recursionDetection.add(typeName);
                         if (added && recursionDetection.size() < 15) {
+                            if (typeName.equals("\\this") || typeName.equals("\\static")) { //NOI18N
+                                retval = Collections.<TypeScope>emptyList();
+                                result = new CallerDependentTypesDescriptor();
+                                break;
+                            }
+                            if (typeName.equals("object") || typeName.equals("\\self") && getInScope() instanceof ClassScope) { //NOI18N
+                                retval = new HashSet<TypeScope>();
+                                retval.add((TypeScope) getInScope());
+                                result = new CommontTypesDescriptor(retval);
+                                break;
+                            }
                             if (resolve && typeName.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) { //NOI18N
                                 retval.addAll(VariousUtils.getType(this, typeName, getOffset(), false));
 
@@ -196,12 +213,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
                 }
             }
         }
-        // this is a solution for issue #188107
-        // The method is defined that returns type 'object'.
-        if (returnType != null && retval.isEmpty() && returnType.equals("object") && getInScope() instanceof ClassScope) { //NOI18N
-            retval.add((TypeScope) getInScope());
-        }
-        return retval;
+        return result == null ? new CommontTypesDescriptor(retval) : result;
     }
 
     @NonNull
@@ -304,5 +316,38 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     @Override
     public boolean isAnonymous() {
         return false;
+    }
+
+
+    private interface ReturnTypesDescriptor {
+
+        Collection<? extends TypeScope> getModifiedResult(Collection<? extends TypeScope> callerTypes);
+
+    }
+
+    private static final class CommontTypesDescriptor implements ReturnTypesDescriptor {
+        private final Collection<? extends TypeScope> rawTypes;
+
+        public CommontTypesDescriptor(Collection<? extends TypeScope> rawTypes) {
+            assert rawTypes != null;
+            this.rawTypes = rawTypes;
+        }
+
+        @Override
+        public Collection<? extends TypeScope> getModifiedResult(Collection<? extends TypeScope> callerTypes) {
+            assert callerTypes != null;
+            return rawTypes;
+        }
+
+    }
+
+    private static final class CallerDependentTypesDescriptor implements ReturnTypesDescriptor {
+
+        @Override
+        public Collection<? extends TypeScope> getModifiedResult(Collection<? extends TypeScope> callerTypes) {
+            assert callerTypes != null;
+            return callerTypes;
+        }
+
     }
 }

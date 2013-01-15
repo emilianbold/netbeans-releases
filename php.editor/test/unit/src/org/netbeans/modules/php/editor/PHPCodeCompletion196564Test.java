@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,26 +37,53 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.editor;
 
-package org.netbeans.modules.php.editor.model;
-
-import java.util.Collection;
-import java.util.List;
-import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
-import org.netbeans.modules.php.editor.api.elements.ParameterElement;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * @author Radek Matous
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public interface FunctionScope extends Scope, VariableScope, FullyQualifiedElement {
+public class PHPCodeCompletion196564Test extends PHPCodeCompletionTestBase {
 
-    boolean isAnonymous(); //lambda, closures
-    List<? extends String> getParameterNames();
-    List<? extends ParameterElement> getParameters();
-    Collection<? extends String> getReturnTypeNames();
-    Collection<? extends TypeScope> getReturnTypes();
-    Collection<? extends TypeScope> getReturnTypes(boolean resolve, Collection<? extends TypeScope> callerTypes);
+    public PHPCodeCompletion196564Test(String testName) {
+        super(testName);
+    }
+
+    public void testUseCase1_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests196564/useCase1.php", "ParentTh::staticFnc()->^;", false);
+    }
+
+    public void testUseCase1_2() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests196564/useCase1.php", "ChildTh::staticFnc()->^;", false);
+    }
+
+    public void testUseCase2_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests196564/useCase2.php", "$c->^;", false);
+    }
+
+    public void testUseCase2_2() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests196564/useCase2.php", "$c->foo()->^;", false);
+    }
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/tests196564"))
+            })
+        );
+    }
 
 }
