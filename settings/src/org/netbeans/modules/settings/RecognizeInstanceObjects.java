@@ -41,6 +41,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.ModuleManager;
 import org.netbeans.core.startup.Main;
+import org.netbeans.core.startup.ModuleSystem;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -115,8 +116,9 @@ public final class RecognizeInstanceObjects extends NamedServicesProvider {
             super(delegates(path));
             this.path = path;
             try {
-                if (Main.isInitialized()) {
-                    ModuleManager man = Main.getModuleSystem().getManager();
+                ModuleSystem ms = Main.getModuleSystem(false);
+                if (ms != null) {
+                    ModuleManager man = ms.getManager();
                     man.addPropertyChangeListener(WeakListeners.propertyChange(this, man));
                 } else {
                     LOG.log(Level.WARNING, "Not listening on module system");
