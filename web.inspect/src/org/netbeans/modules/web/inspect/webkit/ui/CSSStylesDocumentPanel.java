@@ -100,6 +100,7 @@ public class CSSStylesDocumentPanel extends JPanel implements ExplorerManager.Pr
     /** Explorer manager provided by this panel. */
     private ExplorerManager manager = new ExplorerManager();
     /** Lookup of this panel. */
+    @org.netbeans.api.annotations.common.SuppressWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED") // justification="The instances are never serialized." // NOI18N
     private transient Lookup lookup = ExplorerUtils.createLookup(getExplorerManager(), getActionMap());
     /** Filter for the tree displayed in this panel. */
     private transient Filter filter = new Filter();
