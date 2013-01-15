@@ -368,7 +368,7 @@ public class DiscoveryUtils {
                             if (value.length() >= 2 &&
                                (value.charAt(0) == '\'' && value.charAt(value.length()-1) == '\'' || // NOI18N
                                 value.charAt(0) == '"' && value.charAt(value.length()-1) == '"' )) { // NOI18N
-                                value = value.substring(1,value.length()-1);
+                                value = DiscoveryUtils.removeEscape(value.substring(1,value.length()-1));
                             }
                             break;
                         case ExecLog:
@@ -628,17 +628,30 @@ public class DiscoveryUtils {
         return path;
     }
 
-    public static String removeEscape(String key) {
-        if (key.indexOf("\\(") > 0) {// NOI18N
-            key = key.replace("\\(", "(");// NOI18N
-            key = key.replace("\\)", ")");// NOI18N
+    // reverse of the CndPathUtilitities.escapeOddCharacters(String s)
+    public static String removeEscape(String s) {
+        int n = s.length();
+        StringBuilder ret = new StringBuilder(n);
+        char prev = 0;
+        for (int i = 0; i < n; i++) {
+            char c = s.charAt(i);
+            if ((c == ' ') || (c == '\t') || // NOI18N
+                    (c == ':') || //(c == '\'') || // NOI18N
+                    (c == '*') || //(c == '\"') || // NOI18N
+                    (c == '[') || (c == ']') || // NOI18N
+                    (c == '(') || (c == ')') || // NOI18N
+                    (c == ';')) { // NOI18N
+                if (prev == '\\') { // NOI18N
+                    ret.setLength(ret.length()-1);
+                }
+            }
+            ret.append(c);
+            prev = c;
         }
-        if (key.indexOf("\\ ") > 0) {// NOI18N
-            key = key.replace("\\ ", " ");// NOI18N
-        }
-        return key;
+        return ret.toString();
     }
-    
+                    
+                    
     public enum LogOrigin {
         BuildLog,
         DwarfCompileLine,
