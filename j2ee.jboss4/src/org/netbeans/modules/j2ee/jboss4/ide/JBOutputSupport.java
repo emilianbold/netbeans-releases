@@ -309,10 +309,13 @@ public final class JBOutputSupport {
                     || line.indexOf("Starting JBossAS") > -1) { // JBoss 6.0 message // NOI18N
                 LOGGER.log(Level.FINER, "STARTING message fired"); // NOI18N
                 //fireStartProgressEvent(StateType.RUNNING, createProgressMessage("MSG_START_SERVER_IN_PROGRESS")); // NOI18N
-            } else if ((line.indexOf("JBoss (MX MicroKernel)") > -1 // JBoss 4.x message // NOI18N
+            } else if ( ((line.indexOf("JBoss (MX MicroKernel)") > -1 // JBoss 4.x message // NOI18N
                     || line.indexOf("JBoss (Microcontainer)") > -1 // JBoss 5.0 message // NOI18N
-                    || line.indexOf("JBossAS") > -1) // JBoss 6.0 message // NOI18N
-                    && line.indexOf("Started in") > -1) { // NOI18N
+                    || line.indexOf("JBossAS") > -1 // JBoss 6.0 message // NOI18N
+                    || line.indexOf("JBoss AS") > -1)// JBoss 7.0 message // NOI18N
+                    && (line.indexOf("Started in") > -1) // NOI18N
+                        || line.indexOf("started in") > -1 // NOI18N
+                        || line.indexOf("started (with errors) in") > -1)) { // JBoss 7 with some errors (include wrong deployments) // NOI18N
                 LOGGER.log(Level.FINER, "STARTED message fired"); // NOI18N
 
                 synchronized (JBOutputSupport.this) {
