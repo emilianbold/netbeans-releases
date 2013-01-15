@@ -41,68 +41,24 @@
  */
 package org.netbeans.modules.php.composer.ui.actions;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionRegistration;
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.Presenter;
 
-/**
- * Factory for Composer actions.
- */
-@ActionID(id="org.netbeans.modules.php.composer.ui.actions.ComposerActionsFactory", category="Project")
-@ActionRegistration(displayName="#ActionsFactory.name", lazy=false)
-@ActionReference(position=1050, path="Projects/org-netbeans-modules-php-phpproject/Actions")
-public final class ComposerActionsFactory extends AbstractAction implements Presenter.Popup {
+public class SearchAction extends BaseComposerAction {
 
-    private static final long serialVersionUID = 54786435246576574L;
-
-    private JMenu composerActions = null;
+    private static final long serialVersionUID = 8974514465465464L;
 
 
-    public ComposerActionsFactory() {
-        super();
+    @NbBundle.Messages("SearchAction.name=Search...")
+    @Override
+    protected String getName() {
+        return Bundle.SearchAction_name();
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
-        assert false;
-    }
-
-    @Override
-    public JMenuItem getPopupPresenter() {
-        if (composerActions == null) {
-            composerActions = new ComposerActions();
-        }
-        return composerActions;
-    }
-
-    //~ Inner classes
-
-    private static final class ComposerActions extends JMenu {
-
-        private static final long serialVersionUID = -877135786765411L;
-
-
-        @NbBundle.Messages("ComposerActionsFactory.name=Composer")
-        public ComposerActions() {
-            super(Bundle.ComposerActionsFactory_name());
-            add(new SearchAction());
-            addSeparator();
-            add(new InitAction());
-            add(new InstallAction());
-            add(new InstallDevAction());
-            add(new UpdateAction());
-            add(new UpdateDevAction());
-            add(new ValidateAction());
-            addSeparator();
-            add(new SelfUpdateAction());
-        }
-
+    protected void runCommand(PhpModule phpModule) throws InvalidPhpExecutableException {
+        SearchPanel.open(phpModule);
     }
 
 }

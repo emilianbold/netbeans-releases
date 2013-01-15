@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,72 +37,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.composer.ui.actions;
+package org.netbeans.modules.php.composer.output.parsers;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionRegistration;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.Presenter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.php.composer.output.model.SearchResult;
 
 /**
- * Factory for Composer actions.
+ * Parsers for standard CLI output.
  */
-@ActionID(id="org.netbeans.modules.php.composer.ui.actions.ComposerActionsFactory", category="Project")
-@ActionRegistration(displayName="#ActionsFactory.name", lazy=false)
-@ActionReference(position=1050, path="Projects/org-netbeans-modules-php-phpproject/Actions")
-public final class ComposerActionsFactory extends AbstractAction implements Presenter.Popup {
+class CliParser implements Parser {
 
-    private static final long serialVersionUID = 54786435246576574L;
-
-    private JMenu composerActions = null;
-
-
-    public ComposerActionsFactory() {
-        super();
+    CliParser() {
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
-        assert false;
-    }
-
-    @Override
-    public JMenuItem getPopupPresenter() {
-        if (composerActions == null) {
-            composerActions = new ComposerActions();
+    public List<SearchResult> parseSearch(String chunk) {
+        String[] lines = chunk.split("\n"); // NOI18N
+        if (lines.length == 0) {
+            return Collections.emptyList();
         }
-        return composerActions;
-    }
-
-    //~ Inner classes
-
-    private static final class ComposerActions extends JMenu {
-
-        private static final long serialVersionUID = -877135786765411L;
-
-
-        @NbBundle.Messages("ComposerActionsFactory.name=Composer")
-        public ComposerActions() {
-            super(Bundle.ComposerActionsFactory_name());
-            add(new SearchAction());
-            addSeparator();
-            add(new InitAction());
-            add(new InstallAction());
-            add(new InstallDevAction());
-            add(new UpdateAction());
-            add(new UpdateDevAction());
-            add(new ValidateAction());
-            addSeparator();
-            add(new SelfUpdateAction());
+        List<SearchResult> result = new ArrayList<SearchResult>(lines.length);
+        for (String line : lines) {
+            String[] split = line.split(":", 2); // NOI18N
+            if (split.length == 2) {
+                result.add(new SearchResult(split[0].trim(), split[1].trim()));
+            }
         }
-
+        return result;
     }
 
 }

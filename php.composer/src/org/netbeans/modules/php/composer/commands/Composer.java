@@ -41,18 +41,22 @@
  */
 package org.netbeans.modules.php.composer.commands;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.composer.options.ComposerOptions;
+import org.netbeans.modules.php.composer.output.model.SearchResult;
+import org.netbeans.modules.php.composer.output.parsers.Parsers;
 import org.netbeans.modules.php.composer.ui.options.ComposerOptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -77,15 +81,19 @@ public final class Composer {
     private static final String UPDATE_COMMAND = "update"; // NOI18N
     private static final String VALIDATE_COMMAND = "validate"; // NOI18N
     private static final String SELF_UPDATE_COMMAND = "self-update"; // NOI18N
+    private static final String SEARCH_COMMAND = "search"; // NOI18N
     // params
-    private static final List<String> DEFAULT_PARAMS = Arrays.asList(
-        "--ansi", // NOI18N
-        "--no-interaction" // NOI18N
-    );
+    private static final String ANSI_PARAM = "--ansi"; // NOI18N
+    private static final String NO_INTERACTION_PARAM = "--no-interaction"; // NOI18N
     private static final String NAME_PARAM = "--name=%s"; // NOI18N
     private static final String AUTHOR_PARAM = "--author=%s <%s>"; // NOI18N
     private static final String DESCRIPTION_PARAM = "--description=%s"; // NOI18N
     private static final String DEV_PARAM = "--dev"; // NOI18N
+    private static final String ONLY_NAME_PARAM = "--only-name"; // NOI18N
+    private static final List<String> DEFAULT_PARAMS = Arrays.asList(
+        ANSI_PARAM,
+        NO_INTERACTION_PARAM
+    );
 
     private final String composerPath;
 
@@ -173,11 +181,57 @@ public final class Composer {
         return runCommand(null, SELF_UPDATE_COMMAND, Bundle.Composer_run_selfUpdate());
     }
 
+    @NbBundle.Messages("Composer.run.search=Composer (search)")
+    public Future<Integer> search(String token, boolean onlyName, final OutputProcessor<SearchResult> outputProcessor) {
+        PhpExecutable composer = getComposerExecutable(null, Bundle.Composer_run_search());
+        if (composer == null) {
+            return null;
+        }
+        // params
+        List<String> defaultParams = new ArrayList<String>(DEFAULT_PARAMS);
+        defaultParams.remove(ANSI_PARAM);
+        List<String> params = new ArrayList<String>(2);
+        if (onlyName) {
+            params.add(ONLY_NAME_PARAM);
+        }
+        params.add(token);
+        composer = composer
+                .additionalParameters(mergeParameters(SEARCH_COMMAND, defaultParams, params));
+        // descriptor
+        ExecutionDescriptor descriptor = getDescriptor()
+                .frontWindow(false);
+        // run
+        return composer
+                .run(descriptor, new ExecutionDescriptor.InputProcessorFactory() {
+                    @Override
+                    public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                        return new OutputProcessorImpl(new OutputParser() {
+                            @Override
+                            public void parse(char[] chars) {
+                                for (SearchResult result : Parsers.parseSearch(new String(chars))) {
+                                    outputProcessor.process(result);
+                                }
+                            }
+                        });
+                    }
+                });
+    }
+
     private Future<Integer> runCommand(PhpModule phpModule, String command, String title) {
         return runCommand(phpModule, command, title, Collections.<String>emptyList());
     }
 
     private Future<Integer> runCommand(PhpModule phpModule, String command, String title, List<String> commandParams) {
+        PhpExecutable composer = getComposerExecutable(phpModule, title);
+        if (composer == null) {
+            return null;
+        }
+        return composer
+                .additionalParameters(mergeParameters(command, DEFAULT_PARAMS, commandParams))
+                .run(getDescriptor());
+    }
+
+    private PhpExecutable getComposerExecutable(PhpModule phpModule, String title) {
         FileObject sourceDirectory = null;
         if (phpModule != null) {
             sourceDirectory = phpModule.getSourceDirectory();
@@ -188,17 +242,16 @@ public final class Composer {
         }
         PhpExecutable composer = new PhpExecutable(composerPath)
                 .optionsSubcategory(ComposerOptionsPanelController.OPTIONS_SUBPATH)
-                .displayName(title)
-                .additionalParameters(getAllParameters(command, commandParams));
+                .displayName(title);
         if (sourceDirectory != null) {
             composer.workDir(FileUtil.toFile(sourceDirectory));
         }
-        return composer.run(getDescriptor());
+        return composer;
     }
 
-    private List<String> getAllParameters(String command, List<String> commandParams) {
-        List<String> allParams = new ArrayList<String>(DEFAULT_PARAMS.size() + commandParams.size() + 1);
-        allParams.addAll(DEFAULT_PARAMS);
+    private List<String> mergeParameters(String command, List<String> defaultParams, List<String> commandParams) {
+        List<String> allParams = new ArrayList<String>(defaultParams.size() + commandParams.size() + 1);
+        allParams.addAll(defaultParams);
         allParams.add(command);
         allParams.addAll(commandParams);
         return allParams;
@@ -231,6 +284,42 @@ public final class Composer {
     private boolean userConfirmation(String title, String question) {
         NotifyDescriptor confirmation = new DialogDescriptor.Confirmation(question, title, DialogDescriptor.YES_NO_OPTION);
         return DialogDisplayer.getDefault().notify(confirmation) == DialogDescriptor.YES_OPTION;
+    }
+
+    //~ Inner classes
+
+    public interface OutputProcessor<T> {
+        void process(T item);
+    }
+
+    private interface OutputParser {
+        void parse(char[] chars);
+    }
+
+    private static final class OutputProcessorImpl implements InputProcessor {
+
+        private final OutputParser outputParser;
+
+
+        public OutputProcessorImpl(OutputParser outputParser) {
+            this.outputParser = outputParser;
+        }
+
+        @Override
+        public void processInput(char[] chars) throws IOException {
+            outputParser.parse(chars);
+        }
+
+        @Override
+        public void reset() throws IOException {
+            // noop
+        }
+
+        @Override
+        public void close() throws IOException {
+            // noop
+        }
+
     }
 
 }
