@@ -154,15 +154,19 @@ public class GoToNodeSourceAction extends NodeAction  {
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
             HtmlParsingResult result = (HtmlParsingResult)resultIterator.getParserResult();
-            Node root = result.root();
-            // PENDING
-            final Node nodeToShow = root;
+            final Node nodeToShow = findNode(result, node);
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                     CSSUtils.open(fob, nodeToShow.from());
                 }
             });
+        }
+
+        private Node findNode(HtmlParsingResult result,
+                org.netbeans.modules.web.webkit.debugging.api.dom.Node node) {
+            // PENDING
+            return result.root();
         }
         
     }
