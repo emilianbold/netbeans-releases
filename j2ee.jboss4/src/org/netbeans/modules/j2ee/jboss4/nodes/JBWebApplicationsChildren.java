@@ -135,12 +135,12 @@ public class JBWebApplicationsChildren extends Children.Keys implements Refresha
                         for (Iterator it = managedObj.iterator(); it.hasNext();) {
                             try {
                                 ObjectName elem = ((ObjectInstance) it.next()).getObjectName();
-                                String name = elem.getKeyProperty("name");
-                                String url = "http://" + dm.getHost() + ":" + dm.getPort();
+                                String name = elem.getKeyProperty("name"); // NOI18N
+                                String url = "http://" + dm.getHost() + ":" + dm.getPort(); // NOI18N
                                 String context = null;
 
-                                if (name.endsWith(".war")) {
-                                    name = name.substring(0, name.lastIndexOf(".war"));
+                                if (name.endsWith(".war")) { // NOI18N
+                                    name = name.substring(0, name.lastIndexOf(".war")); // NOI18N
                                 }
 
                                 if (abilitiesSupport.isRemoteManagementSupported()
@@ -203,26 +203,26 @@ public class JBWebApplicationsChildren extends Children.Keys implements Refresha
                             TargetModuleID[] modules = dm.getAvailableModules(moduleType, targets);
                             // Module list may be null if nothing is deployed.
                             if (modules != null) {
-                                String url = "http://" + dm.getHost() + ":" + dm.getPort();
+                                //String url = "http://" + dm.getHost() + ":" + dm.getPort();
                                 for (int intModule = 0; intModule < modules.length; intModule++) {
                                     String name = modules[intModule].getModuleID();
-                                    if (name.endsWith(".war")) {
-                                        name = name.substring(0, name.lastIndexOf(".war"));
+                                    if (name.endsWith(".war")) { // NOI18N
+                                        name = name.substring(0, name.lastIndexOf(".war")); // NOI18N
                                     }
-                                    if ("".equals(name)) {
+                                    if ("".equals(name)) { // NOI18N
                                         name = "ROOT"; // NOI18N // consistent with JBoss4
                                     }
                                     if (SYSTEM_WEB_APPLICATIONS.contains(name)) { // Excluding it. It's system package
                                         continue;
                                     }
                                     name += ".war"; // NOI18N
-                                    keys.add(new JBWebModuleNode(name, lookup,  url));
+                                    keys.add(new JBWebModuleNode(name, lookup,  null));
                                 }
                             }
                         } catch (TargetException ex) {
-                            Exceptions.printStackTrace(ex);
+                            LOGGER.log(Level.INFO, null, ex);
                         } catch (IllegalStateException ex) {
-                            Exceptions.printStackTrace(ex);
+                            LOGGER.log(Level.INFO, null, ex);
                         }
                         return null;
                     }
