@@ -100,9 +100,9 @@ public class CSSStylesDocumentPanel extends JPanel implements ExplorerManager.Pr
     /** Explorer manager provided by this panel. */
     private ExplorerManager manager = new ExplorerManager();
     /** Lookup of this panel. */
-    private Lookup lookup = ExplorerUtils.createLookup(getExplorerManager(), getActionMap());
+    private transient Lookup lookup = ExplorerUtils.createLookup(getExplorerManager(), getActionMap());
     /** Filter for the tree displayed in this panel. */
-    private Filter filter = new Filter();
+    private transient Filter filter = new Filter();
 
     /**
      * Creates a new {@code CSSStylesDocumentPanel}.

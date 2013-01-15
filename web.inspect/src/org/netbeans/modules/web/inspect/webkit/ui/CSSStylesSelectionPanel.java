@@ -139,13 +139,13 @@ public class CSSStylesSelectionPanel extends JPanel {
     /** Request processor used by this class. */
     static final RequestProcessor RP = new RequestProcessor(CSSStylesSelectionPanel.class);
     /** Lookup of this panel. */
-    private Lookup lookup;
+    private transient Lookup lookup;
     /** The current inspected page. */
-    private WebKitPageModel pageModel;
+    private transient WebKitPageModel pageModel;
     /** The current inspected node. */
-    private Node inspectedNode;
+    private transient Node inspectedNode;
     /** Page model listener. */
-    private Listener listener;
+    private transient Listener listener;
     /** Property Summary view. */
     private TreeTableView propertyPane;
     /** Explorer manager for Property Summary. */
