@@ -56,6 +56,7 @@ import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import javax.xml.bind.JAXBException;
 
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.source.CompilationController;
@@ -83,6 +84,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.rest.model.api.HttpMethod;
 import org.netbeans.modules.websvc.rest.model.api.RestMethodDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
@@ -133,8 +135,28 @@ public class ClientJavaSourceHelper {
     public static void generateJerseyClient(Node resourceNode, 
             FileObject targetFo, String className, Security security) 
     {
-        // TODO : choose strategy based on project 
-        ClientGenerationStrategy strategy = new JerseyGenerationStrategy();
+        /*
+         *  TODO : project's classpath should be extended with Jersey 2.X in cases
+         *  - not web project
+         *  - REST client uses some not JAX-RS 2.0 features (but Jersey2.X) web project 
+         */
+        Project project = FileOwnerQuery.getOwner(targetFo);
+        ClientGenerationStrategy strategy = null;
+        if (project != null) {
+            WebModule webModule = WebModule.getWebModule(project
+                    .getProjectDirectory());
+            if (webModule != null) {
+                Profile profile = webModule.getJ2eeProfile();
+                if (Profile.JAVA_EE_7_WEB == profile
+                        || Profile.JAVA_EE_7_FULL == profile)
+                {
+                    strategy = new JaxRsGenerationStrategy();
+                }
+            }
+        }
+        if ( strategy==null){
+            strategy = new JerseyGenerationStrategy();
+        }
         ProgressHandle handle = null;
         try {
             handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(ClientJavaSourceHelper.class, "MSG_creatingRESTClient"));
@@ -194,7 +216,6 @@ public class ClientJavaSourceHelper {
             // set target project type
             // PENDING: need to consider web project as well
             String targetProjectType = null;
-            Project project = FileOwnerQuery.getOwner(targetFo);
             if (project != null) {
                 targetProjectType = Wadl2JavaHelper.getProjectType(project); //NOI18N
             } else {

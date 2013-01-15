@@ -529,10 +529,15 @@ class JaxRsGenerationStrategy extends ClientGenerationStrategy {
         StringBuilder queryParamPart = new StringBuilder();
         StringBuilder commentBuffer = new StringBuilder("@param responseType Class representing the response\n"); //NOI18N
 
-        if (httpParams.hasQueryParams() || httpParams.hasHeaderParams()) {
-            queryP.append("webTarget = webTarget");
-            addQueryParams(maker, httpParams, security, paramList, queryP, queryParamPart, commentBuffer);
-            queryP.append(";\n");
+        if (httpParams.hasQueryParams()) {
+            addQueryParams(maker, httpParams, security, paramList, queryP,
+                    queryParamPart, commentBuffer);
+            if ( queryP.length()>0 && queryP.charAt(0)=='.'){
+                queryP.insert(0, "webTarget = webTarget");
+            }
+            if ( queryP.length()>0){
+                queryP.append(";\n");
+            }
         }
         
         queryP.append("return webTarget");
@@ -547,7 +552,9 @@ class JaxRsGenerationStrategy extends ClientGenerationStrategy {
             queryP.append(mimeType.getMediaType());
             queryP.append(')');
         }
-        addHeaderParams(maker, httpParams, paramList, queryP, commentBuffer);
+        if(httpParams.hasHeaderParams()){
+            addHeaderParams(maker, httpParams, paramList, queryP, commentBuffer);
+        }
         String body =
                 "{"+queryParamPart+ queryP+                                        //NOI18N
                     ".get("+bodyParam+");"+  //NOI18N
@@ -623,13 +630,16 @@ class JaxRsGenerationStrategy extends ClientGenerationStrategy {
         StringBuilder queryParamPart = new StringBuilder();
         StringBuilder commentBuffer = new StringBuilder("@param responseType Class representing the response\n"); //NOI18N
 
-        if (httpParams.hasFormParams() || httpParams.hasQueryParams() || 
-                httpParams.hasHeaderParams()) 
+        if (httpParams.hasFormParams() || httpParams.hasQueryParams() ) 
         {
-            queryP.append("webTarget = webTarget");
             addQueryParams(maker, httpParams, security, paramList, 
                     queryP, queryParamPart, commentBuffer);
-            queryP.append("\n;");
+            if ( queryP.length()>0 && queryP.charAt(0)=='.'){
+                queryP.insert(0, "webTarget = webTarget");
+            }
+            if ( queryP.length() >0 ){
+                queryP.append("\n;");
+            }
         }
         
         queryP.append(ret);
@@ -670,7 +680,10 @@ class JaxRsGenerationStrategy extends ClientGenerationStrategy {
             queryP.append(requestMimeType.getMediaType());
             queryP.append(')');
         }
-        addHeaderParams(maker, httpParams, paramList, queryP, commentBuffer);
+        
+        if(httpParams.hasHeaderParams()){
+            addHeaderParams(maker, httpParams, paramList, queryP, commentBuffer);
+        }
         
         if ( bodyParam.length()>0 ){
             bodyParam +=',';
@@ -701,7 +714,7 @@ class JaxRsGenerationStrategy extends ClientGenerationStrategy {
     MethodTree generateFormMethod( TreeMaker maker, WorkingCopy copy ) {
         String form = "javax.ws.rs.core.Form"; //NOI18N
         TypeElement mvMapEl = copy.getElements().getTypeElement(form);
-        String mvType = mvMapEl == null ? form : "Form"; //NOI18N
+        String mvType = mvMapEl==null?"javax.ws.rs.core.Form":"Form"; //NOI18N
 
         String body =
         "{"+ //NOI18N
@@ -716,7 +729,9 @@ class JaxRsGenerationStrategy extends ClientGenerationStrategy {
         ModifiersTree methodModifier = maker.Modifiers(
                 Collections.<Modifier>singleton(Modifier.PRIVATE));
         ExpressionTree returnTree =
-                    copy.getTreeMaker().Identifier("javax.ws.rs.core.Form");//NOI18N
+                mvMapEl ==null ? 
+                    copy.getTreeMaker().Identifier("javax.ws.rs.core.Form"):    //NOI18N
+                        copy.getTreeMaker().QualIdent(mvMapEl);
         List<VariableTree> paramList = new ArrayList<VariableTree>();
         ModifiersTree paramModifier = maker.Modifiers(Collections.<Modifier>emptySet());
         paramList.add(maker.Variable(paramModifier, "paramNames", maker.Identifier("String[]"), null)); //NOI18N

@@ -276,8 +276,8 @@ class JerseyGenerationStrategy extends ClientGenerationStrategy {
 
         if (httpParams.hasQueryParams() || httpParams.hasHeaderParams()) {
             addQueryParams(maker, httpParams, security, paramList, queryP, queryParamPart, commentBuffer);
+            addHeaderParams(maker, httpParams, paramList, queryP, commentBuffer);
         }
-        addHeaderParams(maker, httpParams, paramList, queryP, commentBuffer);
 
         commentBuffer.append("@return response object (instance of responseType class)"); //NOI18N
         String body =
@@ -362,8 +362,9 @@ class JerseyGenerationStrategy extends ClientGenerationStrategy {
         {
             addQueryParams(maker, httpParams, security, paramList, 
                     queryP, queryParamPart, commentBuffer);
+            addHeaderParams(maker, httpParams, paramList, queryP, commentBuffer);
         }
-        addHeaderParams(maker, httpParams, paramList, queryP, commentBuffer);
+        
 
         if (requestMimeType != null) {
             if (requestMimeType == HttpMimeType.FORM && httpParams.hasFormParams()) {
