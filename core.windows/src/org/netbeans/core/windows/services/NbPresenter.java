@@ -1098,6 +1098,16 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
     }
     
     private void doShow () {
+        //#206802 - dialog windows are hidden behind full screen window
+        Window fullScreenWindow = null;
+        if( Utilities.isUnix() ) {
+            GraphicsDevice gd = getGraphicsConfiguration().getDevice();
+            if( gd.isFullScreenSupported() ) {
+                fullScreenWindow = gd.getFullScreenWindow();
+                if( null != fullScreenWindow )
+                    gd.setFullScreenWindow( null );
+            }
+        }
         NbPresenter prev = null;
         try {
             MenuSelectionManager.defaultManager().clearSelectedPath();
@@ -1112,6 +1122,9 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         }
         
         superShow();
+
+        if( null != fullScreenWindow )
+            getGraphicsConfiguration().getDevice().setFullScreenWindow( fullScreenWindow );
         
         if (currentModalDialog != prev) {
             currentModalDialog = prev;
