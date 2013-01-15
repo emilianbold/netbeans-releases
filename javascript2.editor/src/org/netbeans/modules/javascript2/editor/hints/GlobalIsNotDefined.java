@@ -41,15 +41,19 @@
  */
 package org.netbeans.modules.javascript2.editor.hints;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.HintsProvider;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.hints.JsHintsProvider.JsRuleContext;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
@@ -72,7 +76,7 @@ public class GlobalIsNotDefined extends JsAstRule {
             Type.ARRAY, Type.OBJECT, Type.BOOLEAN, Type.NULL, Type.NUMBER, Type.REGEXP, Type.STRING, Type.UNDEFINED, Type.UNRESOLVED);
     
     @Override
-    void computeHints(JsRuleContext context, List<Hint> hints, HintsProvider.HintsManager manager) {
+    void computeHints(JsRuleContext context, List<Hint> hints, int offset, HintsProvider.HintsManager manager) throws BadLocationException {
         JsObject globalObject = context.getJsParserResult().getModel().getGlobalObject();
         Collection<? extends JsObject> variables = ModelUtils.getVariables((DeclarationScope)globalObject);
         for (JsObject variable : variables) {
@@ -80,25 +84,39 @@ public class GlobalIsNotDefined extends JsAstRule {
                     && !knownGlobalObjects.contains(variable.getName()) 
                     && (variable.getJSKind() == JsElement.Kind.VARIABLE
                     || variable.getJSKind() == JsElement.Kind.OBJECT)) {
+                String varName = variable.getName();
                 if (variable.getOccurrences().isEmpty()) {
-                    hints.add(new Hint(this, Bundle.JsGlobalIsNotDefinedDN(),
-                            context.getJsParserResult().getSnapshot().getSource().getFileObject(),
-                            ModelUtils.documentOffsetRange(context.getJsParserResult(), 
-                            variable.getDeclarationName().getOffsetRange().getStart(), 
-                            variable.getDeclarationName().getOffsetRange().getEnd()), null, 500));
+                    addHint(context, hints, offset, varName, variable.getOffsetRange());
                 } else {
                     for(Occurrence occurrence : variable.getOccurrences()) {
-                        hints.add(new Hint(this, Bundle.JsGlobalIsNotDefinedDN(),
-                            context.getJsParserResult().getSnapshot().getSource().getFileObject(),
-                            ModelUtils.documentOffsetRange(context.getJsParserResult(), 
-                            occurrence.getOffsetRange().getStart(), 
-                            occurrence.getOffsetRange().getEnd()), null, 500));
+                        addHint(context, hints, offset, varName, occurrence.getOffsetRange());
                     }
                 }
             }
         }
     }
 
+    private void addHint(JsRuleContext context, List<Hint> hints, int offset, String name, OffsetRange range) throws BadLocationException {
+        boolean add = false;
+        if (offset > -1) {
+            Document document = context.getJsParserResult().getSnapshot().getSource().getDocument(false);
+            if (document != null && document instanceof BaseDocument) {
+                BaseDocument baseDocument = (BaseDocument)document;
+                int lineOffset = Utilities.getLineOffset(baseDocument, offset);
+                int lineOffsetRange = Utilities.getLineOffset(baseDocument, range.getStart());
+                add = lineOffset == lineOffsetRange;
+            }
+        } else {
+            add = true;
+        }
+        if (add) {
+            hints.add(new Hint(this, Bundle.JsGlobalIsNotDefinedHintDesc(name),
+                    context.getJsParserResult().getSnapshot().getSource().getFileObject(),
+                    ModelUtils.documentOffsetRange(context.getJsParserResult(),
+                    range.getStart(), range.getEnd()), null, 500));
+        }
+    }
+    
     @Override
     public Set<?> getKinds() {
         return Collections.singleton(JsAstRule.JS_OTHER_HINTS);
@@ -109,7 +127,10 @@ public class GlobalIsNotDefined extends JsAstRule {
         return "jsglobalisnotdefined.hint";
     }
 
-    @NbBundle.Messages("JsGlobalIsNotDefinedDesc=The global variable is not declared.")
+    @NbBundle.Messages({
+            "JsGlobalIsNotDefinedDesc=The global variable is not declared.",
+            "# {0} - name of global variable",
+            "JsGlobalIsNotDefinedHintDesc=The global variable \"{0}\" is not declared."})
     @Override
     public String getDescription() {
         return Bundle.JsGlobalIsNotDefinedDesc();
