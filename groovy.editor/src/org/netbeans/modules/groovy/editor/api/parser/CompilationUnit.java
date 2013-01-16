@@ -170,10 +170,7 @@ final class CompilationUnit extends org.codehaus.groovy.control.CompilationUnit 
         }
 
         private ClassNode createAnnotationType(String name, TypeElement typeElement) {
-            final int modifiers = Opcodes.ACC_ANNOTATION;
-            final ClassNode[] interfaces = new ClassNode[] {ClassHelper.Annotation_TYPE};
-
-            return new ClassNode(name, modifiers, null, interfaces, MixinNode.EMPTY_ARRAY);
+            return new ClassNode(name, Opcodes.ACC_ANNOTATION, ClassHelper.Annotation_TYPE, null, MixinNode.EMPTY_ARRAY);
         }
 
         private ClassNode createInterfaceKind(String name, TypeElement typeElement) {
