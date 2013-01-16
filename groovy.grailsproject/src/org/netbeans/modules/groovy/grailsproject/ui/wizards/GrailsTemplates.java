@@ -73,7 +73,7 @@ public final class GrailsTemplates {
             folder = "Groovy",
             category = "groovy",
             displayName = "#DomainClass",
-            iconBase = "org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png",
+            iconBase = "org/netbeans/modules/groovy/grailsproject/resources/GrailsIcon16x16.png",
             description = "/org/netbeans/modules/groovy/grailsproject/resources/DomainClass.html"
         ),
         @TemplateRegistration(
@@ -82,7 +82,7 @@ public final class GrailsTemplates {
             folder = "Groovy",
             category = "groovy",
             displayName = "#Controller",
-            iconBase = "org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png",
+            iconBase = "org/netbeans/modules/groovy/grailsproject/resources/GrailsIcon16x16.png",
             description = "/org/netbeans/modules/groovy/grailsproject/resources/Controller.html"
         ),
         @TemplateRegistration(
@@ -91,7 +91,7 @@ public final class GrailsTemplates {
             folder = "Groovy",
             category = "groovy",
             displayName = "#IntegrationTest",
-            iconBase = "org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png",
+            iconBase = "org/netbeans/modules/groovy/grailsproject/resources/GrailsIcon16x16.png",
             description = "/org/netbeans/modules/groovy/grailsproject/resources/IntegrationTest.html"
         ),
         @TemplateRegistration(
@@ -100,7 +100,7 @@ public final class GrailsTemplates {
             folder = "Groovy",
             category = "groovy",
             displayName = "#GantScript",
-            iconBase = "org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png",
+            iconBase = "org/netbeans/modules/groovy/grailsproject/resources/GrailsIcon16x16.png",
             description = "/org/netbeans/modules/groovy/grailsproject/resources/GantScript.html"
         ),
         @TemplateRegistration(
@@ -109,7 +109,7 @@ public final class GrailsTemplates {
             folder = "Groovy",
             category = "groovy",
             displayName = "#Service",
-            iconBase = "org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png",
+            iconBase = "org/netbeans/modules/groovy/grailsproject/resources/GrailsIcon16x16.png",
             description = "/org/netbeans/modules/groovy/grailsproject/resources/Service.html"
         ),
         @TemplateRegistration(
@@ -118,7 +118,7 @@ public final class GrailsTemplates {
             folder = "Groovy",
             category = "groovy",
             displayName = "#TagLibrary",
-            iconBase = "org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png",
+            iconBase = "org/netbeans/modules/groovy/grailsproject/resources/GrailsIcon16x16.png",
             description = "/org/netbeans/modules/groovy/grailsproject/resources/TagLib.html"
         ),
         @TemplateRegistration(
@@ -127,7 +127,7 @@ public final class GrailsTemplates {
             folder = "Groovy",
             category = "groovy",
             displayName = "#UnitTest",
-            iconBase = "org/netbeans/modules/groovy/support/resources/GroovyFile16x16.png",
+            iconBase = "org/netbeans/modules/groovy/grailsproject/resources/GrailsIcon16x16.png",
             description = "/org/netbeans/modules/groovy/grailsproject/resources/UnitTest.html"
         )
     })
