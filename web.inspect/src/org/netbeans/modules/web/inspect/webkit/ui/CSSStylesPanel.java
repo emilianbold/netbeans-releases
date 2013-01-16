@@ -110,13 +110,13 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
     /** Selection section of CSS Styles view. */
     private CSSStylesSelectionPanel selectionPanel = new CSSStylesSelectionPanel();
     /** The current inspected page. */
-    WebKitPageModel pageModel;
+    transient WebKitPageModel pageModel;
     /** Lookup of this panel. */
-    private CSSStylesLookup lookup = new CSSStylesLookup();
+    private transient CSSStylesLookup lookup = new CSSStylesLookup();
     /** Node lookup of this panel. */
-    private CSSStylesNodeLookup nodeLookup = new CSSStylesNodeLookup();
+    private transient CSSStylesNodeLookup nodeLookup = new CSSStylesNodeLookup();
     /** Lookup result with rules selected in the panel. */
-    Lookup.Result<Rule> ruleLookupResult;
+    transient Lookup.Result<Rule> ruleLookupResult;
     /** Determines whether the view is active (i.e. whether it manages the rule controller). */
     boolean active = true;
 
@@ -144,7 +144,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
     }
 
     /** Listener for various events this instance is interested in. */
-    private Listener listener;
+    private transient Listener listener;
     /**
      * Returns the listener.
      *

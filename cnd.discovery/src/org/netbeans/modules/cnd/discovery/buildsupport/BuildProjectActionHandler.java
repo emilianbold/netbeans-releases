@@ -133,7 +133,7 @@ public class BuildProjectActionHandler implements ProjectActionHandler {
         }
         if (execLog != null) {
             Env env = pae.getProfile().getEnvironment();
-            env.putenv(BuildTraceSupport.CND_TOOLS,BuildTraceSupport.getTools(pae.getConfiguration()));
+            env.putenv(BuildTraceSupport.CND_TOOLS,BuildTraceSupport.getTools(pae.getConfiguration(), execEnv));
             if (execEnv.isRemote()) {
                 env.putenv(BuildTraceSupport.CND_BUILD_LOG,remoteExecLog);
             } else {

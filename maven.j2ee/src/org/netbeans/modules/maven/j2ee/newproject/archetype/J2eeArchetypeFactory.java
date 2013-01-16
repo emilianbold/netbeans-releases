@@ -50,8 +50,8 @@ import org.netbeans.modules.maven.api.archetype.Archetype;
  *
  * @author Martin Janicek
  */
-public class J2eeArchetypeFactory {
-    
+public final class J2eeArchetypeFactory {
+
     private static J2eeArchetypeFactory instance;
     private final WebArchetypes webArchetypes;
     private final EjbArchetypes ejbArchetypes;
@@ -59,7 +59,7 @@ public class J2eeArchetypeFactory {
     private final EarArchetypes earArchetypes;
     private final EaArchetypes eaArchetypes;
 
-    
+
     private J2eeArchetypeFactory() {
         webArchetypes = new WebArchetypes();
         ejbArchetypes = new EjbArchetypes();
@@ -67,14 +67,14 @@ public class J2eeArchetypeFactory {
         earArchetypes = new EarArchetypes();
         eaArchetypes = new EaArchetypes();
     }
-    
+
     public static J2eeArchetypeFactory getInstance() {
         if (instance == null) {
             instance = new J2eeArchetypeFactory();
         }
         return instance;
     }
-    
+
     private BaseJ2eeArchetypeProvider getProvider(J2eeModule.Type projectType) {
         if (J2eeModule.Type.WAR.equals(projectType)) {
             return webArchetypes;
@@ -87,23 +87,23 @@ public class J2eeArchetypeFactory {
         } else if (J2eeModule.Type.RAR.equals(projectType)) {
             return eaArchetypes;
         }
-        
+
         // This should never happened ! All possible types are handled
         throw new IllegalArgumentException("J2ee project type isn't correct !");
     }
-    
+
     public Archetype findArchetypeFor(J2eeModule.Type projectType, Profile profile) {
         return getProvider(projectType).getArchetypeFor(profile);
     }
-    
+
     public Archetype getAnyArchetypeFor(J2eeModule.Type projectType) {
         return getProvider(projectType).getAnyArchetype();
     }
-    
+
     public Map<Profile, Archetype> getArchetypeMap(J2eeModule.Type projectType) {
         return getProvider(projectType).getArchetypeMap();
-    } 
-    
+    }
+
     private static class AppClientArchetypes extends BaseJ2eeArchetypeProvider {
         @Override
         protected void setUpProjectArchetypes() {
@@ -112,14 +112,14 @@ public class J2eeArchetypeFactory {
             addMojoArchetype(Profile.J2EE_14, "1.0", "appclient-jee5"); //NOI18N
         }
     }
-    
+
     private static class EaArchetypes extends BaseJ2eeArchetypeProvider {
         @Override
         protected void setUpProjectArchetypes() {
             addMojoArchetype(Profile.JAVA_EE_6_FULL, "1.1", "pom-root"); //NOI18N
         }
     }
-    
+
     private static class EarArchetypes extends BaseJ2eeArchetypeProvider {
         @Override
         protected void setUpProjectArchetypes() {
@@ -128,7 +128,7 @@ public class J2eeArchetypeFactory {
             addMojoArchetype(Profile.J2EE_14, "1.4", "ear-j2ee14"); //NOI18N
         }
     }
-    
+
     private static class EjbArchetypes extends BaseJ2eeArchetypeProvider {
         @Override
         protected void setUpProjectArchetypes() {
@@ -137,7 +137,7 @@ public class J2eeArchetypeFactory {
             addMojoArchetype(Profile.J2EE_14, "1.3", "ejb-j2ee14"); //NOI18N
         }
     }
-    
+
     private static class WebArchetypes extends BaseJ2eeArchetypeProvider {
         @Override
         protected void setUpProjectArchetypes() {
