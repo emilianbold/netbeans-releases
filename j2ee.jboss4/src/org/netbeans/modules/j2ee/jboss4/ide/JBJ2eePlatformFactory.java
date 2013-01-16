@@ -51,7 +51,6 @@ import java.util.WeakHashMap;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
@@ -78,6 +77,7 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
+import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils.Version;
 import org.netbeans.modules.javaee.specs.support.api.JaxWs;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
@@ -289,7 +289,8 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
                     || "kodo.persistence.PersistenceProviderImpl".equals(toolName)) {
                 return containsPersistenceProvider(toolName);
             }
-            if (properties.isVersion(JBPluginUtils.JBOSS_6_0_0)) {
+            Version version = properties.getServerVersion();
+            if (version != null && JBPluginUtils.JBOSS_6_0_0.compareTo(version) <= 0) {
                 if ("hibernatePersistenceProviderIsDefault2.0".equals(toolName)) {
                     return true;
                 }                
