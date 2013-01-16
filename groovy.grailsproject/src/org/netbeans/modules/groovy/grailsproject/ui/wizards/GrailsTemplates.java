@@ -140,7 +140,7 @@ public final class GrailsTemplates {
         position = 400,
         folder = "Project/Groovy",
         displayName = "#GrailsAppDisplayName",
-        iconBase = "org/netbeans/modules/groovy/grails/resources/GrailsIcon16x16.png",
+        iconBase = "org/netbeans/modules/groovy/grailsproject/resources/GrailsIcon16x16.png",
         description = "/org/netbeans/modules/groovy/grailsproject/resources/emptyProject.html"
     )
     public static WizardDescriptor.InstantiatingIterator create() {
