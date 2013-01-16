@@ -63,6 +63,7 @@ import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.oauth.Metadata;
 import org.netbeans.modules.websvc.saas.model.wadl.Response;
+import org.openide.nodes.Node;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
@@ -140,6 +141,18 @@ class JaxRsGenerationStrategy extends ClientGenerationStrategy {
         modifiedClass = maker.addClassMember(modifiedClass, fieldTree);      
         return modifiedClass;
     }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.websvc.rest.client.ClientGenerationStrategy#requiresJersey(org.openide.nodes.Node, org.netbeans.modules.websvc.rest.client.Security)
+     */
+    @Override
+    boolean requiresJersey( Node context, Security security ) {
+        /*
+         *  There are only a couple of cases when JAX-RS 2.0 is not sufficient 
+         *  for client code generation.
+         */
+        return security.isSSL()||Security.Authentication.BASIC.equals(security.getAuthentication());
+    }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.websvc.rest.client.ClientGenerationStrategy#generateConstructor(org.netbeans.api.java.source.TreeMaker, org.netbeans.api.java.source.WorkingCopy, com.sun.source.tree.ClassTree, org.netbeans.modules.websvc.rest.client.ClientJavaSourceHelper.PathFormat, org.netbeans.modules.websvc.rest.client.Security)
@@ -174,7 +187,6 @@ class JaxRsGenerationStrategy extends ClientGenerationStrategy {
             resURI = getPathExpression(pf); //NOI18N
         }
 
-        // XXX: requires Jersey API ( not just JAX-RS )  
         String SSLExpr = security.isSSL() ?
             "// SSL configuration\n" + //NOI18N
             "client.setProperty(" +
@@ -791,5 +803,4 @@ class JaxRsGenerationStrategy extends ClientGenerationStrategy {
         assert false;
         return modifiedClass;
     }
-
 }
