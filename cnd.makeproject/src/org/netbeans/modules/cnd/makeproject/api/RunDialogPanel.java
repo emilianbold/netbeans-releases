@@ -1016,6 +1016,10 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                  .setMakefileName(""); //NOI18N
         Project project = ProjectGenerator.createBlankProject(prjParams);
         lastSelectedProject = project;
+        IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+        if (extension != null) {
+            extension.disableModel(project);
+        }
         OpenProjects.getDefault().addPropertyChangeListener(this);
         OpenProjects.getDefault().open(new Project[]{project}, false);
         return project;
