@@ -870,7 +870,7 @@ public class CssCompletion implements CodeCompletionHandler {
                         || id == CssTokenId.MEDIA_SYM 
                         || id == CssTokenId.PAGE_SYM 
                         || id == CssTokenId.CHARSET_SYM
-                        || id == CssTokenId.GENERIC_AT_RULE
+                        || id == CssTokenId.AT_IDENT
                         || id == CssTokenId.FONT_FACE_SYM
                         || id == CssTokenId.ERROR) {
                     //we are on the right place in the node

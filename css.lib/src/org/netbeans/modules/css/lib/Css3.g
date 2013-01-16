@@ -369,8 +369,8 @@ mediaType
  ;
  
 mediaExpression
- : '(' ws? mediaFeature ws? ( ':' ws? expression )? ')' ws?
- ;
+    : '(' ws? mediaFeature ws? ( ':' ws? expression )? ')' ws?
+    ;
  
 mediaFeature
  : IDENT
@@ -388,6 +388,7 @@ bodyItem
         | counterStyle
         | fontFace
         | vendorAtRule
+        | less_variable_declaration
     ;
 
 //    	catch[ RecognitionException rce] {
@@ -405,7 +406,7 @@ atRuleId
 	;
     
 generic_at_rule
-    : GENERIC_AT_RULE WS* ( atRuleId WS* )? 
+    : AT_IDENT WS* ( atRuleId WS* )? 
         LBRACE 
         	syncTo_RBRACE
         RBRACE
@@ -736,6 +737,7 @@ term
     | URI
     | hexColor
     | function
+    | less_variable
     )
     ws?
     ;
@@ -784,6 +786,18 @@ ws
     : ( WS | NL | COMMENT )+
     ;
     
+//*** LESS SYNTAX ***
+less_variable_declaration
+    : less_variable WS? COLON WS? expression SEMI
+    ;
+    
+less_variable
+    : AT_IDENT
+    ;
+    
+
+//*** END OF LESS SYNTAX ***
+
 // ==============================================================
 // LEXER
 //
@@ -1168,7 +1182,7 @@ MOZ_DOCUMENT_SYM      : '@-MOZ-DOCUMENT';
 WEBKIT_KEYFRAMES_SYM  :	'@-WEBKIT-KEYFRAMES';
 
 //this generic at rule must be after the last of the specific at rule tokens
-GENERIC_AT_RULE	    : '@' NMCHAR+;	
+AT_IDENT	    : '@' NMCHAR+;	
 
 // ---------
 // Numbers. Numbers can be followed by pre-known units or unknown units

@@ -48,6 +48,7 @@ import java.io.StringWriter;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.BadLocationException;
+import static junit.framework.Assert.assertEquals;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
@@ -1170,5 +1171,26 @@ public class Css3ParserTest extends CssTestBase {
 //        NodeUtil.dumpTree(result.getParseTree());
         assertEquals(0, result.getDiagnostics().size());
         
+    }
+    
+    // *** LESS ***
+    
+    public void testLessVariable() {
+        String source = "@color: #4D926F;\n"
+                + "\n"
+                + "#header {\n"
+                + "  color: @color;\n"
+                + "}\n"
+                + "h2 {\n"
+                + "  color: @color;\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+        
+//        assertEquals(0, result.getDiagnostics().size());
+
     }
 }

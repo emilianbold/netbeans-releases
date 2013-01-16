@@ -318,5 +318,18 @@ public enum NodeType {
     /**
      * whitespace, new line or comment tokens
      */
-    ws;
+    ws,
+    
+    //*** LESS syntax ***
+    
+    /**
+     * color: "@color";
+     */
+    less_variable,
+    
+    /**
+     * "@color: #4D926F;"
+     */
+    less_variable_declaration;
+    
 }
