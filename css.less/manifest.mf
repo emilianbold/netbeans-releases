@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.css.less
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/css/less/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+

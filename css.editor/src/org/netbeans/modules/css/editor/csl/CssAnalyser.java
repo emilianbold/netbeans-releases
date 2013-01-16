@@ -49,6 +49,8 @@ import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.css.editor.Css3Utils;
 import org.netbeans.modules.css.editor.CssDeclarationContext;
+import org.netbeans.modules.css.editor.module.CssModuleSupport;
+import org.netbeans.modules.css.editor.module.spi.SemanticAnalyzerResult;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.ErrorsProvider;
 import org.netbeans.modules.css.lib.api.Node;
@@ -61,6 +63,7 @@ import org.netbeans.modules.css.lib.api.properties.Token;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.NotImplementedException;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -98,6 +101,16 @@ public class CssAnalyser implements ErrorsProvider {
                                 return false; 
                         }
                     }
+                    SemanticAnalyzerResult analyzeDeclaration = CssModuleSupport.analyzeDeclaration(node);
+                    switch(analyzeDeclaration.getType()) {
+                        case ERRONEOUS:                            
+                            throw new NotImplementedException(); //TODO
+                        case VALID:
+                            return false;
+                        case UNKNOWN:
+                            break;
+                    }
+                    
                     CssDeclarationContext ctx = new CssDeclarationContext(node);
                     
                     Node propertyNode = ctx.getProperty();

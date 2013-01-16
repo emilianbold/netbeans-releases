@@ -277,4 +277,8 @@ public abstract class CssEditorModule {
         return null;
     }
     
+    public SemanticAnalyzer getSemanticAnalyzer() {
+        return null;
+    }
+            
 }
