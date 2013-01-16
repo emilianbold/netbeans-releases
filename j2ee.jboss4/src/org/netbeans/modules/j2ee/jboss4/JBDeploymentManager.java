@@ -103,6 +103,8 @@ public class JBDeploymentManager implements DeploymentManager {
 
     private final DeploymentFactory df;
 
+    private final Object executionLock = new Object();
+
     /** <i>GuardedBy("this")</i> */
     private DeploymentManager manager;
 
@@ -155,7 +157,6 @@ public class JBDeploymentManager implements DeploymentManager {
         return realUri;
     }
 
-
     public synchronized InstanceProperties getInstanceProperties() {
         if (instanceProperties == null) {
             instanceProperties = InstanceProperties.getInstanceProperties(realUri);
@@ -177,7 +178,7 @@ public class JBDeploymentManager implements DeploymentManager {
             }).get();
         }
 
-        synchronized (JBDeploymentManager.this) {
+        synchronized (executionLock) {
             return invokeLocalAction(new Callable<T>() {
 
                 @Override
@@ -263,121 +264,122 @@ public class JBDeploymentManager implements DeploymentManager {
         }
     }
 
-    public synchronized <T> T invokeRemoteAction(JBRemoteAction<T> action) throws ExecutionException {
+    public <T> T invokeRemoteAction(JBRemoteAction<T> action) throws ExecutionException {
+        synchronized (executionLock) {
+            ClassLoader oldLoader = Thread.currentThread().getContextClassLoader();
+            InitialContext ctx = null;
+            JMXConnector conn = null;
 
-        ClassLoader oldLoader = Thread.currentThread().getContextClassLoader();
-        InitialContext ctx = null;
-        JMXConnector conn = null;
-
-        try {
-            InstanceProperties ip = getInstanceProperties();
-            URLClassLoader loader = JBDeploymentFactory.getInstance().getJBClassLoader(ip);
-            Thread.currentThread().setContextClassLoader(loader);
-
-            JBProperties props = getProperties();
-            Properties env = new Properties();
-
-            // Sets the jboss naming environment
-            String jnpPort = Integer.toString(
-                    JBPluginUtils.getJnpPortNumber(ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR)));
-
-            env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.NamingContextFactory");
-            env.put(Context.PROVIDER_URL, "jnp://localhost"+ ":"  + jnpPort);
-            env.put(Context.OBJECT_FACTORIES, "org.jboss.naming");
-            env.put(Context.URL_PKG_PREFIXES, "org.jboss.naming:org.jnp.interfaces" );
-            env.put("jnp.disableDiscovery", Boolean.TRUE);
-
-            final String JAVA_SEC_AUTH_LOGIN_CONF = "java.security.auth.login.config"; // NOI18N
-            String oldAuthConf = System.getProperty(JAVA_SEC_AUTH_LOGIN_CONF);
-
-            env.put(Context.SECURITY_PRINCIPAL, props.getUsername());
-            env.put(Context.SECURITY_CREDENTIALS, props.getPassword());
-            env.put("jmx.remote.credentials", // NOI18N
-                    new String[] {props.getUsername(), props.getPassword()});
-
-            File securityConf = new File(props.getRootDir(), "/client/auth.conf");
-            if (securityConf.exists()) {
-                env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.security.jndi.LoginInitialContextFactory");
-                System.setProperty(JAVA_SEC_AUTH_LOGIN_CONF, securityConf.getAbsolutePath()); // NOI18N
-            }
-
-            if (!props.isVersion(JBPluginUtils.JBOSS_7_0_0)) {
-                // Gets naming context
-                ctx = new InitialContext(env);
-            }
-
-            //restore java.security.auth.login.config system property
-            if (oldAuthConf != null) {
-                System.setProperty(JAVA_SEC_AUTH_LOGIN_CONF, oldAuthConf);
-            } else {
-                System.clearProperty(JAVA_SEC_AUTH_LOGIN_CONF);
-            }
-
-            MBeanServerConnection rmiServer = null;
             try {
-                JMXServiceURL url;
-                if (props.isVersion(JBPluginUtils.JBOSS_7_0_0)) {
-                    // using management-native port
-                    url = new JMXServiceURL(
-                            System.getProperty("jmx.service.url", "service:jmx:remoting-jmx://localhost:9999")); // NOI18N
-                } else {
-                    url = new JMXServiceURL(
-                            "service:jmx:rmi:///jndi/rmi://localhost:1090/jmxrmi"); // NOI18N
+                InstanceProperties ip = getInstanceProperties();
+                URLClassLoader loader = JBDeploymentFactory.getInstance().getJBClassLoader(ip);
+                Thread.currentThread().setContextClassLoader(loader);
+
+                JBProperties props = getProperties();
+                Properties env = new Properties();
+
+                // Sets the jboss naming environment
+                String jnpPort = Integer.toString(
+                        JBPluginUtils.getJnpPortNumber(ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR)));
+
+                env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.NamingContextFactory");
+                env.put(Context.PROVIDER_URL, "jnp://localhost"+ ":"  + jnpPort);
+                env.put(Context.OBJECT_FACTORIES, "org.jboss.naming");
+                env.put(Context.URL_PKG_PREFIXES, "org.jboss.naming:org.jnp.interfaces" );
+                env.put("jnp.disableDiscovery", Boolean.TRUE);
+
+                final String JAVA_SEC_AUTH_LOGIN_CONF = "java.security.auth.login.config"; // NOI18N
+                String oldAuthConf = System.getProperty(JAVA_SEC_AUTH_LOGIN_CONF);
+
+                env.put(Context.SECURITY_PRINCIPAL, props.getUsername());
+                env.put(Context.SECURITY_CREDENTIALS, props.getPassword());
+                env.put("jmx.remote.credentials", // NOI18N
+                        new String[] {props.getUsername(), props.getPassword()});
+
+                File securityConf = new File(props.getRootDir(), "/client/auth.conf");
+                if (securityConf.exists()) {
+                    env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.security.jndi.LoginInitialContextFactory");
+                    System.setProperty(JAVA_SEC_AUTH_LOGIN_CONF, securityConf.getAbsolutePath()); // NOI18N
                 }
-                conn = JMXConnectorFactory.connect(url);
 
-                rmiServer = conn.getMBeanServerConnection();
-            } catch (IOException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-            }
+                if (!props.isVersion(JBPluginUtils.JBOSS_7_0_0)) {
+                    // Gets naming context
+                    ctx = new InitialContext(env);
+                }
 
-            if (rmiServer == null && ctx != null) {
-                // Lookup RMI Adaptor
-                rmiServer = (MBeanServerConnection) ctx.lookup("/jmx/invoker/RMIAdaptor"); // NOI18N
-            }
+                //restore java.security.auth.login.config system property
+                if (oldAuthConf != null) {
+                    System.setProperty(JAVA_SEC_AUTH_LOGIN_CONF, oldAuthConf);
+                } else {
+                    System.clearProperty(JAVA_SEC_AUTH_LOGIN_CONF);
+                }
 
-            JBoss5ProfileServiceProxy profileService = null;
-            try {
-                if (ctx != null) {
-                    Object service = ctx.lookup("ProfileService"); // NOI18N
-                    if (service != null) {
-                        profileService = new JBoss5ProfileServiceProxy(service);
+                MBeanServerConnection rmiServer = null;
+                try {
+                    JMXServiceURL url;
+                    if (props.isVersion(JBPluginUtils.JBOSS_7_0_0)) {
+                        // using management-native port
+                        url = new JMXServiceURL(
+                                System.getProperty("jmx.service.url", "service:jmx:remoting-jmx://localhost:9999")); // NOI18N
+                    } else {
+                        url = new JMXServiceURL(
+                                "service:jmx:rmi:///jndi/rmi://localhost:1090/jmxrmi"); // NOI18N
                     }
+                    conn = JMXConnectorFactory.connect(url);
+
+                    rmiServer = conn.getMBeanServerConnection();
+                } catch (IOException ex) {
+                    LOGGER.log(Level.FINE, null, ex);
+                }
+
+                if (rmiServer == null && ctx != null) {
+                    // Lookup RMI Adaptor
+                    rmiServer = (MBeanServerConnection) ctx.lookup("/jmx/invoker/RMIAdaptor"); // NOI18N
+                }
+
+                JBoss5ProfileServiceProxy profileService = null;
+                try {
+                    if (ctx != null) {
+                        Object service = ctx.lookup("ProfileService"); // NOI18N
+                        if (service != null) {
+                            profileService = new JBoss5ProfileServiceProxy(service);
+                        }
+                    }
+                } catch (NameNotFoundException ex) {
+                    LOGGER.log(Level.FINE, null, ex);
+                }
+
+                if (rmiServer != null) {
+                    return action.action(rmiServer, profileService);
+                } else {
+                    throw new IllegalStateException("No rmi server acquired for " + realUri);
                 }
             } catch (NameNotFoundException ex) {
                 LOGGER.log(Level.FINE, null, ex);
-            }
-
-            if (rmiServer != null) {
-                return action.action(rmiServer, profileService);
-            } else {
-                throw new IllegalStateException("No rmi server acquired for " + realUri);
-            }
-        } catch (NameNotFoundException ex) {
-            LOGGER.log(Level.FINE, null, ex);
-            throw new ExecutionException(ex);
-        } catch (NamingException ex) {
-            LOGGER.log(Level.FINE, null, ex);
-            throw new ExecutionException(ex);
-        } catch (Exception ex) {
-            LOGGER.log(Level.FINE, null, ex);
-            throw new ExecutionException(ex);
-        } finally {
-            try {
-                if (ctx != null) {
-                    ctx.close();
-                }
+                throw new ExecutionException(ex);
             } catch (NamingException ex) {
                 LOGGER.log(Level.FINE, null, ex);
-            }
-            try {
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (IOException ex) {
+                throw new ExecutionException(ex);
+            } catch (Exception ex) {
                 LOGGER.log(Level.FINE, null, ex);
+                throw new ExecutionException(ex);
+            } finally {
+                try {
+                    if (ctx != null) {
+                        ctx.close();
+                    }
+                } catch (NamingException ex) {
+                    LOGGER.log(Level.FINE, null, ex);
+                }
+                try {
+                    if (conn != null) {
+                        conn.close();
+                    }
+                } catch (IOException ex) {
+                    LOGGER.log(Level.FINE, null, ex);
+                }
+                Thread.currentThread().setContextClassLoader(oldLoader);
             }
-            Thread.currentThread().setContextClassLoader(oldLoader);
         }
     }
 
