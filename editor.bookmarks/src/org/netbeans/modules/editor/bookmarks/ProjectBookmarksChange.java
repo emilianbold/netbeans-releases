@@ -106,8 +106,10 @@ public final class ProjectBookmarksChange {
     }
     
     void addChange(FileBookmarksChange change) {
-        assert (fileBookmarksChanges.put(change.getFileBookmarks().getRelativeURI(), change) == null)
-                : "Change already present: " + change; // NOI18N
+        Object o = fileBookmarksChanges.put(change.getFileBookmarks().getRelativeURI(), change);
+        if (o != null) {
+            throw new IllegalStateException("Change already present: " + change); // NOI18N
+        }
     }
 
 }
