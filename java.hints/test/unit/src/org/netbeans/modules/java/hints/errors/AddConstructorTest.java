@@ -57,7 +57,7 @@ import org.openide.util.NbBundle;
 public class AddConstructorTest extends ErrorHintsTestBase {
     
     public AddConstructorTest(String name) {
-        super(name);
+        super(name, AddConstructor.class);
     }
     
     public void testSimple() throws Exception {
@@ -73,22 +73,15 @@ public class AddConstructorTest extends ErrorHintsTestBase {
                             "package test; public class Test extends A { } class A { private A(String str) {} }",
                             -1);
     }
-
-    @Override
-    protected Set<String> getSupportedErrorKeys() {
-        return new AddConstructor().getCodes();
-    }
-
-    @Override
-    protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) {
-        return new AddConstructor().run(info, null, pos, path, null);
-    }
-
-    @Override
-    protected String toDebugString(CompilationInfo info, Fix f) {
-        return f.getText();
-    }
     
+    public void testMultipleVariants() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test; public class Test extends A { } class A { A(String str) {} A(int i) {} }",
+                            -1,
+                            "FIX_AddConstructor:Test(String)",
+                            "FIX_AddConstructor:Test(int)");
+    }
+
     static {
         NbBundle.setBranding("test");
     }
