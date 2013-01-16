@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2013 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -68,6 +68,7 @@ import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.indexing.TransactionContext;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
@@ -93,10 +94,15 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
 
     private File cache;
     private FileObject cacheFO;
+    private final Class<? extends ErrorRule> ruleToInvoke;
     
     public ErrorHintsTestBase(String name) {
+        this(name, null);
+    }
+    
+    public ErrorHintsTestBase(String name, Class<? extends ErrorRule> ruleToInvoke) {
         super(name);
-        
+        this.ruleToInvoke = ruleToInvoke;
     }
     
     @Override
@@ -202,9 +208,17 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
     protected CompilationInfo info;
     private Document doc;
     
-    protected abstract List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception;
+    protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
+        throw new UnsupportedOperationException("At least one of the computeFixes methods must be overriden, or ruleToInvoke passed to constructor");
+    }
+    
+    protected List<Fix> computeFixes(CompilationInfo info, String diagnosticCode, int pos, TreePath path) throws Exception {
+        if (ruleToInvoke != null) return ruleToInvoke.newInstance().run(info, diagnosticCode, pos, path, null);
+        return computeFixes(info, pos, path);
+    }
     
     protected String toDebugString(CompilationInfo info, Fix f) {
+        if (ruleToInvoke != null) return f.getText();
         return f.toString();
     }
     
@@ -269,15 +283,19 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         prepareTest(fileName, code);
         
         TreePath path;
+        String diagnosticCode;
         
         if (pos == (-1)) {
-            pos = positionForErrors();
+            Diagnostic<?> d = findPositionForErrors();
+            pos = (int) d.getPosition();
+            diagnosticCode = d.getCode();
             path = info.getTreeUtilities().pathFor(pos + 1);
         } else {
+            diagnosticCode = null;
             path = info.getTreeUtilities().pathFor(pos);
         }
 
-        List<Fix> fixes = computeFixes(info, pos, path);
+        List<Fix> fixes = computeFixes(info, diagnosticCode, pos, path);
         List<String> fixesNames = new LinkedList<String>();
         
         fixes = fixes != null ? fixes : Collections.<Fix>emptyList();
@@ -315,26 +333,36 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         LifecycleManager.getDefault().saveAll();
     }
     
-    protected Set<String> getSupportedErrorKeys() {
+    protected Set<String> getSupportedErrorKeys() throws Exception {
+        if (ruleToInvoke != null) return ruleToInvoke.newInstance().getCodes();
         return null;
     }
 
     protected final int positionForErrors() throws IllegalStateException {
+        try {
+            return (int) findPositionForErrors().getPosition();
+        } catch (Exception ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
+    
+    private Diagnostic<?> findPositionForErrors() throws Exception {
         Set<String> supportedErrorKeys = getSupportedErrorKeys();
-        Integer pos = null;
+        Diagnostic<?> found = null;
         for (Diagnostic<?> d : info.getDiagnostics()) {
             if (d.getKind() == Diagnostic.Kind.ERROR && (supportedErrorKeys == null || supportedErrorKeys.contains(d.getCode()))) {
-                if (pos == null) {
-                    pos = (int) d.getPosition();
+                if (found == null) {
+                    found = d;
                 } else {
                     throw new IllegalStateException("More than one error: " + info.getDiagnostics().toString());
                 }
             }
         }
-        if (pos == null) {
+        if (found == null) {
             throw new IllegalStateException("No error found: " + info.getDiagnostics().toString());
         }
         
-        return pos;
+        return found;
     }
+    
 }
