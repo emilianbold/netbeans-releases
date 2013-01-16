@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.inspect.files;
 
+import java.nio.charset.Charset;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -121,7 +122,7 @@ public final class Files {
         InputStream stream = Files.class.getResourceAsStream(resourceName);
         String content = null;
         if (stream != null) {
-            BufferedReader br = new BufferedReader(new InputStreamReader(stream));
+            BufferedReader br = new BufferedReader(new InputStreamReader(stream, Charset.forName("UTF-8"))); // NOI18N
             try {
                 StringBuilder sb = new StringBuilder(stream.available());
                 String line;
