@@ -502,6 +502,8 @@ public class Tiny {
         
         FlowResult flow = Flow.assignmentsForUse(ctx);
         
+        if (flow == null || ctx.isCanceled()) return null;
+        
         if (flow.getFinalCandidates().contains(ve)) {
             VariableTree vt = (VariableTree) ctx.getPath().getLeaf();
             Fix fix = FixFactory.addModifiersFix(ctx.getInfo(), new TreePath(ctx.getPath(), vt.getModifiers()), EnumSet.of(Modifier.FINAL), Bundle.FIX_CanBeFinal(ve.getSimpleName().toString()));
