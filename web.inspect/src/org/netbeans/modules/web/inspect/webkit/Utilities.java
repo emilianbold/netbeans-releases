@@ -150,6 +150,7 @@ public class Utilities {
                                     } else {
                                         break outer;
                                     }
+                                default:
                             }
                             index--;
                         }
