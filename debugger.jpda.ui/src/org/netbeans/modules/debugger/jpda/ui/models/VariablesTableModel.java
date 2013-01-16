@@ -209,6 +209,13 @@ public class VariablesTableModel implements TableModel, Constants {
                             Exceptions.printStackTrace(ex);
                         }
                     }
+                    if (row instanceof JPDAWatch) {
+                        JPDAWatch w = (JPDAWatch) row;
+                        String e = w.getExceptionDescription ();
+                        if (e != null) {
+                            return true; // Errors are read only
+                        }
+                    }
                     if (row instanceof ObjectVariable) {
                         String declaredType;
                         if (row instanceof LocalVariable) {
