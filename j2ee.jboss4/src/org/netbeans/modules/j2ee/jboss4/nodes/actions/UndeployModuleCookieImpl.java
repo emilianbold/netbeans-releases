@@ -110,18 +110,22 @@ public class UndeployModuleCookieImpl implements UndeployModuleCookie {
                 File file = new File(deployDir, fileName);
                 
                 if (file.exists() && file.canWrite()) {
+                    // FIXME we can use JMX to check/udeploy deployed apps
+                    // jboss.as:deployment=WarName.war
+                    long start = System.currentTimeMillis();
                     file.delete();
                     if (abilitiesSupport.isJB7x()) {
-                        File statusFile = new File(file.getAbsolutePath()+File.pathSeparator+ ".undeployed");
+                        File statusFile = new File(file.getAbsolutePath() + ".undeployed");
                         int time = 0;
-                        while (statusFile.exists() && time < TIMEOUT) {
+                        do {
                             try {
                                 Thread.sleep(POLLING_INTERVAL);
                                 time += POLLING_INTERVAL;
                             } catch (InterruptedException ex) {
                                 // Nothing to do
                             }
-                        }
+                        } while ((!statusFile.exists() || statusFile.lastModified() < start) && time < TIMEOUT);
+
                         boolean wait = true;
                         while (wait && time < TIMEOUT) {
                             try {
@@ -152,18 +156,16 @@ public class UndeployModuleCookieImpl implements UndeployModuleCookie {
                         try {
                             ObjectName searchPattern = null;
                             if (Util.isRemoteManagementSupported(lookup) && !isEJB3) {
-                                searchPattern = new ObjectName("jboss.management.local:"+(!type.equals(ModuleType.EAR) ?
-                                    "J2EEApplication=null," : "")+"j2eeType="+Util.getModuleTypeString(type)+",name=" + fileName + ",*");
+                                searchPattern = new ObjectName("jboss.management.local:" + (!type.equals(ModuleType.EAR)
+                                        ? "J2EEApplication=null," : "") + "j2eeType=" + Util.getModuleTypeString(type) + ",name=" + fileName + ",*");
                             } else {
                                 if (type.equals(ModuleType.EAR)) {
                                     searchPattern = new ObjectName("jboss.j2ee:service=EARDeployment,url='" + fileName + "'"); // NOI18N
-                            }
-                            else 
-                            if (type.equals(ModuleType.WAR)) {
+                                }
+                                else if (type.equals(ModuleType.WAR)) {
                                     searchPattern = new ObjectName("jboss.web:j2eeType=WebModule,J2EEApplication=none,name=//localhost/" + nameWoExt + ",*"); // NOI18N
-                            }
-                            else
-                            if (type.equals(ModuleType.EJB)) {
+                                }
+                                else if (type.equals(ModuleType.EJB)) {
                                     searchPattern = new ObjectName("jboss.j2ee:service=" + (isEJB3 ? "EJB3" : "EjbModule") + ",module=" + fileName); // NOI18N
                                 }
                             }
