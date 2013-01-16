@@ -412,6 +412,7 @@ public class DOMTest {
         }
 
         @Override
+        @org.netbeans.api.annotations.common.SuppressWarnings("UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR") // NOI18N // justification="callback field should be always initialized by registerResponseCallback() method. And if not then it is fine for the method to fail. It is a test anyway."
         public void sendCommand(Command command) throws TransportStateException {
             JSONObject jsonCommand = command.getCommand();
             Object id = jsonCommand.get(Command.COMMAND_ID);
