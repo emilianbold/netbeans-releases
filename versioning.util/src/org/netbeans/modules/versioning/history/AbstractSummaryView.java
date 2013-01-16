@@ -547,6 +547,7 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
         boolean revisionExpanded;
         private boolean viewEventsInitialized;
         private boolean allEventsExpanded;
+        private boolean initializingStarted;
 
         public RevisionItem (LogEntry entry) {
             super(entry);
@@ -592,7 +593,10 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
                     }
                 } else {
                     entry.expand();
-                    ((SummaryListModel) resultsList.getModel()).addDummyEvents(getUserData());
+                    if (!initializingStarted) {
+                        initializingStarted = true;
+                        ((SummaryListModel) resultsList.getModel()).addDummyEvents(getUserData());
+                    }
                 }
             }
         }
