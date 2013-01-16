@@ -351,6 +351,87 @@ public class FileObjectCrawlerTest extends NbTestCase {
         assertCollectedFiles("Wrong files collected", crawler.getResources(), new String[] {"org/pckg1/pckg2/file1.txt"});
     }
 
+    public void testDuplicateResults4() throws IOException {
+        File root = new File(getWorkDir(), "src");
+        String [] paths = new String [] {
+                "org/bar/file1.txt",
+                "org/foo/file2.txt",
+        };
+
+        populateFolderStructure(root, paths);
+
+        FileObject rootFO = FileUtil.toFileObject(root);
+        FileObjectCrawler crawler = new FileObjectCrawler(rootFO, new FileObject[] {rootFO.getFileObject("org/foo/file2.txt"), rootFO.getFileObject("org/bar")}, EnumSet.<Crawler.TimeStampAction>of(Crawler.TimeStampAction.UPDATE), null, CR, SuspendSupport.NOP);
+        assertCollectedFiles("Wrong files collected", crawler.getResources(), new String[] {"org/bar/file1.txt","org/foo/file2.txt"});
+    }
+
+    public void testDuplicateResults5() throws IOException {
+        File root = new File(getWorkDir(), "src");
+        String [] paths = new String [] {
+                "org/bar/file1.txt",
+                "org/foo/file2.txt",
+        };
+
+        populateFolderStructure(root, paths);
+
+        FileObject rootFO = FileUtil.toFileObject(root);
+        FileObjectCrawler crawler = new FileObjectCrawler(rootFO, new FileObject[] {rootFO.getFileObject("org/bar"), rootFO.getFileObject("org/foo/file2.txt")}, EnumSet.<Crawler.TimeStampAction>of(Crawler.TimeStampAction.UPDATE), null, CR, SuspendSupport.NOP);
+        assertCollectedFiles("Wrong files collected", crawler.getResources(), new String[] {"org/bar/file1.txt","org/foo/file2.txt"});
+    }
+
+    public void testDuplicateResults6() throws IOException {
+        File root = new File(getWorkDir(), "src");
+        String [] paths = new String [] {
+                "org/me/prj/foo/file2.txt",
+                "org/me/prj/bar/file3.txt",
+        };
+
+        populateFolderStructure(root, paths);
+
+        FileObject rootFO = FileUtil.toFileObject(root);
+        FileObjectCrawler crawler = new FileObjectCrawler(rootFO, new FileObject[] {rootFO.getFileObject("org/me/prj/bar/file3.txt"), rootFO.getFileObject("org/me/prj/foo"), rootFO.getFileObject("org/me/prj/bar")}, EnumSet.<Crawler.TimeStampAction>of(Crawler.TimeStampAction.UPDATE), null, CR, SuspendSupport.NOP);
+        assertCollectedFiles("Wrong files collected", crawler.getResources(), new String[] {"org/me/prj/foo/file2.txt","org/me/prj/bar/file3.txt"});
+    }
+
+    public void testDuplicateResults7() throws IOException {
+        File root = new File(getWorkDir(), "src");
+        String [] paths = new String [] {
+                "org/me/prj/foo/file2.txt",
+                "org/me/prj/bar/file3.txt",
+        };
+
+        populateFolderStructure(root, paths);
+
+        FileObject rootFO = FileUtil.toFileObject(root);
+        FileObjectCrawler crawler = new FileObjectCrawler(rootFO, new FileObject[] {rootFO.getFileObject("org/me/prj/bar/file3.txt"), rootFO.getFileObject("org/me/prj/foo/file2.txt"), rootFO.getFileObject("org/me")}, EnumSet.<Crawler.TimeStampAction>of(Crawler.TimeStampAction.UPDATE), null, CR, SuspendSupport.NOP);
+        assertCollectedFiles("Wrong files collected", crawler.getResources(), new String[] {"org/me/prj/foo/file2.txt","org/me/prj/bar/file3.txt"});
+    }
+
+    public void testDuplicateResults8() throws IOException {
+        File root = new File(getWorkDir(), "src");
+        String [] paths = new String [] {
+                "org/me/lib/impl/file1.txt",
+                "org/me/prj/foo/file2.txt",
+                "org/me/prj/bar/file3.txt",
+        };
+
+        populateFolderStructure(root, paths);
+
+        FileObject rootFO = FileUtil.toFileObject(root);
+        FileObjectCrawler crawler = new FileObjectCrawler(
+                rootFO,
+                new FileObject[] {
+                    rootFO.getFileObject("org/me/prj/bar/file3.txt"),
+                    rootFO.getFileObject("org/me/prj/foo/file2.txt"),
+                    rootFO.getFileObject("org/me/lib"),
+                    rootFO.getFileObject("org/me/prj")},
+                EnumSet.<Crawler.TimeStampAction>of(Crawler.TimeStampAction.UPDATE),
+                null,
+                CR,
+                SuspendSupport.NOP);
+        assertCollectedFiles("Wrong files collected", crawler.getResources(), new String[] {"org/me/lib/impl/file1.txt","org/me/prj/foo/file2.txt","org/me/prj/bar/file3.txt"});
+    }
+
     protected void assertCollectedFiles(String message, Collection<Indexable> resources, String... expectedPaths) throws IOException {
         List<String> collectedPaths = new ArrayList<String>();
         for(Indexable ii : resources) {

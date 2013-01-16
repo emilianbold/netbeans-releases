@@ -125,18 +125,37 @@ NEXT_FILE:      for(FileObject f : files) {
                             final Map.Entry<FileObject, StringBuilder> relPath = it.next();
                             switch (getFileRelation(currentRelPath, relPath.getValue())) {
                                 case FIRST_IN_SECOND:
-                                    continue NEXT_FILE;
+                                    final Set<FileObject> cs = clusters.get(relPath.getKey());
+                                    for (FileObject csFile : cs) {
+                                        if (csFile.isFolder() && FileUtil.isParentOf(csFile, f)) {
+                                            continue NEXT_FILE;
+                                        }
+                                    }
+                                    break;
                                 case SECOND_IN_FIRST:
-                                    clusters.remove(relPath.getKey());
-                                    it.remove();
+                                    if (f.equals(relPath.getKey()) || FileUtil.isParentOf(f, relPath.getKey())) {
+                                        clusters.remove(relPath.getKey());
+                                        it.remove();
+                                    }
+                                    break;
+                                case UNRELATED:
                                     break;
                                 case EQUAL:
+                                default:
                                     throw new IllegalStateException();
                             }
                         }
                         cluster = new HashSet<FileObject>();
                         clusters.put(parent, cluster);
                         relPaths.put(parent, currentRelPath);
+                    } else {
+                        for (Iterator<Map.Entry<FileObject,StringBuilder>> it = relPaths.entrySet().iterator(); it.hasNext();) {
+                            final Map.Entry<FileObject, StringBuilder> relPath = it.next();
+                            if (f.equals(relPath.getKey()) || FileUtil.isParentOf(f, relPath.getKey())) {
+                                clusters.remove(relPath.getKey());
+                                it.remove();
+                            }
+                        }
                     }
                     cluster.add(f);
                 }
@@ -374,7 +393,7 @@ NEXT_FILE:      for(FileObject f : files) {
             @NonNull final StringBuilder secondPath) {
         final int min = Math.min(firstPath.length(),secondPath.length());
         for (int i=0; i<min; i++) {
-            if (firstPath.charAt(i) != firstPath.charAt(i)) {
+            if (firstPath.charAt(i) != secondPath.charAt(i)) {
                 return PathRelation.UNRELATED;
             }
         }
