@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript2.editor.hints;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
+import javax.swing.text.BadLocationException;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.HintsProvider;
@@ -57,7 +58,7 @@ import org.netbeans.modules.csl.api.RuleContext;
 public abstract class JsAstRule implements Rule.AstRule {
     public static final String JS_OTHER_HINTS = "js.other.hints"; //NOI18N
 
-    abstract void computeHints(JsHintsProvider.JsRuleContext context, List<Hint> hints, HintsProvider.HintsManager manager);
+    abstract void computeHints(JsHintsProvider.JsRuleContext context, List<Hint> hints, int offset, HintsProvider.HintsManager manager) throws BadLocationException;
     
     @Override
     public boolean getDefaultEnabled() {

@@ -81,7 +81,7 @@ public class StableSuite {
                 .addTest(KeyMapTest.class, "testAddShortcut")
                 .addTest(KeyMapTest.class, "testUnassign")
                 .addTest(KeyMapTest.class, "testAssignAlternativeShortcut")
-                //.addTest(KeyMapTest.class, "testProfileRestore")//fails due to issue 151254
+                .addTest(KeyMapTest.class, "testProfileRestore")//fails due to issue 151254
                 .addTest(KeyMapTest.class, "testProfileDuplicte")
                 .addTest(KeyMapTest.class, "testHelp")                  
                 .addTest(AbbreviationsAddRemovePerformer.class) 

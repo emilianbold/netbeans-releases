@@ -338,6 +338,8 @@ public class MakeConfiguration extends Configuration implements Cloneable {
             case TYPE_DB_APPLICATION:
             case TYPE_QT_APPLICATION:
                 return true;
+            case TYPE_CUSTOM:
+                return getProjectCustomizer().isApplicationConfiguration();
             default:
                 return false;
         }
