@@ -44,7 +44,6 @@ package org.netbeans.modules.php.editor.elements;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.model.impl.ModelTestBase;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -69,7 +68,7 @@ public class PhpElementImplTest extends ModelTestBase {
     private static final class PhpElementStub extends PhpElementImpl {
 
         public PhpElementStub(String name, String in, String fileUrl, int offset, ElementQuery elementQuery) {
-            super(name, in, fileUrl, offset, elementQuery);
+            super(name, in, fileUrl, offset, elementQuery, false);
         }
 
         @Override
