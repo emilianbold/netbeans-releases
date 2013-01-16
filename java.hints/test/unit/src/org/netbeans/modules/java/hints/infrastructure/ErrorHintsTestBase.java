@@ -241,13 +241,19 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
     protected void performAnalysisTest(String fileName, String code, int pos, String... golden) throws Exception {
         prepareTest(fileName, code);
         
+        String diagnosticCode;
+        
         if (pos == (-1)) {
-            pos = positionForErrors();
+            Diagnostic<?> d = findPositionForErrors();
+            pos = (int) d.getPosition();
+            diagnosticCode = d.getCode();
+        } else {
+            diagnosticCode = null;
         }
         
         TreePath path = info.getTreeUtilities().pathFor(pos);
         
-        List<Fix> fixes = computeFixes(info, pos, path);
+        List<Fix> fixes = computeFixes(info, diagnosticCode, pos, path);
         List<String> fixesNames = new LinkedList<String>();
         
         fixes = fixes != null ? fixes : Collections.<Fix>emptyList();
