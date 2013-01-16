@@ -59,6 +59,7 @@ import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateExecutor;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
+import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.versioning.util.SearchHistorySupport;
 
 /**
@@ -85,13 +86,20 @@ class FilesystemHandler extends VCSInterceptor {
     }
 
     public void doDelete(File file) throws IOException {
-        if (file.isDirectory() && hasMetadata(file)) {
+        if (org.netbeans.modules.versioning.system.cvss.util.Utils.isPartOfCVSMetadata(file)) {
+            // medatada are never deleted
+        } else if (file.isDirectory() && hasMetadata(file)) {
+            File[] children = file.listFiles();
+            if (children != null) {
+                for (File ch : children) {
+                    doDelete(ch);
+                }
+            }
             CvsVisibilityQuery.hideFolder(file);
             cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN, true);
-        } else if (org.netbeans.modules.versioning.system.cvss.util.Utils.isPartOfCVSMetadata(file)) {
-            // medatada are never deleted
         } else {
-            if (!file.delete()) {
+            FileUtils.deleteRecursively(file);
+            if (file.exists()) {
                 throw new IOException("Failed to delete file: " + file.getAbsolutePath());
             }
             fileDeletedImpl(file, false);
