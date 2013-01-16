@@ -143,4 +143,8 @@ public class PHPHintsTest extends PHPHintsTestBase {
         checkSuggestion(new IntroduceSuggestion(), "testIssue223842.php", "Foo::{\"\"}();^");
     }
 
+    public void testIssue224940() throws Exception {
+        checkSuggestion(new AddUseImportSuggestion(), "testIssue224940.php", "echo \"foo $whatever \\n^\";");
+    }
+
 }
