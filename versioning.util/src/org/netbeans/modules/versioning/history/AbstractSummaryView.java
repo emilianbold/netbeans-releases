@@ -706,7 +706,7 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
 
         @Override
         String getItemId () {
-            return parent.getItemId() + "#" + event.getPath(); //NOI18N
+            return parent.getItemId() + "#" + event.getPath() + "#" + event.getAction(); //NOI18N
         }
 
         @Override
