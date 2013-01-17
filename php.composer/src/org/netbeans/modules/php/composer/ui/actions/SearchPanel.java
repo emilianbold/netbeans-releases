@@ -55,6 +55,7 @@ import javax.swing.AbstractListModel;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -137,7 +138,14 @@ public final class SearchPanel extends JPanel {
                 DialogDescriptor.DEFAULT_ALIGN, null, null);
         descriptor.setClosingOptions(new Object[] {DialogDescriptor.CANCEL_OPTION});
         final Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        setSearchButtonAsDefault(dialog, searchPanel);
         dialog.setVisible(true);
+    }
+
+    private static void setSearchButtonAsDefault(Dialog dialog, final SearchPanel searchPanel) {
+        if (dialog instanceof JDialog) {
+            ((JDialog) dialog).getRootPane().setDefaultButton(searchPanel.searchButton);
+        }
     }
 
     private void init() {
