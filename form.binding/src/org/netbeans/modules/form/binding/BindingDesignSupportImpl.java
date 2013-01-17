@@ -1541,6 +1541,7 @@ public class BindingDesignSupportImpl implements BindingDesignSupport {
                             establishUpdatedBindings(ev.getComponent(), true, null, bindingGroup, true);
                         }
                         break;
+                    default:
                 }
             }
         }
