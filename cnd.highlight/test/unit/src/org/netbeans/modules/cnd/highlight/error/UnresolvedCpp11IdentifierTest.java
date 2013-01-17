@@ -105,7 +105,6 @@ public class UnresolvedCpp11IdentifierTest extends ErrorHighlightingBaseTestCase
         performStaticTest("bug217470.cpp");
     }        
     
-    @RandomlyFails
     public void testBug217858() throws Exception {
         // Bug 217858 - C++11 parser fails on u8 in static_assert
         performStaticTest("bug217858.cpp");
