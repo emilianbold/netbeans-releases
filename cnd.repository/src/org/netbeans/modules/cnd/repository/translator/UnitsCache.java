@@ -340,14 +340,24 @@ import org.openide.util.NbBundle;
             try {
                 if (masterIndexLock != null) {
                     masterIndexLock.release();
+                    masterIndexLock = null;
                 }
+            } catch (IOException e) {
+                e.printStackTrace(System.err);
+            }
+            try {
                 if (channel != null) {
                     channel.close();
+                    channel = null;
                 }
+            } catch (IOException e) {
+                e.printStackTrace(System.err);
+            }
+            try {
                 if (randomAccessFile != null) {
                     randomAccessFile.close();
+                    randomAccessFile = null;
                 }
-
             } catch (IOException e) {
                 e.printStackTrace(System.err);
             }
