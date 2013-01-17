@@ -77,12 +77,11 @@ public enum JSFVersion {
     private static final Map<WebModule, PropertyChangeListener> projectListenerCache = new WeakHashMap<WebModule, PropertyChangeListener>();
 
     /**
-     * Gets the JSF version supported by the WebModule.
+     * Gets the JSF version supported by the WebModule. It seeks for the JSF only on the classpath.
      *
      * @param webModule WebModule to seek for JSF version
-     * @param exact whether the JSF version must be exact and investigated synchronously, it guarantees that no
-     * {@code null} is return then
-     * @return JSF version for sure if exact parameter was set to (@code true), otherwise it can return {@code null}
+     * @param exact whether the JSF version must be exact and investigated synchronously
+     * @return JSF version if any found on the WebModule compile classpath, {@code null} otherwise
      */
     @CheckForNull
     public synchronized static JSFVersion forWebModule(@NonNull final WebModule webModule, boolean exact) {
@@ -138,8 +137,7 @@ public enum JSFVersion {
             return JSFVersion.JSF_2_0;
         } else if (JSFUtils.isJSF12Plus(webModule)) {
             return JSFVersion.JSF_1_2;
-        } else {
-            return JSFVersion.JSF_1_1;
         }
+        return null;
     }
 }

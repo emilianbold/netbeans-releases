@@ -83,6 +83,13 @@ public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax
     private static final String URL_JSF_2_1="nbres:/org/netbeans/modules/web/jsf/resources/web-facesconfig_2_1.xsd"; // NOI18N
     private static final String URL_JSF_2_2="nbres:/org/netbeans/modules/web/jsf/resources/web-facesconfig_2_2.xsd"; // NOI18N
 
+    // faces-config resources
+    public static final String RES_FACES_CONFIG_DEFAULT = "faces-config.xml";
+    public static final String RES_FACES_CONFIG_1_2 = "faces-config_1_2.xml";
+    public static final String RES_FACES_CONFIG_2_0 = "faces-config_2_0.xml";
+    public static final String RES_FACES_CONFIG_2_1 = "faces-config_2_1.xml";
+    public static final String RES_FACES_CONFIG_2_2 = "faces-config_2_2.xml";
+
     //facelets
     private static final String FILE_FACELETS_TAGLIB_SCHAMA_22="web-facelettaglibrary_2_2.xsd"; //NOI18N
     private static final String FILE_FACELETS_TAGLIB_SCHAMA_20="web-facelettaglibrary_2_0.xsd"; //NOI18N
