@@ -74,6 +74,7 @@ import org.netbeans.modules.j2ee.jboss4.config.gen.ResourceRef;
 import org.netbeans.modules.j2ee.jboss4.config.gen.Session;
 import org.netbeans.modules.j2ee.jboss4.config.mdb.JBossMessageDestination;
 import org.netbeans.modules.j2ee.jboss4.config.mdb.MessageDestinationSupport;
+import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
@@ -122,16 +123,17 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
     private Jboss jboss;
     
     // stores ejb-name between MSGDRV Xpath event and MSGDRV_MSG_DEST are fired
-    private String tempEjbName; 
-    
-    private final boolean isEJB3;
-        
+    private String tempEjbName;
+
+    public EjbDeploymentConfiguration(J2eeModule j2eeModule) {
+        this(j2eeModule, null);
+    }
+
     /**
      * Creates a new instance of EjbDeploymentConfiguration 
      */
-    public EjbDeploymentConfiguration(J2eeModule j2eeModule) {
-        super(j2eeModule);
-        isEJB3 = ("3.0".equals(j2eeModule.getModuleVersion())); // NOI81N
+    public EjbDeploymentConfiguration(J2eeModule j2eeModule, JBPluginUtils.Version version) {
+        super(j2eeModule, version);
         this.jbossFile = j2eeModule.getDeploymentConfigurationFile("META-INF/jboss.xml"); // NOI18N;
         getJboss();
         if (deploymentDescriptorDO == null) {
@@ -161,11 +163,11 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
     }
 
     public boolean supportsCreateDatasource() {
-        return true;
+        return !isAs7();
     }
     
     public boolean supportsCreateMessageDestination() {
-        return true;
+        return !isAs7();
     }
     
 //        //listen on the resource-ref element
