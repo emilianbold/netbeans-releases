@@ -1234,7 +1234,7 @@ public class BindingDesignSupportImpl implements BindingDesignSupport {
                     String columnClass = sub.getParameter(MetaBinding.TABLE_COLUMN_CLASS_PARAMETER);
                     if (columnClass != null) {
                         try {
-                            if ((columnClass != null) && columnClass.trim().endsWith(".class")) { // NOI18N
+                            if (columnClass.trim().endsWith(".class")) { // NOI18N
                                 columnClass = columnClass.trim();
                                 columnClass = columnClass.substring(0, columnClass.length()-6);
                             }
