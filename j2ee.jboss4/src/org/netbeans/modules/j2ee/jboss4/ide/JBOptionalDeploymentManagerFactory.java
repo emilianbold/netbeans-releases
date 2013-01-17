@@ -55,7 +55,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
-import org.netbeans.modules.j2ee.jboss4.config.mdb.JBossMessageDestinationDeployment;
+import org.netbeans.modules.j2ee.jboss4.config.JBossMessageDestinationManager;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 
 /**
@@ -94,7 +94,11 @@ public class JBOptionalDeploymentManagerFactory extends OptionalDeploymentManage
             throw new IllegalArgumentException("Wrong instance of DeploymentManager: " + dm);
         }
 
-        return new JBossMessageDestinationDeployment(((JBDeploymentManager)dm).getUrl());
+        JBDeploymentManager jbdm = ((JBDeploymentManager) dm);
+        if (jbdm.isAs7()) {
+            return new JBossMessageDestinationManager(jbdm.getUrl(), jbdm.isAs7());
+        }
+        return null;
     }
     
      public JDBCDriverDeployer getJDBCDriverDeployer(DeploymentManager dm) {

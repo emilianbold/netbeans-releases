@@ -72,7 +72,6 @@ import org.netbeans.modules.j2ee.jboss4.config.gen.Jboss;
 import org.netbeans.modules.j2ee.jboss4.config.gen.MessageDriven;
 import org.netbeans.modules.j2ee.jboss4.config.gen.ResourceRef;
 import org.netbeans.modules.j2ee.jboss4.config.gen.Session;
-import org.netbeans.modules.j2ee.jboss4.config.mdb.JBossMessageDestination;
 import org.netbeans.modules.j2ee.jboss4.config.mdb.MessageDestinationSupport;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 import org.openide.DialogDisplayer;
