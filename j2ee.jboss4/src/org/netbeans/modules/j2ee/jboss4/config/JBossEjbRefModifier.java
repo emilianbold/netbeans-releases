@@ -62,7 +62,7 @@ import org.netbeans.modules.j2ee.jboss4.config.gen.Session;
  *
  * @author lkotouc
  */
-final class JbossEjbRefModifier {
+final class JBossEjbRefModifier {
 
     /**
      * Add a reference to the given ejb to the enterprise beans of the given type if it does not exist yet.
