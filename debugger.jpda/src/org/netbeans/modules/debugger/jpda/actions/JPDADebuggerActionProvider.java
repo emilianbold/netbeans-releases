@@ -144,9 +144,7 @@ implements PropertyChangeListener {
         } catch (VMDisconnectedExceptionWrapper e) {
         } catch (InternalExceptionWrapper e) {
         } catch (IllegalThreadStateException e) {
-            e.printStackTrace();
         } catch (InvalidRequestStateException e) {
-            e.printStackTrace();
         }
     }
     

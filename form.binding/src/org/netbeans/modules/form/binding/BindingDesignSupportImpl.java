@@ -1234,16 +1234,17 @@ public class BindingDesignSupportImpl implements BindingDesignSupport {
                     String columnClass = sub.getParameter(MetaBinding.TABLE_COLUMN_CLASS_PARAMETER);
                     if (columnClass != null) {
                         try {
-                            if ((columnClass != null) && columnClass.trim().endsWith(".class")) { // NOI18N
+                            if (columnClass.trim().endsWith(".class")) { // NOI18N
                                 columnClass = columnClass.trim();
                                 columnClass = columnClass.substring(0, columnClass.length()-6);
                             }
                             if (columnClass.indexOf('.') == -1) {
-                                String prefix = ""; // NOI18N
+                                StringBuilder sb = new StringBuilder();
                                 while (columnClass.endsWith("[]")) { // NOI18N
                                     columnClass = columnClass.substring(0, columnClass.length()-2);
-                                    prefix += "["; // NOI18N
+                                    sb.append("["); // NOI18N
                                 }
+                                String prefix = sb.toString();
                                 if ("".equals(prefix)) { // NOI18N
                                     columnClass = "java.lang." + columnClass; // NOI18N
                                 } else {
@@ -1541,6 +1542,7 @@ public class BindingDesignSupportImpl implements BindingDesignSupport {
                             establishUpdatedBindings(ev.getComponent(), true, null, bindingGroup, true);
                         }
                         break;
+                    default:
                 }
             }
         }

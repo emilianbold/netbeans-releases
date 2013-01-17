@@ -255,9 +255,10 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         synchronized (reports) {
             a = EmbedderFactory.getProjectEmbedder().getLocalRepository().find(a);
             if (missingArtifacts.add(a)) {
-                File f = a.getFile();
-                LOG.log(Level.FINE, "listening to {0} from {1}", new Object[] {f, projectPOMFile});
-                //a.getFile should be already normalized
+                //a.getFile should be already normalized but the find() method can pull tricks on us.
+                //#225008
+                File f = FileUtil.normalizeFile(a.getFile());
+                LOG.log(Level.FINE, "listening to {0} from {1}", new Object[] {f, projectPOMFile});                
                 FileUtil.addFileChangeListener(fcl, f);
             }
         }
@@ -429,8 +430,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         List<Artifact> missingJars = new ArrayList<Artifact>();
         for (Artifact art : project.getArtifacts()) {
             File file = art.getFile();
-            if (file == null || !file.exists()) {
-                addMissingArtifact(art);
+            if (file == null || !file.exists()) {                
                 if(Artifact.SCOPE_SYSTEM.equals(art.getScope())){
                     //TODO create a correction action for this.
                     ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_MEDIUM,
@@ -439,6 +439,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                             OpenPOMAction.instance().createContextAwareInstance(Lookups.fixed(nbproject)));
                     addReport(report);
                 } else {
+                    addMissingArtifact(art);
                     if (file == null) {
                         missingNonSibling = true;
                     } else {

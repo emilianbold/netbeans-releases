@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import org.jdom.Element;
+import org.netbeans.modules.maven.grammar.catalog.MavenCatalog;
 import org.netbeans.modules.maven.grammar.spi.AbstractSchemaBasedGrammar;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
@@ -84,6 +85,9 @@ public class MavenSettingsGrammar extends AbstractSchemaBasedGrammar {
 
     @Override
     protected InputStream getSchemaStream() {
+        if (getEnvironment().getInputSource() != null && MavenCatalog.SETTINGS_1_1_0.equals(getEnvironment().getInputSource().getSystemId())) {
+            return getClass().getResourceAsStream("/org/netbeans/modules/maven/grammar/settings-1.1.0.xsd"); //NOI18N
+        }       
         return getClass().getResourceAsStream("/org/netbeans/modules/maven/grammar/settings-1.0.0.xsd"); //NOI18N
     }
 
