@@ -79,6 +79,7 @@ public final class Composer {
     private static final String INIT_COMMAND = "init"; // NOI18N
     private static final String INSTALL_COMMAND = "install"; // NOI18N
     private static final String UPDATE_COMMAND = "update"; // NOI18N
+    private static final String REQUIRE_COMMAND = "require"; // NOI18N
     private static final String VALIDATE_COMMAND = "validate"; // NOI18N
     private static final String SELF_UPDATE_COMMAND = "self-update"; // NOI18N
     private static final String SEARCH_COMMAND = "search"; // NOI18N
@@ -169,6 +170,19 @@ public final class Composer {
     @NbBundle.Messages("Composer.run.updateDev=Composer (update dev)")
     public Future<Integer> updateDev(PhpModule phpModule) {
         return runCommand(phpModule, UPDATE_COMMAND, Bundle.Composer_run_updateDev(), Collections.singletonList(DEV_PARAM));
+    }
+
+    @NbBundle.Messages("Composer.run.require=Composer (require)")
+    public Future<Integer> require(PhpModule phpModule, String... packages) {
+        return runCommand(phpModule, REQUIRE_COMMAND, Bundle.Composer_run_require(), Arrays.asList(packages));
+    }
+
+    @NbBundle.Messages("Composer.run.requireDev=Composer (require dev)")
+    public Future<Integer> requireDev(PhpModule phpModule, String... packages) {
+        List<String> params = new ArrayList<String>(packages.length + 1);
+        params.add(DEV_PARAM);
+        params.addAll(Arrays.asList(packages));
+        return runCommand(phpModule, REQUIRE_COMMAND, Bundle.Composer_run_require(), params);
     }
 
     @NbBundle.Messages("Composer.run.validate=Composer (validate)")
