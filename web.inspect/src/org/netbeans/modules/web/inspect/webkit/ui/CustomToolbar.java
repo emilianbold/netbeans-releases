@@ -110,7 +110,7 @@ public class CustomToolbar extends Box {
      *
      * @author S. Aubrecht
      */
-    public class NoBorderToolBar extends JToolBar {
+    public static class NoBorderToolBar extends JToolBar {
 
         /**
          * Creates a new instance of NoBorderToolbar

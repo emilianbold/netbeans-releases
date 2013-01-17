@@ -43,8 +43,10 @@
 package org.netbeans.modules.hudson.api;
 
 import java.awt.EventQueue;
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.HttpRetryException;
@@ -55,6 +57,7 @@ import java.net.URLConnection;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -75,6 +78,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import static org.netbeans.modules.hudson.api.Bundle.*;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -97,6 +101,8 @@ public final class ConnectionBuilder {
      * {@link java.net.CookieManager} in JDK 6 would be a bit easier.
      */
     private static final Map</*URL*/String,String[]> COOKIES = new HashMap<String,String[]>();
+
+    private static final Map</*URL*/String,/*[field,crumb]*/String[]> crumbs = Collections.synchronizedMap(new HashMap<String,String[]>()); // #193008
 
     private URL home;
     private URL url;
@@ -313,6 +319,10 @@ public final class ConnectionBuilder {
                         conn.setRequestProperty("Cookie", cookieBare); // NOI18N
                     }
                 }
+                String[] fieldCrumb = crumbs.get(home.toString());
+                if (fieldCrumb != null) {
+                    conn.setRequestProperty(fieldCrumb[0], fieldCrumb[1]);
+                }
             }
             if (postData != null) {
                 conn.setDoOutput(true);
@@ -367,6 +377,25 @@ public final class ConnectionBuilder {
                                 if (retry != null) {
                                     LOG.log(Level.FINER, "Retrying after auth from {0}", authenticator);
                                     conn = retry;
+                                    try { // check for CSRF before continuing
+                                        InputStream is = new ConnectionBuilder().url(new URL(home, "crumbIssuer/api/xml?xpath=concat(//crumbRequestField,'=',//crumb)")).homeURL(home).connection().getInputStream();
+                                        try {
+                                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                                            FileUtil.copy(is, baos);
+                                            String crumb = baos.toString("UTF-8");
+                                            String[] crumbA = crumb.split("=", 2);
+                                            if (crumbA.length == 2 && crumbA[0].indexOf('\n') == -1) {
+                                                LOG.log(Level.FINER, "Received crumb: {0}", crumb);
+                                                crumbs.put(home.toString(), crumbA);
+                                            } else {
+                                                LOG.log(Level.WARNING, "Bad crumb response: {0}", crumb);
+                                            }
+                                        } finally {
+                                            is.close();
+                                        }
+                                    } catch (FileNotFoundException x) {
+                                        LOG.finer("not using crumbs");
+                                    }
                                     continue RETRY;
                                 }
                             }

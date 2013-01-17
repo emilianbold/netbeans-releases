@@ -41,19 +41,19 @@
  */
 package org.netbeans.modules.javascript2.editor.hints;
 
-import com.oracle.nashorn.ir.BinaryNode;
-import com.oracle.nashorn.ir.Block;
-import com.oracle.nashorn.ir.DoWhileNode;
-import com.oracle.nashorn.ir.ExecuteNode;
-import com.oracle.nashorn.ir.ForNode;
-import com.oracle.nashorn.ir.FunctionNode;
-import com.oracle.nashorn.ir.IfNode;
-import com.oracle.nashorn.ir.LiteralNode;
-import com.oracle.nashorn.ir.Node;
-import com.oracle.nashorn.ir.ObjectNode;
-import com.oracle.nashorn.ir.ReturnNode;
-import com.oracle.nashorn.ir.VarNode;
-import com.oracle.nashorn.ir.WhileNode;
+import jdk.nashorn.internal.ir.BinaryNode;
+import jdk.nashorn.internal.ir.Block;
+import jdk.nashorn.internal.ir.DoWhileNode;
+import jdk.nashorn.internal.ir.ExecuteNode;
+import jdk.nashorn.internal.ir.ForNode;
+import jdk.nashorn.internal.ir.FunctionNode;
+import jdk.nashorn.internal.ir.IfNode;
+import jdk.nashorn.internal.ir.LiteralNode;
+import jdk.nashorn.internal.ir.Node;
+import jdk.nashorn.internal.ir.ObjectNode;
+import jdk.nashorn.internal.ir.ReturnNode;
+import jdk.nashorn.internal.ir.VarNode;
+import jdk.nashorn.internal.ir.WhileNode;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -81,7 +81,7 @@ import org.openide.util.NbBundle;
 public class JsConventionRule extends JsAstRule {
     
     @Override
-    void computeHints(JsRuleContext context, List<Hint> hints, HintsProvider.HintsManager manager) {
+    void computeHints(JsRuleContext context, List<Hint> hints, int offset, HintsProvider.HintsManager manager) {
         Map<?, List<? extends AstRule>> allHints = manager.getHints();
         List<? extends AstRule> conventionHints = allHints.get(BetterConditionHint.JSCONVENTION_OPTION_HINTS);
         Rule betterConditionRule = null;

@@ -187,6 +187,11 @@ public class ToggleBlockCommentActionTest extends TplTestBase {
         testCursorInFile("testfiles/toggleComment/context_cursor_uncomment7.tpl");
     }
 
+    public void testIssue224353() throws Exception {
+        SmartyOptions.getInstance().setToggleCommentOption(SmartyFramework.ToggleCommentOption.SMARTY);
+        testCursorInFile("testfiles/toggleComment/issue224353.tpl");
+    }
+
     protected void testCursorInFile(String file) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);

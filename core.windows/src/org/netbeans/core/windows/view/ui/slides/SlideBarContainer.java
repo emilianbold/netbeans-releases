@@ -54,6 +54,7 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.Window;
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -95,6 +96,13 @@ public final class SlideBarContainer extends AbstractModeContainer {
             horizontal = ((SlideBar)slideBar).isHorizontal();
         }
         panel.add(slideBar, horizontal ? BorderLayout.WEST : BorderLayout.NORTH );
+        if( isAqua ) {
+            JPanel filler = new JPanel();
+            filler.setBackground(slideBar.getBackground());
+            filler.setOpaque(true);
+            filler.setBorder(((JComponent)slideBar).getBorder());
+            panel.add(filler, BorderLayout.CENTER);
+        }
     }
     
     

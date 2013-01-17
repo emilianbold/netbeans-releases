@@ -243,12 +243,13 @@ public final class ELTypeUtilities {
     public static boolean isSameMethod(CompilationContext info, Node methodNode, ExecutableElement method) {
         String image = methodNode.getImage();
         String methodName = method.getSimpleName().toString();
+        TypeMirror methodReturnType = method.getReturnType();
         if (image == null) {
             return false;
         }
         int methodParams = method.getParameters().size();
-        if (NodeUtil.isMethodCall(methodNode) && 
-                (methodName.equals(image) || RefactoringUtil.getPropertyName(methodName).equals(image))) {
+        if (NodeUtil.isMethodCall(methodNode) &&
+                (methodName.equals(image) || RefactoringUtil.getPropertyName(methodName, methodReturnType).equals(image))) {
             //now we are in AstDotSuffix or AstBracketSuffix
             
             //lets check if the parameters are equal
@@ -261,7 +262,7 @@ public final class ELTypeUtilities {
         }
 
         if (methodNode instanceof AstDotSuffix
-                && (methodName.equals(image) || RefactoringUtil.getPropertyName(methodName).equals(image))) {
+                && (methodName.equals(image) || RefactoringUtil.getPropertyName(methodName, methodReturnType).equals(image))) {
 
             if (methodNode.jjtGetNumChildren() > 0) {
                 for (int i = 0; i < method.getParameters().size(); i++) {

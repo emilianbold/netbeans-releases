@@ -12,7 +12,7 @@ var obj = {
         this[2] = this[3]; // both this shows as Global
         this[2] = this['bug']; // both this shows as Global
         this[2](); // this shows as Global
-        this[a].init() = (this['bug']()?0:1); // right shows as Global
+        this[a].init = (this['bug']()?0:1); // right shows as Global
         this[a].init( a, bug, this );  // this is blue, but bug variable shouldbe Global, its not defined                    
         this[bug].init( a, bug, this );
         this[bug] = bug; // right bug variable should be Global, its not defined                    

@@ -45,9 +45,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.groovy.gsp.lexer.GspLexerLanguage;
 import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -56,40 +58,46 @@ import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 
 /**
- * Provides model for html code
+ * Provides model for html code.
  *
  * @author Marek Fukala
  */
 public class HtmlEmbeddingProvider extends EmbeddingProvider {
 
+    // Not sure what's the reason for this, but without it the HTML highlighting doesn't working
     public static final String GENERATED_CODE = "@@@"; //NOI18N
 
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
-        TokenHierarchy<CharSequence> th = TokenHierarchy.create(snapshot.getText(), GspTokenId.language());
-        TokenSequence<GspTokenId> sequence = th.tokenSequence(GspTokenId.language());
-        sequence.moveStart();
-        List<Embedding> embeddings = new ArrayList<Embedding>();
+        final TokenSequence<GspTokenId> sequence = getTokenSequence(snapshot);
+        final List<Embedding> embeddings = new ArrayList<Embedding>();
+
         boolean lastEmbeddingIsVirtual = false;
         while (sequence.moveNext()) {
-            Token t = sequence.token();
-            if (t.id() == GspTokenId.HTML) {
-                //lets suppose the text is always html :-(
-                embeddings.add(snapshot.create(sequence.offset(), t.length(), "text/html")); //NOI18N
-                lastEmbeddingIsVirtual = false;
-            } else {
-                //replace templating tokens by generated code marker
-                if (!lastEmbeddingIsVirtual) {
-                    embeddings.add(snapshot.create(GENERATED_CODE, "text/html"));
-                    lastEmbeddingIsVirtual = true;
-                }
+
+            Token<GspTokenId> token = sequence.token();
+            switch (token.id()) {
+                case HTML:
+                    embeddings.add(snapshot.create(sequence.offset(), token.length(), "text/html")); //NOI18N
+                    lastEmbeddingIsVirtual = false;
+                    break;
+                default:
+                    if (!lastEmbeddingIsVirtual) {
+                        embeddings.add(snapshot.create(GENERATED_CODE, "text/html"));
+                        lastEmbeddingIsVirtual = true;
+                    }
             }
         }
-        if (embeddings.isEmpty()) {
-            return Collections.emptyList();
-        } else {
-            return Collections.singletonList(Embedding.create(embeddings));
-        }
+        return Collections.singletonList(Embedding.create(embeddings));
+    }
+
+    private TokenSequence<GspTokenId> getTokenSequence(Snapshot snapshot) {
+        final Language<GspTokenId> gspLanguage = GspLexerLanguage.getLanguage();
+        final TokenHierarchy<CharSequence> tokenHierarchy = TokenHierarchy.create(snapshot.getText(), gspLanguage);
+        final TokenSequence<GspTokenId> sequence = tokenHierarchy.tokenSequence(gspLanguage);
+
+        sequence.moveStart();
+        return sequence;
     }
 
     @Override

@@ -12,7 +12,7 @@ var |>GLOBAL:obj<| = {
         this[2] = this[3]; // both this shows as Global
         this[2] = this['bug']; // both this shows as Global
         this[2](); // this shows as Global
-        this[a].init() = (this['bug']()?0:1); // right shows as Global
+        this[a].|>CLASS:init<| = (this['bug']()?0:1); // right shows as Global
         this[a].init( a, |>GLOBAL:bug<|, this );  // this is blue, but bug variable shouldbe Global, its not defined                    
         this[|>GLOBAL:bug<|].init( a, |>GLOBAL:bug<|, this );
         this[|>GLOBAL:bug<|] = |>GLOBAL:bug<|; // right bug variable should be Global, its not defined                    

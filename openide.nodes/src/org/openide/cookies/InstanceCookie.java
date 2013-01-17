@@ -49,8 +49,10 @@ import org.openide.nodes.Node;
 
 /**
  * Cookie that should be provided by all nodes that are able
- * to create a "instance".
+ * to create or return an "instance".
  * Generally this is used to register objects declaratively in XML layers.
+ * The most commonly used implementation seems to be
+ * <a href="@org-openide-loaders@/org/openide/loaders/InstanceDataObject.html">InstanceDataObject</a>.
  *
  * @author Jaroslav Tulach
  */
@@ -83,7 +85,11 @@ public interface InstanceCookie/*<T>*/ extends Node.Cookie {
     public Class<?/*T*/> instanceClass() throws IOException, ClassNotFoundException;
 
     /**
-     * Create an instance.
+     * Create or obtain an instance. For example 
+     * <a href="@org-openide-loaders@/org/openide/loaders/InstanceDataObject.html#instanceCreate()">InstanceDataObject</a>
+     * (one of the most often used implementations of {@link InstanceCookie}) caches
+     * previously returned instances.
+     * 
      * @return an object assignable to {@link #instanceClass}
      * @throws IOException for the same reasons as {@link #instanceClass}, or an object could not be deserialized, etc.
      * @throws ClassNotFoundException for the same reasons as {@link #instanceClass}

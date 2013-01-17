@@ -92,6 +92,7 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.*;
+import org.openide.text.NbDocument;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -793,7 +794,10 @@ public class GsfFoldManager implements FoldManager {
         
         public FoldInfo(Document doc, int start, int end, FoldTemplate template, boolean collapseByDefault) throws BadLocationException {
             this.start = doc.createPosition(start);
-            this.end   = doc.createPosition(end);
+            // see issue #216378; while Fold.end Position is manually updated by FoldHierarchyTransactionImpl, the
+            // FoldInfos are left alone, and end marker must stick with the content, so characters typed after it does
+            // not extend the FoldInfo
+            this.end   = NbDocument.createPosition(doc, end, Position.Bias.Backward);
             this.template = template;
             this.collapseByDefault = collapseByDefault;
         }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -33,12 +33,15 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javafx2.project;
 
 import java.awt.EventQueue;
 import java.awt.Image;
+import java.util.Collections;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
@@ -63,6 +66,7 @@ public class JFXProjectIconAnnotator implements ProjectIconAnnotator {
     private static final String JFX_BADGE_PATH = "org/netbeans/modules/javafx2/project/ui/resources/jfx_overlay.png";    //NOI18N
     private final AtomicReference<Image> badgeCache = new AtomicReference<Image>();
     private final ChangeSupport cs = new ChangeSupport(this);
+    private final Map<Project,Boolean> projectType = Collections.synchronizedMap(new WeakHashMap<Project,Boolean>());
 
     @Override
     @NonNull
@@ -70,11 +74,16 @@ public class JFXProjectIconAnnotator implements ProjectIconAnnotator {
             @NonNull final Project p,
             @NonNull Image original,
             final boolean openedNode) {
-        if (isFXProject(p)) {
-            final Image badge = getJFXBadge();
-            if (badge != null) {
-                original = ImageUtilities.mergeImages(original, badge, 8, 8);
+        Boolean type = projectType.get(p);
+        if (type != null) {
+            if(type.booleanValue() == true) {
+                final Image badge = getJFXBadge();
+                if (badge != null) {
+                    original = ImageUtilities.mergeImages(original, badge, 8, 8);
+                }
             }
+        } else {
+            evaluateProjectType(p);
         }
         return original;
     }
@@ -115,6 +124,29 @@ public class JFXProjectIconAnnotator implements ProjectIconAnnotator {
             }
         }
         return img;
+    }
+    
+    /**
+     * Evaluate project properties fo find out whether it is a FX project
+     * and record the info weakly in projectType map, then fire change to reannotate icon
+     */
+    private void evaluateProjectType(@NonNull final Project prj) {
+        final Runnable runEvaluateProject = new Runnable() {
+            @Override
+            public void run() {
+                boolean type = isFXProject(prj);
+                projectType.put(prj, type);
+                if(type == true) {
+                    cs.fireChange();
+                }
+            }
+        };
+        if(!EventQueue.isDispatchThread()) {
+            runEvaluateProject.run();
+        } else {
+            final RequestProcessor RP = new RequestProcessor(JFXProjectIconAnnotator.class.getName());
+            RP.post(runEvaluateProject);
+        }
     }
 
     private static boolean isFXProject(@NonNull final Project prj) {

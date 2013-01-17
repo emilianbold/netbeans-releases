@@ -59,7 +59,6 @@ import org.netbeans.modules.kenai.ui.Utilities;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
 /**
@@ -137,7 +136,7 @@ public final class KenaiUserUI {
                 }
                 if (kenai.getStatus() != Status.ONLINE) {
                     if (JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), NbBundle.getMessage(Utilities.class, "MSG_GO_ONLINE"), NbBundle.getMessage(Utilities.class, "MSG_GO_ONLINE_TITLE"),JOptionPane.YES_NO_OPTION)==JOptionPane.YES_OPTION) {
-                        RequestProcessor.getDefault().post(new Runnable() {
+                        Utilities.getRequestProcessor().post(new Runnable() {
 
                             public void run() {
                                 final PasswordAuthentication pass = kenai.getPasswordAuthentication();

@@ -46,7 +46,6 @@ package org.netbeans.modules.groovy.gsp.editor;
 
 import java.awt.event.ActionEvent;
 import javax.swing.Action;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -55,9 +54,6 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.lib.editor.util.CharSequenceUtilities;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.modules.csl.api.DeleteToNextCamelCasePosition;
 import org.netbeans.modules.csl.api.DeleteToPreviousCamelCasePosition;
@@ -67,9 +63,8 @@ import org.netbeans.modules.csl.api.PreviousCamelCasePosition;
 import org.netbeans.modules.csl.api.SelectCodeElementAction;
 import org.netbeans.modules.csl.api.SelectNextCamelCasePosition;
 import org.netbeans.modules.csl.api.SelectPreviousCamelCasePosition;
+import org.netbeans.modules.groovy.gsp.GspLanguage;
 import org.netbeans.modules.html.editor.api.HtmlKit;
-import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
-import org.openide.util.Exceptions;
 
 /**
  * Editor kit implementation for GSP content type
@@ -90,12 +85,12 @@ public class GspKit extends HtmlKit {
     static final long serialVersionUID =-1381945567613910297L;
         
     public GspKit(){
-        super(GspTokenId.MIME_TYPE);
+        super(GspLanguage.GSP_MIME_TYPE);
     }
     
     @Override
     public String getContentType() {
-        return GspTokenId.MIME_TYPE;
+        return GspLanguage.GSP_MIME_TYPE;
     }
     
     @Override
@@ -138,108 +133,114 @@ public class GspKit extends HtmlKit {
         return null;
     }
     private boolean handleDeletion(BaseDocument doc, int dotPos) {
-        if (dotPos > 0) {
-            try {
-                char ch = doc.getText(dotPos-1, 1).charAt(0);
-                if (ch == '%') {
-                    TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
-                    TokenSequence<?> ts = th.tokenSequence();
-                    ts.move(dotPos);
-                    if (ts.movePrevious()) {
-                        Token<?> token = ts.token();
-                        if (token.id() == GspTokenId.DELIMITER && ts.offset()+token.length() == dotPos && ts.moveNext()) {
-                            token = ts.token();
-                            if (token.id() == GspTokenId.DELIMITER && ts.offset() == dotPos) {
-                                doc.remove(dotPos-1, 1+token.length());
-                                return true;
-                            }
-                        }
-                    }
-                }
-            } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
-            }
-        }
+
+        // TODO Implement this correctly using Typing hooks API
+        // Current handling is more than useless
+//        if (dotPos > 0) {
+//            try {
+//                char ch = doc.getText(dotPos-1, 1).charAt(0);
+//                if (ch == '%') {
+//                    TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
+//                    TokenSequence<?> ts = th.tokenSequence();
+//                    ts.move(dotPos);
+//                    if (ts.movePrevious()) {
+//                        Token<?> token = ts.token();
+//                        if (token.id() == GspTokenId.DELIMITER && ts.offset()+token.length() == dotPos && ts.moveNext()) {
+//                            token = ts.token();
+//                            if (token.id() == GspTokenId.DELIMITER && ts.offset() == dotPos) {
+//                                doc.remove(dotPos-1, 1+token.length());
+//                                return true;
+//                            }
+//                        }
+//                    }
+//                }
+//            } catch (BadLocationException ble) {
+//                Exceptions.printStackTrace(ble);
+//            }
+//        }
         
         return false;
     }
 
     private boolean handleInsertion(BaseDocument doc, Caret caret, char c) {
-        int dotPos = caret.getDot();
-        // Bracket matching on <% %>
-        if (c == ' ' && dotPos >= 2) {
-            try {
-                String s = doc.getText(dotPos-2, 2);
-                if ("%=".equals(s) && dotPos >= 3) { // NOI18N
-                    s = doc.getText(dotPos-3, 3);
-                }
-                if ("<%".equals(s) || "<%=".equals(s)) { // NOI18N
-                    doc.insertString(dotPos, "  ", null);
-                    caret.setDot(dotPos+1);
-                    return true;
-                }
-            } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
-            }
-            
-            return false;
-        }
-        
-        if ((dotPos > 0) && (c == '%' || c == '>')) {
-            TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
-            TokenSequence<?> ts = th.tokenSequence();
-            ts.move(dotPos);
-            try {
-                if (ts.moveNext() || ts.movePrevious()) {
-                    Token<?> token = ts.token();
-                    if (token.id() == GspTokenId.HTML && doc.getText(dotPos-1, 1).charAt(0) == '<') {
-                        // See if there's anything ahead
-                        int first = Utilities.getFirstNonWhiteFwd(doc, dotPos, Utilities.getRowEnd(doc, dotPos));
-                        if (first == -1) {
-                            doc.insertString(dotPos, "%%>", null); // NOI18N
-                            caret.setDot(dotPos+1);
-                            return true;
-                        }
-                    } else if (token.id() == GspTokenId.DELIMITER) {
-                        String tokenText = token.text().toString();
-                        if (tokenText.endsWith("%>")) { // NOI18N
-                            // TODO - check that this offset is right
-                            int tokenPos = (c == '%') ? dotPos : dotPos-1;
-                            CharSequence suffix = DocumentUtilities.getText(doc, tokenPos, 2);
-                            if (CharSequenceUtilities.textEquals(suffix, "%>")) { // NOI18N
-                                caret.setDot(dotPos+1);
-                                return true;
-                            }
-                        } else if (tokenText.endsWith("<")) {
-                            // See if there's anything ahead
-                            int first = Utilities.getFirstNonWhiteFwd(doc, dotPos, Utilities.getRowEnd(doc, dotPos));
-                            if (first == -1) {
-                                doc.insertString(dotPos, "%%>", null); // NOI18N
-                                caret.setDot(dotPos+1);
-                                return true;
-                            }
-                        }
-                    } else if (token.id() == GspTokenId.GROOVY || token.id() == GspTokenId.GROOVY_EXPR && dotPos >= 1 && dotPos <= doc.getLength()-3) {
-                        // If you type ">" one space away from %> it's likely that you typed
-                        // "<% foo %>" without looking at the screen; I had auto inserted %> at the end
-                        // and because I also auto insert a space without typing through it, you've now
-                        // ended up with "<% foo %> %>". Let's prevent this by interpreting typing a ""
-                        // right before %> as a duplicate for %>.   I can't just do this on % since it's
-                        // quite plausible you'd have
-                        //   <% x = %q(foo) %>  -- if I simply moved the caret to %> when you typed the
-                        // % in %q we'd be in trouble.
-                        String s = doc.getText(dotPos-1, 4);
-                        if ("% %>".equals(s)) { // NOI18N
-                            doc.remove(dotPos-1, 2);
-                            caret.setDot(dotPos+1);
-                            return true;
-                        }
-                    }
-                }
-            } catch (BadLocationException ble) {
-                Exceptions.printStackTrace(ble);
-            }
-        }
+        // TODO Implement this correctly using Typing hooks API
+        // Current handling is more than useless
+
+//        int dotPos = caret.getDot();
+//        // Bracket matching on <% %>
+//        if (c == ' ' && dotPos >= 2) {
+//            try {
+//                String s = doc.getText(dotPos-2, 2);
+//                if ("%=".equals(s) && dotPos >= 3) { // NOI18N
+//                    s = doc.getText(dotPos-3, 3);
+//                }
+//                if ("<%".equals(s) || "<%=".equals(s)) { // NOI18N
+//                    doc.insertString(dotPos, "  ", null);
+//                    caret.setDot(dotPos+1);
+//                    return true;
+//                }
+//            } catch (BadLocationException ble) {
+//                Exceptions.printStackTrace(ble);
+//            }
+//
+//            return false;
+//        }
+//
+//        if ((dotPos > 0) && (c == '%' || c == '>')) {
+//            TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
+//            TokenSequence<?> ts = th.tokenSequence();
+//            ts.move(dotPos);
+//            try {
+//                if (ts.moveNext() || ts.movePrevious()) {
+//                    Token<?> token = ts.token();
+//                    if (token.id() == GspTokenId.HTML && doc.getText(dotPos-1, 1).charAt(0) == '<') {
+//                        // See if there's anything ahead
+//                        int first = Utilities.getFirstNonWhiteFwd(doc, dotPos, Utilities.getRowEnd(doc, dotPos));
+//                        if (first == -1) {
+//                            doc.insertString(dotPos, "%%>", null); // NOI18N
+//                            caret.setDot(dotPos+1);
+//                            return true;
+//                        }
+//                    } else if (token.id() == GspTokenId.DELIMITER) {
+//                        String tokenText = token.text().toString();
+//                        if (tokenText.endsWith("%>")) { // NOI18N
+//                            // TODO - check that this offset is right
+//                            int tokenPos = (c == '%') ? dotPos : dotPos-1;
+//                            CharSequence suffix = DocumentUtilities.getText(doc, tokenPos, 2);
+//                            if (CharSequenceUtilities.textEquals(suffix, "%>")) { // NOI18N
+//                                caret.setDot(dotPos+1);
+//                                return true;
+//                            }
+//                        } else if (tokenText.endsWith("<")) {
+//                            // See if there's anything ahead
+//                            int first = Utilities.getFirstNonWhiteFwd(doc, dotPos, Utilities.getRowEnd(doc, dotPos));
+//                            if (first == -1) {
+//                                doc.insertString(dotPos, "%%>", null); // NOI18N
+//                                caret.setDot(dotPos+1);
+//                                return true;
+//                            }
+//                        }
+//                    } else if (token.id() == GspTokenId.GSTRING_CONTENT && dotPos >= 1 && dotPos <= doc.getLength()-3) {
+//                        // If you type ">" one space away from %> it's likely that you typed
+//                        // "<% foo %>" without looking at the screen; I had auto inserted %> at the end
+//                        // and because I also auto insert a space without typing through it, you've now
+//                        // ended up with "<% foo %> %>". Let's prevent this by interpreting typing a ""
+//                        // right before %> as a duplicate for %>.   I can't just do this on % since it's
+//                        // quite plausible you'd have
+//                        //   <% x = %q(foo) %>  -- if I simply moved the caret to %> when you typed the
+//                        // % in %q we'd be in trouble.
+//                        String s = doc.getText(dotPos-1, 4);
+//                        if ("% %>".equals(s)) { // NOI18N
+//                            doc.remove(dotPos-1, 2);
+//                            caret.setDot(dotPos+1);
+//                            return true;
+//                        }
+//                    }
+//                }
+//            } catch (BadLocationException ble) {
+//                Exceptions.printStackTrace(ble);
+//            }
+//        }
         
         return false;
     }

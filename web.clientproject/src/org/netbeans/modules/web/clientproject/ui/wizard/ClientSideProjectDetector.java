@@ -43,6 +43,7 @@ package org.netbeans.modules.web.clientproject.ui.wizard;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
 
@@ -95,12 +96,21 @@ public final class ClientSideProjectDetector {
     }
 
     private List<Detector> createDetectors(File siteRoot) {
-        return Arrays.<Detector>asList(new AngularJsDetector(siteRoot));
+        return Arrays.<Detector>asList(
+                new AngularJsDetector(siteRoot),
+                // "fallback"
+                new StandardJsProjectDetector(siteRoot));
     }
 
     //~ Inner classes
 
     private interface Detector {
+        /**
+         * Check the given site root and return {@code true} if it is "part"
+         * of this detector.
+         * @param siteRoot site root to be checked
+         * @return {@code true} if it is "part" of this detector
+         */
         boolean detected(File siteRoot);
         String getName();
         String getProjectDirPath();
@@ -130,6 +140,50 @@ public final class ClientSideProjectDetector {
                 return null;
             }
         };
+    }
+
+    private static final class StandardJsProjectDetector implements Detector {
+
+        private static final Collection<String> WELL_KNOWN_SITE_ROOTS = Arrays.asList(
+                "public_html", // NOI18N
+                "web", // NOI18N
+                "www"); // NOI18N
+
+        private final File siteRoot;
+
+
+        public StandardJsProjectDetector(File siteRoot) {
+            this.siteRoot = siteRoot;
+        }
+
+        @Override
+        public boolean detected(File siteRoot) {
+            if (siteRoot != this.siteRoot) {
+                throw new IllegalArgumentException("Unexpected site root given (" + siteRoot + "), expected " + this.siteRoot); //NOI18N
+            }
+            return WELL_KNOWN_SITE_ROOTS.contains(siteRoot.getName().toLowerCase());
+        }
+
+        @Override
+        public String getName() {
+            return siteRoot.getParentFile().getName();
+        }
+
+        @Override
+        public String getProjectDirPath() {
+            return siteRoot.getParentFile().getAbsolutePath();
+        }
+
+        @Override
+        public String getConfigDirPath() {
+            return null;
+        }
+
+        @Override
+        public String getTestDirPath() {
+            return null;
+        }
+
     }
 
     private static final class AngularJsDetector implements Detector {

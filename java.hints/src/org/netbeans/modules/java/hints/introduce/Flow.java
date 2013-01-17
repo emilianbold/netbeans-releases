@@ -543,7 +543,7 @@ public class Flow {
 
         @Override
         public Boolean visitWhileLoop(WhileLoopTree node, Void p) {
-            return handleGeneralizedForLoop(null, node.getCondition(), null, node.getStatement(), p);
+            return handleGeneralizedForLoop(null, node.getCondition(), null, node.getStatement(), node.getCondition(), p);
         }
 
         @Override
@@ -583,10 +583,10 @@ public class Flow {
 
         @Override
         public Boolean visitForLoop(ForLoopTree node, Void p) {
-            return handleGeneralizedForLoop(node.getInitializer(), node.getCondition(), node.getUpdate(), node.getStatement(), p);
+            return handleGeneralizedForLoop(node.getInitializer(), node.getCondition(), node.getUpdate(), node.getStatement(), node.getCondition(), p);
         }
         
-        private Boolean handleGeneralizedForLoop(Iterable<? extends Tree> initializer, Tree condition, Iterable<? extends Tree> update, Tree statement, Void p) {
+        private Boolean handleGeneralizedForLoop(Iterable<? extends Tree> initializer, Tree condition, Iterable<? extends Tree> update, Tree statement, Tree resumeOn, Void p) {
             scan(initializer, null);
             
             Map<VariableElement, State> beforeLoop = variable2State;
@@ -612,7 +612,7 @@ public class Flow {
                 scan(update, null);
 
                 variable2State = mergeOr(beforeLoop, variable2State);
-                resume(condition, resumeBefore);
+                resume(resumeOn, resumeBefore);
                 beforeLoop = new HashMap<VariableElement, State>(variable2State);
                 scan(condition, null);
                 doNotRecord = oldDoNotRecord;
@@ -734,7 +734,7 @@ public class Flow {
         }
 
         public Boolean visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
-            return handleGeneralizedForLoop(Arrays.asList(node.getVariable(), node.getExpression()), /*because we are resuming at "condition":*/node.getStatement(), null, null, p);
+            return handleGeneralizedForLoop(Arrays.asList(node.getVariable(), node.getExpression()), null, null, node.getStatement(), node.getStatement(), p);
         }
 
         @Override

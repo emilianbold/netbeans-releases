@@ -41,24 +41,20 @@
  */
 package org.netbeans.modules.editor.bookmarks.ui;
 
-import java.beans.PropertyVetoException;
 import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.editor.bookmarks.BookmarkInfo;
 import org.netbeans.modules.editor.bookmarks.BookmarkManager;
+import org.netbeans.modules.editor.bookmarks.BookmarkManagerEvent;
 import org.netbeans.modules.editor.bookmarks.BookmarkUtils;
 import org.netbeans.modules.editor.bookmarks.ProjectBookmarks;
 import org.netbeans.modules.editor.bookmarks.FileBookmarks;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
-import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -66,8 +62,6 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 /**
  * Tree of nodes used for tree view and other purposes.
@@ -76,113 +70,33 @@ import org.openide.util.NbBundle;
  */
 public final class BookmarksNodeTree {
 
-    private Node rootNode;
+    // -J-Dorg.netbeans.modules.editor.bookmarks.ui.BookmarksNodeTree.level=FINE
+    private static final Logger LOG = Logger.getLogger(BookmarksNodeTree.class.getName());
+
+    private BookmarksRootNode rootNode;
     
     BookmarksNodeTree() {
+        rootNode = new BookmarksRootNode();
     }
     
-    public Node rootNode() {
+    Node rootNode() {
         return rootNode;
     }
     
-    public void rebuild(ExplorerManager explorerManager) {
-        Node[] projectNodes;
+    public void updateNodeTree() {
         BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
         try {
-            Node selNode = getSelectedNode(explorerManager);
-            BookmarkInfo selectedBookmark = null;
-            ProjectBookmarks selectedProjectBookmarks = null;
-            Node selectedProjectNode = null;
-            FileBookmarks selectedFileBookmarks = null;
-            if (selNode instanceof BookmarkNode) {
-                selectedBookmark = ((BookmarkNode)selNode).getBookmarkInfo();
-                selectedFileBookmarks = selectedBookmark.getFileBookmarks();
-                selectedProjectBookmarks = selectedFileBookmarks.getProjectBookmarks();
-            }
-            
-            List<ProjectBookmarks> loadedProjectBookmarks = lockedBookmarkManager.allLoadedProjectBookmarks();
-            List<Node> projectNodeList = new ArrayList<Node>(loadedProjectBookmarks.size());
-            for (ProjectBookmarks projectBookmarks : loadedProjectBookmarks) {
-                if (projectBookmarks.containsAnyBookmarks()) {
-                    FileObject[] sortedFileObjects = lockedBookmarkManager.getSortedFileObjects(projectBookmarks);
-                    ProjectBookmarksChildren children = new ProjectBookmarksChildren(projectBookmarks, sortedFileObjects);
-                    URI prjURI = projectBookmarks.getProjectURI();
-                    Project prj = BookmarkUtils.findProject(prjURI);
-                    LogicalViewProvider lvp = (prj != null) ? prj.getLookup().lookup(LogicalViewProvider.class) : null;
-                    Node prjNode = (lvp != null) ? lvp.createLogicalView() : null;
-                    if (prjNode == null) {
-                        prjNode = new AbstractNode(Children.LEAF);
-                        prjNode.setDisplayName(children.getProjectDisplayName());
+            rootNode.children().updateKeys(lockedBookmarkManager.getSortedActiveProjectBookmarks());
+            List<Node> projectNodes = rootNode.getChildren().snapshot();
+            for (Node pNode : projectNodes) {
+                ProjectBookmarksChildren pChildren =
+                        (ProjectBookmarksChildren) pNode.getChildren();
+                if (true) { // Possibly store changed PBs URIs and rebuild only changed PBs
+                    pChildren.updateKeys(lockedBookmarkManager.getSortedFileBookmarks(pChildren.projectBookmarks));
+                    for (Node fNode : pChildren.snapshot()) {
+                        FileBookmarksChildren fChildren = (FileBookmarksChildren) fNode.getChildren();
+                        fChildren.updateKeys(lockedBookmarkManager.getSortedBookmarks(fChildren.fileBookmarks));
                     }
-                    Node n = new FilterNode(prjNode, children) {
-                        @Override
-                        public boolean canCopy() {
-                            return false;
-                        }
-                        @Override
-                        public boolean canCut() {
-                            return false;
-                        }
-                        @Override
-                        public boolean canDestroy() {
-                            return false;
-                        }
-                        @Override
-                        public boolean canRename() {
-                            return false;
-                        }
-                    };
-                    projectNodeList.add(n);
-                    if (projectBookmarks == selectedProjectBookmarks) {
-                        selectedProjectNode = n;
-                    }
-                }
-            }
-            projectNodes = new Node[projectNodeList.size()];
-            projectNodeList.toArray(projectNodes);
-
-            // Sort by project's display name
-            Arrays.sort(projectNodes, new Comparator<Node>() {
-                @Override
-                public int compare(Node n1, Node n2) {
-                    return ((ProjectBookmarksChildren) n1.getChildren()).getProjectDisplayName().compareTo(
-                            ((ProjectBookmarksChildren) n2.getChildren()).getProjectDisplayName());
-                }
-            });
-            Children rootChildren = new Children.Array();
-            rootChildren.add(projectNodes);
-            rootNode = new AbstractNode(rootChildren);
-            if (explorerManager != null) {
-                explorerManager.setRootContext(rootNode);
-            }
-            
-            if (selectedProjectNode != null) {
-                for (Node fileNodes : selectedProjectNode.getChildren().snapshot()) {
-                    FileBookmarksChildren ch = (FileBookmarksChildren) fileNodes.getChildren();
-                    if (ch.fileBookmarks == selectedFileBookmarks) {
-                        for (Node bookmarkNode : ch.snapshot()) {
-                            if (((BookmarkNode)bookmarkNode).getBookmarkInfo() == selectedBookmark) {
-                                try {
-                                    selNode = bookmarkNode;
-                                    if (explorerManager != null) {
-                                        explorerManager.setSelectedNodes(new Node[] { bookmarkNode });
-                                    }
-                                } catch (PropertyVetoException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (selNode == null && projectNodes.length > 0) { // Select first node
-                try {
-                    if (explorerManager != null) {
-                        explorerManager.setSelectedNodes(new Node[] { projectNodes[0] });
-                    }
-                } catch (PropertyVetoException ex) {
-                    Exceptions.printStackTrace(ex);
                 }
             }
         } finally {
@@ -190,7 +104,16 @@ public final class BookmarksNodeTree {
         }
     }
     
-    public Map<BookmarkInfo,BookmarkNode> bookmark2NodeMap() {
+    public void updateBookmarkNodes(BookmarkManagerEvent evt) {
+        List<BookmarkNode> bookmarkNodes = bookmarkNodes(false);
+        for (BookmarkNode bookmarkNode : bookmarkNodes) {
+            if (evt.getChange(bookmarkNode.getBookmarkInfo()) != null) {
+                bookmarkNode.notifyBookmarkChanged();
+            }
+        }
+    }
+    
+    public Map<BookmarkInfo,BookmarkNode> createBookmark2NodeMap() {
         List<BookmarkNode> bNodes = bookmarkNodes(true);
         Map<BookmarkInfo,BookmarkNode> bookmark2NodeMap =
                 new HashMap<BookmarkInfo, BookmarkNode>(bNodes.size() << 1, 0.5f);
@@ -210,21 +133,18 @@ public final class BookmarksNodeTree {
     }
     
     public Node findFirstBookmarkNode(ProjectBookmarks projectBookmarks, FileObject fo) {
-        FileBookmarks fileBookmarks = projectBookmarks.get(fo.toURL());
-        if (fileBookmarks != null && fileBookmarks.containsAnyBookmarks()) {
-            if (rootNode != null) {
-                List<Node> projectNodes = rootNode.getChildren().snapshot();
-                for (Node pNode : projectNodes) {
-                    ProjectBookmarksChildren pChildren =
-                            (ProjectBookmarksChildren) pNode.getChildren();
-                    if (pChildren.projectBookmarks == projectBookmarks) {
-                        for (Node fNode : pChildren.snapshot()) {
-                            FileBookmarksChildren fChildren = (FileBookmarksChildren) fNode.getChildren();
-                            if (fChildren.fileBookmarks == fileBookmarks) {
-                                List<Node> bNodes = fChildren.snapshot();
-                                if (!bNodes.isEmpty()) {
-                                    return bNodes.get(0);
-                                }
+        if (rootNode != null) {
+            List<Node> projectNodes = rootNode.getChildren().snapshot();
+            for (Node pNode : projectNodes) {
+                ProjectBookmarksChildren pChildren =
+                        (ProjectBookmarksChildren) pNode.getChildren();
+                if (pChildren.projectBookmarks == projectBookmarks) {
+                    for (Node fNode : pChildren.snapshot()) {
+                        FileBookmarksChildren fChildren = (FileBookmarksChildren) fNode.getChildren();
+                        if (fChildren.fileBookmarks.getFileObject() == fo) {
+                            List<Node> bNodes = fChildren.snapshot();
+                            if (!bNodes.isEmpty()) {
+                                return bNodes.get(0);
                             }
                         }
                     }
@@ -238,45 +158,114 @@ public final class BookmarksNodeTree {
         if (n instanceof BookmarkNode) {
             bookmarkNodes.add((BookmarkNode)n);
         } else {
-            for (Node cn : n.getChildren().snapshot()) {
+            for (Node cn : n.getChildren().getNodes(true)) {
                 collectBookmarkNodes(bookmarkNodes, cn);
             }
         }
     }
 
-    private Node getSelectedNode(ExplorerManager explorerManager) {
-        if (explorerManager != null) {
-            Node[] selectedNodes = explorerManager.getSelectedNodes();
-            if (selectedNodes.length > 0) {
-                return selectedNodes[0];
+    static final class BookmarksRootNode extends AbstractNode {
+
+        public BookmarksRootNode() {
+            super(new BookmarksRootNodeChildren());
+        }
+        
+        BookmarksRootNodeChildren children() {
+            return (BookmarksRootNodeChildren) getChildren();
+        }
+        
+    }
+    
+    static final class BookmarksRootNodeChildren extends Children.Keys<ProjectBookmarks> {
+        
+        BookmarksRootNodeChildren() {
+        }
+        
+        @Override
+        protected void addNotify() {
+            super.addNotify();
+            BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+            try {
+                updateKeys(lockedBookmarkManager.getSortedActiveProjectBookmarks());
+            } finally {
+                lockedBookmarkManager.unlock();
             }
         }
-        return null;
-    }
 
-    static final class ProjectBookmarksChildren extends Children.Keys<FileObject> {
+        void updateKeys(List<ProjectBookmarks> sortedProjectBookmarks) {
+            updateKeys(sortedProjectBookmarks.toArray(new ProjectBookmarks[sortedProjectBookmarks.size()]));
+        }
+
+        void updateKeys(ProjectBookmarks[] sortedProjectBookmarks) {
+            setKeys(sortedProjectBookmarks);
+        }
         
-        final String projectDisplayName;
+        @Override
+        protected Node[] createNodes(ProjectBookmarks projectBookmarks) {
+            URI prjURI = projectBookmarks.getProjectURI();
+            Project prj = BookmarkUtils.findProject(prjURI);
+            LogicalViewProvider lvp = (prj != null) ? prj.getLookup().lookup(LogicalViewProvider.class) : null;
+            Node prjNode = (lvp != null) ? lvp.createLogicalView() : null;
+            if (prjNode == null) {
+                prjNode = new AbstractNode(Children.LEAF);
+                prjNode.setDisplayName(projectBookmarks.getProjectDisplayName());
+            }
+            Node retNode = new FilterNode(prjNode, new ProjectBookmarksChildren(projectBookmarks)) {
+                @Override
+                public boolean canCopy() {
+                    return false;
+                }
+
+                @Override
+                public boolean canCut() {
+                    return false;
+                }
+
+                @Override
+                public boolean canDestroy() {
+                    return false;
+                }
+
+                @Override
+                public boolean canRename() {
+                    return false;
+                }
+            };
+            return new Node[] { retNode };
+        }
+
+    }
+    
+    static final class ProjectBookmarksChildren extends Children.Keys<FileBookmarks> {
         
         final ProjectBookmarks projectBookmarks;
         
-        ProjectBookmarksChildren(ProjectBookmarks projectBookmarks, FileObject[] sortedFileObjects) {
+        ProjectBookmarksChildren(ProjectBookmarks projectBookmarks) {
             this.projectBookmarks = projectBookmarks;
-            URI prjURI = projectBookmarks.getProjectURI();
-            Project prj = BookmarkUtils.findProject(prjURI);
-            projectDisplayName = (prj != null)
-                    ? ProjectUtils.getInformation(prj).getDisplayName()
-                    : NbBundle.getMessage (BookmarksView.class, "LBL_NullProjectDisplayName");
-            setKeys(sortedFileObjects);
-        }
-        
-        String getProjectDisplayName() {
-            return projectDisplayName;
         }
 
         @Override
-        protected Node[] createNodes(FileObject fo) {
+        protected void addNotify() {
+            super.addNotify();
+            BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+            try {
+                updateKeys(lockedBookmarkManager.getSortedFileBookmarks(projectBookmarks));
+            } finally {
+                lockedBookmarkManager.unlock();
+            }
+        }
+
+        void updateKeys(FileBookmarks[] sortedFileBookmarks) {
+            setKeys(sortedFileBookmarks);
+        }
+        
+        @Override
+        protected Node[] createNodes(FileBookmarks fileBookmarks) {
             Node foNode;
+            FileObject fo = fileBookmarks.getFileObject();
+            if (fo == null) {
+                return null; // No node for this key
+            }
             try {
                 DataObject dob = DataObject.find(fo);
                 foNode = dob.getNodeDelegate().cloneNode();
@@ -284,19 +273,16 @@ public final class BookmarksNodeTree {
                 foNode = new AbstractNode(Children.LEAF);
                 foNode.setDisplayName(fo.getNameExt());
             }
-            URL url = fo.toURL();
-            FileBookmarks urlBookmarks = projectBookmarks.get(url);
-            return new Node[]{new FilterNode(foNode, new FileBookmarksChildren(urlBookmarks, fo))};
+            return new Node[]{ new FilterNode(foNode, new FileBookmarksChildren(fileBookmarks))};
         }
 
     }
     
-    static final class FileBookmarksChildren extends Children.Array {
+    static final class FileBookmarksChildren extends Children.Keys<BookmarkInfo> {
         
         final FileBookmarks fileBookmarks;
         
-        FileBookmarksChildren(FileBookmarks fileBookmarks, FileObject fo) {
-            super(toNodes(fileBookmarks));
+        FileBookmarksChildren(FileBookmarks fileBookmarks) {
             this.fileBookmarks = fileBookmarks;
         }
 
@@ -305,37 +291,23 @@ public final class BookmarksNodeTree {
         }
         
         @Override
-        public boolean remove(Node[] arr) {
-            boolean ret = super.remove(arr);
-            if (ret) {
-                BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
-                try {
-                    List<BookmarkInfo> removedBookmarks = new ArrayList<BookmarkInfo>(arr.length);
-                    for (Node n : arr) {
-                        removedBookmarks.add(((BookmarkNode)n).getBookmarkInfo());
-                    }
-                    lockedBookmarkManager.removeBookmarks(removedBookmarks);
-                } finally {
-                    lockedBookmarkManager.unlock();
-                }
-            }
-            return ret;
-        }
-        
-        private static List<Node> toNodes(FileBookmarks fb) {
+        protected void addNotify() {
+            super.addNotify();
             BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
             try {
-                List<BookmarkInfo> bookmarks = fb.getBookmarks();
-                List<Node> nodes = new ArrayList<Node>(bookmarks.size());
-                for (int i = 0; i < bookmarks.size(); i++) {
-                    BookmarkInfo bookmark = bookmarks.get(i);
-                    BookmarkNode bookmarkNode = new BookmarkNode(bookmark);
-                    nodes.add(bookmarkNode);
-                }
-                return nodes;
+                updateKeys(lockedBookmarkManager.getSortedBookmarks(fileBookmarks));
             } finally {
                 lockedBookmarkManager.unlock();
             }
+        }
+
+        void updateKeys(BookmarkInfo[] bookmarks) {
+            setKeys(bookmarks);
+        }
+        
+        @Override
+        protected Node[] createNodes(BookmarkInfo bookmark) {
+            return new Node[] { new BookmarkNode(bookmark) };
         }
         
     }

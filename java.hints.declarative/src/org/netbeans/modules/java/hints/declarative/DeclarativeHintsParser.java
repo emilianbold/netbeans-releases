@@ -431,11 +431,16 @@ public class DeclarativeHintsParser {
                     return ;
                 }
 
+                MethodInvocationTree mit = (MethodInvocationTree) et;
+                
+                if (mit.getMethodSelect().getKind() != Kind.IDENTIFIER) {
+                    //XXX: report an error
+                    return ;
+                }
+
                 Scope s = Hacks.constructScope(parameter, "javax.lang.model.SourceVersion", "javax.lang.model.element.Modifier", "javax.lang.model.element.ElementKind");
 
                 parameter.getTreeUtilities().attributeTree(et, s);
-
-                MethodInvocationTree mit = (MethodInvocationTree) et;
 
                 methodName[0] = ((IdentifierTree) mit.getMethodSelect()).getName().toString();
 

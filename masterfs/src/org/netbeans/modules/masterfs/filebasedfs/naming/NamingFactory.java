@@ -142,12 +142,20 @@ public final class NamingFactory {
         
         synchronized(NamingFactory.class) {        
             all.add(newNaming);
-            renameChildren(fNaming, all);
+            collectSubnames(fNaming, all);
             return (retVal) ? ((FileNaming[]) all.toArray(new FileNaming[all.size()])) : null;
         }
     }
-
-    private static void renameChildren(FileNaming root, Collection<FileNaming> all) {
+    
+    public static Collection<FileNaming> findSubTree(FileNaming root) {
+        final Collection<FileNaming> all = new LinkedHashSet<FileNaming>();
+        synchronized (NamingFactory.class) {
+            collectSubnames(root, all);
+        }
+        return all;
+    }
+    
+    private static void collectSubnames(FileNaming root, Collection<FileNaming> all) {
         assert Thread.holdsLock(NamingFactory.class);
         Collection<FileNaming> not = new HashSet<FileNaming>(names.length);
         for (int i = 0; i < names.length; i++) {

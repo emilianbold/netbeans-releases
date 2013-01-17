@@ -490,7 +490,9 @@ class LayoutOperations implements LayoutConstants {
                 continue;
             }
             if (li.isParallel()) {
-                setParallelSameSize(li, alignedComp, dimension);
+                if (li.getGroupAlignment() == LEADING || li.getGroupAlignment() == TRAILING) { // not for baseline group
+                    setParallelSameSize(li, alignedComp, dimension);
+                }
             } else {
                 LayoutInterval sub = getOneNonEmpty(li);
                 if (sub != null
@@ -498,7 +500,9 @@ class LayoutOperations implements LayoutConstants {
                     && !LayoutInterval.wantResize(li)) {
                     // viusally aligned subinterval
                     if (sub.isParallel()) {
-                        setParallelSameSize(sub, alignedComp, dimension);
+                        if (sub.getGroupAlignment() == LEADING || sub.getGroupAlignment() == TRAILING) { // not for baseline group
+                            setParallelSameSize(sub, alignedComp, dimension);
+                        }
                     } else if (!isPressurizedComponent(sub)) {
                         // make this component filling the group - effectively keeping same size
                         if (!LayoutInterval.isAlignedAtBorder(li, aligned.getAlignment())) {
@@ -2009,8 +2013,9 @@ class LayoutOperations implements LayoutConstants {
         }
 
         // Create new groups and move relevant intervals with ending gaps into them.
+        Collection<LayoutInterval>[] processIntervals = new Collection[2];
         LayoutInterval[] newGroups = new LayoutInterval[2];
-        for (int i=group.getSubIntervalCount()-1; i >= 0; i--) {
+        for (int i=0; i < group.getSubIntervalCount(); i++) {
             LayoutInterval li = group.getSubInterval(i);
             for (int e = LEADING; e <= TRAILING; e++) {
                 if (!processEdge[e]) {
@@ -2027,9 +2032,26 @@ class LayoutOperations implements LayoutConstants {
                         }
                         newGroups[e] = newGroup;
                     }
-                    if (li.getParent() == group && newGroup != group) {
-                        layoutModel.removeInterval(group, i);
-                        layoutModel.addInterval(li, newGroup, 0);
+                    if (newGroup != group && (processIntervals[e^1] == null || !processIntervals[e^1].contains(li))) {
+                        if (processIntervals[e] == null) {
+                            processIntervals[e] = new ArrayList(group.getSubIntervalCount());
+                        }
+                        processIntervals[e].add(li);
+                    }
+                }
+            }
+        }
+        if (!independentEdges && processIntervals[LEADING] != null && processIntervals[TRAILING] != null
+                && processIntervals[LEADING].size() + processIntervals[TRAILING].size() == group.getSubIntervalCount()) {
+            // all intervals to be processed after all (combining both edges), keep the original group
+            newGroups[LEADING] = newGroups[TRAILING] = group;
+        } else {
+            for (int e = LEADING; e <= TRAILING; e++) {
+                if (processIntervals[e] != null) {
+                    for (LayoutInterval li : processIntervals[e]) {
+                        assert li.getParent() == group;
+                        layoutModel.removeInterval(li);
+                        layoutModel.addInterval(li, newGroups[e], -1);
                     }
                 }
             }

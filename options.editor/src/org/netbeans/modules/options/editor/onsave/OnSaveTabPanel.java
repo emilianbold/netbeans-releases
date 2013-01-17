@@ -84,7 +84,7 @@ public class OnSaveTabPanel extends JPanel implements PropertyChangeListener {
         
         commonPanel = new OnSaveCommonPanel();
         commonPanelContainer.setLayout(new BorderLayout());
-        commonPanelContainer.add(commonPanel, BorderLayout.CENTER);
+        commonPanelContainer.add(commonPanel, BorderLayout.WEST);
         
         customPanelContainer.setLayout(new BorderLayout());
     }
@@ -208,7 +208,7 @@ public class OnSaveTabPanel extends JPanel implements PropertyChangeListener {
         customPanelContainer.removeAll();
         PreferencesCustomizer c = selector.getSelectedCustomizer();
         if (c != null) {
-            customPanelContainer.add(c.getComponent(), BorderLayout.CENTER);
+            customPanelContainer.add(c.getComponent(), BorderLayout.WEST);
         }
         customPanelContainer.setVisible(true);
     }

@@ -1,2 +1,2 @@
-Cast ...o to String
+[AddCastFix:...o:String]
 FIX_ChangeMethodReturnType Object

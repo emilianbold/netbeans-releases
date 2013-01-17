@@ -41,8 +41,11 @@
  */
 package org.netbeans.modules.editor.bookmarks;
 
+import java.net.URI;
+import java.util.Collection;
 import java.util.EventObject;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Event describing changes in bookmark manager.
@@ -51,16 +54,49 @@ import java.util.List;
  */
 public final class BookmarkManagerEvent extends EventObject {
     
-    private final List<BookmarkChange> bookmarkChanges;
+    private final Map<URI,ProjectBookmarksChange> projectBookmarksChanges;
     
-    BookmarkManagerEvent(BookmarkManager boookmarkManager, List<BookmarkChange> bookmarkChanges) {
+    private final boolean structureChange;
+    
+    private Map<BookmarkInfo,BookmarkChange> bookmarkChanges;
+    
+    BookmarkManagerEvent(BookmarkManager boookmarkManager,
+            Map<URI,ProjectBookmarksChange> projectBookmarksChanges, boolean structureChange)
+    {
         super(boookmarkManager);
-        assert (bookmarkChanges != null) : "Null bookmarkChanges";
-        this.bookmarkChanges = bookmarkChanges;
+        assert (projectBookmarksChanges != null) : "Null bookmarkChanges";
+        this.projectBookmarksChanges = projectBookmarksChanges;
+        this.structureChange = structureChange;
     }
 
-    public List<BookmarkChange> getBookmarkChanges() {
-        return bookmarkChanges;
+    public Collection<ProjectBookmarksChange> getProjectBookmarksChanges() {
+        return projectBookmarksChanges.values();
+    }
+    
+    public ProjectBookmarksChange getProjectBookmarksChange(URI projectURI) {
+        return projectBookmarksChanges.get(projectURI);
+    }
+    
+    public boolean isStructureChange() {
+        return structureChange;
+    }
+    
+    public synchronized BookmarkChange getChange(BookmarkInfo bookmark) {
+        if (bookmarkChanges == null) {
+            bookmarkChanges = new HashMap<BookmarkInfo, BookmarkChange>();
+            for (ProjectBookmarksChange prjChange : projectBookmarksChanges.values()) {
+                for (FileBookmarksChange fileChange : prjChange.getFileBookmarksChanges()) {
+                    for (BookmarkChange change : fileChange.getBookmarkChanges()) {
+                        Object o = bookmarkChanges.put(change.getBookmark(), change);
+                        if (o != null) {
+                            throw new IllegalStateException(
+                                    "Bookmark contained in multiple changes: " + change.getBookmark()); // NOI18N
+                        }
+                    }
+                }
+            }
+        }
+        return bookmarkChanges.get(bookmark);
     }
     
 }

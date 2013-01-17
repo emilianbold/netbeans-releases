@@ -448,8 +448,8 @@ public final class CompositeFCS extends FontColorSettings {
             if (GraphicsEnvironment.isHeadless()) {
                 defaultFontSize = DEFAULT_FONTSIZE;
             } else {
-                Integer i = (Integer) UIManager.get("customFontSize"); //NOI18N
-                defaultFontSize = (i != null) ? i : UIManager.getFont("TextField.font").getSize(); //NOI18N
+                Integer customFontSize = (Integer) UIManager.get("customFontSize"); //NOI18N
+                defaultFontSize = (customFontSize != null) ? customFontSize : (UIManager.getFont("TextField.font") != null ? UIManager.getFont("TextField.font").getSize() : DEFAULT_FONTSIZE); //NOI18N
             }
 
             hardCodedDefaultColoring = AttributesUtilities.createImmutable(

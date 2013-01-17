@@ -83,8 +83,8 @@ function showCustomer(index, editable) {
     str += createField('zip', 'Zip: ', customer.getZip(), editable);
     str += createField('phone', 'Phone: ', customer.getPhone(), editable);
     str += createField('fax', 'Fax: ', customer.getFax(), editable);
-    str += createField('discount', 'Discount Code: ', customer.getDiscountCode().getDiscountCode(), false);
-    str += createField('rate', 'Discount Rate: ', customer.getDiscountCode().getRate(), false);
+    str += createField('discount', 'Discount Code: ', customer.getDiscountCode()['discountCode'], false);
+    str += createField('rate', 'Discount Rate: ', customer.getDiscountCode()['rate'], false);
     str += createField('limit', 'Credit Limit: ', customer.getCreditLimit(), editable);    
     var node = document.getElementById('vw_pl_item_content');
     node.innerHTML = createForm(index, str, editable);;

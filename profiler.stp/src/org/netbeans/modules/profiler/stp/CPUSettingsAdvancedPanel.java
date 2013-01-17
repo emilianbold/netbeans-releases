@@ -666,7 +666,12 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         instrSettingsPanel.add(excludeTimeCheckbox, constraints);
 
         // profileFrameworkCheckbox
-        profileFrameworkCheckbox = new JCheckBox();
+        profileFrameworkCheckbox = new JCheckBox() {
+            public void setSelected(boolean b) {
+                super.setSelected(b);
+                updateEnabling();
+            }
+        };
         org.openide.awt.Mnemonics.setLocalizedText(profileFrameworkCheckbox, Bundle.CPUSettingsAdvancedPanel_ProfileFrameworkCheckboxText());
         profileFrameworkCheckbox.setToolTipText(Bundle.StpFrameworkTooltip());
         profileFrameworkCheckbox.addChangeListener(new ChangeListener() {
@@ -896,6 +901,11 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
         org.openide.awt.Mnemonics.setLocalizedText(threadsMonitoringCheckbox, Bundle.CPUSettingsAdvancedPanel_EnableThreadsCheckboxText());
         threadsMonitoringCheckbox.setToolTipText(Bundle.StpMonitorTooltip());
         threadsMonitoringCheckbox.addActionListener(getSettingsChangeListener());
+        threadsMonitoringCheckbox.addChangeListener(new ChangeListener() {
+                public void stateChanged(ChangeEvent e) {
+                    updateEnabling();
+                }
+            });
         threadsMonitoringCheckbox.setOpaque(false);
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
@@ -946,5 +956,6 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
             profileSpawnedThreadsCheckbox.setEnabled(methodsTrackingLabel.isEnabled()); // Just a hack to detect settings for preset (always disabled)
             instrumentationSchemeCombo.setEnabled(methodsTrackingLabel.isEnabled()); // Just a hack to detect settings for preset (always disabled)
         }
+        threadsSamplingCheckbox.setEnabled(threadsMonitoringCheckbox.isSelected() && methodsTrackingLabel.isEnabled());
     }
 }

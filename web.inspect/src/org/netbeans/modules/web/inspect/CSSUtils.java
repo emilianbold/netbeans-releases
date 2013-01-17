@@ -285,7 +285,7 @@ public class CSSUtils {
      * @return "normalized" version of the media query.
      */
     public static String normalizeMediaQuery(String mediaQueryList) {
-        mediaQueryList = mediaQueryList.trim().toLowerCase();
+        mediaQueryList = mediaQueryList.trim().toLowerCase(Locale.ENGLISH);
         StringBuilder result = new StringBuilder();
         StringTokenizer st = new StringTokenizer(mediaQueryList, ","); // NOI18N
         while (st.hasMoreTokens()) {
