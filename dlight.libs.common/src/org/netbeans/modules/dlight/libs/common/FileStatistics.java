@@ -69,14 +69,14 @@ public class FileStatistics {
         extensionsToInclude = new TreeSet<String>();
         String extList = System.getProperty("dlight.file.read.statistics.include.extensions"); //NOI18N
         if (extList != null) {
-            String[] splitExt = extList.split(",");
+            String[] splitExt = extList.split(","); // NOI18N
             extensionsToInclude.addAll(Arrays.asList(splitExt));
         }
         
         namesToExclude = new TreeSet<String>();
         String nameList = System.getProperty("dlight.file.read.statistics.exclude.names"); //NOI18N
         if (nameList != null) {
-            String[] splitNam = nameList.split(",");
+            String[] splitNam = nameList.split(","); // NOI18N
             namesToExclude.addAll(Arrays.asList(splitNam));
         }
     }
@@ -101,8 +101,8 @@ public class FileStatistics {
         for (int i = 0; i < stack.length; i++) {
             StackTraceElement st = stack[i];
             if (!st.getClassName().startsWith(thisClassName) && 
-                    !st.getClassName().startsWith("java.util.logging") &&
-                    !st.getClassName().startsWith("java.lang.Thread")) {
+                    !st.getClassName().startsWith("java.util.logging") && // NOI18N
+                    !st.getClassName().startsWith("java.lang.Thread")) { // NOI18N
                 result.add(st);
             }                
         }
@@ -197,9 +197,9 @@ public class FileStatistics {
 
     private void printf(String indent, String pattern, Object... args) {
         String formattedString = String.format(pattern, args);
-        String[] lines = formattedString.split("\n");
+        String[] lines = formattedString.split("\n"); // NOI18N
         for (int i = 0; i < lines.length; i++) {
-            out.printf("%s%s%s\n", PREFIX,  indent, lines[i]);
+            out.printf("%s%s%s\n", PREFIX,  indent, lines[i]); // NOI18N
         }
         out.flush();
     }
@@ -224,7 +224,7 @@ public class FileStatistics {
             readCount += cnt.getCount();
         }
         {
-            out.printf("\n\n\n");
+            out.printf("\n\n\n"); // NOI18N
             printf("\nFile Read Statistics by Path\n"); // NOI18N
             printf("Files count: %d reads count: %d\n", files.size(), readCount); // NOI18N
             printf("\t   Cnt  File\n"); // NOI18N
