@@ -419,9 +419,6 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
             generator.generate();
         } catch (Exception ex) {
             Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
-        } finally {
-// issue #195818 - commented out the following cleanup
-//            postJavaInfrastructureCleanup();
         }
         
         return resultSet;
@@ -552,35 +549,6 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
                 });
                 GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] {
                     cpInfo.getClassPath(PathKind.SOURCE)
-                });
-            } catch (InterruptedException ex) {
-                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
-            } catch (ExecutionException ex) {
-                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
-            } catch (MetadataModelException ex) {
-                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
-            }
-        }
-    }
-
-    private void postJavaInfrastructureCleanup() throws IOException {
-        if (needClassPathInit && mappings != null) {
-            try {
-                ClasspathInfo cpInfo = mappings.runReadActionWhenReady(new MetadataModelAction<EntityMappingsMetadata, ClasspathInfo>() {
-                    @Override
-                    public ClasspathInfo run(EntityMappingsMetadata metadata) {
-                        return metadata.createJavaSource().getClasspathInfo();
-                    }
-                }).get();
-
-                GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, new ClassPath[] {
-                    cpInfo.getClassPath(PathKind.SOURCE)
-                });
-                GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, new ClassPath[] {
-                    cpInfo.getClassPath(PathKind.COMPILE)
-                });
-                GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, new ClassPath[] {
-                    cpInfo.getClassPath(PathKind.BOOT)
                 });
             } catch (InterruptedException ex) {
                 Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
