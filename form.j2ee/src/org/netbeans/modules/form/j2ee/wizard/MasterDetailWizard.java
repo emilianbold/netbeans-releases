@@ -90,7 +90,6 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 
 /**
@@ -366,12 +365,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
                 resultSet.add(javaFile);
             }
             javaFile.setAttribute("justCreatedByNewWizard", Boolean.TRUE); // NOI18N
-            DataObject dob = null;
-            try {
-                dob = DataObject.find(javaFile);
-            } catch (DataObjectNotFoundException ex) {
-                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex); // should not happen
-            }
+            DataObject dob = DataObject.find(javaFile);
             FileObject formFile = FileUtil.findBrother(dob.getPrimaryFile(), "form"); // NOI18N
 
             String[][] entity = instantiatePersitence(javaFile.getParent(), connection, masterTableName, detailFKTable);
@@ -419,9 +413,6 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
             generator.generate();
         } catch (Exception ex) {
             Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
-        } finally {
-// issue #195818 - commented out the following cleanup
-//            postJavaInfrastructureCleanup();
         }
         
         return resultSet;
@@ -497,8 +488,6 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
                 if (entityInfo == null) {
                     // Generates a Java class for the entity
                     J2EEUtils.createEntity(folder, scope, unit, connection, table, relatedTables);
-
-                    entityInfo = J2EEUtils.findEntity(mappings, table);
                 } else {
                     // Add the entity into the persistence unit if it is not there already
                     J2EEUtils.addEntityToUnit(entityInfo[1], unit, project);
@@ -552,35 +541,6 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
                 });
                 GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] {
                     cpInfo.getClassPath(PathKind.SOURCE)
-                });
-            } catch (InterruptedException ex) {
-                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
-            } catch (ExecutionException ex) {
-                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
-            } catch (MetadataModelException ex) {
-                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
-            }
-        }
-    }
-
-    private void postJavaInfrastructureCleanup() throws IOException {
-        if (needClassPathInit && mappings != null) {
-            try {
-                ClasspathInfo cpInfo = mappings.runReadActionWhenReady(new MetadataModelAction<EntityMappingsMetadata, ClasspathInfo>() {
-                    @Override
-                    public ClasspathInfo run(EntityMappingsMetadata metadata) {
-                        return metadata.createJavaSource().getClasspathInfo();
-                    }
-                }).get();
-
-                GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, new ClassPath[] {
-                    cpInfo.getClassPath(PathKind.SOURCE)
-                });
-                GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, new ClassPath[] {
-                    cpInfo.getClassPath(PathKind.COMPILE)
-                });
-                GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, new ClassPath[] {
-                    cpInfo.getClassPath(PathKind.BOOT)
                 });
             } catch (InterruptedException ex) {
                 Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
