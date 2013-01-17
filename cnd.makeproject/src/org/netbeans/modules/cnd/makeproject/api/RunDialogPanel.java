@@ -894,6 +894,7 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                     exe = CndPathUtilitities.normalizeSlashes(exe);
                     conf.getMakefileConfiguration().getOutput().setValue(exe);
                     updateRunProfile(baseDir, conf.getProfile());
+                    conf.getProfile().setBuildFirst(false);
                     List<Configuration> list = new ArrayList<Configuration>(projectDescriptor.getConfs().getConfigurations());
                     list.add(conf);
                     conf.setDefault(false);
