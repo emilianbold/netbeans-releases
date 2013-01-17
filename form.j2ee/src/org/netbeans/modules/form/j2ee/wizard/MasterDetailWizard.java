@@ -488,8 +488,6 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
                 if (entityInfo == null) {
                     // Generates a Java class for the entity
                     J2EEUtils.createEntity(folder, scope, unit, connection, table, relatedTables);
-
-                    entityInfo = J2EEUtils.findEntity(mappings, table);
                 } else {
                     // Add the entity into the persistence unit if it is not there already
                     J2EEUtils.addEntityToUnit(entityInfo[1], unit, project);
