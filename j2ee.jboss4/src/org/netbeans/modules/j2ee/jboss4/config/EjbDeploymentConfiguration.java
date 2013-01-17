@@ -852,7 +852,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
     {
         modifyJboss(new JbossModifier() {
            public void modify(Jboss modifiedJboss) {
-               JbossDataSourceRefModifier.modify(modifiedJboss, resRefName, beanNames, beanType, jndiName);
+               JBossDataSourceRefModifier.modify(modifiedJboss, resRefName, beanNames, beanType, jndiName);
            }
         });
     }
@@ -870,7 +870,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
     {
         modifyJboss(new JbossModifier() {
            public void modify(Jboss modifiedJboss) {
-               JbossDataSourceRefModifier.modifyMsgDrv(modifiedJboss, resRefName, mdbName, jndiName);
+               JBossDataSourceRefModifier.modifyMsgDrv(modifiedJboss, resRefName, mdbName, jndiName);
            }
         });
     }
@@ -911,7 +911,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
 
         modifyJboss(new JbossModifier() {
            public void modify(Jboss modifiedJboss) {
-               JbossEjbRefModifier.modify(modifiedJboss, ejbRefName, referencedEjbName, beanNames, beanType);
+               JBossEjbRefModifier.modify(modifiedJboss, ejbRefName, referencedEjbName, beanNames, beanType);
            }
         });
     }
@@ -929,7 +929,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
     {
         modifyJboss(new JbossModifier() {
            public void modify(Jboss modifiedJboss) {
-               JbossEjbRefModifier.modifyMsgDrv(modifiedJboss, mdbName, ejbRefName, referencedEjbName);
+               JBossEjbRefModifier.modifyMsgDrv(modifiedJboss, mdbName, ejbRefName, referencedEjbName);
            }
         });
     }
@@ -947,7 +947,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
         modifyJboss(new JbossModifier() {
            public void modify(Jboss modifiedJboss) {
                String jndiName = MAIL_SERVICE_JNDI_NAME_JB4;
-               JbossDataSourceRefModifier.modify(modifiedJboss, resRefName, beanNames, beanType, jndiName);
+               JBossDataSourceRefModifier.modify(modifiedJboss, resRefName, beanNames, beanType, jndiName);
            }
         });
     }
@@ -965,7 +965,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
         modifyJboss(new JbossModifier() {
            public void modify(Jboss modifiedJboss) {
                String jndiName = MAIL_SERVICE_JNDI_NAME_JB4;
-               JbossDataSourceRefModifier.modifyMsgDrv(modifiedJboss, resRefName, beans, jndiName);
+               JBossDataSourceRefModifier.modifyMsgDrv(modifiedJboss, resRefName, beans, jndiName);
            }
         });
     }
@@ -1061,7 +1061,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
         modifyJboss(new JbossModifier() {
            public void modify(Jboss modifiedJboss) {
                String jndiName = MessageDestinationSupport.CONN_FACTORY_JNDI_NAME_JB4;
-               JbossDataSourceRefModifier.modify(modifiedJboss, resRefName, beanNames, beanType, jndiName);
+               JBossDataSourceRefModifier.modify(modifiedJboss, resRefName, beanNames, beanType, jndiName);
            }
         });
     }
@@ -1078,7 +1078,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
         modifyJboss(new JbossModifier() {
            public void modify(Jboss modifiedJboss) {
                String jndiName = MessageDestinationSupport.CONN_FACTORY_JNDI_NAME_JB4;
-               JbossDataSourceRefModifier.modifyMsgDrv(modifiedJboss, connectionFactoryName, mdbName, jndiName);
+               JBossDataSourceRefModifier.modifyMsgDrv(modifiedJboss, connectionFactoryName, mdbName, jndiName);
            }
         });
     }
@@ -1131,7 +1131,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
     {
         modifyJboss(new JbossModifier() {
            public void modify(Jboss modifiedJboss) {
-               JbossMsgDestRefModifier.modify(modifiedJboss, msgDestRefName, beanNames, beanType, destPrefix, destName);
+               JBossMsgDestRefModifier.modify(modifiedJboss, msgDestRefName, beanNames, beanType, destPrefix, destName);
            }
         });
     }
@@ -1150,7 +1150,7 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
     {
         modifyJboss(new JbossModifier() {
            public void modify(Jboss modifiedJboss) {
-               JbossMsgDestRefModifier.modifyMsgDrv(modifiedJboss, msgDestRefName, mdbName, destPrefix, destName);
+               JBossMsgDestRefModifier.modifyMsgDrv(modifiedJboss, msgDestRefName, mdbName, destPrefix, destName);
            }
         });
     }
