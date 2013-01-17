@@ -681,8 +681,10 @@ public class BindingDesignSupportImpl implements BindingDesignSupport {
                             result[0] = new TypeHelper(type, newMap);
                         }
                     }
-                } catch (Exception ex) {
-                    Logger.getLogger(BindingDesignSupportImpl.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+                } catch (IllegalAccessException iaex) {
+                    Logger.getLogger(BindingDesignSupportImpl.class.getName()).log(Level.INFO, null, iaex);
+                } catch (InvocationTargetException itex) {
+                    Logger.getLogger(BindingDesignSupportImpl.class.getName()).log(Level.INFO, null, itex);
                 }
             }
         }
