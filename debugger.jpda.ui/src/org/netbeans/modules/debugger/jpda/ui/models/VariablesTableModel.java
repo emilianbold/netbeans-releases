@@ -71,6 +71,7 @@ import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -205,8 +206,14 @@ public class VariablesTableModel implements TableModel, Constants {
                             getEvaluatedWatchMethod.setAccessible(true);
                             row = (JPDAWatch) getEvaluatedWatchMethod.invoke(row);
                         } catch (Exception ex) {
-                            // Log it only
-                            ex.printStackTrace();
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                    if (row instanceof JPDAWatch) {
+                        JPDAWatch w = (JPDAWatch) row;
+                        String e = w.getExceptionDescription ();
+                        if (e != null) {
+                            return true; // Errors are read only
                         }
                     }
                     if (row instanceof ObjectVariable) {

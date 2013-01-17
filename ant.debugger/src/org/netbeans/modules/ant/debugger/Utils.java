@@ -51,12 +51,15 @@ import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.apache.tools.ant.module.api.support.TargetLister;
@@ -91,6 +94,8 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class Utils {
             
+    private static final Logger logger = Logger.getLogger(Utils.class.getName());
+    
     private static Object currentLine;
     
     static synchronized void markCurrent (final Object line) {
@@ -201,20 +206,34 @@ public class Utils {
         FileObject fileObject = FileUtil.toFileObject (file);
         EditorCookie editor;
         LineCookie lineCookie;
+        DataObject d;
         try {
-            DataObject d = DataObject.find (fileObject);
-            editor = d.getLookup().lookup (EditorCookie.class);
-            lineCookie = d.getLookup().lookup (LineCookie.class);
-            assert editor != null;
-            assert lineCookie != null;
-        
+            d = DataObject.find (fileObject);
+        } catch (DataObjectNotFoundException donfex) {
+            logger.log(Level.CONFIG, "No DataObject for "+fileObject, donfex);
+            return null;
+        }
+        editor = d.getLookup().lookup (EditorCookie.class);
+        lineCookie = d.getLookup().lookup (LineCookie.class);
+        assert editor != null;
+        assert lineCookie != null;
+
+        InputSource in = null;
+        try {
             StyledDocument doc = editor.openDocument ();
-            InputSource in = createInputSource 
-                (fileObject, editor, doc);
-            if (in == null) return null;
-            SAXParserFactory factory = SAXParserFactory.newInstance ();
+            in = createInputSource (fileObject, editor, doc);
+        } catch (IOException ioex) {
+            logger.log(Level.CONFIG, "A problem while opening "+fileObject, ioex);
+        } catch (BadLocationException blex) {
+            logger.log(Level.CONFIG, "A problem while opening "+fileObject, blex);
+        }
+        if (in == null) {
+            return null;
+        }
+        final int[] line = new int [4];
+        SAXParserFactory factory = SAXParserFactory.newInstance ();
+        try {
             SAXParser parser = factory.newSAXParser ();
-            final int[] line = new int [4];
             class Handler extends DefaultHandler {
                 private Locator locator;
                 @Override
@@ -253,20 +272,26 @@ public class Utils {
                 }
             }
             parser.parse (in, new Handler ());
-            if (line [0] == 0) return null;
-            Annotatable[] annotatables = new Annotatable [
-                line [2] - line [0] + 1
-            ];
-            int i = 0;
-            for (int ln = line [0]; ln <= line [2]; ln ++) {
-                Line l = lineCookie.getLineSet ().getCurrent (ln - 1);
-                annotatables [i++] = l;
-            }
-            return annotatables;
-        } catch (Exception e) {
-            e.printStackTrace ();
+        } catch (IOException ioex) {
+            logger.log(Level.CONFIG, "A problem while reading "+fileObject, ioex);
+            return null;
+        } catch (ParserConfigurationException pcex) {
+            logger.log(Level.CONFIG, "A problem while parsing "+fileObject, pcex);
+            return null;
+        } catch (SAXException saxex) {
+            logger.log(Level.CONFIG, "A problem while parsing "+fileObject, saxex);
+            return null;
         }
-        return null;
+        if (line [0] == 0) return null;
+        Annotatable[] annotatables = new Annotatable [
+            line [2] - line [0] + 1
+        ];
+        int i = 0;
+        for (int ln = line [0]; ln <= line [2]; ln ++) {
+            Line l = lineCookie.getLineSet ().getCurrent (ln - 1);
+            annotatables [i++] = l;
+        }
+        return annotatables;
     }
     
     static Object getLine (
@@ -277,23 +302,33 @@ public class Utils {
         assert fileObject != null : "No build script for " + target.getName ();
         EditorCookie editor;
         LineCookie lineCookie;
+        DataObject d;
         try {
-            DataObject d = DataObject.find (fileObject);
-            editor = d.getLookup().lookup (EditorCookie.class);
-            lineCookie = d.getLookup().lookup (LineCookie.class);
-            assert editor != null;
-            assert lineCookie != null;
-        } catch (DataObjectNotFoundException e) {
-            throw new AssertionError (e);
+            d = DataObject.find (fileObject);
+        } catch (DataObjectNotFoundException donfex) {
+            logger.log(Level.CONFIG, "No DataObject for "+fileObject, donfex);
+            return null;
         }
+        editor = d.getLookup().lookup (EditorCookie.class);
+        lineCookie = d.getLookup().lookup (LineCookie.class);
+        assert editor != null;
+        assert lineCookie != null;
+        InputSource in = null;
         try {
             StyledDocument doc = editor.openDocument ();
-            InputSource in = createInputSource 
-                (fileObject, editor, doc);
-            if (in == null) return null;
-            SAXParserFactory factory = SAXParserFactory.newInstance ();
+            in = createInputSource (fileObject, editor, doc);
+        } catch (IOException ioex) {
+            logger.log(Level.CONFIG, "A problem while opening "+fileObject, ioex);
+        } catch (BadLocationException blex) {
+            logger.log(Level.CONFIG, "A problem while opening "+fileObject, blex);
+        }
+        if (in == null) {
+            return null;
+        }
+        final int[] line = new int [4];
+        SAXParserFactory factory = SAXParserFactory.newInstance ();
+        try {
             SAXParser parser = factory.newSAXParser ();
-            final int[] line = new int [4];
             class Handler extends DefaultHandler {
                 private Locator locator;
                 @Override
@@ -332,30 +367,36 @@ public class Utils {
                 }
             }
             parser.parse (in, new Handler ());
-            if (line [0] == 0) return null;
-            
-            int ln = line [0] - 1;
-            List annotatables = new ArrayList ();
-            if (nextTargetName != null) {
-                Line fLine = lineCookie.getLineSet ().getCurrent (ln);
-                int inx = findIndexOf(fLine.getText (), nextTargetName);
-                if (inx >= 0) {
-                    annotatables.add (fLine.createPart (
-                        inx, nextTargetName.length ()
-                    ));
-                    ln ++;
-                }
-            }
-            if (annotatables.size () < 1)
-                for (; ln < line [2]; ln ++) {
-                    Line l = lineCookie.getLineSet ().getCurrent (ln);
-                    annotatables.add (l);
-                }
-            return annotatables.toArray (new Annotatable [annotatables.size ()]);
-        } catch (Exception e) {
-            e.printStackTrace ();
+        } catch (IOException ioex) {
+            logger.log(Level.CONFIG, "A problem while reading "+fileObject, ioex);
+            return null;
+        } catch (ParserConfigurationException pcex) {
+            logger.log(Level.CONFIG, "A problem while parsing "+fileObject, pcex);
+            return null;
+        } catch (SAXException saxex) {
+            logger.log(Level.CONFIG, "A problem while parsing "+fileObject, saxex);
+            return null;
         }
-        return null;
+        if (line [0] == 0) return null;
+
+        int ln = line [0] - 1;
+        List annotatables = new ArrayList ();
+        if (nextTargetName != null) {
+            Line fLine = lineCookie.getLineSet ().getCurrent (ln);
+            int inx = findIndexOf(fLine.getText (), nextTargetName);
+            if (inx >= 0) {
+                annotatables.add (fLine.createPart (
+                    inx, nextTargetName.length ()
+                ));
+                ln ++;
+            }
+        }
+        if (annotatables.size () < 1)
+            for (; ln < line [2]; ln ++) {
+                Line l = lineCookie.getLineSet ().getCurrent (ln);
+                annotatables.add (l);
+            }
+        return annotatables.toArray (new Annotatable [annotatables.size ()]);
     }
     
     private static int findIndexOf(String text, String target) {

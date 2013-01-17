@@ -52,6 +52,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
@@ -338,20 +340,21 @@ public class DebuggerAntLogger extends AntLogger {
         }
         
         // start debugging othervise
+        FileObject fo = FileUtil.toFileObject (s.getOriginatingScript ());
+        DataObject dob;
         try {
-            FileObject fo = FileUtil.toFileObject (s.getOriginatingScript ());
-            DataObject dob = DataObject.find (fo);
-            AntProjectCookie antCookie = dob.getLookup().lookup(AntProjectCookie.class);
-            if (antCookie == null)
-                throw new NullPointerException ();
-            d = startDebugging (antCookie, antEvent, execTask);
-            runningDebuggers.put (s, d);
-            runningDebuggers2.put (d, s);
-            return d;
+            dob = DataObject.find (fo);
         } catch (DataObjectNotFoundException ex) {
-            ex.printStackTrace ();
+            Logger.getLogger(DebuggerAntLogger.class.getName()).log(Level.CONFIG, "No DataObject from "+fo, ex);
             return null;
         }
+        AntProjectCookie antCookie = dob.getLookup().lookup(AntProjectCookie.class);
+        if (antCookie == null)
+            throw new NullPointerException ("No AntProjectCookie provided by "+dob);
+        d = startDebugging (antCookie, antEvent, execTask);
+        runningDebuggers.put (s, d);
+        runningDebuggers2.put (d, s);
+        return d;
     }
 
     private static AntDebugger startDebugging (
