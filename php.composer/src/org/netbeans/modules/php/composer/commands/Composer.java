@@ -210,7 +210,9 @@ public final class Composer {
         }
         params.add(token);
         composer = composer
-                .additionalParameters(mergeParameters(SEARCH_COMMAND, defaultParams, params));
+                .additionalParameters(mergeParameters(SEARCH_COMMAND, defaultParams, params))
+                // avoid parser confusion
+                .redirectErrorStream(false);
         // descriptor
         ExecutionDescriptor descriptor = getDescriptor()
                 .frontWindow(false);
