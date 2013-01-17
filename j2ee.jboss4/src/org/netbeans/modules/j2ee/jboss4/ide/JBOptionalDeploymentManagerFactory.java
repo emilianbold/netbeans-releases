@@ -81,19 +81,17 @@ public class JBOptionalDeploymentManagerFactory extends OptionalDeploymentManage
     }
     
     public DatasourceManager getDatasourceManager(DeploymentManager dm) {
-        
-        if (!(dm instanceof JBDeploymentManager))
-            throw new IllegalArgumentException("");
+        if (!(dm instanceof JBDeploymentManager)) {
+            throw new IllegalArgumentException("Wrong instance of DeploymentManager: " + dm);
+        }
 
-        String serverUrl = ((JBDeploymentManager)dm).getUrl();
-        JBossDatasourceManager dsMgr = new JBossDatasourceManager(serverUrl);
-        
-        return dsMgr;
+        JBDeploymentManager jbdm = ((JBDeploymentManager) dm);
+        return new JBossDatasourceManager(jbdm.getUrl(), jbdm.isAs7());
     }
 
     public MessageDestinationDeployment getMessageDestinationDeployment(DeploymentManager dm) {
         if (!(dm instanceof JBDeploymentManager)) {
-            throw new IllegalArgumentException("");
+            throw new IllegalArgumentException("Wrong instance of DeploymentManager: " + dm);
         }
 
         return new JBossMessageDestinationDeployment(((JBDeploymentManager)dm).getUrl());
