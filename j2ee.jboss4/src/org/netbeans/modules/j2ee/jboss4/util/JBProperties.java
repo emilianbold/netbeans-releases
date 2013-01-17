@@ -242,6 +242,13 @@ public class JBProperties {
             addFiles(new File(rootDir, "lib"), list); // NOI18N
             addFiles(new File(serverDir, "lib"), list); // NOI18N
 
+            if (version != null
+                    && version.compareToIgnoreUpdate(JBPluginUtils.JBOSS_7_0_0) >= 0) {
+                addFiles(new File(new File(rootDir, "modules"), // NOI18N
+                        "javax"), list); // NOI18N
+                addFiles(new File(new File(rootDir, "modules"), // NOI18N
+                        "org" + File.separator + "hibernate" + File.separator + "main"), list); // NOI18N
+            }
             
             Set<String> commonLibs = new HashSet<String>();
     

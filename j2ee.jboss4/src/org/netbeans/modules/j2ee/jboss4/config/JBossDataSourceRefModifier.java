@@ -53,8 +53,8 @@ import org.netbeans.modules.j2ee.jboss4.config.EjbDeploymentConfiguration.BEAN_T
 import org.netbeans.modules.j2ee.jboss4.config.gen.EnterpriseBeans;
 import org.netbeans.modules.j2ee.jboss4.config.gen.Entity;
 import org.netbeans.modules.j2ee.jboss4.config.gen.Jboss;
-import org.netbeans.modules.j2ee.jboss4.config.gen.MessageDestinationRef;
 import org.netbeans.modules.j2ee.jboss4.config.gen.MessageDriven;
+import org.netbeans.modules.j2ee.jboss4.config.gen.ResourceRef;
 import org.netbeans.modules.j2ee.jboss4.config.gen.Session;
 
 /**
@@ -62,20 +62,18 @@ import org.netbeans.modules.j2ee.jboss4.config.gen.Session;
  *
  * @author lkotouc
  */
-final class JbossMsgDestRefModifier {
+final class JBossDataSourceRefModifier {
 
     /**
-     * Add a reference to the given message destination to the enterprise beans of the given type if it does not exist yet.
+     * Add a reference to the given resource to the enterprise beans of the given type if it does not exist yet.
      *
      * @param modifiedJboss Jboss graph instance being modified
-     * @param msgDestRefName message destination reference name
-     * @param beanNames the beans (ejb-name value) which might need to add message destination reference specified by msgDestRefName
-     * @param beanType type of bean to add message destination reference to
-     * @param destPrefix prefix of the message destination
-     * @param destName message destination name
+     * @param resRefName resource reference name
+     * @param beanNames the beans (ejb-name value) which might need to add resource reference specified by resRefName
+     * @param beanType type of bean to add resource reference to
+     * @param jndiName JNDI name of the resource
      */
-    static void modify(Jboss modifiedJboss, String msgDestRefName, Set beanNames, 
-            BEAN_TYPE beanType, String destPrefix, String destName) {
+    static void modify(Jboss modifiedJboss, String resRefName, Set beanNames, BEAN_TYPE beanType, String jndiName) {
 
         assert(beanNames.size() > 0);
 
@@ -83,24 +81,22 @@ final class JbossMsgDestRefModifier {
             modifiedJboss.setEnterpriseBeans(new EnterpriseBeans());
 
         if (beanType == BEAN_TYPE.SESSION) {
-            addSessionMsgDestReference(modifiedJboss, msgDestRefName, beanNames, destPrefix, destName);
+            addSessionResReference(modifiedJboss, resRefName, beanNames, jndiName);
         } else
         if (beanType == BEAN_TYPE.ENTITY) {
-            addEntityMsgDestReference(modifiedJboss, msgDestRefName, beanNames, destPrefix, destName);
+            addEntityResReference(modifiedJboss, resRefName, beanNames, jndiName);
         }
     }
     
     /**
-     * Add a new message destination reference to the session beans without it.
+     * Add a new resource reference to the session beans without it.
      * 
      * @param modifiedJboss Jboss instance being modified
-     * @param resRefName message destination reference name
-     * @param sessionNames the sessions (ejb-name value) which might need to add message destination reference specified by msgDestRefName
-     * @param destPrefix prefix of the message destination
-     * @param destName message destination name
+     * @param resRefName resource reference name
+     * @param sessionNames the sessions (ejb-name value) which might need to add resource reference specified by resRefName
+     * @param jndiName JNDI name of the resource
      */
-    private static void addSessionMsgDestReference(Jboss modifiedJboss, String msgDestRefName, 
-            Set sessionNames, String destPrefix, String destName) {
+    private static void addSessionResReference(Jboss modifiedJboss, String resRefName, Set sessionNames, String jndiName) {
 
         List/*<Session>*/ sesssionsWithoutReference = new LinkedList();
 
@@ -109,16 +105,16 @@ final class JbossMsgDestRefModifier {
         Session[] sessions = eb.getSession();
         for (int i = 0; i < sessions.length; i++) {
             String ejbName = sessions[i].getEjbName();
-            if (sessionNames.contains(ejbName)) { // session found -> check whether it has the message-destination-ref
+            if (sessionNames.contains(ejbName)) { // session found -> check whether it has the resource-ref
                 sessionNames.remove(ejbName);     // we don't care about it anymore
-                MessageDestinationRef[] msgDestRefs = sessions[i].getMessageDestinationRef();
+                ResourceRef[] resourceRefs = sessions[i].getResourceRef();
                 int j = 0;
-                for ( ; j < msgDestRefs.length; j++) {
-                    String mdrn = msgDestRefs[j].getMessageDestinationRefName();
-                    if (msgDestRefName.equals(mdrn))
-                        break; // message-destination-ref found, continuing with the next session
+                for ( ; j < resourceRefs.length; j++) {
+                    String rrn = resourceRefs[j].getResRefName();
+                    if (resRefName.equals(rrn))
+                        break; // resource-ref found, continuing with the next session
                 }
-                if (j == msgDestRefs.length) // resource-ref not found
+                if (j == resourceRefs.length) // resource-ref not found
                     sesssionsWithoutReference.add(sessions[i]);
             }
         }
@@ -138,29 +134,26 @@ final class JbossMsgDestRefModifier {
             sesssionsWithoutReference.add(session);
         }
 
-        //the message destination reference will be added to each session without it
+        //the resource reference will be added to each session without it
         for (Iterator it = sesssionsWithoutReference.iterator(); it.hasNext(); ) {
-            MessageDestinationRef mdr = new MessageDestinationRef();
-            mdr.setMessageDestinationRefName(msgDestRefName);
-            String jndiName = getJndiName(destName, destPrefix);
-            mdr.setJndiName(jndiName);
+            ResourceRef newRR = new ResourceRef();
+            newRR.setResRefName(resRefName);
+            newRR.setJndiName(jndiName);
             Session session = (Session)it.next();
-            session.addMessageDestinationRef(mdr);
+            session.addResourceRef(newRR);
         }
 
     }
     
     /**
-     * Add a new message destination reference to the entity beans without it.
+     * Add a new resource reference to the entity beans without it.
      * 
      * @param modifiedJboss Jboss instance being modified
-     * @param resRefName message destination reference name
-     * @param sessionNames the entities (ejb-name value) which might need to add message destination reference specified by msgDestRefName
-     * @param destPrefix prefix of the message destination
-     * @param destName message destination name
+     * @param resRefName resource reference name
+     * @param entityNames the entities (ejb-name value) which might need to add resource reference specified by resRefName
+     * @param jndiName JNDI name of the resource
      */
-    private static void addEntityMsgDestReference(Jboss modifiedJboss, String msgDestRefName, 
-            Set entityNames, String destPrefix, String destName) {
+    private static void addEntityResReference(Jboss modifiedJboss, String resRefName, Set entityNames, String jndiName) {
 
         List/*<Entity>*/ entitiesWithoutReference = new LinkedList();
 
@@ -169,16 +162,16 @@ final class JbossMsgDestRefModifier {
         Entity[] entities = eb.getEntity();
         for (int i = 0; i < entities.length; i++) {
             String ejbName = entities[i].getEjbName();
-            if (entityNames.contains(ejbName)) { // entity found -> check whether it has the message-destination-ref
+            if (entityNames.contains(ejbName)) { // entity found -> check whether it has the resource-ref
                 entityNames.remove(ejbName);     // we don't care about it anymore
-                MessageDestinationRef[] msgDestRefs = entities[i].getMessageDestinationRef();
+                ResourceRef[] resourceRefs = entities[i].getResourceRef();
                 int j = 0;
-                for ( ; j < msgDestRefs.length; j++) {
-                    String mdrn = msgDestRefs[j].getMessageDestinationRefName();
-                    if (msgDestRefName.equals(mdrn))
-                        break; // message-destination-ref found, continuing with the next session
+                for ( ; j < resourceRefs.length; j++) {
+                    String rrn = resourceRefs[j].getResRefName();
+                    if (resRefName.equals(rrn))
+                        break; // resource-ref found, continuing with the next entity
                 }
-                if (j == msgDestRefs.length) // resource-ref not found
+                if (j == resourceRefs.length) // resource-ref not found
                     entitiesWithoutReference.add(entities[i]);
             }
         }
@@ -200,47 +193,48 @@ final class JbossMsgDestRefModifier {
 
         //the resource reference will be added to each entity without it
         for (Iterator it = entitiesWithoutReference.iterator(); it.hasNext(); ) {
-            MessageDestinationRef mdr = new MessageDestinationRef();
-            mdr.setMessageDestinationRefName(msgDestRefName);
-            String jndiName = getJndiName(destName, destPrefix);
-            mdr.setJndiName(jndiName);
+            ResourceRef newRR = new ResourceRef();
+            newRR.setResRefName(resRefName);
+            newRR.setJndiName(jndiName);
             Entity entity = (Entity)it.next();
-            entity.addMessageDestinationRef(mdr);
+            entity.addResourceRef(newRR);
         }
 
     }
     
     /**
-     * Add a reference to the given message destination to the message-driven beans if it does not exist yet.
+     * Add a reference to the given resource to the message-driven beans if it does not exist yet.
      *
      * @param modifiedJboss Jboss graph instance being modified
-     * @param msgDestRefName message destination reference name
-     * @param beans the beans (ejb-name value) which might need to add message destination reference specified by msgDestRefName
-     * @param destPrefix prefix of the message destination
+     * @param resRefName resource reference name
+     * @param beans the bean names (ejb-name) mapped to the message destinations (message-destination-link)
+     * which might need to add resource reference specified by resRefName
+     * @param jndiName JNDI name of the resource
      * 
      * @deprecated
      */
-    static void modifyMsgDrv(Jboss modifiedJboss, String msgDestRefName, Map beans, String destPrefix) {
+    static void modifyMsgDrv(Jboss modifiedJboss, String resRefName, Map beans, String jndiName) {
 
         assert(beans.size() > 0);
 
         if (modifiedJboss.getEnterpriseBeans() == null)
             modifiedJboss.setEnterpriseBeans(new EnterpriseBeans());
 
-        addMsgDrvMsgDestReference(modifiedJboss, msgDestRefName, beans, destPrefix);
+        addMsgDrvResReference(modifiedJboss, resRefName, beans, jndiName);
     }
     
     /**
-     * Add a new message destination reference to the message-driven beans without it.
+     * Add a new resource reference to the message-driven beans without it.
      * 
      * @param modifiedJboss Jboss instance being modified
-     * @param msgDestRefName message destination reference name
-     * @param beans the beans (ejb-name value) which might need to add message destination reference specified by msgDestRefName
-     * @param destPrefix prefix of the message destination
+     * @param resRefName resource reference name
+     * @param beans the bean names (ejb-name) mapped to the message destinations (message-destination-link)
+     * which might need to add resource reference specified by resRefName
+     * @param jndiName JNDI name of the resource
      * 
      * @deprecated
      */
-    private static void addMsgDrvMsgDestReference(Jboss modifiedJboss, String msgDestRefName, Map beans, String destPrefix) {
+    private static void addMsgDrvResReference(Jboss modifiedJboss, String resRefName, Map beans, String jndiName) {
 
         List/*<Entity>*/ msgdrvsWithoutReference = new LinkedList();
 
@@ -249,16 +243,16 @@ final class JbossMsgDestRefModifier {
         MessageDriven[] msgDrivens = eb.getMessageDriven();
         for (int i = 0; i < msgDrivens.length; i++) {
             String ejbName = msgDrivens[i].getEjbName();
-            if (beans.containsKey(ejbName)) { // msgdrv found -> check whether it has the message-destination-ref
+            if (beans.containsKey(ejbName)) { // msgdrv found -> check whether it has the resource-ref
                 beans.remove(ejbName);        // we don't care about it anymore
-                MessageDestinationRef[] msgDestRefs = msgDrivens[i].getMessageDestinationRef();
+                ResourceRef[] resourceRefs = msgDrivens[i].getResourceRef();
                 int j = 0;
-                for ( ; j < msgDestRefs.length; j++) {
-                    String mdrn = msgDestRefs[j].getMessageDestinationRefName();
-                    if (msgDestRefName.equals(mdrn))
-                        break; // message-destination-ref found, continuing with the next mdb
+                for ( ; j < resourceRefs.length; j++) {
+                    String rrn = resourceRefs[j].getResRefName();
+                    if (resRefName.equals(rrn))
+                        break; // resource-ref found, continuing with the next mdb
                 }
-                if (j == msgDestRefs.length) // message-destination-ref not found
+                if (j == resourceRefs.length) // resource-ref not found
                     msgdrvsWithoutReference.add(msgDrivens[i]);
             }
         }
@@ -280,63 +274,53 @@ final class JbossMsgDestRefModifier {
 
         //the resource reference will be added to each mdb without it
         for (Iterator it = msgdrvsWithoutReference.iterator(); it.hasNext(); ) {
-            MessageDestinationRef mdr = new MessageDestinationRef();
-            mdr.setMessageDestinationRefName(msgDestRefName);
-            String jndiName = getJndiName(msgDestRefName, destPrefix);
-            mdr.setJndiName(jndiName);
+            ResourceRef newRR = new ResourceRef();
+            newRR.setResRefName(resRefName);
+            newRR.setJndiName(jndiName);
             MessageDriven mdb = (MessageDriven)it.next();
-            mdb.addMessageDestinationRef(mdr);
+            mdb.addResourceRef(newRR);
         }
 
     }
-    
+
     /**
-     * Add a reference to the given message destination to the message-driven beans if it does not exist yet.
+     * Add a reference to the given resource to the message-driven bean if it does not exist yet.
      *
      * @param modifiedJboss Jboss graph instance being modified
-     * @param msgDestRefName message destination reference name
-     * @param mdbName the MDB (ejb-name value) which might need to add message 
-     *        destination reference specified by msgDestRefName
-     * @param destPrefix prefix of the message destination
-     * @param destName message destination name
+     * @param resRefName resource reference name
+     * @param mdbName the MDB (ejb-name) which might need to add resource reference specified by resRefName
+     * @param jndiName JNDI name of the resource
      */
-    static void modifyMsgDrv(Jboss modifiedJboss, String msgDestRefName, 
-            String mdbName, String destPrefix, String destName) {
+    static void modifyMsgDrv(Jboss modifiedJboss, String resRefName, String mdbName, String jndiName) {
 
         if (modifiedJboss.getEnterpriseBeans() == null)
             modifiedJboss.setEnterpriseBeans(new EnterpriseBeans());
 
-        addMsgDrvMsgDestReference(modifiedJboss, msgDestRefName, mdbName, destPrefix, destName);
+        addMsgDrvResReference(modifiedJboss, resRefName, mdbName, jndiName);
     }
     
-    private static void addMsgDrvMsgDestReference(Jboss modifiedJboss, String msgDestRefName, 
-            String mdbName, String destPrefix, String destName) {
+    private static void addMsgDrvResReference(Jboss modifiedJboss, String resRefName, String mdbName, String jndiName) {
 
         EnterpriseBeans eb = modifiedJboss.getEnterpriseBeans();
 
         for (MessageDriven mdb : eb.getMessageDriven()) {
             String ejbName = mdb.getEjbName();
-            if (mdbName.equals(ejbName)) { // msgdrv found -> check whether it has the message-destination-ref
-                MessageDestinationRef[] msgDestRefs = mdb.getMessageDestinationRef();
+            if (mdbName.equals(ejbName)) { // msgdrv found -> check whether it has the resource-ref
+                ResourceRef[] resourceRefs = mdb.getResourceRef();
                 int j = 0;
-                for ( ; j < msgDestRefs.length; j++) {
-                    String mdrn = msgDestRefs[j].getMessageDestinationRefName();
-                    if (msgDestRefName.equals(mdrn))
-                        return; // message-destination-ref found
+                for ( ; j < resourceRefs.length; j++) {
+                    String rrn = resourceRefs[j].getResRefName();
+                    if (resRefName.equals(rrn))
+                        return; // resource-ref found
                 }
-                if (j == msgDestRefs.length) { // message-destination-ref not found
-                    MessageDestinationRef mdr = new MessageDestinationRef();
-                    mdr.setMessageDestinationRefName(msgDestRefName);
-                    String jndiName = getJndiName(destName, destPrefix);
-                    mdr.setJndiName(jndiName);
-                    mdb.addMessageDestinationRef(mdr);
+                if (j == resourceRefs.length) {// resource-ref not found
+                    ResourceRef newRR = new ResourceRef();
+                    newRR.setResRefName(resRefName);
+                    newRR.setJndiName(jndiName);
+                    mdb.addResourceRef(newRR);
                 }
             }
         }
-    }
-    
-    private static String getJndiName(String destName, String destPrefix) {
-        return destPrefix + destName;
     }
     
 }
