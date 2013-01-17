@@ -182,8 +182,8 @@ public final class Composer {
     }
 
     @NbBundle.Messages("Composer.run.search=Composer (search)")
-    public Future<Integer> search(String token, boolean onlyName, final OutputProcessor<SearchResult> outputProcessor) {
-        PhpExecutable composer = getComposerExecutable(null, Bundle.Composer_run_search());
+    public Future<Integer> search(PhpModule phpModule, String token, boolean onlyName, final OutputProcessor<SearchResult> outputProcessor) {
+        PhpExecutable composer = getComposerExecutable(phpModule, Bundle.Composer_run_search());
         if (composer == null) {
             return null;
         }

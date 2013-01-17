@@ -46,8 +46,9 @@ import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import javax.swing.AbstractListModel;
@@ -87,9 +88,11 @@ public final class SearchPanel extends JPanel {
     private static final long serialVersionUID = -4572187014657456L;
 
     private static final RequestProcessor REQUEST_PROCESSOR = new RequestProcessor(SearchPanel.class);
+    private static final SearchResult SEARCHING_SEARCH_RESULT = new SearchResult(null, null);
+    private static final SearchResult NO_RESULTS_SEARCH_RESULT = new SearchResult(null, null);
 
     private final PhpModule phpModule;
-    private final List<SearchResult> searchResults = new CopyOnWriteArrayList<SearchResult>();
+    private final List<SearchResult> searchResults = Collections.synchronizedList(new ArrayList<SearchResult>());
     // @GuardedBy("EDT")
     private final ResultsListModel resultsModel = new ResultsListModel(searchResults);
 
@@ -185,6 +188,18 @@ public final class SearchPanel extends JPanel {
                 assert EventQueue.isDispatchThread();
                 searchResults.add(searchResult);
                 resultsModel.fireContentsChanged();
+            }
+        });
+    }
+
+    void removeSearchResult(final SearchResult searchResult) {
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                assert EventQueue.isDispatchThread();
+                if (searchResults.remove(searchResult)) {
+                    resultsModel.fireContentsChanged();
+                }
             }
         });
     }
@@ -289,13 +304,20 @@ public final class SearchPanel extends JPanel {
             return;
         }
         searchButton.setEnabled(false);
+        clearSearchResults();
+        addSearchResult(SEARCHING_SEARCH_RESULT);
         final Composer composerRef = composer;
         final String token = tokenTextField.getText();
         final boolean onlyName = onlyNameCheckBox.isSelected();
-        clearSearchResults();
-        final Future<Integer> result = composerRef.search(token, onlyName, new Composer.OutputProcessor<SearchResult>() {
+        final Future<Integer> result = composerRef.search(phpModule, token, onlyName, new Composer.OutputProcessor<SearchResult>() {
+            private boolean first = true;
+
             @Override
             public void process(SearchResult item) {
+                if (first) {
+                    clearSearchResults();
+                    first = false;
+                }
                 addSearchResult(item);
             }
         });
@@ -307,6 +329,15 @@ public final class SearchPanel extends JPanel {
                 public void run() {
                     try {
                         result.get();
+                        Mutex.EVENT.readAccess(new Runnable() {
+                            @Override
+                            public void run() {
+                                removeSearchResult(SEARCHING_SEARCH_RESULT);
+                                if (searchResults.isEmpty()) {
+                                    addSearchResult(NO_RESULTS_SEARCH_RESULT);
+                                }
+                            }
+                        });
                     } catch (InterruptedException ex) {
                         Thread.currentThread().interrupt();
                     } catch (ExecutionException ex) {
@@ -377,17 +408,23 @@ public final class SearchPanel extends JPanel {
             this.originalRenderer = originalRenderer;
         }
 
+        @NbBundle.Messages({
+            "# {0} - name",
+            "# {1} - description",
+            "SearchPanel.results.result=<html><b>{0}</b>: {1}",
+            "SearchPanel.results.searching=<html><i>Searching...</i>",
+            "SearchPanel.results.noResults=<html><i>No results found.</i>"
+        })
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            StringBuilder label = new StringBuilder(100);
-            if (value instanceof SearchResult) {
-                SearchResult result = (SearchResult) value;
-                label.append("<html><b>"); // NOI18N
-                label.append(result.getName());
-                label.append("</b> : "); // NOI18N
-                label.append(result.getDescription());
+            String label;
+            SearchResult result = (SearchResult) value;
+            if (result == SEARCHING_SEARCH_RESULT) {
+                label = Bundle.SearchPanel_results_searching();
+            } else if (result == NO_RESULTS_SEARCH_RESULT) {
+                label = Bundle.SearchPanel_results_noResults();
             } else {
-                assert false : "Unexpected value: " + value;
+                label = Bundle.SearchPanel_results_result(result.getName(), result.getDescription());
             }
             return originalRenderer.getListCellRendererComponent(list, label.toString(), index, isSelected, cellHasFocus);
         }
