@@ -42,7 +42,21 @@
 
 package org.netbeans.modules.cnd.highlight.error;
 
+import java.io.File;
+import java.util.Collection;
+import javax.swing.text.StyledDocument;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.Filter;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.cnd.source.spi.CndSourcePropertiesProvider;
+import org.openide.loaders.DataObject;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Test for IdentifierErrorProvider.
@@ -71,7 +85,6 @@ public class UnresolvedCpp11IdentifierTest extends ErrorHighlightingBaseTestCase
         performStaticTest("bug214184.cpp");
     }   
 
-    @RandomlyFails
     public void testBug214864() throws Exception {
         // Bug 214864 - C++11 parser error on constexpr 
         performStaticTest("bug214864.cpp");
@@ -82,7 +95,6 @@ public class UnresolvedCpp11IdentifierTest extends ErrorHighlightingBaseTestCase
         performStaticTest("bug217067.cpp");
     }        
 
-    @RandomlyFails
     public void testBug217052() throws Exception {
         // Bug 217052 - unexpected token: override in editor
         performStaticTest("bug217052.cpp");
@@ -128,6 +140,69 @@ public class UnresolvedCpp11IdentifierTest extends ErrorHighlightingBaseTestCase
         // Bug 222553 - Cannot parse "auto const a = 0;"
         performStaticTest("bug222553.cpp");
     }            
+
+    @Override
+    protected BaseDocument getBaseDocument(File testSourceFile) throws Exception {
+        BaseDocument doc = super.getBaseDocument(testSourceFile); 
+        Language language = (Language) doc.getProperty(Language.class);
+        assertNotNull(language);
+        InputAttributes lexerAttrs = (InputAttributes) doc.getProperty(InputAttributes.class);
+        assertNotNull(lexerAttrs);
+        Filter<CppTokenId> filter = (Filter<CppTokenId>) lexerAttrs.getValue(LanguagePath.get(language), CndLexerUtilities.LEXER_FILTER);
+        assertNotNull(lexerAttrs);
+        Collection<? extends CndSourcePropertiesProvider> providers = Lookups.forPath(CndSourcePropertiesProvider.REGISTRATION_PATH).lookupAll(CndSourcePropertiesProvider.class);
+        assertFalse(providers.isEmpty());
+        assertEquals("Unexpected Filter " + getFilterName(filter) + " for language " + language.mimeType(), CppTokenId.DECLTYPE, filter.check("decltype"));
+        return doc;
+    }
+
+    private String getFilterName(Filter<CppTokenId> filter) {
+        if (filter == CndLexerUtilities.getGccCFilter()) {
+            return "GccCFilter";
+        } else if (filter == CndLexerUtilities.getGccCpp11Filter()) {
+            return "GccCpp11Filter";
+        } else if (filter == CndLexerUtilities.getGccCppFilter()) {
+            return "GccCppFilter";
+        } else if (filter == CndLexerUtilities.getHeaderCFilter()) {
+            return "HeaderCFilter";
+        } else if (filter == CndLexerUtilities.getHeaderCpp11Filter()) {
+            return "HeaderCpp11Filter";
+        } else if (filter == CndLexerUtilities.getHeaderCppFilter()) {
+            return "HeaderCppFilter";
+        } else if (filter == CndLexerUtilities.getOmpFilter()) {
+            return "OmpFilter";
+        } else if (filter == CndLexerUtilities.getPreprocFilter()) {
+            return "PreprocFilter";
+        } else if (filter == CndLexerUtilities.getStdCFilter()) {
+            return "StdCFilter";
+        } else if (filter == CndLexerUtilities.getStdCpp11Filter()) {
+            return "StdCpp11Filter";
+        } else if (filter == CndLexerUtilities.getStdCppFilter()) {
+            return "StdCppFilter";
+        } else {
+            return "unknown Filter ";
+        }
+    }
+    
+    @ServiceProvider(path = CndSourcePropertiesProvider.REGISTRATION_PATH, service = CndSourcePropertiesProvider.class, position = 1200)
+    public final static class DocumentLanguageFlavorProvider implements CndSourcePropertiesProvider {
+
+        @Override
+        public void addProperty(DataObject dob, StyledDocument doc) {
+            Language<?> language = (Language<?>) doc.getProperty(Language.class);
+            Filter<?> filter = null;
+            if (language == CppTokenId.languageCpp()) {
+                filter = CndLexerUtilities.getGccCpp11Filter();
+            } else if (language == CppTokenId.languageHeader()) {
+                filter = CndLexerUtilities.getHeaderCpp11Filter();
+            }
+            if (filter != null) {
+                InputAttributes lexerAttrs = (InputAttributes) doc.getProperty(InputAttributes.class);
+                lexerAttrs.setValue(language, CndLexerUtilities.LEXER_FILTER, filter, true);  // NOI18N
+            }
+        }
+        
+    }
     
     /////////////////////////////////////////////////////////////////////
     // FAILS
