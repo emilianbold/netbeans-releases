@@ -90,7 +90,6 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 
 /**
@@ -366,12 +365,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
                 resultSet.add(javaFile);
             }
             javaFile.setAttribute("justCreatedByNewWizard", Boolean.TRUE); // NOI18N
-            DataObject dob = null;
-            try {
-                dob = DataObject.find(javaFile);
-            } catch (DataObjectNotFoundException ex) {
-                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex); // should not happen
-            }
+            DataObject dob = DataObject.find(javaFile);
             FileObject formFile = FileUtil.findBrother(dob.getPrimaryFile(), "form"); // NOI18N
 
             String[][] entity = instantiatePersitence(javaFile.getParent(), connection, masterTableName, detailFKTable);
