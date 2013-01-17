@@ -84,6 +84,8 @@ abstract class BaseJ2eeArchetypeProvider {
         map.put(Profile.JAVA_EE_5, archetype);
         map.put(Profile.JAVA_EE_6_FULL, archetype);
         map.put(Profile.JAVA_EE_6_WEB, archetype);
+        map.put(Profile.JAVA_EE_7_FULL, archetype);
+        map.put(Profile.JAVA_EE_7_WEB, archetype);
     }
     
     private Archetype createMojoArchetype(String version, String artifactId) {

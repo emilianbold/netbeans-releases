@@ -154,7 +154,7 @@ public class ServerSelectionHelper {
         String serverInstance = getSelectedServer().getServerInstanceID();
         Set<Profile> profiles = new TreeSet<Profile>(Profile.UI_COMPARATOR);
         
-        // If <No Server> option was selected, show all supported profiles
+        // If <No Server> option was selected, show all supported profiles except Java EE 7 profiles
         if (ExecutionChecker.DEV_NULL.equals(serverInstance)) {
             if (J2eeModule.Type.WAR.equals(projectType)) {
                 profiles.add(Profile.JAVA_EE_6_WEB);
