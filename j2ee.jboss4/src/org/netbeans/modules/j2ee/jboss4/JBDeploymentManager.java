@@ -403,7 +403,7 @@ public class JBDeploymentManager implements DeploymentManager {
         propertiesToIsRunning.put(ip, isRunning);
     }
 
-    boolean isAs7() {
+    public boolean isAs7() {
         if (as7 == null) {
             as7 = getProperties().isVersion(JBPluginUtils.JBOSS_7_0_0);
         }
