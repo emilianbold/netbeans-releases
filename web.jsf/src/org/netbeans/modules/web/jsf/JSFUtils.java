@@ -92,6 +92,7 @@ public class JSFUtils {
     public static final String JSF_1_2__API_SPECIFIC_CLASS = "javax.faces.application.StateManagerWrapper"; //NOI18N
     public static final String JSF_2_0__API_SPECIFIC_CLASS = "javax.faces.application.ProjectStage"; //NOI18N
     public static final String JSF_2_1__API_SPECIFIC_CLASS = "javax.faces.component.TransientStateHelper"; //NOI18N
+    public static final String JSF_2_2__API_SPECIFIC_CLASS = "javax.faces.flow.Flow"; //NOI18N
     public static final String JSF_2_0__IMPL_SPECIFIC_CLASS= "com.sun.faces.facelets.Facelet"; //NOI18N
     public static final String MYFACES_SPECIFIC_CLASS = "org.apache.myfaces.webapp.StartupServletContextListener"; //NOI18N
 
@@ -258,6 +259,10 @@ public class JSFUtils {
 
     public static boolean isJSF21Plus(WebModule webModule) {
         return isJSFPlus(webModule, JSF_2_1__API_SPECIFIC_CLASS);
+    }
+
+    public static boolean isJSF22Plus(WebModule webModule) {
+        return isJSFPlus(webModule, JSF_2_2__API_SPECIFIC_CLASS);
     }
 
     private static boolean isJSFPlus(WebModule webModule, String versionSpecificClass) {

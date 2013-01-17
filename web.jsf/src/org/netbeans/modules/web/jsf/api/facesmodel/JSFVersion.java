@@ -41,12 +41,26 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.web.jsf.api.facesmodel;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Map;
+import java.util.WeakHashMap;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.JSFUtils;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 /**
  *
- * @author Petr Pisl, ads
+ * @author Petr Pisl, ads, Martin Fousek
  */
 public enum JSFVersion {
     JSF_1_0,
@@ -55,4 +69,77 @@ public enum JSFVersion {
     JSF_2_0,
     JSF_2_1,
     JSF_2_2;
+    
+    private static final RequestProcessor RP = new RequestProcessor(JSFVersion.class);
+
+    // caches for holding JSF version and the project CP listeners
+    private static final Map<WebModule, JSFVersion> projectVersionCache = new WeakHashMap<WebModule, JSFVersion>();
+    private static final Map<WebModule, PropertyChangeListener> projectListenerCache = new WeakHashMap<WebModule, PropertyChangeListener>();
+
+    /**
+     * Gets the JSF version supported by the WebModule.
+     *
+     * @param webModule WebModule to seek for JSF version
+     * @param exact whether the JSF version must be exact and investigated synchronously, it guarantees that no
+     * {@code null} is return then
+     * @return JSF version for sure if exact parameter was set to (@code true), otherwise it can return {@code null}
+     */
+    @CheckForNull
+    public synchronized static JSFVersion forWebModule(@NonNull final WebModule webModule, boolean exact) {
+        JSFVersion version = projectVersionCache.get(webModule);
+        if (version == null) {
+            if (exact) {
+                version = getVersion(webModule);
+            }
+            RP.submit(new Runnable() {
+                @Override
+                public void run() {
+                    Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
+                    ClassPathProvider cpp = project.getLookup().lookup(ClassPathProvider.class);
+                    ClassPath compileCP = cpp.findClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
+                    PropertyChangeListener listener = WeakListeners.propertyChange(new PropertyChangeListener() {
+                        @Override
+                        public void propertyChange(PropertyChangeEvent evt) {
+                            if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName())) {
+                                projectVersionCache.put(webModule, getVersion(webModule));
+                            }
+                        }
+                    }, compileCP);
+                    projectListenerCache.put(webModule, listener);
+                    compileCP.addPropertyChangeListener(listener);
+                    projectVersionCache.put(webModule, getVersion(webModule));
+                }
+            });
+        }
+        return version;
+    }
+
+    /**
+     * Says whether the current instance is at least of the same JSF version.
+     *
+     * @param version version to compare
+     * @return {@code true} if the current instance is at least of the given version, {@code false} otherwise
+     */
+    public boolean isAtLeast(@NonNull JSFVersion version) {
+        int thisMajorVersion = Integer.parseInt(this.name().substring(4, 5));
+        int thisMinorVersion = Integer.parseInt(this.name().substring(6, 7));
+        int compMajorVersion = Integer.parseInt(version.name().substring(4, 5));
+        int compMinorVersion = Integer.parseInt(version.name().substring(6, 7));
+        return thisMajorVersion > compMajorVersion
+                || thisMajorVersion == compMajorVersion && thisMinorVersion >= compMinorVersion;
+    }
+
+    private static JSFVersion getVersion(WebModule webModule) {
+        if (JSFUtils.isJSF22Plus(webModule)) {
+            return JSFVersion.JSF_2_2;
+        } else if (JSFUtils.isJSF21Plus(webModule)) {
+            return JSFVersion.JSF_2_1;
+        } else if (JSFUtils.isJSF20Plus(webModule)) {
+            return JSFVersion.JSF_2_0;
+        } else if (JSFUtils.isJSF12Plus(webModule)) {
+            return JSFVersion.JSF_1_2;
+        } else {
+            return JSFVersion.JSF_1_1;
+        }
+    }
 }
