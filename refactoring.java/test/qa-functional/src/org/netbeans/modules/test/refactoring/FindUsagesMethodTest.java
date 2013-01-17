@@ -181,7 +181,7 @@ public class FindUsagesMethodTest extends FindUsagesTestCase {
         assertNotNull(tabbedPane);
 
         String title = tabbedPane.getTitleAt(tabbedPane.getTabCount() - 1);
-        ref(title + "\n");
+        ref(title);
         getRef().flush();
     }
 
