@@ -63,7 +63,6 @@ import org.netbeans.modules.j2ee.jboss4.config.gen.EjbRef;
 import org.netbeans.modules.j2ee.jboss4.config.gen.JbossWeb;
 import org.netbeans.modules.j2ee.jboss4.config.gen.MessageDestinationRef;
 import org.netbeans.modules.j2ee.jboss4.config.gen.ResourceRef;
-import org.netbeans.modules.j2ee.jboss4.config.mdb.JBossMessageDestination;
 import org.netbeans.modules.j2ee.jboss4.config.mdb.MessageDestinationSupport;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 import org.netbeans.modules.schema2beans.Common;
