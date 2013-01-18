@@ -260,6 +260,7 @@ public class EjbJarPersistenceProvider implements PersistenceLocationProvider, P
         for (JpaProvider provider : jpaSupport.getProviders()) {
             map.put(provider.getClassName(), provider);
         }
+        String lastDefaultVersion = null;
         for (Provider provider : providers) {
             JpaProvider jpa = map.get(provider.getProviderClass());
             if (jpa != null) {
@@ -268,8 +269,10 @@ public class EjbJarPersistenceProvider implements PersistenceLocationProvider, P
                         || ((version.equals(Persistence.VERSION_2_0) && jpa.isJpa2Supported())
                         || (version.equals(Persistence.VERSION_1_0) && jpa.isJpa1Supported()))) {
 
-                    if (jpa.isDefault()) {
+                    if (jpa.isDefault() && (lastDefaultVersion == null
+                            || lastDefaultVersion.equals(Persistence.VERSION_1_0))) {
                         result.add(0, provider);
+                        lastDefaultVersion = version;
                     } else {
                         result.add(provider);
                     }
