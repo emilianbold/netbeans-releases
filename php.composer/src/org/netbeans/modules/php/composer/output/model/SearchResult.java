@@ -49,6 +49,7 @@ public final class SearchResult {
     private final String name;
     private final String description;
 
+
     public SearchResult(String name, String description) {
         this.name = name;
         this.description = description;
