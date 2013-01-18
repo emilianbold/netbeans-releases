@@ -246,20 +246,27 @@ public class KdpDebugTask extends Task {
             try {
                 attemptCount++;
                 log(NbBundle.getMessage(KdpDebugTask.class, "LBL_ANT_DebuggerConnecting", Integer.toString(attemptCount)));
-                
-                if (transport.equals("dt_socket")) JPDADebugger.attach(host, intAddr, new Object[]{properties}); //NOI18N
-                else JPDADebugger.attach(address, new Object[]{properties});
-                
-                if (host == null) log(NbBundle.getMessage(KdpDebugTask.class, "LBL_ANT_Debugger_attached", address)); //NOI18N
-                else log(NbBundle.getMessage(KdpDebugTask.class, "LBL_ANT_Debugger_attached_with_host", host, address)); //NOI18N
+
+                final JPDADebugger debugger;
+                if (transport.equals("dt_socket")) {    //NOI18N
+                    debugger = JPDADebugger.attach(host, intAddr, new Object[]{properties});
+                } else {
+                    debugger = JPDADebugger.attach(address, new Object[]{properties});
+                }
+                final int state = debugger.getState();
+                if (state != JPDADebugger.STATE_RUNNING && state != JPDADebugger.STATE_STOPPED) {
+                    sleep();
+                    continue;
+                }
+                if (host == null) {
+                    log(NbBundle.getMessage(KdpDebugTask.class, "LBL_ANT_Debugger_attached", address)); //NOI18N
+                } else {
+                    log(NbBundle.getMessage(KdpDebugTask.class, "LBL_ANT_Debugger_attached_with_host", host, address)); //NOI18N
+                }
                 
                 debuggerConnected = true;
             } catch (DebuggerStartException e) {
-                try {
-                    Thread.sleep(this.period += 1000);
-                } catch (InterruptedException ie) {
-                    ie.printStackTrace();
-                }
+                sleep();
             }
         } while (!debuggerConnected && (System.currentTimeMillis() < this.startTime + this.timeout) && this.timeout != 0);
         
@@ -268,6 +275,14 @@ public class KdpDebugTask extends Task {
             log(NbBundle.getMessage(KdpDebugTask.class, "ERR_ANT_Debugger_timed_out", Integer.toString(attemptCount), Integer.toString(attemptTime)));
             throw new BuildException(NbBundle.getMessage(KdpDebugTask.class, "ERR_ANT_Debugger_timed_out", //NOI18N
                     Integer.toString(attemptCount), Integer.toString(attemptTime))); //NOI18N
+        }
+    }
+
+    private void sleep() {
+        try {
+            Thread.sleep(this.period += 1000);
+        } catch (InterruptedException ie) {
+            log(ie, Project.MSG_VERBOSE);
         }
     }
     
