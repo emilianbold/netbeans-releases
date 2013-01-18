@@ -1,6 +1,7 @@
 package org.netbeans.modules.j2ee.jboss4;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.MissingResourceException;
@@ -34,11 +35,52 @@ public class JB7Deployer extends JBDeployer {
         super(serverUri, dm);
     }
 
+    public static String deployFile(File file, File deployDir) throws IOException, InterruptedException {
+        FileObject foIn = FileUtil.toFileObject(file);
+        FileObject foDestDir = FileUtil.toFileObject(deployDir);
+        if (foIn == null) {
+            return NbBundle.getMessage(JB7Deployer.class, "MSG_DeployFileMissing", file.getAbsolutePath());
+        } else if (foDestDir == null) {
+            return NbBundle.getMessage(JB7Deployer.class, "MSG_DeployDirMissing", deployDir.getAbsolutePath());
+        }
+
+        File toDeploy = new File(deployDir + File.separator + file.getName());
+
+        FileUtil.copyFile(foIn, foDestDir, foIn.getName());
+
+        final long deployTime = toDeploy.lastModified();
+        File statusFile = new File(deployDir, file.getName() + ".deployed"); // NOI18N
+        File failedFile = new File(deployDir, file.getName() + ".failed"); // NOI18N
+        File progressFile = new File(deployDir, file.getName() + ".isdeploying"); // NOI18N
+
+        int i = 0;
+        int limit = ((int) TIMEOUT / POLLING_INTERVAL);
+        do {
+            Thread.sleep(POLLING_INTERVAL);
+            i++;
+            // what this condition says
+            // we are waiting and either there is progress file
+            // or (there is not a new enough status file
+            // and there is not a new enough failed file)
+        } while (i < limit && progressFile.exists()
+                || ((!statusFile.exists() || statusFile.lastModified() < deployTime)
+                && (!failedFile.exists() || failedFile.lastModified() < deployTime)));
+
+        if (failedFile.isFile()) {
+            FileObject fo = FileUtil.toFileObject(failedFile);
+            if (fo != null) {
+                return fo.asText();
+            }
+            return NbBundle.getMessage(JBDeployer.class, "MSG_FAILED");
+        } else if (!statusFile.isFile()) {
+            return NbBundle.getMessage(JBDeployer.class, "MSG_TIMEOUT");
+        }
+        return null;
+    }
+
     @Override
     public void run() {
         final String deployDir = InstanceProperties.getInstanceProperties(uri).getProperty(JBPluginProperties.PROPERTY_DEPLOY_DIR);
-        FileObject foIn = FileUtil.toFileObject(file);
-        FileObject foDestDir = FileUtil.toFileObject(new File(deployDir));
         String fileName = file.getName();
 
         File toDeploy = new File(deployDir + File.separator + fileName);
@@ -46,7 +88,7 @@ public class JB7Deployer extends JBDeployer {
             toDeploy.delete();
         }
 
-        fileName = fileName.substring(0, fileName.lastIndexOf('.'));
+        //fileName = fileName.substring(0, fileName.lastIndexOf('.'));
         String msg = NbBundle.getMessage(JBDeployer.class, "MSG_DEPLOYING", file.getAbsolutePath());
         fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, msg));
 
@@ -64,39 +106,10 @@ public class JB7Deployer extends JBDeployer {
                 }
             }
 
-            FileUtil.copyFile(foIn, foDestDir, fileName);
-
-            final long deployTime = toDeploy.lastModified();
-            File statusFile = new File(deployDir, file.getName() + ".deployed"); // NOI18N
-            File failedFile = new File(deployDir, file.getName() + ".failed"); // NOI18N
-            File progressFile = new File(deployDir, file.getName() + ".isdeploying"); // NOI18N
-
-            int i = 0;
-            int limit = ((int) TIMEOUT / POLLING_INTERVAL);
-            do {
-                Thread.sleep(POLLING_INTERVAL);
-                i++;
-            // what this condition says
-            // we are waiting and either there is progress file
-            // or (there is not a new enough status file
-            // and there is not a new enough failed file)
-            } while (i < limit && progressFile.exists()
-                    || ((!statusFile.exists() || statusFile.lastModified() < deployTime)
-                        && (!failedFile.exists() || failedFile.lastModified() < deployTime)));
-
-            if (failedFile.isFile()) {
-                FileObject fo = FileUtil.toFileObject(failedFile);
-                if (fo != null) {
-                    fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE,
-                            CommandType.DISTRIBUTE, StateType.FAILED, fo.asText()));
-                    return ;
-                }
-                fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                        NbBundle.getMessage(JBDeployer.class, "MSG_FAILED")));
-                return;
-            } else if (!statusFile.isFile()) {
-                fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
-                                        NbBundle.getMessage(JBDeployer.class, "MSG_TIMEOUT")));
+            String message = deployFile(file, new File(deployDir));
+            if (message != null) {
+                fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE,
+                        CommandType.DISTRIBUTE, StateType.FAILED, message));
                 return;
             }
 
