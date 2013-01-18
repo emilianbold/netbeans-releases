@@ -271,18 +271,23 @@ public class RepositoryRevision {
 
         @Override
         protected void perform () {
-            HistoryRegistry.ChangePathCollector coll = incoming
-                    ? new HistoryRegistry.ChangePathCollector() {
-                        @Override
-                        public HgLogMessageChangedPath[] getChangePaths () {
-                            HgLogMessage[] messages = HgCommand.getIncomingMessages(repositoryRoot, getLog().getCSetShortID(), true, true, false, 1, getLogger());
-                            return messages == null || messages.length == 0 ? new HgLogMessageChangedPath[0] : messages[0].getChangedPaths();
+            HgLogMessageChangedPath[] paths;
+            if (getLog().getChangedPaths().length == 0) {
+                HistoryRegistry.ChangePathCollector coll = incoming
+                        ? new HistoryRegistry.ChangePathCollector() {
+                            @Override
+                            public HgLogMessageChangedPath[] getChangePaths () {
+                                HgLogMessage[] messages = HgCommand.getIncomingMessages(repositoryRoot, getLog().getCSetShortID(), true, true, false, 1, getLogger());
+                                return messages == null || messages.length == 0 ? new HgLogMessageChangedPath[0] : messages[0].getChangedPaths();
+                            }
                         }
-                    }
-                    : new HistoryRegistry.DefaultChangePathCollector(repositoryRoot, getLogger(), getLog().getCSetShortID());
-            List<HgLogMessageChangedPath> pathList = HistoryRegistry.getInstance().initializeChangePaths(
-                    repositoryRoot, coll, getLog(), false);
-            HgLogMessageChangedPath[] paths = pathList.toArray(new HgLogMessageChangedPath[pathList.size()]);
+                        : new HistoryRegistry.DefaultChangePathCollector(repositoryRoot, getLogger(), getLog().getCSetShortID());
+                List<HgLogMessageChangedPath> pathList = HistoryRegistry.getInstance().initializeChangePaths(
+                        repositoryRoot, coll, getLog(), false);
+                paths = pathList.toArray(new HgLogMessageChangedPath[pathList.size()]);
+            } else {
+                paths = getLog().getChangedPaths();
+            }
             final List<Event> logEvents = prepareEvents(paths);
             if (!isCanceled()) {
                 EventQueue.invokeLater(new Runnable() {

@@ -153,9 +153,12 @@ public class SyntaxHighlightTest extends EditorTestCase{
      * http://www.netbeans.org/issues/show_bug.cgi?id=93969
      */ 
     public void testCommentColor() throws IOException {
-	changeSetting(2, 2);
+        changeSetting(2, 2);
         new org.netbeans.jemmy.EventTool().waitNoEvent(2000);
-	checkCurrentColorSettings();
+        oper.close(false);  //reopen file
+        openSourceFile(curPackage, testClass);
+        oper =  new EditorOperator(testClass);        
+        checkCurrentColorSettings();
     }
 
     public void testOtherColors() throws IOException {
@@ -165,7 +168,10 @@ public class SyntaxHighlightTest extends EditorTestCase{
         changeSetting(15, 10); // "String", "Red"
         changeSetting(14, 4); // "Separarator", "Gray"
         changeSetting(16, 0); // "Whitespace", "Black"
-	new org.netbeans.jemmy.EventTool().waitNoEvent(2000);
+        new org.netbeans.jemmy.EventTool().waitNoEvent(2000);
+        oper.close(false);
+        openSourceFile(curPackage, testClass);
+        oper =  new EditorOperator(testClass);        
         checkCurrentColorSettings();
     }
 

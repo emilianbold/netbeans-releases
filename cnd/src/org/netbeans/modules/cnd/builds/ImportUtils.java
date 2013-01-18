@@ -169,14 +169,19 @@ public final class ImportUtils {
                             } else if (q == c) {
                                 q = 0;
                             }
-                        }
-                        if (q == 0 && (c == ' ' || c == '(' || c == ')')) { //NOI18N
-                            if (prev != '\\') { //NOI18N
-                                break;
-                            } else {
-                                if (!onlyEnv) {
-                                    key.setLength(key.length()-1);
+                        } else if (c == ' ') {
+                            if (q == 0) {
+                                if (prev != '\\') { //NOI18N
+                                    break;
+                                } else {
+                                    if (!onlyEnv) {
+                                        key.setLength(key.length()-1);
+                                    }
                                 }
+                            }
+                        } else if (prev == '\\') {
+                            if (!onlyEnv) {
+                                key.setLength(key.length()-1);
                             }
                         }
                         if (!onlyEnv) {

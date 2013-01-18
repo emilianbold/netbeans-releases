@@ -47,6 +47,7 @@ package org.netbeans.modules.debugger.ui;
 import java.lang.reflect.Method;
 import org.openide.LifecycleManager;
 import org.openide.modules.ModuleInstall;
+import org.openide.util.Exceptions;
 import org.openide.windows.WindowManager;
 import org.openide.windows.WindowSystemEvent;
 import org.openide.windows.WindowSystemListener;
@@ -85,7 +86,7 @@ public class DebuggerModule extends ModuleInstall implements WindowSystemListene
             Method isExitingMethod = lcm.getClass().getMethod("isExiting");
             return (Boolean) isExitingMethod.invoke(lcm);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
             return false;
         }
     }

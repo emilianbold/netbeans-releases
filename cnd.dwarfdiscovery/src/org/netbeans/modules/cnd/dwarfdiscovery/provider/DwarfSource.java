@@ -61,7 +61,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
@@ -442,6 +441,9 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
                             String value = s.substring(j+1);
                             if (value.startsWith("'") && value.endsWith("'") && value.length() > 1) {// NOI18N
                                 value = value.substring(1, value.length()-1);
+                                value = DiscoveryUtils.removeEscape(value);
+                                s = key+value;
+                            } else {
                                 s = key+value;
                             }
                         } else {

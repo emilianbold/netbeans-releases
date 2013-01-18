@@ -65,7 +65,7 @@ import org.openide.util.Utilities;
  *
  * @author Jan Stola
  */
-public class DetailPanel implements WizardDescriptor.Panel {
+public final class DetailPanel implements WizardDescriptor.Panel {
     /** Determines whether we can proceed to the next panel. */
     private boolean valid;
     /** List of <code>ChangeListener</code> objects. */

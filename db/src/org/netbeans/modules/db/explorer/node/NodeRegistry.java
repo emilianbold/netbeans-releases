@@ -64,6 +64,7 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -87,6 +88,7 @@ public class NodeRegistry implements ChangeListener {
     private final List<NodeProvider> providers = new CopyOnWriteArrayList<NodeProvider>();
 
     private Lookup.Result lookupResult;
+    private LookupListener lookupListener;
     
     /** 
      * Create an instance of NodeRegistry.
@@ -117,13 +119,15 @@ public class NodeRegistry implements ChangeListener {
         initProviders(dataLookup);
         
         // listen for changes and re-init the providers when the lookup changes
-        lookupResult.addLookupListener(
-            new LookupListener() {
+        lookupResult.addLookupListener(WeakListeners.create(LookupListener.class,
+            lookupListener = new LookupListener() {
+                @Override
                 public void resultChanged(LookupEvent ev) {
                     initProviders(dataLookup);
                     changeSupport.fireChange();
                 }
-            }
+            },
+            lookupResult)
         );
     }
     

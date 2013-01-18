@@ -77,6 +77,8 @@ public class KeyMapOperator extends JDialogOperator {
     private JTextFieldOperator actionSearchByName;
     private JTextFieldOperator actionSearchByShortcut;
     private static OptionsOperator options;
+    
+    private static boolean firstInvocation = true;
 
     /** Creates a new instance of KeyMapOperator */
     public KeyMapOperator() {
@@ -88,7 +90,12 @@ public class KeyMapOperator extends JDialogOperator {
     public static KeyMapOperator invoke() {
         options = OptionsOperator.invoke();
         options.selectKeymap();
-        new EventTool().waitNoEvent(500);
+        if(firstInvocation) {
+          new EventTool().waitNoEvent(10000);
+          firstInvocation = false;
+        } else {
+          new EventTool().waitNoEvent(500);
+        }
         return new KeyMapOperator();
     }
 
@@ -153,7 +160,7 @@ public class KeyMapOperator extends JDialogOperator {
 
     private JListOperator clickShortcutEllipsisButton(JTableOperator tab, int row) {
         TableModel tm = tab.getModel();
-        TableCellRenderer cellRenderer = tab.getCellRenderer(row, row);
+        TableCellRenderer cellRenderer = tab.getCellRenderer(row, 2);
         Rectangle cellRect = tab.getCellRect(row, 1, true);
         //org.netbeans.modules.options.keymap.ShortcutCellPanel sc = (org.netbeans.modules.options.keymap.ShortcutCellPanel) tm.getValueAt(row, 1);
 //        final JButton button = sc.getButton();
@@ -306,21 +313,21 @@ public class KeyMapOperator extends JDialogOperator {
         manageProfilesButton().push();
         ManageProfilesDialogOperator mpdo = new ManageProfilesDialogOperator();
         mpdo.Restore(profileName);
-        mpdo.ok();
+        mpdo.close();
     }
 
     public void duplicateProfile(String profileNameOrig, String profileNameNew) {
         manageProfilesButton().push();
         ManageProfilesDialogOperator mpdo = new ManageProfilesDialogOperator();
         mpdo.Duplicate(profileNameOrig, profileNameNew);
-        mpdo.ok();
+        mpdo.close();
     }
 
     public void checkProfilesPresent(String... profileNames) {
         manageProfilesButton().push();
         ManageProfilesDialogOperator mpdo = new ManageProfilesDialogOperator();
         mpdo.checkProfileListContent(profileNames);
-        mpdo.cancel();
+        mpdo.close();
     }
 
     public JButtonOperator ok() {

@@ -110,11 +110,11 @@ public class ModifyingRefactoring extends RefactoringTestCase {
                     fail("File " + fileName + " does not exists");
                 }
                 if (f.isDirectory()) {
-                    ref("Created directory:\n");
+                    ref("Created directory:");
                     String rootDir = new File(getRefactroringTestFolder(), "src").getAbsolutePath();
-                    ref(fileName.substring(rootDir.length()).replace('\\', '/') + "\n");
+                    ref(fileName.substring(rootDir.length()).replace('\\', '/'));
                 } else {
-                    ref("Created file:\n");
+                    ref("Created file:");
                     ref(new File(fileName));
                 }
             }
@@ -124,7 +124,7 @@ public class ModifyingRefactoring extends RefactoringTestCase {
             if (!newFiles.contains(fileName)) {
                 ref("Deleted file:\n");
                 String rootDir = new File(getRefactroringTestFolder(), "src").getAbsolutePath();
-                ref(fileName.substring(rootDir.length()).replace('\\', '/'));
+                getRef().print(fileName.substring(rootDir.length()).replace('\\', '/'));
             }
         }
     }

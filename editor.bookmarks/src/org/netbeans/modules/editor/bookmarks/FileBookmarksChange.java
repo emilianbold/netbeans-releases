@@ -74,8 +74,11 @@ public class FileBookmarksChange {
     }
     
     void addChange(BookmarkChange change) {
-        assert (bookmarkChanges.put(change.getBookmark(), change) == null)
-                : "BookmarkChange already present: " + change; // NOI18N
+        Object o = bookmarkChanges.put(change.getBookmark(), change);
+        if (o != null) {
+            throw new IllegalStateException(
+                    "BookmarkChange already present: " + change); // NOI18N
+        }
     }
 
 }
