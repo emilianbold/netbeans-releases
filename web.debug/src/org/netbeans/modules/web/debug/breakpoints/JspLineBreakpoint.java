@@ -147,9 +147,12 @@ public class JspLineBreakpoint extends Breakpoint {
         javalb.addJPDABreakpointListener(new JPDABreakpointListener() {
             @Override
             public void breakpointReached(JPDABreakpointEvent event) {
+                DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
+                if (currentEngine == null) {
+                    return ; // The session has just ended.
+                }
                 List<? extends LazyActionsManagerListener> lamls =
-                        DebuggerManager.getDebuggerManager().getCurrentEngine().
-                        lookup(null, LazyActionsManagerListener.class);
+                        currentEngine.lookup(null, LazyActionsManagerListener.class);
                 for (LazyActionsManagerListener lam : lamls) {
                     if (lam instanceof BreakpointOutput) {
                         ((BreakpointOutput) lam).substituteAndPrintText(getPrintText(), event);
