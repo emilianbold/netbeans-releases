@@ -46,6 +46,8 @@ import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -98,6 +100,9 @@ public final class SearchPanel extends JPanel {
     private static final SearchResult NO_RESULTS_SEARCH_RESULT = new SearchResult(null, null);
     private static final String DEFAULT_PACKAGE_VERSION = ":*"; // NOI18N
 
+    // @GuardedBy("EDT")
+    private static boolean keepOpened = true;
+
     private final PhpModule phpModule;
     private final List<SearchResult> searchResults = Collections.synchronizedList(new ArrayList<SearchResult>());
     // @GuardedBy("EDT")
@@ -137,7 +142,9 @@ public final class SearchPanel extends JPanel {
                 searchPanel.requireButton,
                 DialogDescriptor.DEFAULT_ALIGN, null, null);
         descriptor.setClosingOptions(new Object[] {DialogDescriptor.CANCEL_OPTION});
+        descriptor.setAdditionalOptions(new Object[] {searchPanel.keepOpenCheckBox});
         final Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        handleKeepOpen(dialog, searchPanel);
         setSearchButtonAsDefault(dialog, searchPanel);
         dialog.setVisible(true);
     }
@@ -146,6 +153,20 @@ public final class SearchPanel extends JPanel {
         if (dialog instanceof JDialog) {
             ((JDialog) dialog).getRootPane().setDefaultButton(searchPanel.searchButton);
         }
+    }
+
+    private static void handleKeepOpen(final Dialog dialog, final SearchPanel searchPanel) {
+        ActionListener keepOpenActionListener = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!searchPanel.keepOpenCheckBox.isSelected()) {
+                    dialog.setVisible(false);
+                    dialog.dispose();
+                }
+            }
+        };
+        searchPanel.requireButton.addActionListener(keepOpenActionListener);
+        searchPanel.requireDevButton.addActionListener(keepOpenActionListener);
     }
 
     private void init() {
@@ -182,8 +203,11 @@ public final class SearchPanel extends JPanel {
     }
 
     private void initActionButons() {
+        assert EventQueue.isDispatchThread();
         // require buttons
         enableRequireButtons();
+        // keep opened checkbox
+        keepOpenCheckBox.setSelected(keepOpened);
         // listeners
         resultsList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -206,6 +230,13 @@ public final class SearchPanel extends JPanel {
             }
             private void processChange() {
                 enableRequireButtons();
+            }
+        });
+        keepOpenCheckBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                assert EventQueue.isDispatchThread();
+                keepOpened = e.getStateChange() == ItemEvent.SELECTED;
             }
         });
     }
@@ -302,6 +333,7 @@ public final class SearchPanel extends JPanel {
 
         requireDevButton = new JButton();
         requireButton = new JButton();
+        keepOpenCheckBox = new JCheckBox();
         tokenLabel = new JLabel();
         tokenTextField = new JTextField();
         onlyNameCheckBox = new JCheckBox();
@@ -327,6 +359,9 @@ public final class SearchPanel extends JPanel {
                 requireButtonActionPerformed(evt);
             }
         });
+
+        keepOpenCheckBox.setSelected(true);
+        Mnemonics.setLocalizedText(keepOpenCheckBox, NbBundle.getMessage(SearchPanel.class, "SearchPanel.keepOpenCheckBox.text")); // NOI18N
 
         Mnemonics.setLocalizedText(tokenLabel, NbBundle.getMessage(SearchPanel.class, "SearchPanel.tokenLabel.text")); // NOI18N
 
@@ -477,6 +512,7 @@ public final class SearchPanel extends JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JScrollPane detailsScrollPane;
     private JTextPane detailsTextPane;
+    private JCheckBox keepOpenCheckBox;
     private JLabel noteLabel;
     private JCheckBox onlyNameCheckBox;
     private JSplitPane outputSplitPane;
