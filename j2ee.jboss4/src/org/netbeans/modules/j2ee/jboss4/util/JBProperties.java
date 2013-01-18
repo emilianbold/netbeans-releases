@@ -166,6 +166,10 @@ public class JBProperties {
         return new File(ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR));
     }
 
+    public File getDeployDir() {
+        return new File(ip.getProperty(JBPluginProperties.PROPERTY_DEPLOY_DIR));
+    }
+
     public File getLibsDir() {
         return new File(getServerDir(), "lib"); // NOI18N
     }
