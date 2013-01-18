@@ -54,6 +54,8 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.dlight.libs.common.FileStatistics;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.impl.RemoteLogger;
@@ -389,6 +391,7 @@ public final class RemoteFileObject extends FileObject implements Serializable {
 
     @Override
     public InputStream getInputStream() throws FileNotFoundException {
+        FileStatistics.getInstance().logPath(getPath());
         if (!getImplementor().hasCache()) {
             if (isMimeResolving()) {
                 byte[] b = getImplementor().getMagic();
