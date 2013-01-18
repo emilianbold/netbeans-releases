@@ -58,6 +58,7 @@ import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -109,8 +110,6 @@ public final class SearchPanel extends JPanel {
 
     private static final long serialVersionUID = -4572187014657456L;
 
-    private static final RequestProcessor SEARCH_REQUEST_PROCESSOR = new RequestProcessor(SearchPanel.class.getName() + " (POST SEARCH)"); // NOI18N
-    private static final RequestProcessor SHOW_REQUEST_PROCESSOR = new RequestProcessor(SearchPanel.class.getName() + " (POST SHOW)"); // NOI18N
     private static final SearchResult SEARCHING_SEARCH_RESULT = new SearchResult(null, null);
     private static final SearchResult NO_RESULTS_SEARCH_RESULT = new SearchResult(null, null);
     private static final String DEFAULT_PACKAGE_VERSION = ":*"; // NOI18N
@@ -122,8 +121,12 @@ public final class SearchPanel extends JPanel {
     private final List<SearchResult> searchResults = Collections.synchronizedList(new ArrayList<SearchResult>());
     // @GuardedBy("EDT")
     private final ResultsListModel resultsModel = new ResultsListModel(searchResults);
-    private final List<Future<Integer>> cancellableTasks = Collections.synchronizedList(new ArrayList<Future<Integer>>());
     private final ConcurrentMap<String, String> resultDetails = new ConcurrentHashMap<String, String>();
+    // tasks
+    private final RequestProcessor postSearchRequestProcessor = new RequestProcessor(SearchPanel.class.getName() + " (POST SEARCH)"); // NOI18N
+    private final RequestProcessor postShowRequestProcessor = new RequestProcessor(SearchPanel.class.getName() + " (POST SHOW)"); // NOI18N
+    private final List<Future<Integer>> searchTasks = new CopyOnWriteArrayList<Future<Integer>>();
+    private final List<Future<Integer>> showTasks = new CopyOnWriteArrayList<Future<Integer>>();
 
 
     private SearchPanel(PhpModule phpModule) {
@@ -371,7 +374,7 @@ public final class SearchPanel extends JPanel {
         String loading = Bundle.SearchPanel_details_loading();
         String prev = resultDetails.putIfAbsent(resultName, loading);
         assert prev == null : "Previous message found?!: " + prev;
-        SHOW_REQUEST_PROCESSOR.post(new Runnable() {
+        postShowRequestProcessor.post(new Runnable() {
             @Override
             public void run() {
                 final StringBuffer buffer = new StringBuffer(200);
@@ -382,7 +385,7 @@ public final class SearchPanel extends JPanel {
                     }
                 });
                 if (task != null) {
-                    cancellableTasks.add(task);
+                    showTasks.add(task);
                     runWhenTaskFinish(task, new Runnable() {
                         @Override
                         public void run() {
@@ -438,9 +441,14 @@ public final class SearchPanel extends JPanel {
     }
 
     private void cleanUp() {
-        SEARCH_REQUEST_PROCESSOR.shutdownNow();
-        SHOW_REQUEST_PROCESSOR.shutdownNow();
-        for (Future<Integer> task : cancellableTasks) {
+        postSearchRequestProcessor.shutdownNow();
+        postShowRequestProcessor.shutdownNow();
+        cancelTasks(searchTasks);
+        cancelTasks(showTasks);
+    }
+
+    private void cancelTasks(List<Future<Integer>> tasks) {
+        for (Future<Integer> task : tasks) {
             assert task != null;
             task.cancel(true);
         }
@@ -589,6 +597,8 @@ public final class SearchPanel extends JPanel {
         if (composer == null) {
             return;
         }
+        cancelTasks(searchTasks);
+        cancelTasks(showTasks);
         searchButton.setEnabled(false);
         clearSearchResults();
         addSearchResult(SEARCHING_SEARCH_RESULT);
@@ -609,8 +619,8 @@ public final class SearchPanel extends JPanel {
         if (task == null) {
             enableSearchButton();
         } else {
-            cancellableTasks.add(task);
-            SEARCH_REQUEST_PROCESSOR.post(new Runnable() {
+            searchTasks.add(task);
+            postSearchRequestProcessor.post(new Runnable() {
                 @Override
                 public void run() {
                     runWhenTaskFinish(task, new Runnable() {
