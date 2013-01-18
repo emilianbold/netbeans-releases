@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.jboss4.config.mdb;
+package org.netbeans.modules.j2ee.jboss4.config;
 
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 
