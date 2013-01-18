@@ -47,6 +47,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
@@ -223,7 +224,7 @@ public final class Composer {
                 // avoid parser confusion
                 .redirectErrorStream(false);
         // descriptor
-        ExecutionDescriptor descriptor = getDescriptor()
+        ExecutionDescriptor descriptor = getDescriptor(phpModule)
                 .frontWindow(false);
         // run
         return composer
@@ -256,7 +257,7 @@ public final class Composer {
                 // avoid parser confusion
                 .redirectErrorStream(false);
         // descriptor
-        ExecutionDescriptor descriptor = getDescriptor()
+        ExecutionDescriptor descriptor = getDescriptor(phpModule)
                 .frontWindow(false);
         // run
         return composer
@@ -284,7 +285,7 @@ public final class Composer {
         }
         return composer
                 .additionalParameters(mergeParameters(command, DEFAULT_PARAMS, commandParams))
-                .run(getDescriptor());
+                .run(getDescriptor(phpModule));
     }
 
     private PhpExecutable getComposerExecutable(PhpModule phpModule, String title) {
@@ -313,10 +314,24 @@ public final class Composer {
         return allParams;
     }
 
-    private ExecutionDescriptor getDescriptor() {
-        return PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
+    private ExecutionDescriptor getDescriptor(@NullAllowed PhpModule phpModule) {
+        ExecutionDescriptor descriptor = PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
                 .optionsPath(ComposerOptionsPanelController.getOptionsPath())
                 .inputVisible(false);
+        if (phpModule != null) {
+            final FileObject sourceDirectory = phpModule.getSourceDirectory();
+            if (sourceDirectory != null) {
+                descriptor = descriptor
+                        .postExecution(new Runnable() {
+                            @Override
+                            public void run() {
+                                // refresh sources after running command
+                                sourceDirectory.refresh();
+                            }
+                        });
+            }
+        }
+        return descriptor;
     }
 
     @NbBundle.Messages({
