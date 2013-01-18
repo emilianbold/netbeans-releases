@@ -44,7 +44,7 @@ import org.openide.util.Lookup;
  *
  * @author Petr Hejl
  */
-class JBAbilitiesSupport {
+public class JBAbilitiesSupport {
 
     private final Lookup lookup;
 
@@ -54,6 +54,8 @@ class JBAbilitiesSupport {
     
     private Boolean isJB6x = null;
 
+    private Boolean isJB7x= null;
+    
     /**
      * Constructs the JBAbilitiesSupport.
      *
@@ -101,6 +103,14 @@ class JBAbilitiesSupport {
             isJB6x = version != null && JBPluginUtils.JBOSS_6_0_0.compareTo(version) <= 0;
         }
         return isJB6x;
+    }  
+    
+    public boolean isJB7x() {
+        if (isJB7x == null) {
+            JBDeploymentManager dm = lookup.lookup(JBDeploymentManager.class);
+            Version version = dm.getProperties().getServerVersion();
+            isJB7x = version != null && JBPluginUtils.JBOSS_7_0_0.compareTo(version) <= 0;
+        }
+        return isJB7x;
     }    
-
 }

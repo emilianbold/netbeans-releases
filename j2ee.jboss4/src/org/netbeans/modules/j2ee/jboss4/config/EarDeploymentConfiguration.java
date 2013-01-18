@@ -52,6 +52,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.jboss4.config.gen.JbossApp;
+import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
@@ -71,12 +72,16 @@ implements ModuleConfiguration, DeploymentPlanConfiguration {
     
     private File jbossAppFile;
     private JbossApp jbossApp;
-        
+
+    public EarDeploymentConfiguration(J2eeModule j2eeModule) {
+        this(j2eeModule, null);
+    }
+
     /**
      * Creates a new instance of EarDeploymentConfiguration 
      */
-    public EarDeploymentConfiguration(J2eeModule j2eeModule) {
-        super(j2eeModule);
+    public EarDeploymentConfiguration(J2eeModule j2eeModule, JBPluginUtils.Version version) {
+        super(j2eeModule, version);
         jbossAppFile = j2eeModule.getDeploymentConfigurationFile("META-INF/jboss-app.xml"); // NOI18N
         getJbossApp();
         if (deploymentDescriptorDO == null) {
