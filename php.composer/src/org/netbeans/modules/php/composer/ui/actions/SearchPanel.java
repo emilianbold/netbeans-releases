@@ -49,30 +49,35 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import javax.swing.AbstractAction;
 import javax.swing.AbstractListModel;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
@@ -82,6 +87,7 @@ import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.StringUtils;
@@ -103,7 +109,8 @@ public final class SearchPanel extends JPanel {
 
     private static final long serialVersionUID = -4572187014657456L;
 
-    private static final RequestProcessor REQUEST_PROCESSOR = new RequestProcessor(SearchPanel.class);
+    private static final RequestProcessor SEARCH_REQUEST_PROCESSOR = new RequestProcessor(SearchPanel.class.getName() + " (POST SEARCH)"); // NOI18N
+    private static final RequestProcessor SHOW_REQUEST_PROCESSOR = new RequestProcessor(SearchPanel.class.getName() + " (POST SHOW)"); // NOI18N
     private static final SearchResult SEARCHING_SEARCH_RESULT = new SearchResult(null, null);
     private static final SearchResult NO_RESULTS_SEARCH_RESULT = new SearchResult(null, null);
     private static final String DEFAULT_PACKAGE_VERSION = ":*"; // NOI18N
@@ -116,7 +123,7 @@ public final class SearchPanel extends JPanel {
     // @GuardedBy("EDT")
     private final ResultsListModel resultsModel = new ResultsListModel(searchResults);
     private final List<Future<Integer>> cancellableTasks = Collections.synchronizedList(new ArrayList<Future<Integer>>());
-    private final Map<String, String> resultDetails = new ConcurrentHashMap<String, String>();
+    private final ConcurrentMap<String, String> resultDetails = new ConcurrentHashMap<String, String>();
 
 
     private SearchPanel(PhpModule phpModule) {
@@ -155,13 +162,29 @@ public final class SearchPanel extends JPanel {
         descriptor.setAdditionalOptions(new Object[] {searchPanel.keepOpenCheckBox});
         final Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         handleKeepOpen(dialog, searchPanel);
-        setSearchButtonAsDefault(dialog, searchPanel);
+        setDefaultButton(dialog, searchPanel);
         dialog.setVisible(true);
     }
 
-    private static void setSearchButtonAsDefault(Dialog dialog, final SearchPanel searchPanel) {
+    private static void setDefaultButton(Dialog dialog, final SearchPanel searchPanel) {
         if (dialog instanceof JDialog) {
-            ((JDialog) dialog).getRootPane().setDefaultButton(searchPanel.searchButton);
+            JRootPane rootPane = ((JDialog) dialog).getRootPane();
+            rootPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "search"); // NOI18N
+            rootPane.getActionMap().put("search", new AbstractAction() { // NOI18N
+                private static final long serialVersionUID = -4568616574687867L;
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (searchPanel.tokenTextField.hasFocus()) {
+                        if (searchPanel.searchButton.isEnabled()) {
+                            searchPanel.searchButton.doClick();
+                        }
+                    } else if (searchPanel.resultsList.hasFocus()) {
+                        if (searchPanel.requireButton.isEnabled()) {
+                            searchPanel.requireButton.doClick();
+                        }
+                    }
+                }
+            });
         }
     }
 
@@ -309,60 +332,73 @@ public final class SearchPanel extends JPanel {
 
     void enableRequireButtons() {
         assert EventQueue.isDispatchThread();
-        boolean valueSelected = resultsList.getSelectedIndices().length > 0;
+        boolean valueSelected = !getSelectedSearchResults().isEmpty();
         requireButton.setEnabled(valueSelected);
         requireDevButton.setEnabled(valueSelected);
     }
 
-    @NbBundle.Messages({
-        "SearchPanel.details.nothing=Double click result to see its details.",
-        "SearchPanel.details.loading=Loading result details..."
-    })
+    @NbBundle.Messages("SearchPanel.details.nothing=Double click result to see its details.")
     void updateResultDetails(boolean fetchDetails) {
         assert EventQueue.isDispatchThread();
         String msg = Bundle.SearchPanel_details_nothing();
-        if (resultsList.getSelectedIndices().length == 1) {
-            final String resultName = getSelectedSearchResults().get(0).getName();
-            String details = resultDetails.get(resultName);
+        List<SearchResult> selectedSearchResults = getSelectedSearchResults();
+        if (selectedSearchResults.size() == 1) {
+            String details = getResultsDetails(selectedSearchResults.get(0).getName(), fetchDetails);
             if (details != null) {
                 msg = details;
-            } else if (fetchDetails) {
-                msg = Bundle.SearchPanel_details_loading();
-                final Composer composer = getComposer();
-                if (composer != null) {
-                    REQUEST_PROCESSOR.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            final StringBuffer buffer = new StringBuffer(200);
-                            Future<Integer> task = composer.show(phpModule, resultName, new Composer.OutputProcessor<String>() {
-                                @Override
-                                public void process(String chunk) {
-                                    buffer.append(chunk);
-                                }
-                            });
-                            if (task != null) {
-                                cancellableTasks.add(task);
-                                runWhenTaskFinish(task, new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        EventQueue.invokeLater(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                resultDetails.put(resultName, buffer.toString());
-                                                updateResultDetails(false);
-                                            }
-                                        });
-                                    }
-                                }, null);
-                            }
-                        }
-                    });
-                }
-
             }
         }
         detailsTextPane.setText(msg);
         detailsTextPane.setCaretPosition(0);
+    }
+
+    @NbBundle.Messages("SearchPanel.details.loading=Loading result details...")
+    private String getResultsDetails(final String resultName, boolean fetchDetails) {
+        if (resultName == null) {
+            return null;
+        }
+        String details = resultDetails.get(resultName);
+        if (details != null) {
+            return details;
+        }
+        if (!fetchDetails) {
+            return null;
+        }
+        final Composer composer = getComposer();
+        if (composer == null) {
+            return null;
+        }
+        String loading = Bundle.SearchPanel_details_loading();
+        String prev = resultDetails.putIfAbsent(resultName, loading);
+        assert prev == null : "Previous message found?!: " + prev;
+        SHOW_REQUEST_PROCESSOR.post(new Runnable() {
+            @Override
+            public void run() {
+                final StringBuffer buffer = new StringBuffer(200);
+                Future<Integer> task = composer.show(phpModule, resultName, new Composer.OutputProcessor<String>() {
+                    @Override
+                    public void process(String chunk) {
+                        buffer.append(chunk);
+                    }
+                });
+                if (task != null) {
+                    cancellableTasks.add(task);
+                    runWhenTaskFinish(task, new Runnable() {
+                        @Override
+                        public void run() {
+                            EventQueue.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    resultDetails.put(resultName, buffer.toString());
+                                    updateResultDetails(false);
+                                }
+                            });
+                        }
+                    }, null);
+                }
+            }
+        });
+        return loading;
     }
 
     List<SearchResult> getSelectedSearchResults() {
@@ -373,7 +409,11 @@ public final class SearchPanel extends JPanel {
         }
         List<SearchResult> selectedResults = new ArrayList<SearchResult>(selectedValues.length);
         for (Object selectedValue : selectedValues) {
-            selectedResults.add((SearchResult) selectedValue);
+            if (selectedValue != null
+                    && selectedValue != SEARCHING_SEARCH_RESULT
+                    && selectedValue != NO_RESULTS_SEARCH_RESULT) {
+                selectedResults.add((SearchResult) selectedValue);
+            }
         }
         return selectedResults;
     }
@@ -398,13 +438,15 @@ public final class SearchPanel extends JPanel {
     }
 
     private void cleanUp() {
+        SEARCH_REQUEST_PROCESSOR.shutdownNow();
+        SHOW_REQUEST_PROCESSOR.shutdownNow();
         for (Future<Integer> task : cancellableTasks) {
             assert task != null;
             task.cancel(true);
         }
     }
 
-    void runWhenTaskFinish(Future<Integer> task, Runnable postTask, Runnable finalTask) {
+    void runWhenTaskFinish(Future<Integer> task, Runnable postTask, @NullAllowed Runnable finalTask) {
         try {
             task.get(3, TimeUnit.MINUTES);
             postTask.run();
@@ -550,8 +592,8 @@ public final class SearchPanel extends JPanel {
         searchButton.setEnabled(false);
         clearSearchResults();
         addSearchResult(SEARCHING_SEARCH_RESULT);
-        final String token = tokenTextField.getText();
-        final boolean onlyName = onlyNameCheckBox.isSelected();
+        String token = tokenTextField.getText();
+        boolean onlyName = onlyNameCheckBox.isSelected();
         final Future<Integer> task = composer.search(phpModule, token, onlyName, new Composer.OutputProcessor<SearchResult>() {
             private boolean first = true;
 
@@ -568,7 +610,7 @@ public final class SearchPanel extends JPanel {
             enableSearchButton();
         } else {
             cancellableTasks.add(task);
-            REQUEST_PROCESSOR.post(new Runnable() {
+            SEARCH_REQUEST_PROCESSOR.post(new Runnable() {
                 @Override
                 public void run() {
                     runWhenTaskFinish(task, new Runnable() {
@@ -662,7 +704,12 @@ public final class SearchPanel extends JPanel {
         @Override
         public Object getElementAt(int index) {
             assert EventQueue.isDispatchThread();
-            return searchResults.get(index);
+            try {
+                return searchResults.get(index);
+            } catch (IndexOutOfBoundsException ex) {
+                // can happen while clearing results
+                return null;
+            }
         }
 
         public void fireContentsChanged() {
