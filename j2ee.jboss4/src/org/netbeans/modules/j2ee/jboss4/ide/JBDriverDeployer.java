@@ -48,6 +48,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -91,7 +92,7 @@ import org.openide.util.RequestProcessor;
  */
 public class JBDriverDeployer implements JDBCDriverDeployer {
     
-    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.j2ee.jboss4");
+    private static final Logger LOGGER = Logger.getLogger(JBDriverDeployer.class.getName());
     
     private final JBDeploymentManager manager;
     
@@ -122,6 +123,7 @@ public class JBDriverDeployer implements JDBCDriverDeployer {
             RequestProcessor.getDefault().post(this);
         }
     
+        @Override
         public void run() {
             List<FileObject> jdbcDriverURLs = jdbcDriversToDeploy();
             // deploy the driers if needed
@@ -198,6 +200,17 @@ public class JBDriverDeployer implements JDBCDriverDeployer {
         private Collection<File> getJDBCDriverClasspath() {
             JBProperties properties = manager.getProperties();
             return Arrays.asList(properties.getLibsDir().listFiles());
+        }
+
+        private Collection<File> getJDBCDriverClasspathAs7() {
+            JBProperties properties = manager.getProperties();
+            return Arrays.asList(properties.getDeployDir().listFiles(new FilenameFilter() {
+
+                @Override
+                public boolean accept(File dir, String name) {
+                    return name.endsWith(".jar"); // NOI18N
+                }
+            }));
         }
         
         public DeploymentStatus getDeploymentStatus() {
