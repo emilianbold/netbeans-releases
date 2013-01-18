@@ -90,6 +90,7 @@ import org.openide.util.RequestProcessor;
 /**
  *
  * @author Petr Hejl
+ * @author Pragalathan M
  */
 public class JBDeploymentManager implements DeploymentManager {
 

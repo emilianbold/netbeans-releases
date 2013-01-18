@@ -51,7 +51,6 @@ public class JB7Deployer extends JBDeployer {
         fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, msg));
 
         try {
-            FileUtil.copyFile(foIn, foDestDir, fileName);
             String webUrl = mainModuleID.getWebURL();
             if (webUrl == null) {
                 TargetModuleID[] ch = mainModuleID.getChildTargetModuleID();
@@ -65,39 +64,48 @@ public class JB7Deployer extends JBDeployer {
                 }
             }
 
+            FileUtil.copyFile(foIn, foDestDir, fileName);
+
             final long deployTime = toDeploy.lastModified();
+            File statusFile = new File(deployDir, file.getName() + ".deployed"); // NOI18N
+            File failedFile = new File(deployDir, file.getName() + ".failed"); // NOI18N
+            File progressFile = new File(deployDir, file.getName() + ".isdeploying"); // NOI18N
+
+            int i = 0;
+            int limit = ((int) TIMEOUT / POLLING_INTERVAL);
+            do {
+                Thread.sleep(POLLING_INTERVAL);
+                i++;
+            // what this condition says
+            // we are waiting and either there is progress file
+            // or (there is not a new enough status file
+            // and there is not a new enough failed file)
+            } while (i < limit && progressFile.exists()
+                    || ((!statusFile.exists() || statusFile.lastModified() < deployTime)
+                        && (!failedFile.exists() || failedFile.lastModified() < deployTime)));
+
+            if (failedFile.isFile()) {
+                FileObject fo = FileUtil.toFileObject(failedFile);
+                if (fo != null) {
+                    fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE,
+                            CommandType.DISTRIBUTE, StateType.FAILED, fo.asText()));
+                    return ;
+                }
+                fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                        NbBundle.getMessage(JBDeployer.class, "MSG_FAILED")));
+                return;
+            } else if (!statusFile.isFile()) {
+                fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED,
+                                        NbBundle.getMessage(JBDeployer.class, "MSG_TIMEOUT")));
+                return;
+            }
+
             final String finalWebUrl = webUrl;
             //Deploy file
-            String errorMessage = dm.invokeLocalAction(new Callable<String>() {
+            dm.invokeLocalAction(new Callable<Void>() {
 
                 @Override
-                public String call() throws Exception {
-                    File statusFile = new File(deployDir, file.getName() + ".deployed"); // NOI18N
-                    File failedFile = new File(deployDir, file.getName() + ".failed"); // NOI18N
-                    File progressFile = new File(deployDir, file.getName() + ".isdeploying"); // NOI18N
-
-                    int i = 0;
-                    int limit = ((int) TIMEOUT / POLLING_INTERVAL);
-                    do {
-                        Thread.sleep(POLLING_INTERVAL);
-                        i++;
-                    // what this condition says
-                    // we are waiting and either there is progress file
-                    // or (there is not a new enough status file
-                    // and there is not a new enough failed file)
-                    } while (i < limit && progressFile.exists()
-                            || ((!statusFile.exists() || statusFile.lastModified() < deployTime)
-                                && (!failedFile.exists() || failedFile.lastModified() < deployTime)));
-
-                    if (failedFile.isFile()) {
-                        FileObject fo = FileUtil.toFileObject(failedFile);
-                        if (fo != null) {
-                            return fo.asText();
-                        }
-                        return NbBundle.getMessage(JBDeployer.class, "MSG_FAILED");
-                    } else if (!statusFile.isFile()) {
-                        return NbBundle.getMessage(JBDeployer.class, "MSG_TIMEOUT");
-                    }
+                public Void call() throws Exception {
                     Target[] targets = dm.getTargets();
                     ModuleType moduleType = getModuleType(file.getName().substring(file.getName().lastIndexOf(".") + 1));
                     TargetModuleID[] modules = dm.getAvailableModules(moduleType, targets);
@@ -110,11 +118,6 @@ public class JB7Deployer extends JBDeployer {
                     return null;
                 }
             });
-
-            if (errorMessage != null) {
-                fireHandleProgressEvent(null, new JBDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.FAILED, errorMessage));
-                return;
-            }
 
             if (webUrl != null) {
                 URL url = new URL(webUrl);
