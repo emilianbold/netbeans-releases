@@ -44,17 +44,23 @@ package org.netbeans.modules.php.composer.ui.actions;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.EventQueue;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import javax.swing.AbstractListModel;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
@@ -109,7 +115,8 @@ public final class SearchPanel extends JPanel {
     private final List<SearchResult> searchResults = Collections.synchronizedList(new ArrayList<SearchResult>());
     // @GuardedBy("EDT")
     private final ResultsListModel resultsModel = new ResultsListModel(searchResults);
-    private final AtomicReference<Future<Integer>> searchTask = new AtomicReference<Future<Integer>>();
+    private final List<Future<Integer>> cancellableTasks = Collections.synchronizedList(new ArrayList<Future<Integer>>());
+    private final Map<String, String> resultDetails = new ConcurrentHashMap<String, String>();
 
 
     private SearchPanel(PhpModule phpModule) {
@@ -207,21 +214,17 @@ public final class SearchPanel extends JPanel {
     }
 
     private void initResults() {
+        // results
         resultsList.setModel(resultsModel);
         resultsList.setCellRenderer(new ResultListCellRenderer(resultsList.getCellRenderer()));
-    }
-
-    private void initActionButons() {
-        assert EventQueue.isDispatchThread();
-        // require buttons
-        enableRequireButtons();
-        // keep opened checkbox
-        keepOpenCheckBox.setSelected(keepOpened);
+        // details
+        updateResultDetails(false);
         // listeners
         resultsList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 enableRequireButtons();
+                updateResultDetails(false);
             }
         });
         resultsModel.addListDataListener(new ListDataListener() {
@@ -239,8 +242,18 @@ public final class SearchPanel extends JPanel {
             }
             private void processChange() {
                 enableRequireButtons();
+                updateResultDetails(false);
             }
         });
+    }
+
+    private void initActionButons() {
+        assert EventQueue.isDispatchThread();
+        // require buttons
+        enableRequireButtons();
+        // keep opened checkbox
+        keepOpenCheckBox.setSelected(keepOpened);
+        // listeners
         keepOpenCheckBox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
@@ -301,6 +314,57 @@ public final class SearchPanel extends JPanel {
         requireDevButton.setEnabled(valueSelected);
     }
 
+    @NbBundle.Messages({
+        "SearchPanel.details.nothing=Double click result to see its details.",
+        "SearchPanel.details.loading=Loading result details..."
+    })
+    void updateResultDetails(boolean fetchDetails) {
+        assert EventQueue.isDispatchThread();
+        String msg = Bundle.SearchPanel_details_nothing();
+        if (resultsList.getSelectedIndices().length == 1) {
+            final String resultName = getSelectedSearchResults().get(0).getName();
+            String details = resultDetails.get(resultName);
+            if (details != null) {
+                msg = details;
+            } else if (fetchDetails) {
+                msg = Bundle.SearchPanel_details_loading();
+                final Composer composer = getComposer();
+                if (composer != null) {
+                    REQUEST_PROCESSOR.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            final StringBuffer buffer = new StringBuffer(200);
+                            Future<Integer> task = composer.show(phpModule, resultName, new Composer.OutputProcessor<String>() {
+                                @Override
+                                public void process(String chunk) {
+                                    buffer.append(chunk);
+                                }
+                            });
+                            if (task != null) {
+                                cancellableTasks.add(task);
+                                runWhenTaskFinish(task, new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        EventQueue.invokeLater(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                resultDetails.put(resultName, buffer.toString());
+                                                updateResultDetails(false);
+                                            }
+                                        });
+                                    }
+                                }, null);
+                            }
+                        }
+                    });
+                }
+
+            }
+        }
+        detailsTextPane.setText(msg);
+        detailsTextPane.setCaretPosition(0);
+    }
+
     List<SearchResult> getSelectedSearchResults() {
         assert EventQueue.isDispatchThread();
         Object[] selectedValues = resultsList.getSelectedValues();
@@ -334,14 +398,29 @@ public final class SearchPanel extends JPanel {
     }
 
     private void cleanUp() {
-        Future<Integer> result = searchTask.get();
-        if (result == null
-                || result.isDone()
-                || result.isCancelled()) {
-            // noop
-            return;
+        for (Future<Integer> task : cancellableTasks) {
+            assert task != null;
+            task.cancel(true);
         }
-        result.cancel(true);
+    }
+
+    void runWhenTaskFinish(Future<Integer> task, Runnable postTask, Runnable finalTask) {
+        try {
+            task.get(3, TimeUnit.MINUTES);
+            postTask.run();
+        } catch (TimeoutException ex) {
+            task.cancel(true);
+        } catch (CancellationException ex) {
+            // noop, dialog is being closed
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException ex) {
+            UiUtils.processExecutionException(ex, ComposerOptionsPanelController.OPTIONS_SUBPATH);
+        } finally {
+            if (finalTask != null) {
+                finalTask.run();
+            }
+        }
     }
 
     /**
@@ -398,12 +477,17 @@ public final class SearchPanel extends JPanel {
 
         outputSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
 
+        resultsList.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent evt) {
+                resultsListMouseClicked(evt);
+            }
+        });
         resultsScrollPane.setViewportView(resultsList);
 
         outputSplitPane.setLeftComponent(resultsScrollPane);
 
         detailsTextPane.setEditable(false);
-        detailsTextPane.setText(NbBundle.getMessage(SearchPanel.class, "SearchPanel.detailsTextPane.text")); // NOI18N
+        detailsTextPane.setFont(new Font("Monospaced", 0, 12)); // NOI18N
         detailsScrollPane.setViewportView(detailsTextPane);
 
         outputSplitPane.setBottomComponent(detailsScrollPane);
@@ -468,7 +552,7 @@ public final class SearchPanel extends JPanel {
         addSearchResult(SEARCHING_SEARCH_RESULT);
         final String token = tokenTextField.getText();
         final boolean onlyName = onlyNameCheckBox.isSelected();
-        final Future<Integer> result = composer.search(phpModule, token, onlyName, new Composer.OutputProcessor<SearchResult>() {
+        final Future<Integer> task = composer.search(phpModule, token, onlyName, new Composer.OutputProcessor<SearchResult>() {
             private boolean first = true;
 
             @Override
@@ -480,33 +564,32 @@ public final class SearchPanel extends JPanel {
                 addSearchResult(item);
             }
         });
-        if (result == null) {
+        if (task == null) {
             enableSearchButton();
         } else {
-            searchTask.set(result);
+            cancellableTasks.add(task);
             REQUEST_PROCESSOR.post(new Runnable() {
                 @Override
                 public void run() {
-                    try {
-                        result.get();
-                        Mutex.EVENT.readAccess(new Runnable() {
-                            @Override
-                            public void run() {
-                                removeSearchResult(SEARCHING_SEARCH_RESULT);
-                                if (searchResults.isEmpty()) {
-                                    addSearchResult(NO_RESULTS_SEARCH_RESULT);
+                    runWhenTaskFinish(task, new Runnable() {
+                        @Override
+                        public void run() {
+                            EventQueue.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    removeSearchResult(SEARCHING_SEARCH_RESULT);
+                                    if (searchResults.isEmpty()) {
+                                        addSearchResult(NO_RESULTS_SEARCH_RESULT);
+                                    }
                                 }
-                            }
-                        });
-                    } catch (CancellationException ex) {
-                        // noop, dialog is being closed
-                    } catch (InterruptedException ex) {
-                        Thread.currentThread().interrupt();
-                    } catch (ExecutionException ex) {
-                        UiUtils.processExecutionException(ex, ComposerOptionsPanelController.OPTIONS_SUBPATH);
-                    } finally {
-                        enableSearchButton();
-                    }
+                            });
+                        }
+                    }, new Runnable() {
+                        @Override
+                        public void run() {
+                            enableSearchButton();
+                        }
+                    });
                 }
             });
         }
@@ -531,6 +614,12 @@ public final class SearchPanel extends JPanel {
         assert !selectedNames.isEmpty();
         composer.requireDev(phpModule, selectedNames.toArray(new String[selectedNames.size()]));
     }//GEN-LAST:event_requireDevButtonActionPerformed
+
+    private void resultsListMouseClicked(MouseEvent evt) {//GEN-FIRST:event_resultsListMouseClicked
+        if (evt.getClickCount() == 2) {
+            updateResultDetails(true);
+        }
+    }//GEN-LAST:event_resultsListMouseClicked
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JScrollPane detailsScrollPane;
