@@ -284,12 +284,23 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
                     (J2eePlatform.TOOL_WSCOMPILE.equals(toolName) || J2eePlatform.TOOL_APP_CLIENT_RUNTIME.equals(toolName)) ) {
                     return true;
             }
+
             if ("org.hibernate.ejb.HibernatePersistence".equals(toolName)
                     || "oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider".equals(toolName)
                     || "kodo.persistence.PersistenceProviderImpl".equals(toolName)) {
                 return containsPersistenceProvider(toolName);
             }
+
+            if("jpaversionverification".equals(toolName)) { // NOI18N
+                return true;
+            }
             Version version = properties.getServerVersion();
+            if("jpa1.0".equals(toolName)) { // NOI18N
+                return true;
+            }
+            if("jpa2.0".equals(toolName)) { // NOI18N
+                return version != null && JBPluginUtils.JBOSS_6_0_0.compareTo(version) <= 0;
+            }
             if (version != null && JBPluginUtils.JBOSS_6_0_0.compareTo(version) <= 0) {
                 if ("hibernatePersistenceProviderIsDefault2.0".equals(toolName)) {
                     return true;

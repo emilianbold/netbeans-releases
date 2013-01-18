@@ -101,11 +101,8 @@ public class JBOptionalDeploymentManagerFactory extends OptionalDeploymentManage
         return null;
     }
     
+    @Override
      public JDBCDriverDeployer getJDBCDriverDeployer(DeploymentManager dm) {
-         JBDeploymentManager jbdm = ((JBDeploymentManager) dm);
-         if (jbdm.isAs7()) {
-            return null;
-         }
          return new JBDriverDeployer((JBDeploymentManager) dm);
      }
 
