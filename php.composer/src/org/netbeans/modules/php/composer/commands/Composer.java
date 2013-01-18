@@ -83,6 +83,7 @@ public final class Composer {
     private static final String VALIDATE_COMMAND = "validate"; // NOI18N
     private static final String SELF_UPDATE_COMMAND = "self-update"; // NOI18N
     private static final String SEARCH_COMMAND = "search"; // NOI18N
+    private static final String SHOW_COMMAND = "show"; // NOI18N
     // params
     private static final String ANSI_PARAM = "--ansi"; // NOI18N
     private static final String NO_INTERACTION_PARAM = "--no-interaction"; // NOI18N
@@ -227,6 +228,37 @@ public final class Composer {
                                 for (SearchResult result : Parsers.parseSearch(new String(chars))) {
                                     outputProcessor.process(result);
                                 }
+                            }
+                        });
+                    }
+                });
+    }
+
+    @NbBundle.Messages("Composer.run.show=Composer (show)")
+    public Future<Integer> show(PhpModule phpModule, String name, final OutputProcessor<String> outputProcessor) {
+        PhpExecutable composer = getComposerExecutable(phpModule, Bundle.Composer_run_show());
+        if (composer == null) {
+            return null;
+        }
+        // params
+        List<String> defaultParams = new ArrayList<String>(DEFAULT_PARAMS);
+        defaultParams.remove(ANSI_PARAM);
+        composer = composer
+                .additionalParameters(mergeParameters(SHOW_COMMAND, defaultParams, Collections.singletonList(name)))
+                // avoid parser confusion
+                .redirectErrorStream(false);
+        // descriptor
+        ExecutionDescriptor descriptor = getDescriptor()
+                .frontWindow(false);
+        // run
+        return composer
+                .run(descriptor, new ExecutionDescriptor.InputProcessorFactory() {
+                    @Override
+                    public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                        return new OutputProcessorImpl(new OutputParser() {
+                            @Override
+                            public void parse(char[] chars) {
+                                outputProcessor.process(new String(chars));
                             }
                         });
                     }
