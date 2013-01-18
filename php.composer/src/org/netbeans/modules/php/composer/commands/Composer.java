@@ -73,7 +73,7 @@ public final class Composer {
     public static final String NAME = "composer"; // NOI18N
     public static final String LONG_NAME = NAME + ".phar"; // NOI18N
 
-    private static final String LOCK_FILENAME = "composer.json"; // NOI18N
+    private static final String COMPOSER_FILENAME = "composer.json"; // NOI18N
 
     // commands
     private static final String INIT_COMMAND = "init"; // NOI18N
@@ -123,16 +123,24 @@ public final class Composer {
         return PhpExecutableValidator.validateCommand(composerPath, Bundle.Composer_script_label());
     }
 
+    public Future<Integer> initIfNotPresent(PhpModule phpModule) {
+        FileObject configFile = getComposerConfigFile(phpModule);
+        if (configFile != null && configFile.isValid()) {
+            return null;
+        }
+        return init(phpModule);
+    }
+
     @NbBundle.Messages({
         "Composer.run.init=Composer (init)",
-        "Composer.lockFile.exists=Composer lock file already exists - overwrite it?",
+        "Composer.file.exists=Composer config file already exists - overwrite it?",
         "# {0} - project name",
         "Composer.init.description=Description of project {0}."
     })
     public Future<Integer> init(PhpModule phpModule) {
-        FileObject lockFile = getLockFile(phpModule);
-        if (lockFile != null && lockFile.isValid()) {
-            if (!userConfirmation(phpModule.getDisplayName(), Bundle.Composer_lockFile_exists())) {
+        FileObject configFile = getComposerConfigFile(phpModule);
+        if (configFile != null && configFile.isValid()) {
+            if (!userConfirmation(phpModule.getDisplayName(), Bundle.Composer_file_exists())) {
                 return null;
             }
         }
@@ -320,13 +328,13 @@ public final class Composer {
                 new NotifyDescriptor.Message(Bundle.Composer_project_noSources(projectName), NotifyDescriptor.WARNING_MESSAGE));
     }
 
-    private FileObject getLockFile(PhpModule phpModule) {
+    private FileObject getComposerConfigFile(PhpModule phpModule) {
         FileObject sourceDirectory = phpModule.getSourceDirectory();
         if (sourceDirectory == null) {
             // broken project
             return null;
         }
-        return sourceDirectory.getFileObject(LOCK_FILENAME);
+        return sourceDirectory.getFileObject(COMPOSER_FILENAME);
     }
 
     private boolean userConfirmation(String title, String question) {
