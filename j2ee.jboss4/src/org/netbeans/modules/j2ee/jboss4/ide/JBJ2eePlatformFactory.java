@@ -91,7 +91,13 @@ import org.openide.util.lookup.Lookups;
  * @author Kirill Sorokin <Kirill.Sorokin@Sun.COM>
  */
 public class JBJ2eePlatformFactory extends J2eePlatformFactory {
-    
+
+    static final String HIBERNATE_JPA_PROVIDER = "org.hibernate.ejb.HibernatePersistence";
+
+    static final String TOPLINK_JPA_PROVIDER = "oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider";
+
+    static final String KODO_JPA_PROVIDER = "kodo.persistence.PersistenceProviderImpl";
+
     private static final WeakHashMap<InstanceProperties,J2eePlatformImplImpl> instanceCache = new WeakHashMap<InstanceProperties,J2eePlatformImplImpl>();
     
     public synchronized J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
@@ -285,22 +291,23 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
                     return true;
             }
 
-            if ("org.hibernate.ejb.HibernatePersistence".equals(toolName)
-                    || "oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider".equals(toolName)
-                    || "kodo.persistence.PersistenceProviderImpl".equals(toolName)) {
+            if (HIBERNATE_JPA_PROVIDER.equals(toolName)
+                    || TOPLINK_JPA_PROVIDER.equals(toolName)
+                    || KODO_JPA_PROVIDER.equals(toolName)) {
                 return containsPersistenceProvider(toolName);
             }
 
             if("jpaversionverification".equals(toolName)) { // NOI18N
                 return true;
             }
-            Version version = properties.getServerVersion();
             if("jpa1.0".equals(toolName)) { // NOI18N
                 return true;
             }
             if("jpa2.0".equals(toolName)) { // NOI18N
-                return version != null && JBPluginUtils.JBOSS_6_0_0.compareTo(version) <= 0;
+                return isJpa2Available();
             }
+
+            Version version = properties.getServerVersion();
             if (version != null && JBPluginUtils.JBOSS_6_0_0.compareTo(version) <= 0) {
                 if ("hibernatePersistenceProviderIsDefault2.0".equals(toolName)) {
                     return true;
@@ -315,6 +322,15 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
             }
 
             return false;
+        }
+
+        public boolean isJpa2Available() {
+            Version version = properties.getServerVersion();
+            return version != null && JBPluginUtils.JBOSS_6_0_0.compareTo(version) <= 0;
+        }
+
+        String getDefaultJpaProvider() {
+            return HIBERNATE_JPA_PROVIDER;
         }
         
         private boolean containsJaxWsLibraries() {
@@ -334,7 +350,7 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
             return false;
         }
 
-        private boolean containsPersistenceProvider(String providerName) {
+        boolean containsPersistenceProvider(String providerName) {
             return containsService(libraries, "javax.persistence.spi.PersistenceProvider", providerName);
         }
         
@@ -499,9 +515,9 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
 
         @Override
         public Lookup getLookup() {
-            WSStack<JaxWs> wsStack=WSStackFactory.createWSStack(JaxWs.class ,
+            WSStack<JaxWs> wsStack = WSStackFactory.createWSStack(JaxWs.class,
                     new JBossJaxWsStack(properties.getRootDir()), WSStack.Source.SERVER);
-            Lookup baseLookup = Lookups.fixed(properties.getRootDir(), wsStack);
+            Lookup baseLookup = Lookups.fixed(properties.getRootDir(), wsStack, new JpaSupportImpl(this));
             return LookupProviderSupport.createCompositeLookup(baseLookup, 
                     "J2EE/DeploymentPlugins/JBoss4/Lookup"); //NOI18N
         }
