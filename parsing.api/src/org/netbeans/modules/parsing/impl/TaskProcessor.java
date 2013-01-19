@@ -555,13 +555,15 @@ public class TaskProcessor {
             assert !Thread.holdsLock(INTERNAL_LOCK);
             assert parserLock.isHeldByCurrentThread();
             sampler.enableSampling();
+            final long now;
+            final long cancelTime;
             try {
                 task.run(result, event);
             } finally {
-                final long now = System.currentTimeMillis();
-                final long cancelTime = sampler.disableSampling();
-                return cancelTime == 0 ? 0 : now - cancelTime;
+                now = System.currentTimeMillis();
+                cancelTime = sampler.disableSampling();
             }
+            return cancelTime == 0 ? 0 : now - cancelTime;
     }
 
     static List<Embedding> callEmbeddingProvider(
