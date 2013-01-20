@@ -247,8 +247,8 @@ public class EjbJarPersistenceProvider implements PersistenceLocationProvider, P
         // XXX data nucleus ?
         candidates.add(ProviderUtil.OPENJPA_PROVIDER);
         candidates.add(ProviderUtil.OPENJPA_PROVIDER1_0);
+        candidates.add(ProviderUtil.ECLIPSELINK_PROVIDER); // 2.1
         candidates.add(ProviderUtil.ECLIPSELINK_PROVIDER2_0);
-        candidates.add(ProviderUtil.ECLIPSELINK_PROVIDER);
         addPersistenceProviders(candidates, platform, result);
         
         return result;
