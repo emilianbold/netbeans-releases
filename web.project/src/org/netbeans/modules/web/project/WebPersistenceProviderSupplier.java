@@ -91,17 +91,17 @@ public class WebPersistenceProviderSupplier implements PersistenceProviderSuppli
         List<Provider> candidates = new ArrayList<Provider>();
         // TODO why we are selecting only some of them  ?
         // can't we just use ProviderUtil.getAllProviders() ?
-        candidates.add(ProviderUtil.HIBERNATE_PROVIDER);
         candidates.add(ProviderUtil.HIBERNATE_PROVIDER2_1);
         candidates.add(ProviderUtil.HIBERNATE_PROVIDER2_0);
+        candidates.add(ProviderUtil.HIBERNATE_PROVIDER);
         candidates.add(ProviderUtil.TOPLINK_PROVIDER1_0);
         candidates.add(ProviderUtil.KODO_PROVIDER);
         candidates.add(ProviderUtil.DATANUCLEUS_PROVIDER);
         candidates.add(ProviderUtil.OPENJPA_PROVIDER);
         candidates.add(ProviderUtil.OPENJPA_PROVIDER1_0);
+        candidates.add(ProviderUtil.ECLIPSELINK_PROVIDER2_0);
         candidates.add(ProviderUtil.ECLIPSELINK_PROVIDER1_0);
         candidates.add(ProviderUtil.ECLIPSELINK_PROVIDER);
-        candidates.add(ProviderUtil.ECLIPSELINK_PROVIDER2_0);
         addPersistenceProviders(candidates, platform, result);
         
         return result;
@@ -117,6 +117,7 @@ public class WebPersistenceProviderSupplier implements PersistenceProviderSuppli
         if(dprovider!=null) {
             map.put(dprovider.getClassName(), dprovider);
         }
+        boolean defaultFound = false;
         for (Provider provider : providers) {
             JpaProvider jpa = map.get(provider.getProviderClass());
             if (jpa != null) {
@@ -125,8 +126,9 @@ public class WebPersistenceProviderSupplier implements PersistenceProviderSuppli
                         || (((version.equals(Persistence.VERSION_2_1) || version.equals(Persistence.VERSION_2_0)) && jpa.isJpa2Supported())
                         || (version.equals(Persistence.VERSION_1_0) && jpa.isJpa1Supported()))) {
 
-                    if (jpa.isDefault()) {
+                    if (jpa.isDefault() && !defaultFound) {
                         result.add(0, provider);
+                        defaultFound = true;
                     } else {
                         result.add(provider);
                     }
