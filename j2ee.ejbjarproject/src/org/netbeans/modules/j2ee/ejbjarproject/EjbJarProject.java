@@ -1499,7 +1499,7 @@ public class EjbJarProject implements Project, FileChangeListener {
 
     private final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
         transient private boolean isEE5 = false;
-        transient private boolean isEE6 = false;//if project support ee6 full version
+        transient private boolean isEE6Plus = false;//if project support ee6 full version or above
         transient private boolean checked = false;
         transient private boolean isArchive = false;
         transient private UpdateHelper helper = null;
@@ -1516,7 +1516,7 @@ public class EjbJarProject implements Project, FileChangeListener {
                 retVal = ARCHIVE_TYPES; 
             } else if (isEE5) {
                 retVal = JAVAEE5_TYPES;
-            } else if (isEE6) {
+            } else if (isEE6Plus) {
                 retVal = JAVAEE6_TYPES;
             } else {
                 retVal = TYPES;
@@ -1532,7 +1532,7 @@ public class EjbJarProject implements Project, FileChangeListener {
                 privileged.addAll(Arrays.asList(PRIVILEGED_NAMES_ARCHIVE));
             } else if (isEE5) {
                 privileged.addAll(Arrays.asList(PRIVILEGED_NAMES_EE5));
-            } else if (isEE6) {
+            } else if (isEE6Plus) {
                 privileged.addAll(Arrays.asList(PRIVILEGED_NAMES_EE5));
                 privileged.addAll(Arrays.asList(PRIVILEGED_NAMES_EE6));
             } else {
@@ -1545,7 +1545,7 @@ public class EjbJarProject implements Project, FileChangeListener {
             if (!checked){
                 Profile version=Profile.fromPropertiesString(evaluator().getProperty(EjbJarProjectProperties.J2EE_PLATFORM));
                 isEE5 = Profile.JAVA_EE_5==version;
-                isEE6 = Profile.JAVA_EE_6_FULL==version || Profile.JAVA_EE_7_FULL==version;
+                isEE6Plus = Profile.JAVA_EE_6_FULL==version || Profile.JAVA_EE_7_FULL==version;
                 final Object srcType = helper.getAntProjectHelper().
                         getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.JAVA_SOURCE_BASED);
                 if ("false".equals(srcType)) {
