@@ -1774,9 +1774,7 @@ public class MetaComponentCreator {
         Map<String, Object> changes = null;
 
         if (comp instanceof AbstractButton && targetComp instanceof JToolBar) {
-            if (changes == null) {
-                changes = new HashMap<String, Object>();
-            }
+            changes = new HashMap<String, Object>();
             changes.put("focusable", false); // NOI18N
             changes.put("horizontalTextPosition", SwingConstants.CENTER); // NOI18N
             changes.put("verticalTextPosition", SwingConstants.BOTTOM); // NOI18N

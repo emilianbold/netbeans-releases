@@ -2252,15 +2252,13 @@ class JavaCodeGenerator extends CodeGenerator {
 	java.util.List<FormProperty> creatorProperties = getCreatorProperties(creator, properties);
 															
 	java.util.List<FormProperty> remainingProperties = new ArrayList<FormProperty>();
-	if(properties !=null) {
-	    for (int i = 0; i < properties.length; i++) {
-		if( properties[i].isChanged() && 
-	            !creatorProperties.contains(properties[i]) ) 
-		{		    
-		    remainingProperties.add(properties[i]);			
-		}
-	    }					    						
-	}
+        for (int i = 0; i < properties.length; i++) {
+            if( properties[i].isChanged() &&
+                !creatorProperties.contains(properties[i]) )
+            {
+                remainingProperties.add(properties[i]);
+            }
+        }
 
 	String propertyInitializationString = 
 		creator.getJavaCreationCode(

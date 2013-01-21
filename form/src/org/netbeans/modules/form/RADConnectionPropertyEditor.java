@@ -406,9 +406,6 @@ public class RADConnectionPropertyEditor
                 if (radComponent == null || radComponent.getCodeExpression() == null)
                     return FormUtils.getBundleString("CTL_CONNECTION_INVALID"); // NOI18N
 
-                if (radComponent == null)
-                    return null;
-
                 if (type == TYPE_PROPERTY)
                     return FormUtils.getFormattedBundleString(
                         "FMT_PROPERTY_CONN", // NOI18N
