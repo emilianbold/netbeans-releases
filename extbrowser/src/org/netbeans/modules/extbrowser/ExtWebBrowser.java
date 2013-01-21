@@ -243,12 +243,17 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
      * @return Value of property browserExecutable.
      */
     public NbProcessDescriptor getBrowserExecutable () {
+        NbProcessDescriptor result = browserExecutable;
         if (browserExecutable == null || "".equals(browserExecutable.getProcessName())) { // NOI18N
-            return defaultBrowserExecutable();
+            result = defaultBrowserExecutable();
         }
-        return browserExecutable;
+        if (err.isLoggable(Level.FINE)) {
+            err.log(Level.FINE, "" + System.currentTimeMillis() + " getBrowserExecutable: " + // NOI18N
+                   (result == null ? "null" : result.getProcessName() + " " + result.getArguments())); // NOI18N
+        }
+        return result;
     }
-
+    
     /** Setter for property browserExecutable.
      * @param browserExecutable New value of property browserExecutable.
      */
