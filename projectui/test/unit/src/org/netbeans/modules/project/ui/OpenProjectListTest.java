@@ -198,8 +198,8 @@ public class OpenProjectListTest extends NbTestCase {
         handler.openFiles.remove (f1_1_open.toURL ().toExternalForm ());
         handler.openFiles.remove (f1_2_open.toURL ().toExternalForm ());
         
-        ProjectUtilities.closeAllDocuments(new Project[] {project1}, false);
-        OpenProjectList.getDefault().close(new Project[] {project1}, false);
+        ProjectUtilities.closeAllDocuments(new Project[] {project1}, false, null);
+        OpenProjectList.getDefault().close(new Project[] {project1}, false, null);
 
         OpenProjectList.getDefault ().open (project1);
         assertFalse ("Document f1_1_open isn't loaded.", handler.openFiles.contains (f1_1_open.toURL ().toExternalForm ()));
@@ -256,7 +256,7 @@ public class OpenProjectListTest extends NbTestCase {
         
         assertFalse ("Document f2_1_open isn't loaded.", handler.openFiles.contains (f2_1_open.toURL ().toExternalForm ()));
         
-        ProjectUtilities.closeAllDocuments(new Project[] {project2}, false);
+        ProjectUtilities.closeAllDocuments(new Project[] {project2}, false, null);
         OpenProjectList.getDefault().close(new Project[] {project2}, false);
 
         assertFalse ("Project2 is closed.", OpenProjectList.getDefault ().isOpen (project2));
