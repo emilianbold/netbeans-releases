@@ -2728,7 +2728,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             org.w3c.dom.NamedNodeMap subAttrs = subNode.getAttributes();
             org.w3c.dom.Node paramNameNode = subAttrs.getNamedItem(ATTR_BINDING_PARAMETER_NAME);
             org.w3c.dom.Node paramValueNode = subAttrs.getNamedItem(ATTR_BINDING_PARAMETER_VALUE);
-            if ((paramNameNode != null) || (paramValueNode != null)) {
+            if ((paramNameNode != null) && (paramValueNode != null)) {
                 binding.setParameter(paramNameNode.getNodeValue(), paramValueNode.getNodeValue());
             }
         }
