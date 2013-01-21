@@ -836,8 +836,13 @@ public final class OpenProjectList {
             LOAD.exit();
     }
     }
+    
+    public void close( Project someProjects[], boolean notifyUI) {
+        Group act = Group.getActiveGroup();
+        close(someProjects, notifyUI, act != null ? act.getName() : null);
+    }
        
-    public void close( Project someProjects[], boolean notifyUI ) {
+    public void close( Project someProjects[], boolean notifyUI, String groupName ) {
         boolean doSave = false;
         if (!LOAD.closeBeforeOpen(someProjects)) {
             doSave = true;
@@ -850,7 +855,7 @@ public final class OpenProjectList {
         }
         
         
-        if (!ProjectUtilities.closeAllDocuments (projects, notifyUI )) {
+        if (!ProjectUtilities.closeAllDocuments (projects, notifyUI, groupName )) {
             return;
         }
         

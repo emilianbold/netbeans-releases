@@ -53,6 +53,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -68,6 +69,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import static org.netbeans.modules.project.ui.Bundle.*;
+import org.netbeans.modules.project.ui.groups.Group;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
@@ -96,8 +98,12 @@ import org.w3c.dom.NodeList;
 public class ProjectUtilities {
     
     static final String OPEN_FILES_NS = "http://www.netbeans.org/ns/projectui-open-files/1"; // NOI18N
+    static final String OPEN_FILES_NS2 = "http://www.netbeans.org/ns/projectui-open-files/2"; // NOI18N
     static final String OPEN_FILES_ELEMENT = "open-files"; // NOI18N
     static final String FILE_ELEMENT = "file"; // NOI18N
+    static final String GROUP_ELEMENT = "group"; // NOI18N
+    static final String NAME_ATTR = "name";
+    
     
     // support class for xtesting in OpenProjectListTest
     static OpenCloseProjectDocument OPEN_CLOSE_PROJECT_DOCUMENT_IMPL = new OpenCloseProjectDocument () {
@@ -455,7 +461,7 @@ public class ProjectUtilities {
      * @param p project to close
      * @return false if the user cancelled the Save/Discard/Cancel dialog, true otherwise
      */    
-    public static boolean closeAllDocuments(Project[] projects, boolean notifyUI) {
+    public static boolean closeAllDocuments(Project[] projects, boolean notifyUI, String groupName) {
         if (projects == null) {
             throw new IllegalArgumentException ("No projects are specified."); // NOI18N
         }
@@ -471,27 +477,43 @@ public class ProjectUtilities {
             // store project's documents
             // loop all project being closed
             for (Map.Entry<Project,Set<String>> entry : urls4project.entrySet()) {
-                storeProjectOpenFiles(entry.getKey(), entry.getValue());
+                storeProjectOpenFiles(entry.getKey(), entry.getValue(), groupName);
             }
         }
         
         return urls4project != null;
     }
     
-    static private void storeProjectOpenFiles(Project p, Set<String> urls) {
+    public static void storeProjectOpenFiles(Project p, Set<String> urls, String groupName) {
         AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(p);
         aux.removeConfigurationFragment (OPEN_FILES_ELEMENT, OPEN_FILES_NS, false);
 
-        Document xml = XMLUtil.createDocument (OPEN_FILES_ELEMENT, OPEN_FILES_NS, null, null);
+        Element openFiles = aux.getConfigurationFragment(OPEN_FILES_ELEMENT, OPEN_FILES_NS2, false);
+        if (openFiles == null) {
+            Document xml = XMLUtil.createDocument (OPEN_FILES_ELEMENT, OPEN_FILES_NS2, null, null);
+            openFiles = xml.createElementNS (OPEN_FILES_NS2, OPEN_FILES_ELEMENT);
+        }
+        NodeList groups = openFiles.getElementsByTagNameNS(OPEN_FILES_NS2, GROUP_ELEMENT);
+        for (int i = 0; i < groups.getLength(); i++) {
+            Element g = (Element) groups.item(i);
+            String attr = g.getAttribute(NAME_ATTR);
+            if (attr.equals(groupName) || (attr.equals("") && groupName == null)) {
+                openFiles.removeChild(g);
+                break;
+            }
+        }
+        Element groupEl = openFiles.getOwnerDocument ().createElementNS(OPEN_FILES_NS2, GROUP_ELEMENT);
+        if (groupName != null) {
+            groupEl.setAttribute(NAME_ATTR, groupName);
+        }
+        openFiles.appendChild(groupEl);
+
         Element fileEl;
-
-        Element openFiles = xml.createElementNS (OPEN_FILES_NS, OPEN_FILES_ELEMENT);
-
         // loop all open files of given project
         for (String url : urls) {
-            fileEl = openFiles.getOwnerDocument ().createElementNS(OPEN_FILES_NS, FILE_ELEMENT);
+            fileEl = groupEl.getOwnerDocument ().createElementNS(OPEN_FILES_NS2, FILE_ELEMENT);
             fileEl.appendChild(fileEl.getOwnerDocument().createTextNode(url));
-            openFiles.appendChild (fileEl);
+            groupEl.appendChild (fileEl);
         }
 
         aux.putConfigurationFragment (openFiles, false);
@@ -501,18 +523,40 @@ public class ProjectUtilities {
      * 
      * @param p project
      */
-    public static void openProjectFiles (Project p) {
+    public static Set<FileObject> openProjectFiles (Project p) {
+        Group grp = Group.getActiveGroup();
+        return openProjectFiles(p, grp);
+    }
+    
+    public static Set<FileObject> openProjectFiles (Project p, Group grp) {
+        String groupName = grp == null ? null : grp.getName();
         ERR.log(Level.FINE, "Trying to open files from {0}...", p);
         
         AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(p);
         
-        Element openFiles = aux.getConfigurationFragment (OPEN_FILES_ELEMENT, OPEN_FILES_NS, false);
+        Element openFiles = aux.getConfigurationFragment (OPEN_FILES_ELEMENT, OPEN_FILES_NS2, false);
         if (openFiles == null) {
-            return;
+            return Collections.emptySet();
         }
 
-        NodeList list = openFiles.getElementsByTagNameNS(OPEN_FILES_NS, FILE_ELEMENT);
+        Element groupEl = null;
         
+        NodeList groups = openFiles.getElementsByTagNameNS(OPEN_FILES_NS2, GROUP_ELEMENT);
+        for (int i = 0; i < groups.getLength(); i++) {
+            Element g = (Element) groups.item(i);
+            String attr = g.getAttribute(NAME_ATTR);
+            if (attr.equals(groupName) || (attr.equals("") && groupName == null)) {
+                groupEl = g;
+                break;
+            }
+        }
+        
+        if (groupEl == null) {
+            return Collections.emptySet();
+        }
+        
+        NodeList list = groupEl.getElementsByTagNameNS(OPEN_FILES_NS2, FILE_ELEMENT);
+        Set<FileObject> toRet = new HashSet<FileObject>();
         for (int i = 0; i < list.getLength (); i++) {
             String url = list.item (i).getChildNodes ().item (0).getNodeValue ();
             ERR.log(Level.FINE, "Will try to open {0}", url);
@@ -535,10 +579,18 @@ public class ProjectUtilities {
             }
             
             OPEN_CLOSE_PROJECT_DOCUMENT_IMPL.open (fo);
+            toRet.add(fo);
         }
         
         // clean-up stored files
-        aux.removeConfigurationFragment (OPEN_FILES_ELEMENT, OPEN_FILES_NS, false);
+        //aux.removeConfigurationFragment (OPEN_FILES_ELEMENT, OPEN_FILES_NS, false);
+        openFiles.removeChild(groupEl);
+        if (openFiles.getElementsByTagNameNS(OPEN_FILES_NS2, GROUP_ELEMENT).getLength() > 0) {
+            aux.putConfigurationFragment (openFiles, false);
+        } else {
+            aux.removeConfigurationFragment (OPEN_FILES_ELEMENT, OPEN_FILES_NS2, false);
+        }
+        return toRet;
     }
     
     // interface for handling project's documents stored in project private.xml
