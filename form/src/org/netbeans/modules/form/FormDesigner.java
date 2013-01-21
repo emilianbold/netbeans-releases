@@ -368,22 +368,21 @@ public class FormDesigner {
             });
             plainContentLookup = new AbstractLookup(lookupContent);
 
-            final FormDataObject formDataObject = formEditor.getFormDataObject();
-            paletteLookup = PaletteUtils.getPaletteLookup(formDataObject.getPrimaryFile());
+            paletteLookup = PaletteUtils.getPaletteLookup(formEditor.getFormDataObject().getPrimaryFile());
             
             saveCookieLookup = new Lookup() {
                 @Override
                 public <T> T lookup(final Class<T> clazz) {
-                    if (clazz.isAssignableFrom(SaveCookie.class)) {
-                        return formDataObject.getLookup().lookup(clazz);
+                    if (clazz.isAssignableFrom(SaveCookie.class) && formEditor != null) {
+                        return formEditor.getFormDataObject().getLookup().lookup(clazz);
                     } else {
                         return null;
                     }
                 }
                 @Override
                 public <T> Result<T> lookup(Template<T> template) {
-                    if (template.getType().isAssignableFrom(SaveCookie.class)) {
-                        return formDataObject.getLookup().lookup(template);
+                    if (template.getType().isAssignableFrom(SaveCookie.class) && formEditor != null) {
+                        return formEditor.getFormDataObject().getLookup().lookup(template);
                     } else {
                         return Lookup.EMPTY.lookup(template);
                     }
