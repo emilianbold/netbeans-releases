@@ -74,10 +74,9 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
     private MethodDeclaration originalNode;
     private ModelVisitor visitor;
 
-
     //new contructors
-    MethodScopeImpl(Scope inScope, String returnType, MethodDeclarationInfo nodeInfo, ModelVisitor visitor) {
-        super(inScope, nodeInfo, returnType);
+    MethodScopeImpl(Scope inScope, String returnType, MethodDeclarationInfo nodeInfo, ModelVisitor visitor, boolean isDeprecated) {
+        super(inScope, nodeInfo, returnType, isDeprecated);
         assert inScope instanceof TypeScope;
         classNormName = inScope.getNormalizedName();
         scanned = false;
@@ -86,7 +85,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
     }
 
     MethodScopeImpl(Scope inScope, MagicMethodDeclarationInfo nodeInfo) {
-        super(inScope, nodeInfo);
+        super(inScope, nodeInfo, inScope.isDeprecated());
         assert inScope instanceof TypeScope : inScope.getClass().toString();
         classNormName = inScope.getNormalizedName();
         scanned = true;
@@ -124,9 +123,16 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
     }
 
     @Override
-    public Collection<? extends TypeScope> getReturnTypes(boolean resolve) {
+    public Collection<? extends TypeScope> getReturnTypes() {
         scan();
-        return super.getReturnTypes(resolve);
+        return super.getReturnTypes();
+    }
+
+    @Override
+    public Collection<? extends TypeScope> getReturnTypes(boolean resolve, Collection<? extends TypeScope> callerTypes) {
+        assert callerTypes != null;
+        scan();
+        return super.getReturnTypes(resolve, callerTypes);
     }
 
     @Override
@@ -260,6 +266,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
         }
         sb.append(Signature.ITEM_DELIMITER);
         sb.append(getPhpModifiers().toFlags()).append(Signature.ITEM_DELIMITER);
+        sb.append(isDeprecated() ? 1 : 0).append(Signature.ITEM_DELIMITER);
         return sb.toString();
     }
 
