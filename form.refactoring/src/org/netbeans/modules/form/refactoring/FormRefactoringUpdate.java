@@ -54,6 +54,7 @@ import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.form.FormDataObject;
 import org.netbeans.modules.form.FormEditor;
+import org.netbeans.modules.form.PersistenceException;
 import org.netbeans.modules.form.RADComponent;
 import org.netbeans.modules.form.RenameSupport;
 import org.netbeans.modules.form.ResourceSupport;
@@ -556,8 +557,10 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
             } else if (saveAll) { // a post-refactoring change that would not be saved
                 fes.saveDocument();
             }
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+        } catch (PersistenceException pex) {
+            Exceptions.printStackTrace(pex);
+        } catch (IOException ioex) {
+            Exceptions.printStackTrace(ioex);
         }
     }
 
@@ -762,7 +765,7 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
                 os = formFile.getOutputStream(lock);
                 os.write(outString.getBytes("UTF-8")); // NOI18N
             }
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             return false;
         } finally {
