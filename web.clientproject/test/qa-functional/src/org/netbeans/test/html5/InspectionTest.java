@@ -254,6 +254,7 @@ public class InspectionTest extends GeneralHTMLProject {
         evt.waitNoEvent(500);
         assertEquals("Unexpected element in CSS Styles", "div .test", co.getSelectedHTMLElementName());
         type(eo, " modification");
+        eo.deleteLine(19);
         eo.save();
         evt.waitNoEvent(500);
         assertEquals("Unexpected element in CSS Styles", "div .test", co.getSelectedHTMLElementName());

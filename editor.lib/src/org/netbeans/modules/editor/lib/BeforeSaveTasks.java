@@ -59,6 +59,7 @@ import org.netbeans.modules.editor.lib2.document.EditorDocumentHandler;
 import org.netbeans.modules.editor.lib2.document.EditorDocumentServices;
 import org.netbeans.modules.editor.lib2.document.ModRootElement;
 import org.netbeans.spi.editor.document.OnSaveTask;
+import org.openide.util.Mutex;
 
 /**
  * Registration of tasks performed right before document save.
@@ -77,6 +78,22 @@ public final class BeforeSaveTasks {
             doc.putProperty(BeforeSaveTasks.class, beforeSaveTasks);
         }
         return beforeSaveTasks;
+    }
+
+    private final static ThreadLocal<Boolean> ignoreOnSaveTasks = new ThreadLocal<Boolean>() {
+        @Override protected Boolean initialValue() {
+            return false;
+        }
+    };
+    
+    public static <T> T runWithOnSaveTasksDisabled(Mutex.Action<T> run) {
+        Boolean originalIgnore = ignoreOnSaveTasks.get();
+        ignoreOnSaveTasks.set(true);
+        try {
+            return run.run();
+        } finally {
+            ignoreOnSaveTasks.set(originalIgnore);
+        }
     }
     
     private final BaseDocument doc;
@@ -98,6 +115,7 @@ public final class BeforeSaveTasks {
     }
 
     void runTasks() {
+        if (ignoreOnSaveTasks.get() == Boolean.TRUE) return ;
         String mimeType = DocumentUtilities.getMimeType(doc);
         Collection<? extends OnSaveTask.Factory> factories = MimeLookup.getLookup(mimeType).
                 lookupAll(OnSaveTask.Factory.class);

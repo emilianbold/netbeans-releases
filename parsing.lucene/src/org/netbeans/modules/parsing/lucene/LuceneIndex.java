@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
@@ -59,6 +60,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -441,7 +443,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                         Version.LUCENE_35,
                         dirCache.getAnalyzer()));
             }
-            for (Iterator<T> it = data.iterator(); it.hasNext();) {
+            for (Iterator<T> it = fastRemoveIterable(data).iterator(); it.hasNext();) {
                 T entry = it.next();
                 it.remove();
                 final Document doc = docConvertor.convert(entry);
@@ -457,6 +459,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                             dirCache.getAnalyzer()));
                 }
             }
+            data.clear();
             if (memDir != null) {
                 activeOut.close();
                 out.addIndexes(memDir);
@@ -537,6 +540,34 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
             return CachePolicy.DYNAMIC;
         }
         return DEFAULT_CACHE_POLICY;
+    }
+
+    private static <T> Iterable<T> fastRemoveIterable(final Collection<T> c) {
+        return c instanceof ArrayList ?
+                new Iterable<T>() {
+                    @Override
+                    public Iterator<T> iterator() {
+                        return new Iterator<T>() {
+                            private final ListIterator<T> delegate = ((List)c).listIterator();
+
+                            @Override
+                            public boolean hasNext() {
+                                return delegate.hasNext();
+                            }
+
+                            @Override
+                            public T next() {
+                                return delegate.next();
+                            }
+
+                            @Override
+                            public void remove() {
+                                delegate.set(null);
+                            }
+                        };
+                    }
+                } :
+                c;
     }
     
 

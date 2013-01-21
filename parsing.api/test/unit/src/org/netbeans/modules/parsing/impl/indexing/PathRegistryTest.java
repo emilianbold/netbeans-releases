@@ -69,6 +69,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -107,6 +108,18 @@ public class PathRegistryTest extends NbTestCase {
         super (name);
     }
 
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new PathRegistryTest("testPathRegistry"));
+        suite.addTest(new PathRegistryTest("testProjectMutexDeadlock"));
+        suite.addTest(new PathRegistryTest("testRaceCondition"));
+        suite.addTest(new PathRegistryTest("testRaceCondition2"));
+        suite.addTest(new PathRegistryTest("testBinaryPath"));
+        suite.addTest(new PathRegistryTest("testExcludeEvents"));
+        suite.addTest(new PathRegistryTest("testURLNoHostPart"));
+        return suite;
+    }
+    
     @Override
     protected void setUp() throws Exception {
         super.setUp();

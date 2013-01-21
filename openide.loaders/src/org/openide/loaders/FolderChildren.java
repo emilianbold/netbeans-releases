@@ -589,7 +589,10 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
         protected void beforeLookup(Template<?> template) {
             Class<?> type = template.getType();
             if (DataObject.class.isAssignableFrom(type)) {
-                ic.add(convert(node));
+                final DataObject obj = convert(node);
+                if (obj != null) {
+                    ic.add(obj);
+                }
             }
         }
         

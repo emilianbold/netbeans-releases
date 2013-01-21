@@ -73,6 +73,7 @@ import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.datatransfer.PasteType;
@@ -340,7 +341,7 @@ public class VariablesNodeModel implements ExtendedNodeModel {
             toStringMethod.setAccessible(true);
             toString = (String) toStringMethod.invoke(v, TO_STRING_LENGTH_LIMIT);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
         }
         if (toString == null) {
             toString = v.getToStringValue();

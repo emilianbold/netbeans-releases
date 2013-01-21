@@ -156,7 +156,11 @@ public class NPECheckTest extends NbTestCase {
     }
     
     public void testCheckForNull2() throws Exception {
-        performAnalysisTest("test/Test.java", "package test; class Test {private void test() {s.length();} @Nullable private String s; @interface Nullable {}}", "0:49-0:55:verifier:Possibly Dereferencing null");
+        HintTest.create()
+                .preference(NPECheck.KEY_ENABLE_FOR_FIELDS, true)
+                .input("package test; class Test {private void test() {s.length();} @Nullable private String s; @interface Nullable {}}")
+                .run(NPECheck.class)
+                .assertWarnings("0:49-0:55:verifier:Possibly Dereferencing null");
     }
     
     public void testAssignNullToNotNull() throws Exception {
@@ -1044,6 +1048,23 @@ public class NPECheckTest extends NbTestCase {
                 .sourceLevel("1.7")
                 .run(NPECheck.class)
                 .assertWarnings("7:31-7:37:verifier:DN");
+    }
+    
+    public void testFields3() throws Exception {
+        HintTest.create()
+                .preference(NPECheck.KEY_ENABLE_FOR_FIELDS, false)
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    @Nullable private String str;\n" +
+                       "    private void text() {\n" +
+                       "        assert str != null;\n" +
+                       "        System.err.println(str.length());\n" +
+                       "    }\n" +
+                       "    @interface Nullable {}\n" +
+                       "}")
+                .sourceLevel("1.7")
+                .run(NPECheck.class)
+                .assertWarnings();
     }
     
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {

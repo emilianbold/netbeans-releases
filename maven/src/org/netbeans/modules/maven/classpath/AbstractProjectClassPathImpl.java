@@ -45,7 +45,6 @@ package org.netbeans.modules.maven.classpath;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.File;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;

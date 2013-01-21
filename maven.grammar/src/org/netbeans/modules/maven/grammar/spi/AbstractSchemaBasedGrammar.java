@@ -85,6 +85,7 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
     private GrammarEnvironment environment;
     /** Creates a new instance of NewClass */
     public AbstractSchemaBasedGrammar(GrammarEnvironment env) {
+        environment = env;
         try {
             SAXBuilder builder = new SAXBuilder();
             InputStream stream = getSchemaStream();
@@ -92,7 +93,7 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
         } catch (Exception exc) {
             ErrorManager.getDefault().notify(exc);
         }
-        environment = env;
+        
     }
     
     protected final GrammarEnvironment getEnvironment() {

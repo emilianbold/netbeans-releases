@@ -104,6 +104,7 @@ import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
+import org.openide.util.Exceptions;
 
 
 public class ToolTipAnnotation extends Annotation implements Runnable {
@@ -225,7 +226,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                         toStringMethod.setAccessible(true);
                         toString = (String) toStringMethod.invoke(v, TO_STRING_LENGTH_LIMIT);
                     } catch (Exception ex) {
-                        ex.printStackTrace();
+                        Exceptions.printStackTrace(ex);
                     }
                     if (toString == null) {
                         toString = ((ObjectVariable) v).getToStringValue();
