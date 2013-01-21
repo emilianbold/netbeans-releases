@@ -1316,7 +1316,8 @@ public final class WebProject implements Project {
         "ejb-types",            // NOI18N
         "ejb-types-server",     // NOI18N
         "ejb-types_3_0",        // NOI18N
-        "ejb-types_3_1",         // NOI18N
+        "ejb-types_3_1",        // NOI18N
+        "ejb-types_3_1_full",   // NOI18N
         "ejb-deployment-descriptor", // NOI18N
     };
 
@@ -1362,7 +1363,8 @@ public final class WebProject implements Project {
 
     private static final String[] PRIVILEGED_NAMES_EE6_FULL = new String[] {
         "Templates/J2EE/Session", // NOI18N
-        "Templates/J2EE/Message"  // NOI18N
+        "Templates/J2EE/Message", // NOI18N
+        "Templates/J2EE/TimerSession"   // NOI18N
     };
 
     private static final String[] PRIVILEGED_NAMES_EE6_WEB = new String[] {

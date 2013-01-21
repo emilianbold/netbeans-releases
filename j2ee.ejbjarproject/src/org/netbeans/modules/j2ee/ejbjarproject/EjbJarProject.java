@@ -1441,6 +1441,7 @@ public class EjbJarProject implements Project, FileChangeListener {
         "ejb-types",            // NOI18N
         "ejb-types-server",     // NOI18N
         "ejb-types_3_1",        // NOI18N
+        "ejb-types_3_1_full",   // NOI18N
         "web-services",         // NOI18N
         "web-service-clients",  // NOI18N
         "wsdl",                 // NOI18N
@@ -1467,6 +1468,7 @@ public class EjbJarProject implements Project, FileChangeListener {
 
     private static final String[] PRIVILEGED_NAMES = new String[] {
         "Templates/J2EE/Session", // NOI18N
+        "Templates/J2EE/TimerSession", // NOI18N
         "Templates/J2EE/Entity",  // NOI18N
         "Templates/J2EE/RelatedCMP", // NOI18N                    
         "Templates/J2EE/Message", //NOI18N
@@ -1487,7 +1489,9 @@ public class EjbJarProject implements Project, FileChangeListener {
         "Templates/WebServices/WebServiceClient"   // NOI18N      
     };
 
-    private static final String[] PRIVILEGED_NAMES_EE6 = PRIVILEGED_NAMES_EE5;
+    private static final String[] PRIVILEGED_NAMES_EE6 = new String[] {
+        "Templates/J2EE/TimerSession" // NOI18N
+    };
     
     private static final String[] PRIVILEGED_NAMES_ARCHIVE = new String[] {
         "Templates/J2EE/ejbJarXml", // NOI18N
@@ -1504,6 +1508,7 @@ public class EjbJarProject implements Project, FileChangeListener {
             this.helper = helper;
         }
 
+        @Override
         public String[] getRecommendedTypes() {
             checkEnvironment();
             String[] retVal = null;
@@ -1519,19 +1524,21 @@ public class EjbJarProject implements Project, FileChangeListener {
             return retVal;
         }
         
+        @Override
         public String[] getPrivilegedTemplates() {
             checkEnvironment();
-            String[] retVal = null;
+            List<String> privileged = new ArrayList<String>();
             if (isArchive) {
-                retVal = PRIVILEGED_NAMES_ARCHIVE;
+                privileged.addAll(Arrays.asList(PRIVILEGED_NAMES_ARCHIVE));
             } else if (isEE5) {
-                retVal = PRIVILEGED_NAMES_EE5;
-            } else if(isEE6) {
-                retVal = PRIVILEGED_NAMES_EE6;
+                privileged.addAll(Arrays.asList(PRIVILEGED_NAMES_EE5));
+            } else if (isEE6) {
+                privileged.addAll(Arrays.asList(PRIVILEGED_NAMES_EE5));
+                privileged.addAll(Arrays.asList(PRIVILEGED_NAMES_EE6));
             } else {
-                retVal = PRIVILEGED_NAMES;
+                privileged.addAll(Arrays.asList(PRIVILEGED_NAMES));
             } 
-            return retVal;
+            return privileged.toArray(new String[privileged.size()]);
         }
         
         private void checkEnvironment(){
