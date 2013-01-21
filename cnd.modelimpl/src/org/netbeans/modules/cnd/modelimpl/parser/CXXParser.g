@@ -225,7 +225,7 @@ statement
     |
         expression_or_declaration_statement
     |
-        compound_statement
+        compound_statement[false]
     |
         selection_statement
     |
@@ -268,9 +268,11 @@ expression_or_declaration_statement
     ;
 
 
-compound_statement
+compound_statement[boolean lazy]
 @init                                                                           {if(state.backtracking == 0){action.compound_statement(input.LT(1));}}
     :
+        {lazy}? skip_balanced_Curl
+    |
         LCURLY statement* RCURLY
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_compound_statement(input.LT(0));}}
@@ -631,14 +633,14 @@ scope Declaration;
                     )* 
                     SEMICOLON                                                   {action.simple_declaration(action.SIMPLE_DECLARATION__SEMICOLON, input.LT(0));}
                 |
-                    function_definition_after_declarator
+                    function_definition_after_declarator[false]
                 )
         |
             // greedy_declarator starts init_declarator
             greedy_declarator
             (
                 { /*$greedy_declarator.type.is_function()*/ input.LA(1) != ASSIGNEQUAL }?
-                    function_definition_after_declarator
+                    function_definition_after_declarator[false]
             |
                 // this is a continuation of init_declarator_list 
                 // after greedy_declarator
@@ -1415,12 +1417,12 @@ function_definition:
  * Factoring out a sequence that follows declarator, as it helps disambiguating in context when
  * function_definition conflicts because of decl_specifier
  */
-function_definition_after_declarator
+function_definition_after_declarator[boolean class_late_binding_lookup]
 @init                                                                           {if(state.backtracking == 0){action.function_definition_after_declarator(input.LT(1));}}
     :
-        ctor_initializer? function_body
+        ctor_initializer? function_body[class_late_binding_lookup]
     |
-        function_try_block
+        function_try_block[class_late_binding_lookup]
     |
         ASSIGNEQUAL                                                             {action.function_definition_after_declarator(action.FUNCTION_DEFINITION_AFTER_DECLARATOR__ASSIGNEQUAL, input.LT(0));}
         (
@@ -1452,15 +1454,15 @@ scope Declaration;
         decl_specifier* function_declarator                                     {action.end_function_declaration(input.LT(0));}
     ;
 
-function_definition [decl_kind kind]
-    :                                                                           {action.function_definition(input.LT(1));}
-        function_declaration[kind] function_definition_after_declarator         {action.end_function_definition(input.LT(0));}
-    ;
+//function_definition [decl_kind kind]
+//    :                                                                           {action.function_definition(input.LT(1));}
+//        function_declaration[kind] function_definition_after_declarator         {action.end_function_definition(input.LT(0));}
+//    ;
 
-function_body
+function_body[boolean class_late_binding_lookup]
 @init                                                                           {if(state.backtracking == 0){action.function_body(input.LT(1));}}
     :
-        compound_statement 
+        compound_statement[class_late_binding_lookup] 
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_function_body(input.LT(0));}}
 
@@ -1522,7 +1524,7 @@ class_specifier
     :
         class_head 
         LCURLY                  {action.class_body($LCURLY);}
-        member_specification? 
+        member_specification[false]? 
         RCURLY                  {action.end_class_body($RCURLY);}
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_class_declaration(input.LT(0));}}
@@ -1570,14 +1572,14 @@ class_key:
         LITERAL_union                                                           {action.class_kind($LITERAL_union);}
     ;
 
-member_specification 
+member_specification[boolean class_late_binding_lookup]
 @init                                                                           {if(state.backtracking == 0){action.member_specification(input.LT(1));}}
     :
-        member_declaration[field_decl] member_specification?
+        member_declaration[field_decl, class_late_binding_lookup] member_specification[class_late_binding_lookup]?
     |
         access_specifier 
         COLON                                                                   {action.member_specification(action.MEMBER_SPECIFICATION__COLON, input.LT(0));}
-        member_specification?
+        member_specification[class_late_binding_lookup]?
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_member_specification(input.LT(0));}}
 
@@ -1609,10 +1611,10 @@ member_declarator:
  * Access declaration is being subsumed by member declaration with absent decl_specifier.
  * There needs to be a special semantic check for "access declaration" when handling results of member declaration.
  */
-member_declaration [decl_kind kind]
+member_declaration [decl_kind kind, boolean class_late_binding_lookup]
 @init                                                                           {if(state.backtracking == 0){action.member_declaration(input.LT(1));}}
     :
-        simple_member_declaration_or_function_definition[kind]
+        simple_member_declaration_or_function_definition[kind, class_late_binding_lookup]
     |
         /* this is likely to be covered by decl_specifier/declarator part of member_declarator
             SCOPE? nested_name_specifier LITERAL_template? unqualified_id SEMICOLON
@@ -1629,7 +1631,7 @@ member_declaration [decl_kind kind]
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_member_declaration(input.LT(0));}}
 
-simple_member_declaration_or_function_definition[decl_kind kind]
+simple_member_declaration_or_function_definition[decl_kind kind, boolean class_late_binding_lookup]
 @init                                                                           {if(state.backtracking == 0){action.simple_member_declaration(input.LT(1));}}
     :
                                                                                 {action.decl_specifiers(input.LT(1));}
@@ -1648,13 +1650,13 @@ simple_member_declaration_or_function_definition[decl_kind kind]
                     )* 
                     SEMICOLON                                                   {action.simple_member_declaration(action.SIMPLE_MEMBER_DECLARATION__SEMICOLON, input.LT(0));}
                 |
-                    function_definition_after_declarator
+                    function_definition_after_declarator[class_late_binding_lookup]
                 )
         |
             declarator
             (
                 { /*$declarator.type.is_function()*/ (input.LA(1) != ASSIGNEQUAL && (input.LA(1) != COLON || input.LA(0) == RPAREN)) }?
-                    function_definition_after_declarator
+                    function_definition_after_declarator[class_late_binding_lookup]
             |
                 // this was member_declarator_list
                 constant_initializer? 
@@ -2035,20 +2037,22 @@ explicit_specialization [decl_kind kind]
 // [gram.except] 
 try_block
     :                                                                           {action.try_block(input.LT(1));}
-        LITERAL_try compound_statement handler+                                 {action.end_try_block(input.LT(0));}
+        LITERAL_try compound_statement[false] 
+        handler[false]+                                                         {action.end_try_block(input.LT(0));}
     ;
-function_try_block
+function_try_block[boolean class_late_binding_lookup]
     :                                                                           {action.function_try_block(input.LT(1));}
-        LITERAL_try ctor_initializer? function_body handler+                    {action.end_function_try_block(input.LT(0));}
+        LITERAL_try ctor_initializer? function_body[class_late_binding_lookup] 
+        handler[class_late_binding_lookup]+                                     {action.end_function_try_block(input.LT(0));}
     ;
 
-handler
+handler[boolean class_late_binding_lookup]
     :                                                                           {action.handler(input.LT(1));}
         LITERAL_catch 
         LPAREN                                                                  {action.handler(action.HANDLER__LPAREN, input.LT(0));}
         exception_declaration 
         RPAREN                                                                  {action.handler(action.HANDLER__RPAREN, input.LT(0));}
-        compound_statement                                                      {action.end_handler(input.LT(0));}
+        compound_statement[class_late_binding_lookup]                           {action.end_handler(input.LT(0));}
     ;
 
 /*
@@ -2104,7 +2108,7 @@ primary_expression:
     ;
 
 lambda_expression:
-        lambda_introduser lambda_declarator? compound_statement
+        lambda_introduser lambda_declarator? compound_statement[false]
     ;
 
 lambda_introduser:
