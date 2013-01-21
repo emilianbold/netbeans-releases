@@ -2104,7 +2104,7 @@ public class FormDesigner {
             }
             if (getLayoutDesigner().logTestCode()) {
                 getLayoutDesigner().testCode.add("  compPrefSize.put(\"" + componentId + "\", new Dimension(" +  //NOI18N
-                                                            new Double(dim.getWidth()).intValue() + ", " + new Double(dim.getHeight()).intValue() + "));"); //NOI18N
+                    dim.width + ", " + dim.height + "));"); //NOI18N
             }
             return dim;
         }
