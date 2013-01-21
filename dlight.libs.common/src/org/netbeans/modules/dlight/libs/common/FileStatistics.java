@@ -51,6 +51,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import org.openide.filesystems.FileSystem;
 import org.openide.modules.OnStop;
 
 /**
@@ -59,7 +61,8 @@ import org.openide.modules.OnStop;
  */
 public class FileStatistics {
     
-    private static final FileStatistics INSTANCE = new FileStatistics();
+    private static final ConcurrentHashMap<FileSystem, FileStatistics> instances = new ConcurrentHashMap<FileSystem, FileStatistics>();
+    
     private static final boolean REPORT_FIRST = Boolean.getBoolean("dlight.file.read.statistics.report.first"); //NOI18N
     private static final String PREFIX = "### FRS "; //NOI18N
     
@@ -83,16 +86,26 @@ public class FileStatistics {
     
     private final PrintStream out = System.err;
 
+    private final FileSystem fileSystem;
+    
     private final Map<String, StatEntry> stacks = new HashMap<String, StatEntry>();
     private final Map<String, StatEntry> files = new HashMap<String, StatEntry>();
     private final Object lock = new Object();
     
-    public static FileStatistics getInstance() {
-        return INSTANCE;
+    public static FileStatistics getInstance(FileSystem fs) {
+        FileStatistics instance = instances.get(fs);
+        if (instance == null) {
+            instance = new FileStatistics(fs);
+            FileStatistics oldInstance = instances.putIfAbsent(fs, instance);
+            if (oldInstance != null) {
+                instance = oldInstance;
+            }
+        }
+        return instance;
     }
 
-    private FileStatistics() {
-
+    private FileStatistics(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
     }
 
     private List<StackTraceElement> filter(StackTraceElement[] stack) {
@@ -138,6 +151,13 @@ public class FileStatistics {
         return result;        
     }
         
+    public void clear() {
+        synchronized (lock) {
+            files.clear();
+            stacks.clear();
+        }
+    }
+
     public void logPath(String path) {
         
         String fileName = PathUtilities.getBaseName(path);
@@ -162,19 +182,14 @@ public class FileStatistics {
         }
         String stackKey = sb.toString();
         
-        StatEntry pathEntry;        
-        synchronized (lock) {
+        StatEntry pathEntry, stackEntry;        
+        boolean report = false;
+        synchronized (lock) {            
             pathEntry = files.get(path);
             if (pathEntry == null) {
                 pathEntry = new StatEntry(path, stackKey);                
                 files.put(path, pathEntry);
             }            
-        }
-        pathEntry.increment();
-
-        StatEntry stackEntry;
-        boolean report = false;
-        synchronized (lock) {            
             stackEntry = stacks.get(stackKey);
             if (stackEntry == null) {
                 stackEntry = new StatEntry(path, stackKey);
@@ -184,6 +199,7 @@ public class FileStatistics {
                 }
             }            
         }
+        pathEntry.increment();        
         stackEntry.increment();
         if (report) {
             report(stackEntry);
@@ -192,14 +208,10 @@ public class FileStatistics {
     }
         
     private void printf(String pattern, Object... args) {
-        printf("", pattern, args);
-    }
-
-    private void printf(String indent, String pattern, Object... args) {
         String formattedString = String.format(pattern, args);
         String[] lines = formattedString.split("\n"); // NOI18N
         for (int i = 0; i < lines.length; i++) {
-            out.printf("%s%s%s\n", PREFIX,  indent, lines[i]); // NOI18N
+            out.printf("%s%s\n", PREFIX,  lines[i]); // NOI18N
         }
         out.flush();
     }
@@ -208,14 +220,16 @@ public class FileStatistics {
     public static class Reporter implements Runnable {
         @Override
         public void run() {
-            FileStatistics.getInstance().report();
+            for (FileStatistics fileStatistics : instances.values()) {
+                fileStatistics.report();
+            }
         }        
     }
     
     private void report(StatEntry entry) {
         String stack = entry.getStack();
         printf("%6d @%d  1-st path: %s\n", entry.getCount(), stack.hashCode(), entry.getPath()); // NOI18N
-        printf("        ", "%s\n", stack); // NOI18N        
+        printf("    %s\n", stack); // NOI18N        
     }
     
     public void report() {
@@ -225,7 +239,7 @@ public class FileStatistics {
         }
         {
             out.printf("\n\n\n"); // NOI18N
-            printf("\nFile Read Statistics by Path\n"); // NOI18N
+            printf("\nFile Read Statistics by Path [%s]\n", fileSystem.getDisplayName()); // NOI18N
             printf("Files count: %d reads count: %d\n", files.size(), readCount); // NOI18N
             printf("\t   Cnt  File\n"); // NOI18N
             for (Map.Entry<String, StatEntry> mapEntry : sortByCount(files)) {
@@ -236,7 +250,7 @@ public class FileStatistics {
         }
 
         {
-            printf("\n\nFile Read Statistics by Stack\n"); // NOI18N
+            printf("\n\nFile Read Statistics by Stack [%s]\n", fileSystem.getDisplayName()); // NOI18N
             printf("Stacks count: %d reads count: %d\n", stacks.size(), readCount); // NOI18N
             for (Map.Entry<String, StatEntry> mapEntry : sortByCount(stacks)) {
                 StatEntry statEntry = mapEntry.getValue();
