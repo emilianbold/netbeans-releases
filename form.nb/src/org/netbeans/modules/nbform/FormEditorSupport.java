@@ -1359,13 +1359,13 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
                && p.getClass().getName().endsWith("Project"); // NOI18N
     }
 
-    private final class FormGEditor implements GuardedEditorSupport {
+    private static final class FormGEditor implements GuardedEditorSupport {
         
         StyledDocument doc = null;
         
         @Override
         public StyledDocument getDocument() {
-            return FormGEditor.this.doc;
+            return doc;
         }
     }
     

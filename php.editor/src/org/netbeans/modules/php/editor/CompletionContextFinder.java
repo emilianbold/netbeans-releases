@@ -78,6 +78,10 @@ final class CompletionContextFinder {
 
     private static final String NAMESPACE_FALSE_TOKEN = "NAMESPACE_FALSE_TOKEN"; //NOI18N
     private static final String COMBINED_USE_STATEMENT_TOKENS = "COMBINED_USE_STATEMENT_TOKENS"; //NOI18N
+    private static final PHPTokenId[] COMMENT_TOKENS = new PHPTokenId[]{
+            PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_COMMENT_END};
+    private static final PHPTokenId[] PHPDOC_TOKENS = new PHPTokenId[]{
+            PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END};
     private static final List<Object[]> CLASS_NAME_TOKENCHAINS = Arrays.asList(
             new Object[]{PHPTokenId.PHP_NEW},
             new Object[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE},
@@ -138,83 +142,7 @@ final class CompletionContextFinder {
             new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE},
             new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
             new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_LINE_COMMENT},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_LINE_COMMENT},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.WHITESPACE},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.WHITESPACE, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN});
+            new Object[]{PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN});
     private static final List<Object[]> STATIC_CLASS_MEMBER_TOKENCHAINS = Arrays.asList(
             new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM},
             new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_STRING},
@@ -223,83 +151,7 @@ final class CompletionContextFinder {
             new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE},
             new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
             new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHPDOC_COMMENT_START, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_LINE_COMMENT},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_LINE_COMMENT},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_TOKEN},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.WHITESPACE},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.WHITESPACE, PHPTokenId.PHP_VARIABLE},
-            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN});
+            new Object[]{PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN});
     private static final List<Object[]> CLASS_MEMBER_IN_STRING_TOKENCHAINS = Arrays.asList(
             new Object[]{PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE, PHPTokenId.PHP_VARIABLE, PHPTokenId.PHP_OBJECT_OPERATOR},
             new Object[]{PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE, PHPTokenId.PHP_VARIABLE, PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.PHP_STRING},
@@ -307,12 +159,7 @@ final class CompletionContextFinder {
             new Object[]{PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE, PHPTokenId.PHP_VARIABLE, PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE},
             new Object[]{PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE, PHPTokenId.PHP_VARIABLE, PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
             new Object[]{PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE, PHPTokenId.PHP_VARIABLE, PHPTokenId.PHP_OBJECT_OPERATOR, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN});
-    private static final PHPTokenId[] COMMENT_TOKENS = new PHPTokenId[]{
-        PHPTokenId.PHP_COMMENT_START, PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_COMMENT_END};
-    private static final List<Object[]> PHPDOC_TOKENCHAINS = Arrays.asList(
-            new Object[]{PHPTokenId.PHPDOC_COMMENT_START},
-            new Object[]{PHPTokenId.PHPDOC_COMMENT});
-    private static final List<Object[]> FUNCTION_TOKENCHAINS = Arrays.asList(
+    private static final List<Object[]> METHOD_NAME_TOKENCHAINS = Arrays.asList(
             new Object[]{PHPTokenId.PHP_FUNCTION},
             new Object[]{PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE},
             new Object[]{PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING});
@@ -336,18 +183,9 @@ final class CompletionContextFinder {
             new Object[]{PHPTokenId.PHP_FINAL, PHPTokenId.WHITESPACE},
             new Object[]{PHPTokenId.PHP_FINAL, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
             new Object[]{PHPTokenId.PHP_CURLY_OPEN},
-            new Object[]{PHPTokenId.PHP_LINE_COMMENT},
-            new Object[]{PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.WHITESPACE},
-            new Object[]{PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_COMMENT_END},
-            new Object[]{PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE},
-            new Object[]{PHPTokenId.PHP_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHPDOC_COMMENT_END},
-            new Object[]{PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE},
-            new Object[]{PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
-            new Object[]{PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_STRING},
+            new Object[]{PHPTokenId.WHITESPACE},
+            new Object[]{PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
+            new Object[]{PHPTokenId.PHP_STRING},
             new Object[]{PHPTokenId.PHP_CURLY_CLOSE},
             new Object[]{PHPTokenId.PHP_CURLY_CLOSE, PHPTokenId.WHITESPACE},
             new Object[]{PHPTokenId.PHP_CURLY_CLOSE, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
@@ -382,7 +220,6 @@ final class CompletionContextFinder {
             PHPTokenId.PHP_EVAL, PHPTokenId.PHP_NEW, PHPTokenId.PHP_NOT, PHPTokenId.PHP_CASE,
             PHPTokenId.PHP_IF, PHPTokenId.PHP_ELSE, PHPTokenId.PHP_ELSEIF, PHPTokenId.PHP_PRINT,
             PHPTokenId.PHP_FOR, PHPTokenId.PHP_FOREACH, PHPTokenId.PHP_WHILE,
-            PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_LINE_COMMENT,
             PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING, PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE,
             PHPTokenId.T_OPEN_TAG_WITH_ECHO, PHPTokenId.PHP_OPENTAG, PHPTokenId.PHP_CASTING);
 
@@ -429,9 +266,7 @@ final class CompletionContextFinder {
             return CompletionContext.STATIC_CLASS_MEMBER;
         } else if (tokenId == PHPTokenId.PHP_COMMENT) {
             return getCompletionContextInComment(tokenSequence, caretOffset, info);
-        } else if (isOneOfTokens(tokenSequence, COMMENT_TOKENS)) {
-            return CompletionContext.NONE;
-        } else if (acceptTokenChains(tokenSequence, PHPDOC_TOKENCHAINS, moveNextSucces)) {
+        } else if (isPhpDocToken(tokenSequence)) {
             return CompletionContext.PHPDOC;
         } else if (acceptTokenChains(tokenSequence, CATCH_TOKENCHAINS, moveNextSucces)) {
             return CompletionContext.CATCH;
@@ -446,12 +281,11 @@ final class CompletionContextFinder {
         } else if (isInsideInterfaceDeclarationBlock(info, caretOffset, tokenSequence)) {
             return CompletionContext.INTERFACE_CONTEXT_KEYWORDS;
         } else if (isInsideClassDeclarationBlock(info, caretOffset, tokenSequence)) {
-            if (acceptTokenChains(tokenSequence, CLASS_CONTEXT_KEYWORDS_TOKENCHAINS, moveNextSucces)) {
+            if (acceptTokenChains(tokenSequence, METHOD_NAME_TOKENCHAINS, moveNextSucces)) {
+                return CompletionContext.METHOD_NAME;
+            } else if (acceptTokenChains(tokenSequence, CLASS_CONTEXT_KEYWORDS_TOKENCHAINS, moveNextSucces)) {
                 return CompletionContext.CLASS_CONTEXT_KEYWORDS;
             } else {
-                if (acceptTokenChains(tokenSequence, FUNCTION_TOKENCHAINS, moveNextSucces)) {
-                    return CompletionContext.METHOD_NAME;
-                }
                 CompletionContext paramContext = getParamaterContext(token, caretOffset, tokenSequence);
                 if (paramContext != null) {
                     return paramContext;
@@ -459,6 +293,8 @@ final class CompletionContextFinder {
             }
             return CompletionContext.NONE;
         } else if (acceptTokenChains(tokenSequence, FUNCTION_NAME_TOKENCHAINS, moveNextSucces)) {
+            return CompletionContext.NONE;
+        } else if (isCommonCommentToken(tokenSequence)) {
             return CompletionContext.NONE;
         }
 
@@ -497,6 +333,18 @@ final class CompletionContextFinder {
             return CompletionContext.OPEN_TAG;
         }
         return CompletionContext.EXPRESSION;
+    }
+
+    private static boolean isPhpDocToken(TokenSequence tokenSequence) {
+        return isOneOfTokens(tokenSequence, PHPDOC_TOKENS);
+    }
+
+    private static boolean isCommonCommentToken(TokenSequence tokenSequence) {
+        return isOneOfTokens(tokenSequence, COMMENT_TOKENS);
+    }
+
+    private static boolean isCommentToken(TokenSequence tokenSequence) {
+        return isCommonCommentToken(tokenSequence) || isPhpDocToken(tokenSequence);
     }
 
     private static boolean isOneOfTokens(TokenSequence tokenSequence, PHPTokenId[] tokenIds) {
@@ -565,7 +413,7 @@ final class CompletionContextFinder {
         int orgTokenSequencePos = tokenSequence.offset();
         boolean accept = true;
         boolean moreTokens = movePrevious ? tokenSequence.movePrevious() : true;
-
+        boolean lastTokenWasComment = false;
         for (int i = tokenIdChain.length - 1; i >= 0; i--) {
             Object tokenID = tokenIdChain[i];
 
@@ -575,6 +423,19 @@ final class CompletionContextFinder {
             }
 
             if (tokenID instanceof PHPTokenId) {
+                if (isCommentToken(tokenSequence)) {
+                    i++;
+                    moreTokens = tokenSequence.movePrevious();
+                    lastTokenWasComment = true;
+                    continue;
+                } else if (tokenSequence.token().id() == PHPTokenId.WHITESPACE && lastTokenWasComment) {
+                    i++;
+                    moreTokens = tokenSequence.movePrevious();
+                    lastTokenWasComment = false;
+                    continue;
+                } else {
+                    lastTokenWasComment = false;
+                }
                 if (tokenSequence.token().id() == tokenID) {
                     moreTokens = tokenSequence.movePrevious();
                 } else {
@@ -815,7 +676,7 @@ final class CompletionContextFinder {
                         }
                         isNamespaceSeparator = false;
                         continue;
-                    } else {
+                    } else if (!isCommentToken(tokenSequence)) {
                         testCompletionSeparator = false;
                     }
                 } else if (isFunctionDeclaration(cToken)) {

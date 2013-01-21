@@ -51,6 +51,7 @@ import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -492,8 +493,10 @@ public class J2EEUtils {
                 result[count++] = packageName + '.' + fob.getName();
             }
             return result;
-        } catch (Exception ex) {
-            Logger.getLogger(J2EEUtils.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+        } catch (SQLException sex) {
+            Logger.getLogger(J2EEUtils.class.getName()).log(Level.INFO, null, sex);
+        } catch (IOException ioex) {
+            Logger.getLogger(J2EEUtils.class.getName()).log(Level.INFO, null, ioex);
         }
         return null;
     }
@@ -569,9 +572,9 @@ public class J2EEUtils {
      * @param tableName name of the table.
      * @param relatedTableNames names of related tables whose entity classes should be added
      * into the peristence unit.
-     * @throws Exception when something goes wrong.
+     * @throws IOException when something goes wrong.
      */
-    public static void createEntity(FileObject dir, PersistenceScope scope, PersistenceUnit unit, DatabaseConnection connection, String tableName, String[] relatedTableNames) throws Exception {
+    public static void createEntity(FileObject dir, PersistenceScope scope, PersistenceUnit unit, DatabaseConnection connection, String tableName, String[] relatedTableNames) throws IOException {
         Project project = FileOwnerQuery.getOwner(dir);
         String packageName = scope.getClassPath().getResourceName(dir, '.', false);
 
