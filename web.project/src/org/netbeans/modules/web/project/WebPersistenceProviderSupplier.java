@@ -47,10 +47,8 @@ package org.netbeans.modules.web.project;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -123,8 +121,9 @@ public class WebPersistenceProviderSupplier implements PersistenceProviderSuppli
             if (jpa != null) {
                 String version = ProviderUtil.getVersion(provider);
                 if (version == null
-                        || (((version.equals(Persistence.VERSION_2_1) || version.equals(Persistence.VERSION_2_0)) && jpa.isJpa2Supported())
-                        || (version.equals(Persistence.VERSION_1_0) && jpa.isJpa1Supported()))) {
+                        || (version.equals(Persistence.VERSION_2_1) && jpa.isJpa21Supported())
+                        || (version.equals(Persistence.VERSION_2_0) && jpa.isJpa2Supported())
+                        || (version.equals(Persistence.VERSION_1_0) && jpa.isJpa1Supported())) {
 
                     if (jpa.isDefault() && !defaultFound) {
                         result.add(0, provider);

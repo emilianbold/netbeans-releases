@@ -266,8 +266,9 @@ public class EjbJarPersistenceProvider implements PersistenceLocationProvider, P
             if (jpa != null) {
                 String version = ProviderUtil.getVersion(provider);
                 if (version == null
-                        || ((version.equals(Persistence.VERSION_2_0) && jpa.isJpa2Supported())
-                        || (version.equals(Persistence.VERSION_1_0) && jpa.isJpa1Supported()))) {
+                        || (version.equals(Persistence.VERSION_2_1) && jpa.isJpa21Supported())
+                        || (version.equals(Persistence.VERSION_2_0) && jpa.isJpa2Supported())
+                        || (version.equals(Persistence.VERSION_1_0) && jpa.isJpa1Supported())) {
 
                     if (jpa.isDefault() && !defaultFound) {
                         result.add(0, provider);

@@ -91,7 +91,7 @@ public class BridgingJpaSupportImpl implements JpaSupportImplementation {
             Provider provider = entry.getKey();
             if (platform.isToolSupported(provider.getProviderClass())) {
                 JpaProvider jpaProvider = JpaProviderFactory.createJpaProvider(
-                        provider.getProviderClass(), platform.isToolSupported(entry.getValue()), jpa1, jpa2);
+                        provider.getProviderClass(), platform.isToolSupported(entry.getValue()), jpa1, jpa2, jpa21);
                 result.add(jpaProvider);
             }
         }
