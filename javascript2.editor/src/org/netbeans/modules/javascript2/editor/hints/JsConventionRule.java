@@ -81,7 +81,7 @@ import org.openide.util.NbBundle;
 public class JsConventionRule extends JsAstRule {
     
     @Override
-    void computeHints(JsRuleContext context, List<Hint> hints, HintsProvider.HintsManager manager) {
+    void computeHints(JsRuleContext context, List<Hint> hints, int offset, HintsProvider.HintsManager manager) {
         Map<?, List<? extends AstRule>> allHints = manager.getHints();
         List<? extends AstRule> conventionHints = allHints.get(BetterConditionHint.JSCONVENTION_OPTION_HINTS);
         Rule betterConditionRule = null;

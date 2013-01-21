@@ -47,6 +47,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.lib.editor.util.ArrayUtilities;
@@ -67,6 +68,16 @@ import org.openide.util.WeakListeners;
  */
 public final class DirectMergeContainer implements HighlightsContainer, HighlightsChangeListener {
     
+    // -J-Dorg.netbeans.modules.editor.lib2.highlighting.DirectMergeContainer.level=FINE
+    private static final Logger LOG = Logger.getLogger(DirectMergeContainer.class.getName());
+    
+    /**
+     * Maximum number of empty highlights (returned from HighlightsSequence)
+     * after which the particular layer will no longer be used for compound highlight sequence.
+     * This is set to ensure that the whole code won't end up in an infinite loop.
+     */
+    static final int MAX_EMPTY_HIGHLIGHT_COUNT = 10000;
+
     private final HighlightsContainer[] layers;
     
     private final List<HighlightsChangeListener> listeners = new CopyOnWriteArrayList<HighlightsChangeListener>();
@@ -183,7 +194,7 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
             for (int i = 0; i < layers.length; i++) {
                 HighlightsContainer container = layers[i];
                 HighlightsSequence hlSequence = container.getHighlights(startOffset, endOffset);
-                Wrapper wrapper = new Wrapper(hlSequence, startOffset);
+                Wrapper wrapper = new Wrapper(container, hlSequence, startOffset);
                 if (!wrapper.isFinished()) { // For no-highlight wrapper do not include it at all in the array
                     wrappers[topWrapperIndex++] = wrapper;
                 }
@@ -280,7 +291,7 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
                 wrapper = wrappers[startIndex];
                 if (wrapper.nextChangeOffset <= offset) {
                     if (wrapper.updateCurrentState(offset)) { // Requires next highlight fetch
-                        if (wrapper.fetchNextHighlight(offset)) { // Finished all highlights in sequence
+                        if (!wrapper.fetchNextHighlight(offset)) { // Finished all highlights in sequence
                             removeWrapper(startIndex); // Remove this wrapper
                             // Ensure that the wrapper returned from method is correct after removeWrapper()
                             // topWrapperIndex already decreased by removeWrapper()
@@ -336,6 +347,11 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
 
 
     static final class Wrapper {
+
+        /**
+         * Layer over which hlSequence is constructed (for debugging purposes).
+         */
+        final HighlightsContainer layer;
         
         /**
          * Highlights sequence for layer corresponding to this wrapper.
@@ -382,8 +398,11 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
          */
         AttributeSet mAttrs;
         
+        private int emptyHighlightCount;
         
-        public Wrapper(HighlightsSequence hlSequence, int startOffset) {
+        
+        public Wrapper(HighlightsContainer layer, HighlightsSequence hlSequence, int startOffset) {
+            this.layer = layer;
             this.hlSequence = hlSequence;
             fetchNextHighlight(startOffset);
             updateCurrentState(startOffset);
@@ -415,21 +434,43 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
         /**
          * Fetch a next highlight for this wrapper.
          * @param offset
-         * @return true if there are no more highlights or false otherwise.
+         * @return true if highlight fetched successfully or false if there are no more highlights.
          */
         boolean fetchNextHighlight(int offset) {
             assert (hlStartOffset != Integer.MAX_VALUE);
             do {
                 if (hlSequence.moveNext()) {
                     hlStartOffset = hlSequence.getStartOffset();
+                    if (hlStartOffset < hlEndOffset) { // Invalid layer: next highlight overlaps previous one
+                        // To prevent infinite loops finish this HL
+                        LOG.info("Disabled an invalid highlighting layer: hlStartOffset=" + hlStartOffset + // NOI18N
+                                " < previous hlEndOffset=" + hlEndOffset + " for layer=" + layer); // NOI18N
+                        hlStartOffset = hlEndOffset = Integer.MAX_VALUE;
+                        return false;
+                    }
                     hlEndOffset = hlSequence.getEndOffset();
+                    if (hlEndOffset <= hlStartOffset) {
+                        if (hlEndOffset < hlStartOffset) { // Invalid highlight: end offset before start offset
+                            // To prevent infinite loops finish this HL
+                            LOG.info("Disabled an invalid highlighting layer: hlStartOffset=" + hlStartOffset + // NOI18N
+                                    " > hlEndOffset=" + hlEndOffset + " for layer=" + layer); // NOI18N
+                            hlStartOffset = hlEndOffset = Integer.MAX_VALUE;
+                            return false;
+                        }
+                        emptyHighlightCount++;
+                        if (emptyHighlightCount >= MAX_EMPTY_HIGHLIGHT_COUNT) {
+                            LOG.info("Disabled an invalid highlighting layer: too many empty highlights=" + emptyHighlightCount); // NOI18N
+                            hlStartOffset = hlEndOffset = Integer.MAX_VALUE;
+                            return false;
+                        }
+                    }
                     hlAttrs = hlSequence.getAttributes();
                 } else {
                     hlStartOffset = hlEndOffset = Integer.MAX_VALUE; // Signal that sequence is finished
-                    return true;
+                    return false;
                 }
             } while (hlEndOffset <= offset);
-            return false;
+            return true; // Valid highlight fetched
         }
 
         @Override

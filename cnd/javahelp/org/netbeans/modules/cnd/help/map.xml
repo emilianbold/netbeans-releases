@@ -370,4 +370,5 @@
 	<mapID target="RemoteDevelopmentToolbar" url="WorkingWithCandC++Projects/RemoteDevelopmentToolbar.html"/>
 	<mapID target="GlobalDebuggingOptions" url="CandC++ProjectBasics/GlobalDebuggingOptions.html"/>
 	<mapID target="DebuggingOptions" url="CandC++ProjectBasics/DebuggingOptions.html"/>
+	<mapID target="RemoteModes" url="WorkingWithCandC++Projects/RemoteModes.html"/>
 </map>

@@ -243,10 +243,10 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
     }
     
     private String getContextFilesList(Context ctx, String def) {
-        if (ctx == null || ctx.getFiles().length == 0) return def;
+        if (ctx == null || ctx.getRootFiles().length == 0) return def;
         StringBuffer sb = new StringBuffer(200);
         sb.append("<html>"); // NOI18N
-        for (File file : ctx.getFiles()) {
+        for (File file : ctx.getRootFiles()) {
             sb.append(file.getAbsolutePath());
             sb.append("<br>"); // NOI18N
         }
@@ -256,7 +256,7 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
 
     /** Tests whether it shows some content. */
     public boolean hasContext() {
-        return context != null && context.getFiles().length > 0;
+        return context != null && context.getRootFiles().length > 0;
     }
 
     protected String preferredID() {

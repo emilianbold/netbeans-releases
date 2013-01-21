@@ -125,20 +125,22 @@ public final class BookmarkList {
 
         @Override
         public void bookmarksChanged(BookmarkManagerEvent evt) {
-            ProjectBookmarksChange prjChange = evt.getProjectBookmarksChange(
-                    fileBookmarks.getProjectBookmarks().getProjectURI());
-            if (prjChange != null) {
-                FileBookmarksChange fileChange = 
-                        prjChange.getFileBookmarksChange(fileBookmarks.getRelativeURI());
-                if (fileChange != null) {
-                    Collection<BookmarkChange> bookmarkChanges = fileChange.getBookmarkChanges();
-                    if (bookmarkChanges != null) {
-                        for (BookmarkChange change : bookmarkChanges) {
-                            if (change.isAdded()) {
-                                addBookmarkForInfo(change.getBookmark(), -1);
-                            }
-                            if (change.isRemoved()) {
-                                removeBookmarkImpl(change.getBookmark());
+            if (fileBookmarks != null) {
+                ProjectBookmarksChange prjChange = evt.getProjectBookmarksChange(
+                        fileBookmarks.getProjectBookmarks().getProjectURI());
+                if (prjChange != null) {
+                    FileBookmarksChange fileChange = 
+                            prjChange.getFileBookmarksChange(fileBookmarks.getRelativeURI());
+                    if (fileChange != null) {
+                        Collection<BookmarkChange> bookmarkChanges = fileChange.getBookmarkChanges();
+                        if (bookmarkChanges != null) {
+                            for (BookmarkChange change : bookmarkChanges) {
+                                if (change.isAdded()) {
+                                    addBookmarkForInfo(change.getBookmark(), -1);
+                                }
+                                if (change.isRemoved()) {
+                                    removeBookmarkImpl(change.getBookmark());
+                                }
                             }
                         }
                     }
@@ -426,13 +428,12 @@ public final class BookmarkList {
         Bookmark bookmark = null;
         BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
         try {
-            FileBookmarks fBookmarks = lockedBookmarkManager.getFileBookmarks(document);
-            if (fBookmarks != null) {
-                int id = fBookmarks.getProjectBookmarks().generateBookmarkId();
+            if (fileBookmarks != null) {
+                int id = fileBookmarks.getProjectBookmarks().generateBookmarkId();
                 BookmarkInfo info = BookmarkInfo.create(id, "", offset, "");
                 // Add bookmark early (not during change firing) since the API needs Bookmark instance
                 bookmark = addBookmarkForInfo(info, offset);
-                lockedBookmarkManager.addBookmark(fBookmarks, info);
+                lockedBookmarkManager.addBookmark(fileBookmarks, info);
                 BookmarkHistory.get().add(info);
                 fireChange();
             }

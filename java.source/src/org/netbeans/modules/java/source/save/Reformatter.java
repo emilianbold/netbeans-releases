@@ -243,7 +243,7 @@ public class Reformatter implements ReformatTask {
                 continue;
             if (endOffset < start)
                 continue;
-            if (endOffset == start && (text == null || !(text.trim().equals("}") || templateEdit && start >= end))) //NOI18N
+            if (endOffset == start && (text == null || !text.trim().equals("}"))) //NOI18N
                 continue;
             if (embeddingOffset >= start)
                 continue;
@@ -350,7 +350,8 @@ public class Reformatter implements ReformatTask {
             start = controller.getSnapshot().getOriginalOffset(start);
             end = controller.getSnapshot().getOriginalOffset(end);
             if (start == (-1) || end == (-1)) continue;
-            doc.remove(start, end - start);
+            if (end - start > 0)
+                doc.remove(start, end - start);
             if (text != null && text.length() > 0)
                 doc.insertString(start, text, null);
         }

@@ -612,6 +612,7 @@ implements FileNameMapper, URIResolver, EntityResolver {
 
                 equals = line.indexOf('=');
                 if (equals == -1) {
+                    line = null;
                     continue;
                 }
                 key = line.substring(0, equals).trim();

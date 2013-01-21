@@ -616,7 +616,7 @@ public class NPECheck {
             
             Element e = info.getTrees().getElement(getCurrentPath());
 
-            if (e == null) {
+            if (e == null || !isVariableElement(e)) {
                 return State.POSSIBLE_NULL;
             }
             

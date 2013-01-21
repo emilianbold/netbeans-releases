@@ -23,9 +23,9 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
@@ -42,8 +42,8 @@ import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
 import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
 
 /**
- * GSP code completer
- * 
+ * GSP code completer.
+ *
  * @author Tor Norbye
  * @author Martin Adamek
  */
@@ -76,31 +76,35 @@ public class GspCompleter extends CompletionHandler {
         if (isWithinGroovy(doc, caretOffset)) {
             return super.getAutoQuery(component, typedText);
         }
-        
+
         return QueryType.NONE;
     }
-     
-    static boolean isWithinGroovy(Document doc, int offset){
+
+    static boolean isWithinGroovy(Document doc, int offset) {
         TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
         TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
-        
+
         tokenSequence.move(offset);
         if (tokenSequence.moveNext() || tokenSequence.movePrevious()) {
             Object tokenID = tokenSequence.token().id();
-            if (tokenID == GspTokenId.GROOVY || tokenID == GspTokenId.GROOVY_EXPR) {
+            if (tokenID == GspTokenId.GSTRING_CONTENT
+                || tokenID == GspTokenId.SCRIPTLET_CONTENT
+                || tokenID == GspTokenId.SCRIPTLET_OUTPUT_VALUE_CONTENT) {
                 return true;
-            } else if (tokenID == GspTokenId.DELIMITER) {
-                // maybe the caret is placed just before the ending script delimiter?
+            }
+
+            // maybe the caret is placed just before the ending script delimiter?
+            if (tokenID == GspTokenId.GSTRING_END
+                || tokenID == GspTokenId.SCRIPTLET_END
+                || tokenID == GspTokenId.SCRIPTLET_OUTPUT_VALUE_END) {
                 tokenSequence.movePrevious();
-                
-                if (tokenSequence.token().id() == GspTokenId.GROOVY || 
-                        tokenSequence.token().id() == GspTokenId.GROOVY_EXPR){
+
+                if (tokenSequence.token().id() == GspTokenId.GSTRING_CONTENT) {
                     return true;
                 }
             }
         }
-        
+
         return false;
     }
-    
 }

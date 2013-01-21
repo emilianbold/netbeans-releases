@@ -57,9 +57,11 @@ import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.masterfs.providers.AnnotationProvider;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Item;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakSet;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -354,7 +356,7 @@ public final class Watcher extends AnnotationProvider {
         }
     }
 
-    private final Object lock = new Object();
+    private final Object lock = "org.netbeans.io.suspend".intern();
     private Set<FileObject> pending; // guarded by lock
     private static RequestProcessor RP = new RequestProcessor("Pending refresh", 1);
 
@@ -364,10 +366,25 @@ public final class Watcher extends AnnotationProvider {
             Set<FileObject> toRefresh;
             synchronized(lock) {
                 toRefresh = pending;
-                pending = null;
                 if (toRefresh == null) {
                     return;
                 }
+                for (;;) {
+                    int cnt = Integer.getInteger("org.netbeans.io.suspend", 0); // NOI18N
+                    if (cnt <= 0) {
+                        break;
+                    }
+                    final String pndngSize = String.valueOf(toRefresh.size());
+                    System.setProperty("org.netbeans.io.pending", pndngSize); // NOI18N
+                    LOG.log(Level.FINE, "Suspend count {0} pending {1}", new Object[]{cnt, pndngSize});
+                    try {
+                        lock.wait(1500);
+                    } catch (InterruptedException ex) {
+                        LOG.log(Level.FINE, null, ex);
+                    }
+                }
+                System.getProperties().remove("org.netbeans.io.pending"); // NOI18N
+                pending = null;
             }
             LOG.log(Level.FINE, "Refreshing {0} directories", toRefresh.size());
 
@@ -391,7 +408,7 @@ public final class Watcher extends AnnotationProvider {
         synchronized(lock) {
             if (pending == null) {
                 refreshTask.schedule(1500);
-                pending = new HashSet<FileObject>();
+                pending = new WeakSet<FileObject>();
             }
             pending.add(fo);
         }
@@ -404,7 +421,7 @@ public final class Watcher extends AnnotationProvider {
         synchronized(lock) {
             if (pending == null) {
                 refreshTask.schedule(1500);
-                pending = new HashSet<FileObject>();
+                pending = new WeakSet<FileObject>();
             }
             pending.addAll(fos);
         }

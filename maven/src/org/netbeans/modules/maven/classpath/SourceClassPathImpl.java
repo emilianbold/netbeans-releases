@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.maven.classpath;
 
-import java.io.File;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;

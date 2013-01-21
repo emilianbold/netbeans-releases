@@ -134,7 +134,7 @@ public final class Model {
      * @return name of the node if it supports it
      */
     public List<Identifier> getNodeName(Node node) {
-        return getModelVisitor().getNodeName(node);
+        return ModelVisitor.getNodeName(node, parserResult);
     }
 
 }

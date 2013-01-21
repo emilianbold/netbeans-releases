@@ -906,7 +906,7 @@ public class ImportProject implements PropertyChangeListener {
                 if (execLog != null) {
                     ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
                     MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
-                    vars.add(BuildTraceSupport.CND_TOOLS+"="+BuildTraceSupport.getTools(makeConfigurationDescriptor.getActiveConfiguration())); // NOI18N
+                    vars.add(BuildTraceSupport.CND_TOOLS+"="+BuildTraceSupport.getTools(makeConfigurationDescriptor.getActiveConfiguration(), executionEnvironment)); // NOI18N
                     if (executionEnvironment.isLocal()) {
                         vars.add(BuildTraceSupport.CND_BUILD_LOG+"="+execLog.getAbsolutePath()); // NOI18N
                     } else {
@@ -950,7 +950,7 @@ public class ImportProject implements PropertyChangeListener {
         if (execLog != null) {
             ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
             MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
-            vars.add(BuildTraceSupport.CND_TOOLS+"="+BuildTraceSupport.getTools(makeConfigurationDescriptor.getActiveConfiguration())); // NOI18N
+            vars.add(BuildTraceSupport.CND_TOOLS+"="+BuildTraceSupport.getTools(makeConfigurationDescriptor.getActiveConfiguration(), executionEnvironment)); // NOI18N
             if (executionEnvironment.isLocal()) {
                 vars.add(BuildTraceSupport.CND_BUILD_LOG+"="+execLog.getAbsolutePath()); // NOI18N
             } else {

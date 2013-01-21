@@ -55,6 +55,7 @@ import org.netbeans.modules.parsing.spi.indexing.BinaryIndexer;
 import org.netbeans.modules.parsing.spi.indexing.BinaryIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.SourceIndexerFactory;
+import org.openide.util.Parameters;
 
 /**
  * Represents a context of java indexing transaction.
@@ -148,15 +149,15 @@ public final class TransactionContext {
      * @return the {@link TransactionContext}.
      * @throws IllegalStateException when service of given type is already registered.
      */
-    public TransactionContext register(
-        @NonNull final Class<? extends Service> type,
-        @NonNull final Service service) throws IllegalStateException {
-        assert type != null;
-        assert service != null;
+    public <T extends Service> TransactionContext register(
+        @NonNull final Class<T> type,
+        @NonNull final T service) throws IllegalStateException {
+        Parameters.notNull("type", type);   //NOI18N
+        Parameters.notNull("service", service); //NOI18N
         if (services.containsKey(type)) {
             throw new IllegalStateException("Service already registered.");  //NOI18N
         }
-        services.put(type,service);
+        services.put(type,type.cast(service));
         return this;
     }
 
@@ -167,7 +168,7 @@ public final class TransactionContext {
      */
     @CheckForNull
     public <T extends Service> T get(@NonNull final Class<T> type) {
-        return (T) services.get(type);
+        return type.cast(services.get(type));
     }
 
     /**
