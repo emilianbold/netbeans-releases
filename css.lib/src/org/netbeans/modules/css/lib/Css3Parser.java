@@ -1,4 +1,4 @@
-// $ANTLR 3.3 Nov 30, 2010 12:50:56 /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2013-01-16 11:41:31
+// $ANTLR 3.3 Nov 30, 2010 12:50:56 /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2013-01-17 11:36:05
 
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -177,22 +177,23 @@ public class Css3Parser extends DebugParser {
     // delegators
 
     public static final String[] ruleNames = new String[] {
-        "invalidRule", "prio", "mediaQuery", "synpred1_Css3", "syncTo_RBRACE", 
-        "synpred3_Css3", "webkitKeyframes", "operator", "declarations", 
-        "less_variable_declaration", "propertyValue", "fnAttribute", "less_variable", 
-        "unaryOperator", "atRuleId", "slAttributeName", "mediaExpression", 
-        "fnAttributeValue", "declaration", "pseudo", "importItem", "term", 
-        "body", "elementSubsequent", "functionName", "synpred2_Css3", "counterStyle", 
-        "slAttribute", "ws", "mediaQueryOperator", "typeSelector", "nsPred", 
-        "syncToDeclarationsRule", "namespaces", "slAttributeValue", "mediaQueryList", 
-        "property", "namespace", "webkitKeyframeSelectors", "page", "resourceIdentifier", 
-        "selector", "simpleSelectorSequence", "namespacePrefix", "namespacePrefixName", 
-        "media", "webkitKeyframesBlock", "charSetValue", "pseudoPage", "moz_document", 
-        "fontFace", "hexColor", "selectorsGroup", "styleSheet", "margin", 
-        "rule", "cssId", "expression", "fnAttributeName", "esPred", "vendorAtRule", 
-        "mediaFeature", "combinator", "charSet", "bodyItem", "moz_document_function", 
-        "function", "mediaType", "cssClass", "margin_sym", "imports", "generic_at_rule", 
-        "syncToFollow", "elementName"
+        "invalidRule", "less_variable_declaration", "hexColor", "moz_document_function", 
+        "importItem", "functionName", "body", "simpleSelectorSequence", 
+        "term", "generic_at_rule", "mediaQueryList", "fontFace", "page", 
+        "synpred2_Css3", "webkitKeyframes", "declarations", "cssClass", 
+        "webkitKeyframeSelectors", "nsPred", "function", "rule", "typeSelector", 
+        "property", "ws", "pseudoPage", "moz_document", "syncToFollow", 
+        "atRuleId", "namespace", "charSetValue", "less_variable", "fnAttribute", 
+        "syncToDeclarationsRule", "pseudo", "elementName", "mediaQueryOperator", 
+        "styleSheet", "mediaType", "fnAttributeValue", "slAttribute", "namespacePrefix", 
+        "expression", "synpred1_Css3", "mediaExpression", "counterStyle", 
+        "synpred3_Css3", "charSet", "syncTo_RBRACE", "bodyItem", "namespaces", 
+        "prio", "selectorsGroup", "mediaFeature", "media", "imports", "unaryOperator", 
+        "namespacePrefixName", "margin_sym", "operator", "webkitKeyframesBlock", 
+        "less_function", "declaration", "slAttributeName", "mediaQuery", 
+        "elementSubsequent", "resourceIdentifier", "propertyValue", "combinator", 
+        "esPred", "slAttributeValue", "fnAttributeName", "vendorAtRule", 
+        "margin", "selector", "cssId"
     };
     public static final boolean[] decisionCanBacktrack = new boolean[] {
         false, // invalid decision
@@ -211,7 +212,8 @@ public class Css3Parser extends DebugParser {
             false, false, false, false, false, false, false, false, false, 
             false, false, false, false, false, false, false, false, false, 
             false, false, false, false, false, false, false, false, false, 
-            false, false, false, false, false, false, false, false
+            false, false, false, false, false, false, false, false, false, 
+            false
     };
 
      
@@ -8970,7 +8972,7 @@ public class Css3Parser extends DebugParser {
 
 
     // $ANTLR start "less_variable_declaration"
-    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:790:1: less_variable_declaration : less_variable ( WS )? COLON ( WS )? expression SEMI ;
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:790:1: less_variable_declaration : less_variable ( WS )+ COLON ( WS )+ expression SEMI ;
     public final void less_variable_declaration() throws RecognitionException {
         try { dbg.enterRule(getGrammarFileName(), "less_variable_declaration");
         if ( getRuleLevel()==0 ) {dbg.commence();}
@@ -8978,10 +8980,10 @@ public class Css3Parser extends DebugParser {
         dbg.location(790, 1);
 
         try {
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:791:5: ( less_variable ( WS )? COLON ( WS )? expression SEMI )
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:791:5: ( less_variable ( WS )+ COLON ( WS )+ expression SEMI )
             dbg.enterAlt(1);
 
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:791:7: less_variable ( WS )? COLON ( WS )? expression SEMI
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:791:7: less_variable ( WS )+ COLON ( WS )+ expression SEMI
             {
             dbg.location(791,7);
             pushFollow(FOLLOW_less_variable_in_less_variable_declaration3788);
@@ -8990,61 +8992,93 @@ public class Css3Parser extends DebugParser {
             state._fsp--;
             if (state.failed) return ;
             dbg.location(791,21);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:791:21: ( WS )?
-            int alt143=2;
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:791:21: ( WS )+
+            int cnt143=0;
             try { dbg.enterSubRule(143);
-            try { dbg.enterDecision(143, decisionCanBacktrack[143]);
 
-            int LA143_0 = input.LA(1);
+            loop143:
+            do {
+                int alt143=2;
+                try { dbg.enterDecision(143, decisionCanBacktrack[143]);
 
-            if ( (LA143_0==WS) ) {
-                alt143=1;
-            }
-            } finally {dbg.exitDecision(143);}
+                int LA143_0 = input.LA(1);
 
-            switch (alt143) {
-                case 1 :
-                    dbg.enterAlt(1);
+                if ( (LA143_0==WS) ) {
+                    alt143=1;
+                }
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:791:21: WS
-                    {
-                    dbg.location(791,21);
-                    match(input,WS,FOLLOW_WS_in_less_variable_declaration3790); if (state.failed) return ;
 
-                    }
-                    break;
+                } finally {dbg.exitDecision(143);}
 
-            }
+                switch (alt143) {
+            	case 1 :
+            	    dbg.enterAlt(1);
+
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:791:21: WS
+            	    {
+            	    dbg.location(791,21);
+            	    match(input,WS,FOLLOW_WS_in_less_variable_declaration3790); if (state.failed) return ;
+
+            	    }
+            	    break;
+
+            	default :
+            	    if ( cnt143 >= 1 ) break loop143;
+            	    if (state.backtracking>0) {state.failed=true; return ;}
+                        EarlyExitException eee =
+                            new EarlyExitException(143, input);
+                        dbg.recognitionException(eee);
+
+                        throw eee;
+                }
+                cnt143++;
+            } while (true);
             } finally {dbg.exitSubRule(143);}
 
             dbg.location(791,25);
             match(input,COLON,FOLLOW_COLON_in_less_variable_declaration3793); if (state.failed) return ;
             dbg.location(791,31);
-            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:791:31: ( WS )?
-            int alt144=2;
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:791:31: ( WS )+
+            int cnt144=0;
             try { dbg.enterSubRule(144);
-            try { dbg.enterDecision(144, decisionCanBacktrack[144]);
 
-            int LA144_0 = input.LA(1);
+            loop144:
+            do {
+                int alt144=2;
+                try { dbg.enterDecision(144, decisionCanBacktrack[144]);
 
-            if ( (LA144_0==WS) ) {
-                alt144=1;
-            }
-            } finally {dbg.exitDecision(144);}
+                int LA144_0 = input.LA(1);
 
-            switch (alt144) {
-                case 1 :
-                    dbg.enterAlt(1);
+                if ( (LA144_0==WS) ) {
+                    alt144=1;
+                }
 
-                    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:791:31: WS
-                    {
-                    dbg.location(791,31);
-                    match(input,WS,FOLLOW_WS_in_less_variable_declaration3795); if (state.failed) return ;
 
-                    }
-                    break;
+                } finally {dbg.exitDecision(144);}
 
-            }
+                switch (alt144) {
+            	case 1 :
+            	    dbg.enterAlt(1);
+
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:791:31: WS
+            	    {
+            	    dbg.location(791,31);
+            	    match(input,WS,FOLLOW_WS_in_less_variable_declaration3795); if (state.failed) return ;
+
+            	    }
+            	    break;
+
+            	default :
+            	    if ( cnt144 >= 1 ) break loop144;
+            	    if (state.backtracking>0) {state.failed=true; return ;}
+                        EarlyExitException eee =
+                            new EarlyExitException(144, input);
+                        dbg.recognitionException(eee);
+
+                        throw eee;
+                }
+                cnt144++;
+            } while (true);
             } finally {dbg.exitSubRule(144);}
 
             dbg.location(791,35);
@@ -9117,6 +9151,142 @@ public class Css3Parser extends DebugParser {
         return ;
     }
     // $ANTLR end "less_variable"
+
+
+    // $ANTLR start "less_function"
+    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:798:1: less_function : LPAREN ( WS )+ function ( WS )+ RPAREN ;
+    public final void less_function() throws RecognitionException {
+        try { dbg.enterRule(getGrammarFileName(), "less_function");
+        if ( getRuleLevel()==0 ) {dbg.commence();}
+        incRuleLevel();
+        dbg.location(798, 1);
+
+        try {
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:799:5: ( LPAREN ( WS )+ function ( WS )+ RPAREN )
+            dbg.enterAlt(1);
+
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:799:7: LPAREN ( WS )+ function ( WS )+ RPAREN
+            {
+            dbg.location(799,7);
+            match(input,LPAREN,FOLLOW_LPAREN_in_less_function3838); if (state.failed) return ;
+            dbg.location(799,14);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:799:14: ( WS )+
+            int cnt145=0;
+            try { dbg.enterSubRule(145);
+
+            loop145:
+            do {
+                int alt145=2;
+                try { dbg.enterDecision(145, decisionCanBacktrack[145]);
+
+                int LA145_0 = input.LA(1);
+
+                if ( (LA145_0==WS) ) {
+                    alt145=1;
+                }
+
+
+                } finally {dbg.exitDecision(145);}
+
+                switch (alt145) {
+            	case 1 :
+            	    dbg.enterAlt(1);
+
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:799:14: WS
+            	    {
+            	    dbg.location(799,14);
+            	    match(input,WS,FOLLOW_WS_in_less_function3840); if (state.failed) return ;
+
+            	    }
+            	    break;
+
+            	default :
+            	    if ( cnt145 >= 1 ) break loop145;
+            	    if (state.backtracking>0) {state.failed=true; return ;}
+                        EarlyExitException eee =
+                            new EarlyExitException(145, input);
+                        dbg.recognitionException(eee);
+
+                        throw eee;
+                }
+                cnt145++;
+            } while (true);
+            } finally {dbg.exitSubRule(145);}
+
+            dbg.location(799,18);
+            pushFollow(FOLLOW_function_in_less_function3843);
+            function();
+
+            state._fsp--;
+            if (state.failed) return ;
+            dbg.location(799,27);
+            // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:799:27: ( WS )+
+            int cnt146=0;
+            try { dbg.enterSubRule(146);
+
+            loop146:
+            do {
+                int alt146=2;
+                try { dbg.enterDecision(146, decisionCanBacktrack[146]);
+
+                int LA146_0 = input.LA(1);
+
+                if ( (LA146_0==WS) ) {
+                    alt146=1;
+                }
+
+
+                } finally {dbg.exitDecision(146);}
+
+                switch (alt146) {
+            	case 1 :
+            	    dbg.enterAlt(1);
+
+            	    // /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g:799:27: WS
+            	    {
+            	    dbg.location(799,27);
+            	    match(input,WS,FOLLOW_WS_in_less_function3845); if (state.failed) return ;
+
+            	    }
+            	    break;
+
+            	default :
+            	    if ( cnt146 >= 1 ) break loop146;
+            	    if (state.backtracking>0) {state.failed=true; return ;}
+                        EarlyExitException eee =
+                            new EarlyExitException(146, input);
+                        dbg.recognitionException(eee);
+
+                        throw eee;
+                }
+                cnt146++;
+            } while (true);
+            } finally {dbg.exitSubRule(146);}
+
+            dbg.location(799,31);
+            match(input,RPAREN,FOLLOW_RPAREN_in_less_function3848); if (state.failed) return ;
+
+            }
+
+        }
+        catch (RecognitionException re) {
+            reportError(re);
+            recover(input,re);
+        }
+        finally {
+        }
+        dbg.location(800, 5);
+
+        }
+        finally {
+            dbg.exitRule(getGrammarFileName(), "less_function");
+            decRuleLevel();
+            if ( getRuleLevel()==0 ) {dbg.terminate();}
+        }
+
+        return ;
+    }
+    // $ANTLR end "less_function"
 
     // $ANTLR start synpred1_Css3
     public final void synpred1_Css3_fragment() throws RecognitionException {   
@@ -9238,7 +9408,7 @@ public class Css3Parser extends DebugParser {
     static final String DFA42_minS =
         "\1\5\6\uffff\2\5\1\uffff";
     static final String DFA42_maxS =
-        "\1\165\6\uffff\2\56\1\uffff";
+        "\1\165\6\uffff\1\24\1\56\1\uffff";
     static final String DFA42_acceptS =
         "\1\uffff\1\1\1\2\1\3\1\4\1\5\1\6\2\uffff\1\7";
     static final String DFA42_specialS =
@@ -9252,8 +9422,8 @@ public class Css3Parser extends DebugParser {
             "",
             "",
             "",
+            "\2\6\5\uffff\1\6\7\uffff\1\10",
             "\2\6\5\uffff\1\6\7\uffff\1\10\31\uffff\1\11",
-            "\2\6\5\uffff\1\6\7\uffff\1\6\31\uffff\1\11",
             ""
     };
 
@@ -10054,13 +10224,18 @@ public class Css3Parser extends DebugParser {
     public static final BitSet FOLLOW_expression_in_fnAttributeValue3714 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_HASH_in_hexColor3732 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_set_in_ws3753 = new BitSet(new long[]{0x0000000000100002L,0x0000000000018000L});
-    public static final BitSet FOLLOW_less_variable_in_less_variable_declaration3788 = new BitSet(new long[]{0x0000400000100000L});
-    public static final BitSet FOLLOW_WS_in_less_variable_declaration3790 = new BitSet(new long[]{0x0000400000000000L});
-    public static final BitSet FOLLOW_COLON_in_less_variable_declaration3793 = new BitSet(new long[]{0x03F940003E3C08E0L,0x002000000001FFE0L});
+    public static final BitSet FOLLOW_less_variable_in_less_variable_declaration3788 = new BitSet(new long[]{0x0000000000100000L});
+    public static final BitSet FOLLOW_WS_in_less_variable_declaration3790 = new BitSet(new long[]{0x0000400000100000L});
+    public static final BitSet FOLLOW_COLON_in_less_variable_declaration3793 = new BitSet(new long[]{0x0000000000100000L});
     public static final BitSet FOLLOW_WS_in_less_variable_declaration3795 = new BitSet(new long[]{0x03F940003E3C08E0L,0x002000000001FFE0L});
     public static final BitSet FOLLOW_expression_in_less_variable_declaration3798 = new BitSet(new long[]{0x0000000000000200L});
     public static final BitSet FOLLOW_SEMI_in_less_variable_declaration3800 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_AT_IDENT_in_less_variable3821 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_LPAREN_in_less_function3838 = new BitSet(new long[]{0x0000000000100000L});
+    public static final BitSet FOLLOW_WS_in_less_function3840 = new BitSet(new long[]{0x0000000000100020L});
+    public static final BitSet FOLLOW_function_in_less_function3843 = new BitSet(new long[]{0x0000000000100000L});
+    public static final BitSet FOLLOW_WS_in_less_function3845 = new BitSet(new long[]{0x0000000000100000L,0x0000000000000008L});
+    public static final BitSet FOLLOW_RPAREN_in_less_function3848 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_esPred_in_synpred1_Css31950 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_esPred_in_synpred2_Css31968 = new BitSet(new long[]{0x0000000000000002L});
     public static final BitSet FOLLOW_nsPred_in_synpred3_Css32070 = new BitSet(new long[]{0x0000000000000002L});

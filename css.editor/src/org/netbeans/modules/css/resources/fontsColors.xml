@@ -101,6 +101,11 @@ made subject to such option by the copyright holder.
         <font style="italic" />
     </fontcolor>
     
+    <!-- less/sass variable -->
+    <fontcolor name="mod-local-variable" foreColor="ff8000" >
+        <font style="bold" />
+    </fontcolor>
+    
 <!--    
     <fontcolor name="mod-interface" />
     <fontcolor name="mod-annotation-type" />

@@ -330,6 +330,11 @@ public enum NodeType {
     /**
      * "@color: #4D926F;"
      */
-    less_variable_declaration;
+    less_variable_declaration,
+    
+    /**
+     * color: "(@base-color * 3);"
+     */
+    less_function;
     
 }

@@ -788,14 +788,22 @@ ws
     
 //*** LESS SYNTAX ***
 less_variable_declaration
-    : less_variable WS? COLON WS? expression SEMI
+    : less_variable WS+ COLON WS+ expression SEMI
     ;
     
 less_variable
     : AT_IDENT
     ;
-    
 
+less_function
+    : LPAREN WS+ less_expression WS+ RPAREN
+    ;
+
+less_expression
+    : term (less_expression_operator term)*
+    ;
+    
+less_expression_operator
 //*** END OF LESS SYNTAX ***
 
 // ==============================================================
