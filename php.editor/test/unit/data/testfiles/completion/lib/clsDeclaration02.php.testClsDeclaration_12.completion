@@ -26,6 +26,7 @@ PACKAGE    Second                          [PUBLIC]   null
 PACKAGE    Shit                            [PUBLIC]   null
 PACKAGE    ShowMe                          [PUBLIC]   null
 PACKAGE    TC                              [PUBLIC]   null
+PACKAGE    Test                            [PUBLIC]   null
 PACKAGE    Test204925_01_C                 [PUBLIC]   null
 PACKAGE    Test204925_01_P                 [PUBLIC]   null
 PACKAGE    Test204925_02_C                 [PUBLIC]   null
@@ -59,6 +60,7 @@ PACKAGE    Controller                      [PUBLIC]   Brite
 PACKAGE    Data                            [PUBLIC]   Shit
 PACKAGE    NNS                             [PUBLIC]   CNS
 PACKAGE    Ns                              [PUBLIC]   Testing
+PACKAGE    Space                           [PUBLIC]   Test
 PACKAGE    Test                            [PUBLIC]   App
 PACKAGE    UI                              [PUBLIC]   Nette\Application
 PACKAGE    User                            [PUBLIC]   Package2
