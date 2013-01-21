@@ -86,6 +86,8 @@ import org.openide.util.io.NbMarshalledObject;
 public class BaseFileObjectTestHid extends TestBaseHid{
     public static final HashSet<String> AUTOMOUNT_SET = new HashSet<String>(Arrays.asList("set", "shared", "net", "java", "share", "home", "ws", "ade_autofs"));
     private FileObject root;
+    private Logger LOG;
+    
 
     public BaseFileObjectTestHid(String name) {
         super(name);
@@ -94,7 +96,13 @@ public class BaseFileObjectTestHid extends TestBaseHid{
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        LOG = Logger.getLogger(BaseFileObjectTestHid.class.getName() + "." + getName());
         root = testedFS.findResource(getResourcePrefix());
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.INFO;
     }
 
     @Override
@@ -644,53 +652,75 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         File dirF = fileF.getParentFile();
         
         for (int cntr = 0; cntr < 10; cntr++) {
-            dirF.mkdir();
+            boolean res = dirF.mkdir();
+            LOG.log(Level.INFO, "Created directory {0} res: {1} round {2}", new Object[]{dirF, res, cntr});
             new FileOutputStream(fileF).close();
+            LOG.log(Level.INFO, "Created file {0} exists: {1}", new Object[]{fileF, fileF.exists()});
             root.getFileSystem().refresh(false);
-            final List<Boolean> valid = new ArrayList<Boolean>();
+            final int validCntr = cntr;
+            final List<Boolean> valid = Collections.synchronizedList(new ArrayList<Boolean>());
+            LOG.log(Level.INFO, "Valid for round {0} allocated {1}", new Object[]{validCntr, valid});
             FileObject fo = FileUtil.toFileObject(fileF);
+            LOG.log(Level.INFO, "file object {0} for {1} found", new Object[]{fo, fileF});
             fo.addFileChangeListener(new FileChangeListener() {
                 @Override
                 public void fileAttributeChanged(FileAttributeEvent fe) {
-                    update();
+                    update(fe);
                 }
                 @Override
                 public void fileChanged(FileEvent fe) {
-                    update();
+                    update(fe);
                 }
                 @Override
                 public void fileDataCreated(FileEvent fe) {
-                    update();
+                    update(fe);
                 }
                 @Override
                 public void fileDeleted(FileEvent fe) {
-                    update();
+                    update(fe);
                 }
                 @Override
                 public void fileFolderCreated(FileEvent fe) {
-                    update();
+                    update(fe);
                 }
                 @Override
                 public void fileRenamed(FileRenameEvent fe) {
-                    update();
+                    update(fe);
                 }
                 
-                private void update() {
+                private void update(FileEvent ev) {
+                    LOG.log(Level.INFO, "event {0} arrived for {1} source: {2}", 
+                        new Object[]{ev.getClass().getName(), ev.getFile(), ev.getSource()}
+                    );
+//                    LOG.log(Level.INFO, "created as ", ev.created);
                     FileObject fo;
                     File f = fileF;
                     
-                    while ((fo = FileUtil.toFileObject(f)) == null) {
+                    for (;;) {
+                        fo = FileUtil.toFileObject(f);
+                        LOG.log(Level.INFO, "Converting {0} to {1}", new Object[]{f, fo});
+                        if (fo != null) {
+                            break;
+                        }
                         f = f.getParentFile();
+                        LOG.log(Level.INFO, "Checking parent file {0}", f);
                     }
-                    
+                    LOG.log(Level.INFO, "Is valid {0} for {1}", new Object[]{fo.isValid(), fo});
                     valid.add(fo.isValid());
+                    LOG.log(Level.INFO, "Valid for round {1} is now: {0}", new Object[] { valid, validCntr });
                 }
             });
+            LOG.log(Level.INFO, "Listener attached to {0}", fo);
+            LOG.info("About to perform delete");
             fileF.delete();
             dirF.delete();
+            LOG.log(Level.INFO, "Delete of {0} and {1} is done", new Object[]{fileF, dirF});
             root.getFileSystem().refresh(false);
+            LOG.log(Level.INFO, "Refresh finished and fo is: {0}", fo);
             
-            assertTrue("at least one event", valid.size() > 0);
+            LOG.log(Level.INFO, "Valid for round {0} is now {1}", new Object[]{validCntr, valid});
+            LOG.log(Level.INFO, "Existing file objects {0}", FileObjectFactory.getInstance(fileF).dumpObjects());
+            assertFalse("at least one event: " + valid, valid.isEmpty());
             
             for (boolean item : valid) {
                 assertTrue("valid=" + valid + ", count=" + cntr, item);

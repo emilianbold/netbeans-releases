@@ -154,34 +154,34 @@ public final class FileObjectFactory {
         }
     }
 
-    public int getSize() {
-        int retval = 0;
-
+    private List<FileObject> existingFileObjects() {
         List<Object> list = new ArrayList<Object>();
         synchronized (allIBaseFileObjects) {
             list.addAll(allIBaseFileObjects.values());
         }
-        List<Object> list2 = new ArrayList<Object>();
-
-
+        List<FileObject> res = new ArrayList<FileObject>();
         for (Object obj : list) {
+            Collection<?> all;
             if (obj instanceof Reference<?>) {
-                list2.add(obj);
+                all = Collections.singleton(obj);
             } else {
-                list2.addAll((List<?>) obj);
+                all = (List<?>)obj;
+            }
+            
+            for (Object r : all) {
+                Reference<?> ref = (Reference<?>)r;
+                Object fo = ref == null ? null : ref.get();
+                if (fo instanceof FileObject) {
+                    res.add((FileObject)fo);
+                }
             }
         }
-
-        for (Iterator<Object> it = list2.iterator(); it.hasNext();) {
-            @SuppressWarnings("unchecked")
-            Reference<FileObject> ref = (Reference<FileObject>) it.next();
-            FileObject fo = (ref != null) ? ref.get() : null;
-            if (fo != null) {
-                retval++;
-            }
-        }
-
-        return retval;
+        return res;
+    }
+    
+    public int getSize() {
+        List<FileObject> real = existingFileObjects();
+        return real.size();
     }
     
     
@@ -435,6 +435,14 @@ public final class FileObjectFactory {
                 }
             }
         }
+    }
+    
+    public final String dumpObjects() {
+        StringBuilder sb = new StringBuilder();
+        for (FileObject fileObject : existingFileObjects()) {
+            sb.append(fileObject).append("\n");
+        }
+        return sb.toString();
     }
 
     
