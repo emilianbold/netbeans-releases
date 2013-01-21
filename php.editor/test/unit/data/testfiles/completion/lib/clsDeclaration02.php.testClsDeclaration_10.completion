@@ -15,6 +15,7 @@ PACKAGE    ExtraThrow                      [PUBLIC]   null
 PACKAGE    First                           [PUBLIC]   null
 PACKAGE    Fom                             [PUBLIC]   null
 PACKAGE    FrontSpace                      [PUBLIC]   null
+PACKAGE    Froo                            [PUBLIC]   null
 PACKAGE    God                             [PUBLIC]   null
 PACKAGE    MC                              [PUBLIC]   null
 PACKAGE    MySpace                         [PUBLIC]   null
@@ -45,6 +46,7 @@ PACKAGE    Test204925_08_C                 [PUBLIC]   null
 PACKAGE    Test204925_08_P                 [PUBLIC]   null
 PACKAGE    Test_03                         [PUBLIC]   null
 PACKAGE    Testing                         [PUBLIC]   null
+PACKAGE    Trest                           [PUBLIC]   null
 PACKAGE    XUser                           [PUBLIC]   null
 PACKAGE    bar                             [PUBLIC]   null
 PACKAGE    delme                           [PUBLIC]   null
@@ -109,6 +111,7 @@ CLASS      B                               [PUBLIC]   issue195232.php
 CLASS      B                               [PUBLIC]   test.php
 CLASS      B135618                         [PUBLIC]   issue135618.php
 CLASS      BadRequestException             [PUBLIC]   Nette\Application
+CLASS      Bar                             [PUBLIC]   Froo
 CLASS      Bar                             [PUBLIC]   issue191666.php
 CLASS      Barrr                           [PUBLIC]   test204104.php
 CLASS      Barrr                           [PUBLIC]   test204104_02.php
@@ -285,6 +288,7 @@ CLASS      TestCCOnMethods                 [PUBLIC]   test_cc_on_methods.php
 CLASS      TestCCOnMethodsParentClass      [PUBLIC]   test_cc_on_methods.php
 CLASS      TestCase                        [PUBLIC]   TC
 CLASS      TestClass                       [PUBLIC]   Extra
+CLASS      TestClass                       [PUBLIC]   Trest
 CLASS      TestClass                       [PUBLIC]   function_return_type.php
 CLASS      TestClass                       [PUBLIC]   issue194875.php
 CLASS      TestClass                       [PUBLIC]   issue201310.php
