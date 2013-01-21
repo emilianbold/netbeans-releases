@@ -26,6 +26,7 @@ PACKAGE    Second                          [PUBLIC]   null
 PACKAGE    Shit                            [PUBLIC]   null
 PACKAGE    ShowMe                          [PUBLIC]   null
 PACKAGE    TC                              [PUBLIC]   null
+PACKAGE    Test                            [PUBLIC]   null
 PACKAGE    Test204925_01_C                 [PUBLIC]   null
 PACKAGE    Test204925_01_P                 [PUBLIC]   null
 PACKAGE    Test204925_02_C                 [PUBLIC]   null
@@ -60,6 +61,7 @@ PACKAGE    Controller                      [PUBLIC]   Brite
 PACKAGE    Data                            [PUBLIC]   Shit
 PACKAGE    NNS                             [PUBLIC]   CNS
 PACKAGE    Ns                              [PUBLIC]   Testing
+PACKAGE    Space                           [PUBLIC]   Test
 PACKAGE    Test                            [PUBLIC]   App
 PACKAGE    UI                              [PUBLIC]   Nette\Application
 PACKAGE    User                            [PUBLIC]   Package2
@@ -227,6 +229,8 @@ CLASS      Request                         [PUBLIC]   Brite\Base
 CLASS      SecuredPresenter                [PUBLIC]   AdminModule
 CLASS      SetFoo                          [PUBLIC]   test221725.php
 CLASS      SmartCompletion                 [PUBLIC]   issue201032.php
+CLASS      Space                           [PUBLIC]   Test\Space
+CLASS      SpaceUniverse                   [PUBLIC]   Test\Space
 CLASS      Strings                         [PUBLIC]   Nette\Utils
 CLASS      SubClass157534                  [PUBLIC]   issue157534.php
 CLASS      Super                           [PUBLIC]   declarations.php
@@ -236,6 +240,7 @@ CLASS      System147427                    [PUBLIC]   issue147427.php
 CLASS      TaskList                        [PUBLIC]   TaskList.php
 CLASS      Test                            [PUBLIC]   issue142024.php
 CLASS      Test                            [PUBLIC]   test216119.php
+CLASS      Test                            [PUBLIC]   test225062.php
 CLASS      Test1                           [PUBLIC]   test207188.php
 CLASS      Test141999                      [PUBLIC]   issue141999.php
 CLASS      Test142234                      [PUBLIC]   issue142234.php
