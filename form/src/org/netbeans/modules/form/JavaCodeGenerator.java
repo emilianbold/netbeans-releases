@@ -145,8 +145,8 @@ class JavaCodeGenerator extends CodeGenerator {
     static final String AUX_DECLARATION_POST =
         "JavaCodeGenerator_DeclarationPost"; // NOI18N
 
-    static final Integer VALUE_GENERATE_CODE = new Integer(0);
-    static final Integer VALUE_SERIALIZE = new Integer(1);
+    static final Integer VALUE_GENERATE_CODE = Integer.valueOf(0);
+    static final Integer VALUE_SERIALIZE = Integer.valueOf(1);
 
     // types of code generation of event listeners
     static final int ANONYMOUS_INNERCLASSES = 0;
@@ -346,7 +346,7 @@ class JavaCodeGenerator extends CodeGenerator {
                                 & CodeVariable.ALL_MODIF_MASK))
                     {   // non-default value
                         component.setAuxValue(AUX_VARIABLE_MODIFIER,
-                                new Integer(varType & CodeVariable.ALL_MODIF_MASK)); // value
+                                Integer.valueOf(varType & CodeVariable.ALL_MODIF_MASK)); // value
                     }
                     else { // default value
                         varType = 0x30DF; // default
@@ -367,7 +367,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     if (val != null)
                         return val;
 
-                    return new Integer(formModel.getSettings().getVariablesModifier());
+                    return Integer.valueOf(formModel.getSettings().getVariablesModifier());
                 }
 
                 @Override
@@ -378,7 +378,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 @Override
                 public Object getDefaultValue() {
                     return component.getAuxValue(AUX_VARIABLE_LOCAL) == null ?
-                           new Integer(formModel.getSettings().getVariablesModifier()) : null;
+                           Integer.valueOf(formModel.getSettings().getVariablesModifier()) : null;
                 }
 
                 @Override
@@ -532,7 +532,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     {   // non-default value
                         component.setAuxValue(AUX_VARIABLE_LOCAL, value);
                         try {
-                            modifProp.setValue(new Integer(varType & CodeVariable.ALL_MODIF_MASK));
+                            modifProp.setValue(Integer.valueOf(varType & CodeVariable.ALL_MODIF_MASK));
                         }
                         catch (Exception ex) { // should not happen
                             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -4231,7 +4231,7 @@ class JavaCodeGenerator extends CodeGenerator {
         
         @Override
         public Object getValue() {
-            return new Integer(formModel.getSettings().getVariablesModifier());
+            return Integer.valueOf(formModel.getSettings().getVariablesModifier());
         }
 
         @Override
@@ -4241,7 +4241,7 @@ class JavaCodeGenerator extends CodeGenerator {
         
         @Override
         public void restoreDefaultValue() {
-            setValue(new Integer(FormLoaderSettings.getInstance().getVariablesModifier()));
+            setValue(Integer.valueOf(FormLoaderSettings.getInstance().getVariablesModifier()));
         }
         
         @Override
@@ -4291,8 +4291,8 @@ class JavaCodeGenerator extends CodeGenerator {
             boolean variablesLocal = newValue.booleanValue();
             int variablesModifier = variablesLocal ? (formSettings.getVariablesModifier() & CodeVariable.FINAL)
                 : formSettings.getVariablesModifier();
-            Integer oldModif = new Integer(formModel.getSettings().getVariablesModifier());
-            Integer newModif = new Integer(variablesModifier);
+            Integer oldModif = Integer.valueOf(formModel.getSettings().getVariablesModifier());
+            Integer newModif = Integer.valueOf(variablesModifier);
             int varType = variablesLocal ?
                 CodeVariable.LOCAL | variablesModifier // | CodeVariable.EXPLICIT_DECLARATION
                 : CodeVariable.FIELD | variablesModifier;
@@ -4407,7 +4407,7 @@ class JavaCodeGenerator extends CodeGenerator {
         
         @Override
         public Object getValue() {
-            return new Integer(formModel.getSettings().getListenerGenerationStyle());
+            return Integer.valueOf(formModel.getSettings().getListenerGenerationStyle());
         }
 
         @Override
@@ -4417,7 +4417,7 @@ class JavaCodeGenerator extends CodeGenerator {
         
         @Override
         public void restoreDefaultValue() {
-            setValue(new Integer(FormLoaderSettings.getInstance().getListenerGenerationStyle()));
+            setValue(Integer.valueOf(FormLoaderSettings.getInstance().getListenerGenerationStyle()));
         }
         
         @Override
@@ -4464,7 +4464,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
         @Override
         public Object getValue() {
-            return new Integer(formModel.getSettings().getLayoutCodeTarget());
+            return Integer.valueOf(formModel.getSettings().getLayoutCodeTarget());
         }
 
         @Override
@@ -4474,7 +4474,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
         @Override
         public void restoreDefaultValue() {
-            setValue(new Integer(FormLoaderSettings.getInstance().getLayoutCodeTarget()));
+            setValue(Integer.valueOf(FormLoaderSettings.getInstance().getLayoutCodeTarget()));
         }
 
         @Override
@@ -4554,22 +4554,22 @@ class JavaCodeGenerator extends CodeGenerator {
             super(specific ?
                 new Object[] {
                     FormUtils.getBundleString("CTL_LAYOUT_CODE_JDK6"), // NOI18N
-                    new Integer(JavaCodeGenerator.LAYOUT_CODE_JDK6),
+                    Integer.valueOf(JavaCodeGenerator.LAYOUT_CODE_JDK6),
                     "", // NOI18N
                     FormUtils.getBundleString("CTL_LAYOUT_CODE_LIBRARY"), // NOI18N
-                    new Integer(JavaCodeGenerator.LAYOUT_CODE_LIBRARY),
+                    Integer.valueOf(JavaCodeGenerator.LAYOUT_CODE_LIBRARY),
                     "" // NOI18N
                 }
                 :
                 new Object[] {
                     FormUtils.getBundleString("CTL_LAYOUT_CODE_AUTO"), // NOI18N
-                    new Integer(JavaCodeGenerator.LAYOUT_CODE_AUTO),
+                    Integer.valueOf(JavaCodeGenerator.LAYOUT_CODE_AUTO),
                     "", // NOI18N
                     FormUtils.getBundleString("CTL_LAYOUT_CODE_JDK6"), // NOI18N
-                    new Integer(JavaCodeGenerator.LAYOUT_CODE_JDK6),
+                    Integer.valueOf(JavaCodeGenerator.LAYOUT_CODE_JDK6),
                     "", // NOI18N
                     FormUtils.getBundleString("CTL_LAYOUT_CODE_LIBRARY"), // NOI18N
-                    new Integer(JavaCodeGenerator.LAYOUT_CODE_LIBRARY),
+                    Integer.valueOf(JavaCodeGenerator.LAYOUT_CODE_LIBRARY),
                     "" // NOI18N
                 });
         }
@@ -4581,13 +4581,13 @@ class JavaCodeGenerator extends CodeGenerator {
         public ListenerGenerationStyleEditor() {
             super(new Object[] {
                 FormUtils.getBundleString("CTL_LISTENER_ANONYMOUS_CLASSES"), // NOI18N
-                new Integer(JavaCodeGenerator.ANONYMOUS_INNERCLASSES),
+                Integer.valueOf(JavaCodeGenerator.ANONYMOUS_INNERCLASSES),
                 "", // NOI18N
                 FormUtils.getBundleString("CTL_LISTENER_CEDL_INNERCLASS"), // NOI18N
-                new Integer(JavaCodeGenerator.CEDL_INNERCLASS),
+                Integer.valueOf(JavaCodeGenerator.CEDL_INNERCLASS),
                 "", // NOI18N
                 FormUtils.getBundleString("CTL_LISTENER_CEDL_MAINCLASS"), // NOI18N
-                new Integer(JavaCodeGenerator.CEDL_MAINCLASS),
+                Integer.valueOf(JavaCodeGenerator.CEDL_MAINCLASS),
                 "" // NOI18N
             });
         }

@@ -1766,14 +1766,14 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 layoutParams[0] = createExpressionForProperty(
                     codeStructure,
                     Integer.TYPE,
-                    hgap >= 0 ? propertyValues.get(hgap) : new Integer(0),
+                    hgap >= 0 ? propertyValues.get(hgap) : Integer.valueOf(0),
                     (PropertyEditor)
                         (hgap >= 0 ? propertyEditors.get(hgap) : null));
 
                 layoutParams[1] = createExpressionForProperty(
                     codeStructure,
                     Integer.TYPE,
-                    vgap >= 0 ? propertyValues.get(vgap) : new Integer(0),
+                    vgap >= 0 ? propertyValues.get(vgap) : Integer.valueOf(0),
                     (PropertyEditor)
                         (vgap >= 0 ? propertyEditors.get(vgap) : null));
             }
@@ -1793,21 +1793,21 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 layoutParams[0] = createExpressionForProperty(
                     codeStructure,
                     Integer.TYPE,
-                    alignment >= 0 ? propertyValues.get(alignment) : new Integer(1),
+                    alignment >= 0 ? propertyValues.get(alignment) : Integer.valueOf(1),
                     (PropertyEditor)
                         (alignment >= 0 ? propertyEditors.get(alignment) : null));
 
                 layoutParams[1] = createExpressionForProperty(
                     codeStructure,
                     Integer.TYPE,
-                    hgap >= 0 ? propertyValues.get(hgap) : new Integer(5),
+                    hgap >= 0 ? propertyValues.get(hgap) : Integer.valueOf(5),
                     (PropertyEditor)
                         (hgap >= 0 ? propertyEditors.get(hgap) : null));
 
                 layoutParams[2] = createExpressionForProperty(
                     codeStructure,
                     Integer.TYPE,
-                    vgap >= 0 ? propertyValues.get(vgap) : new Integer(5),
+                    vgap >= 0 ? propertyValues.get(vgap) : Integer.valueOf(5),
                     (PropertyEditor)
                         (vgap >= 0 ? propertyEditors.get(vgap) : null));
             }
@@ -1817,7 +1817,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 layoutParams[0] = createExpressionForProperty(
                     codeStructure,
                     Integer.TYPE,
-                    alignment >= 0 ? propertyValues.get(alignment) : new Integer(1),
+                    alignment >= 0 ? propertyValues.get(alignment) : Integer.valueOf(1),
                     (PropertyEditor)
                         (alignment >= 0 ? propertyEditors.get(alignment) : null));
             }
@@ -1841,7 +1841,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             layoutParams[1] = createExpressionForProperty(
                 codeStructure,
                 Integer.TYPE,
-                axis >= 0 ? propertyValues.get(axis) : new Integer(javax.swing.BoxLayout.LINE_AXIS),
+                axis >= 0 ? propertyValues.get(axis) : Integer.valueOf(javax.swing.BoxLayout.LINE_AXIS),
                 (PropertyEditor)
                     (axis >= 0 ? propertyEditors.get(axis) : null));
 
@@ -1860,28 +1860,28 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 layoutParams[0] = createExpressionForProperty(
                     codeStructure,
                     Integer.TYPE,
-                    rows >= 0 ? propertyValues.get(rows) : new Integer(1),
+                    rows >= 0 ? propertyValues.get(rows) : Integer.valueOf(1),
                     (PropertyEditor)
                         (rows >= 0 ? propertyEditors.get(rows) : null));
 
                 layoutParams[1] = createExpressionForProperty(
                     codeStructure,
                     Integer.TYPE,
-                    columns >= 0 ? propertyValues.get(columns) : new Integer(0),
+                    columns >= 0 ? propertyValues.get(columns) : Integer.valueOf(0),
                     (PropertyEditor)
                         (columns >= 0 ? propertyEditors.get(columns) : null));
 
                 layoutParams[2] = createExpressionForProperty(
                     codeStructure,
                     Integer.TYPE,
-                    hgap >= 0 ? propertyValues.get(hgap) : new Integer(0),
+                    hgap >= 0 ? propertyValues.get(hgap) : Integer.valueOf(0),
                     (PropertyEditor)
                         (hgap >= 0 ? propertyEditors.get(hgap) : null));
 
                 layoutParams[3] = createExpressionForProperty(
                     codeStructure,
                     Integer.TYPE,
-                    vgap >= 0 ? propertyValues.get(vgap) : new Integer(0),
+                    vgap >= 0 ? propertyValues.get(vgap) : Integer.valueOf(0),
                     (PropertyEditor)
                         (vgap >= 0 ? propertyEditors.get(vgap) : null));
             }
@@ -1891,14 +1891,14 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 layoutParams[0] = createExpressionForProperty(
                     codeStructure,
                     Integer.TYPE,
-                    rows >= 0 ? propertyValues.get(rows) : new Integer(1),
+                    rows >= 0 ? propertyValues.get(rows) : Integer.valueOf(1),
                     (PropertyEditor)
                         (rows >= 0 ? propertyEditors.get(rows) : null));
 
                 layoutParams[1] = createExpressionForProperty(
                     codeStructure,
                     Integer.TYPE,
-                    columns >= 0 ? propertyValues.get(columns) : new Integer(0),
+                    columns >= 0 ? propertyValues.get(columns) : Integer.valueOf(0),
                     (PropertyEditor)
                         (columns >= 0 ? propertyEditors.get(columns) : null));
             }
@@ -1917,14 +1917,14 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 layoutParams[0] = createExpressionForProperty(
                     codeStructure,
                     Integer.TYPE,
-                    hgap >= 0 ? propertyValues.get(hgap) : new Integer(0),
+                    hgap >= 0 ? propertyValues.get(hgap) : Integer.valueOf(0),
                     (PropertyEditor)
                         (hgap >= 0 ? propertyEditors.get(hgap) : null));
 
                 layoutParams[1] = createExpressionForProperty(
                     codeStructure,
                     Integer.TYPE,
-                    vgap >= 0 ? propertyValues.get(vgap) : new Integer(0),
+                    vgap >= 0 ? propertyValues.get(vgap) : Integer.valueOf(0),
                     (PropertyEditor)
                         (vgap >= 0 ? propertyEditors.get(vgap) : null));
             }
@@ -5765,7 +5765,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (Boolean.class.isAssignableFrom(type) || Boolean.TYPE.equals(type))
             return Boolean.valueOf(encoded);
         if (Character.class.isAssignableFrom(type) || Character.TYPE.equals(type))
-            return new Character(encoded.charAt(0));
+            return Character.valueOf(encoded.charAt(0));
         if (String.class.isAssignableFrom(type))
             return encoded;
 
