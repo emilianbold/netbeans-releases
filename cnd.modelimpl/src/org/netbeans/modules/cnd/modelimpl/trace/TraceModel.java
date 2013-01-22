@@ -901,10 +901,12 @@ public class TraceModel extends TraceModelBase {
             ts = APTLanguageSupport.getInstance().getFilter(APTLanguageSupport.GNU_CPP).getFilteredStream(new APTCommentsFilter(ts));
         }
         int lastLine = -1;
+        boolean forceNewLine = false;
         for (Token t = ts.nextToken(); !APTUtils.isEOF(t); t = ts.nextToken()) {
             if (printTokens) {
                 String text = " " + t.getText(); // NOI18N
-                boolean newLine = t.getLine() != lastLine;
+                boolean newLine = forceNewLine || (t.getLine() != lastLine);
+                forceNewLine = false;
                 if (isIncludeToken(t.getType())) {
                     APTToken aptToken = (APTToken)t;
                     ResolvedPath path = (ResolvedPath) aptToken.getProperty(ResolvedPath.class);
@@ -916,6 +918,7 @@ public class TraceModel extends TraceModelBase {
                         text = "#include " + t.toString(); // NOI18N
                     }
                     newLine = true;
+                    forceNewLine = true;
                 }
                 print(text, newLine); 
             }

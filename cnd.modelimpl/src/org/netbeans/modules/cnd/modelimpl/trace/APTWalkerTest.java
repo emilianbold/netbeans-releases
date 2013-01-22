@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 
 import java.io.IOException;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
@@ -56,6 +57,7 @@ import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeState;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.PostIncludeData;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
@@ -99,10 +101,18 @@ public class APTWalkerTest extends APTAbstractWalker {
         if (resolvedPath != null && 
             getIncludeHandler().pushInclude(resolvedPath.getPath(), aptInclude, resolvedPath.getIndex()) == IncludeState.Success) {
             try {
-                APTFile apt = APTDriver.findAPTLight(ModelSupport.createFileBuffer(resolvedPath.getFileObject()));
-                APTWalkerTest walker = new APTWalkerTest(apt, getPreprocHandler());
-                walker.visit();
-                resolvingTime += walker.resolvingTime;
+                if (APTTraceFlags.INCLUDE_TOKENS_IN_TOKEN_STREAM) {
+                    APTFile apt = APTDriver.findAPT(ModelSupport.createFileBuffer(resolvedPath.getFileObject()), APTLanguageSupport.UNKNOWN, APTLanguageSupport.FLAVOR_UNKNOWN);
+                    APTWalkerTest walker = new APTWalkerTest(apt, getPreprocHandler());
+                    TokenStream incTS = walker.getTokenStream();
+                    super.pushTokenStream(incTS);
+                    resolvingTime += walker.resolvingTime;
+                } else {
+                    APTFile apt = APTDriver.findAPTLight(ModelSupport.createFileBuffer(resolvedPath.getFileObject()));
+                    APTWalkerTest walker = new APTWalkerTest(apt, getPreprocHandler());
+                    walker.visit();
+                    resolvingTime += walker.resolvingTime;
+                }
             } catch (IOException ex) {
 		DiagnosticExceptoins.register(ex);
                 APTUtils.LOG.log(Level.SEVERE, "error on include " + resolvedPath, ex);// NOI18N
