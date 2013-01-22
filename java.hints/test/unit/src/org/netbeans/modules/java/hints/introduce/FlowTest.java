@@ -1352,6 +1352,34 @@ public class FlowTest extends NbTestCase {
                                    "i");
     }
     
+    public void testFinalCandidatesReturnInConstructor1() throws Exception {
+        performFinalCandidatesTest("package test;\n" +
+                                   "public class Test {\n" +
+                                   "    private int i;\n" +
+                                   "    public Test(boolean b) {\n" +
+                                   "        if (b) return ;\n" +
+                                   "        i = 0;\n" +
+                                   "    }\n" +
+                                   "}\n",
+                                   false);
+    }
+    
+    public void testFinalCandidatesReturnInConstructor2() throws Exception {
+        performFinalCandidatesTest("package test;\n" +
+                                   "public class Test {\n" +
+                                   "    private int i;\n" +
+                                   "    public Test(boolean b) {\n" +
+                                   "        if (b) {" +
+                                   "            i = 0;\n" +
+                                   "            return ;\n" +
+                                   "        }" +
+                                   "        i = 0;\n" +
+                                   "    }\n" +
+                                   "}\n",
+                                   false,
+                                   "i");
+    }
+    
     private void performFinalCandidatesTest(String code, boolean allowErrors, String... finalCandidates) throws Exception {
         prepareTest(code, allowErrors);
 

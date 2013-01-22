@@ -122,6 +122,7 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.CompilationInfo.CacheClearPolicy;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.spi.java.hints.HintContext;
 
 /**
@@ -412,39 +413,39 @@ public class Flow {
 
         @Override
         public Boolean visitIf(IfTree node, Void p) {
-            Boolean result = scan(node.getCondition(), p);
+            generalizedIf(node.getCondition(), node.getThenStatement(), node.getElseStatement() != null ? Collections.singletonList(node.getElseStatement()) : Collections.<Tree>emptyList(), true);
+            return null;
+        }
+        
+        public void generalizedIf(Tree condition, Tree thenSection, Iterable<? extends Tree> elseSection, boolean realElse) {
+            Boolean result = scan(condition, null);
 
             if (result != null) {
                 if (result) {
-                    scan(node.getThenStatement(), null);
-                    deadBranches.add(node.getElseStatement());
+                    scan(thenSection, null);
+                    if (realElse && elseSection.iterator().hasNext())
+                        deadBranches.add(elseSection.iterator().next());
                 } else {
-                    scan(node.getElseStatement(), null);
-                    deadBranches.add(node.getThenStatement());
+                    scan(elseSection, null);
+                    deadBranches.add(thenSection);
                 }
 
-                return null;
+                return ;
             }
 
             Map<VariableElement, State> oldVariable2State = variable2State;
             
             variable2State = new HashMap<VariableElement, Flow.State>(oldVariable2State);
 
-            scan(node.getThenStatement(), null);
+            scan(thenSection, null);
             
-            if (node.getElseStatement() != null) {
-                Map<VariableElement, State> variableStatesAfterThen = new HashMap<VariableElement, Flow.State>(variable2State);
+            Map<VariableElement, State> variableStatesAfterThen = new HashMap<VariableElement, Flow.State>(variable2State);
 
-                variable2State = new HashMap<VariableElement, Flow.State>(oldVariable2State);
+            variable2State = new HashMap<VariableElement, Flow.State>(oldVariable2State);
 
-                scan(node.getElseStatement(), null);
+            scan(elseSection, null);
 
-                variable2State = mergeOr(variable2State, variableStatesAfterThen);
-            } else {
-                variable2State = mergeOr(variable2State, oldVariable2State);
-            }
-            
-            return null;
+            variable2State = mergeOr(variable2State, variableStatesAfterThen);
         }
 
         @Override
@@ -784,7 +785,14 @@ public class Flow {
             }
             
             resumeAfter(nearestMethod, variable2State);
-            variable2State = new HashMap<VariableElement, State>();
+            
+            variable2State = new HashMap<VariableElement, State>(variable2State);
+            for (Iterator<VariableElement> it = variable2State.keySet().iterator(); it.hasNext();) {
+                VariableElement k = it.next();
+                
+                if (!k.getKind().isField()) it.remove();
+            }
+            
             return null;
         }
 
@@ -1008,6 +1016,26 @@ public class Flow {
             return null;
         }
 
+        public Boolean visitBlock(BlockTree node, Void p) {
+            List<? extends StatementTree> statements = new ArrayList<StatementTree>(node.getStatements());
+            
+            for (int i = 0; i < statements.size(); i++) {
+                StatementTree st = statements.get(i);
+                
+                if (st.getKind() == Kind.IF) {
+                    IfTree it = (IfTree) st; 
+                    if (Utilities.exitsFromAllBranchers(info, new TreePath(new TreePath(getCurrentPath(), it), it.getThenStatement()))) {
+                        generalizedIf(it.getCondition(), it.getThenStatement(), statements.subList(i + 1, statements.size()), false);
+                        break;
+                    }
+                }
+                
+                scan(st, null);
+            }
+            
+            return null;
+        }
+
         private void recordResumeOnExceptionHandler(ExecutableElement invoked) {
             for (TypeMirror tt : invoked.getThrownTypes()) {
                 recordResumeOnExceptionHandler(tt);
@@ -1167,11 +1195,6 @@ public class Flow {
             return null;
         }
 
-        public Boolean visitBlock(BlockTree node, Void p) {
-            super.visitBlock(node, p);
-            return null;
-        }
-
         public Boolean visitArrayType(ArrayTypeTree node, Void p) {
             super.visitArrayType(node, p);
             return null;
@@ -1197,6 +1220,12 @@ public class Flow {
                     into.put(e.getKey(), e.getValue().merge(UNASSIGNED));
                 } else {
                     into.put(e.getKey(), e.getValue());
+                }
+            }
+            
+            for (Entry<VariableElement, State> e : into.entrySet()) {
+                if (e.getKey().getKind() == ElementKind.FIELD && !what.containsKey(e.getKey())) {
+                    into.put(e.getKey(), e.getValue().merge(UNASSIGNED));
                 }
             }
 
