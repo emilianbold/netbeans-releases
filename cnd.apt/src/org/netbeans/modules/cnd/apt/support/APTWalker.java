@@ -107,7 +107,7 @@ public abstract class APTWalker {
             try {
                 return nextTokenImpl();
             } catch (TokenStreamException ex) {
-                APTUtils.LOG.log(Level.WARNING, "{0}:{1}", new Object[] { root.getPath(), ex});
+                APTUtils.LOG.log(Level.WARNING, "{0}:{1}", new Object[] { curFile.getPath(), ex});
                 return APTUtils.EOF_TOKEN;
             }
         }
@@ -261,7 +261,7 @@ public abstract class APTWalker {
     }
     
     protected final void pushState() {
-        visits.addLast(new WalkerState(curAPT, curWasInChild));
+        visits.addLast(new WalkerState(curFile, curAPT, curWasInChild));
     }
 
     protected void preInit() {}
@@ -271,6 +271,7 @@ public abstract class APTWalker {
             return false;
         }
         WalkerState state = visits.removeLast();
+        curFile = state.lastFile;
         curAPT = state.lastNode;
         curWasInChild = state.wasInChild;
         return true;
@@ -282,7 +283,8 @@ public abstract class APTWalker {
         }
         walkerUsedForTokenStreamGeneration = Boolean.valueOf(needStream);
         preInit();
-        curAPT = root.getFirstChild();
+        curFile = root;
+        curAPT = curFile.getFirstChild();
         curWasInChild = false;
         pushState();
     }    
@@ -316,7 +318,7 @@ public abstract class APTWalker {
         }
         if (curAPT == null) {
             // we are in APT of incomplete file
-            APTUtils.LOG.log(Level.SEVERE, "incomplete APT {0}", new Object[] { root });// NOI18N
+            APTUtils.LOG.log(Level.SEVERE, "incomplete APT {0}", new Object[] { curFile });// NOI18N
             do {
                 popState();
                 if (curAPT != null) {
@@ -394,21 +396,24 @@ public abstract class APTWalker {
         if (walkerUsedForTokenStreamGeneration == Boolean.TRUE) {
             // only token stream nodes contain tokens as TokenStream
             if (node != null && node.getType() == APT.Type.TOKEN_STREAM) {
-                TokenStream ts = ((APTStream)node).getTokenStream();
-                tokens.addFirst(ts);
+                pushTokenStream(((APTStream)node).getTokenStream());
             }
         }
     }
     
+    protected final void pushTokenStream(TokenStream ts) {
+        tokens.add(ts);
+    }
+    
     /*package*/final void beforeInclude(APTInclude aptInclude, ResolvedPath resolvedPath) {
         if (walkerUsedForTokenStreamGeneration == Boolean.TRUE && needPPTokens()) {
-            tokens.add(new TokenBasedTokenStream(new APTPreprocessorToken(aptInclude, true, resolvedPath, nodeProperties.get(aptInclude))));            
+            pushTokenStream(new TokenBasedTokenStream(new APTPreprocessorToken(aptInclude, true, resolvedPath, nodeProperties.get(aptInclude))));            
         }
     }
 
     /*package*/final void afterInclude(APTInclude aptInclude, ResolvedPath resolvedPath) {
         if (walkerUsedForTokenStreamGeneration == Boolean.TRUE && needPPTokens()) {
-            tokens.add(new TokenBasedTokenStream(new APTPreprocessorToken(aptInclude, false, resolvedPath, nodeProperties.get(aptInclude))));
+            pushTokenStream(new TokenBasedTokenStream(new APTPreprocessorToken(aptInclude, false, resolvedPath, nodeProperties.get(aptInclude))));
         }
     }
     
@@ -420,15 +425,20 @@ public abstract class APTWalker {
         return macros;
     }
     
+    protected final APTFile getCurFile() {
+        return curFile;
+    }
+    
     protected final APT getCurNode() {
         return curAPT;
     }
 
-    public final APTFile getRootFile() {
+    protected final APTFile getRootFile() {
         return root;
     }
     
     // fields to be used when generating token stream
+    private APTFile curFile;
     private APT curAPT;
     private boolean curWasInChild;
     private LinkedList<TokenStream> tokens = new LinkedList<TokenStream>();
@@ -436,8 +446,10 @@ public abstract class APTWalker {
     
     private static final class WalkerState {
         private final APT lastNode;
+        private final APTFile lastFile;
         private final boolean wasInChild;
-        private WalkerState(APT node, boolean wasInChildState) {
+        private WalkerState(APTFile file, APT node, boolean wasInChildState) {
+            this.lastFile = file;
             this.lastNode = node;
             this.wasInChild = wasInChildState;
         }
