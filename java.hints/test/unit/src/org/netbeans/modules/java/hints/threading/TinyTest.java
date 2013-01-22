@@ -655,4 +655,16 @@ public class TinyTest extends NbTestCase {
                               "     }\n" +
                               "}\n");
     }
+    public void testFieldCanBeFinalNoPublic() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "     public int i;\n" +
+                       "     public Test() {\n" +
+                       "         i = 0;\n" +
+                       "     }\n" +
+                       "}\n")
+                .run(Tiny.class)
+                .assertWarnings();
+    }
 }

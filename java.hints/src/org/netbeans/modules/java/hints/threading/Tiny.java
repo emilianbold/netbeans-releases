@@ -500,6 +500,9 @@ public class Tiny {
         
         if (ve == null || ve.getKind() != ElementKind.FIELD || ve.getModifiers().contains(Modifier.FINAL) || /*TODO: the point of volatile?*/ve.getModifiers().contains(Modifier.VOLATILE)) return null;
         
+        //we can't say much currently about non-private fields:
+        if (!ve.getModifiers().contains(Modifier.PRIVATE)) return null;
+        
         FlowResult flow = Flow.assignmentsForUse(ctx);
         
         if (flow == null || ctx.isCanceled()) return null;
