@@ -46,6 +46,7 @@ import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
@@ -76,6 +77,13 @@ public class QPopAllAction extends ContextAction {
         if (roots == null || roots.length == 0) return;
         final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
         
-        SystemAction.get(QGoToPatchAction.class).goToPatch(root, null);
+        Utils.post(new Runnable() {
+            @Override
+            public void run () {
+                if (QUtils.isMQEnabledExtension(root)) {
+                    SystemAction.get(QGoToPatchAction.class).goToPatch(root, null);
+                }
+            }
+        });
     }
 }

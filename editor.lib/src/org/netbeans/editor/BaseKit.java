@@ -1810,6 +1810,14 @@ public class BaseKit extends DefaultEditorKit {
                     return;
                 }
 
+                if (LOG.isLoggable(Level.FINER)) {
+                    StringBuilder sb = new StringBuilder("DeleteCharAction stackTrace: \n");
+                    for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
+                        sb.append(ste.toString()).append("\n");
+                    }
+                    LOG.log(Level.FINER, sb.toString());
+                }
+
 		final BaseDocument doc = (BaseDocument)target.getDocument();
 		final Caret caret = target.getCaret();
 		final int dot = caret.getDot();
@@ -2071,7 +2079,14 @@ public class BaseKit extends DefaultEditorKit {
                     target.getToolkit().beep();
                     return;
                 }
-                
+
+                if (LOG.isLoggable(Level.FINER)) {
+                    StringBuilder sb = new StringBuilder("PasteAction stackTrace: \n");
+                    for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
+                        sb.append(ste.toString()).append("\n");
+                    }
+                    LOG.log(Level.FINER, sb.toString());
+                }
                 
                 final BaseDocument doc = Utilities.getDocument(target);
                 if (doc==null) return;

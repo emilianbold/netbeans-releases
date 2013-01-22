@@ -51,6 +51,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.modules.javascript2.editor.index.JsIndex;
+import org.netbeans.modules.javascript2.editor.index.JsIndexer;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -137,9 +139,23 @@ public class ClassPathProviderImpl implements ClassPathProvider {
      * JavaScript classpath is properly initialized after returning from this method. <p> The JavaScript classpath
      * unregistration is done in module's install class.
      */
-    public static synchronized void registerJsClassPathIfNeeded() {
-        if (!JS_CLASSPATH_REGISTERED.get()) {
-            JS_CLASSPATH_REGISTERED.set(true);
+    public static void registerJsClassPathIfNeeded() {
+        final Runnable action = new Runnable() {
+            @Override
+            public void run() {
+                registerJsClassPathIfNeededImpl();
+            }            
+        };
+        if (JsIndexer.Factory.isScannerThread()) {
+            JsIndexer.Factory.addPostScanTask(action);
+        } else {
+            action.run();
+        }
+        
+    }
+
+    private static void registerJsClassPathIfNeededImpl() {
+        if (JS_CLASSPATH_REGISTERED.compareAndSet(false, true)) {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
