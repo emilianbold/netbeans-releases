@@ -266,6 +266,7 @@ public class ImportExecutable implements PropertyChangeListener {
     }
 
     public void process(final DiscoveryExtension extension){
+        model = CsmModelAccessor.getModel();
         switchModel(model, false, lastSelectedProject);
         Runnable run = new Runnable() {
 
