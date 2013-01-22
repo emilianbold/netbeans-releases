@@ -43,12 +43,16 @@ package org.netbeans.modules.remote.ui;
 
 import org.netbeans.modules.dlight.libs.common.FileStatistics;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.RemoteStatistics;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -56,14 +60,16 @@ import org.openide.util.NbBundle;
  */
 public class StatisticsActions {
 
-    @ActionID(id = "org.netbeans.modules.remote.ui.ClearStatisticsAction", category = "NativeRemote")
-    @ActionRegistration(displayName = "ClearStatisticsAction")
-    @ActionReference(path = "Remote/Host/Actions", name = "ClearStatisticsAction", position = 99998)
-    public static class ClearStatisticsAction extends SingleHostAction {
+    private static final RequestProcessor RP = new RequestProcessor("StatisticsAction", 1); // NOI18N
+
+    @ActionID(id = "org.netbeans.modules.remote.ui.ClearFileStatisticsAction", category = "NativeRemote")
+    @ActionRegistration(displayName = "ClearFileStatisticsAction")
+    @ActionReference(path = "Remote/Host/Actions", name = "ClearFileStatisticsAction", position = 99996)
+    public static class ClearFileStatisticsAction extends SingleHostAction {
 
         @Override
         public String getName() {
-            return NbBundle.getMessage(HostListRootNode.class, "ClearStatisticsAction");
+            return NbBundle.getMessage(HostListRootNode.class, "ClearFileStatisticsAction");
         }
 
         @Override
@@ -82,14 +88,14 @@ public class StatisticsActions {
         }
     }
     
-    @ActionID(id = "org.netbeans.modules.remote.ui.ReportStatisticsAction", category = "NativeRemote")
-    @ActionRegistration(displayName = "ReportStatisticsAction")
-    @ActionReference(path = "Remote/Host/Actions", name = "ReportStatisticsAction", position = 99997)
-    public static class ReportStatisticsAction extends SingleHostAction {
+    @ActionID(id = "org.netbeans.modules.remote.ui.ReportFileStatisticsAction", category = "NativeRemote")
+    @ActionRegistration(displayName = "ReportFileStatisticsAction")
+    @ActionReference(path = "Remote/Host/Actions", name = "ReportFileStatisticsAction", position = 99997)
+    public static class ReportFileStatisticsAction extends SingleHostAction {
 
         @Override
         public String getName() {
-            return NbBundle.getMessage(HostListRootNode.class, "ReportStatisticsAction");
+            return NbBundle.getMessage(HostListRootNode.class, "ReportFileStatisticsAction");
         }
 
         @Override
@@ -108,5 +114,43 @@ public class StatisticsActions {
         }
     }
     
-    
+
+    @ActionID(id = "org.netbeans.modules.remote.ui.TrafficStatisticsAction", category = "NativeRemote")
+    @ActionRegistration(displayName = "TrafficStatisticsMenuItem")
+    @ActionReference(path = "Remote/Host/Actions", name = "TrafficStatisticsAction", position = 99998)
+    public static class TraficStatisticsAction extends SingleHostAction {
+
+        public TraficStatisticsAction() {
+        }
+
+        @Override
+        public String getName() {
+            return NbBundle.getMessage(HostListRootNode.class, "TrafficStatisticsMenuItem");
+        }
+
+        @Override
+        protected boolean enable(ExecutionEnvironment env) {
+            return env.isRemote();
+        }
+
+        @Override
+        public boolean isVisible(Node node) {
+            ExecutionEnvironment env = node.getLookup().lookup(ExecutionEnvironment.class);
+            return env != null && env.isRemote() && RemoteStatistics.COLLECT_STATISTICS;
+        }
+
+        @Override
+        protected void performAction(final ExecutionEnvironment env, Node node) {
+            final NotifyDescriptor notifyDescriptor = new NotifyDescriptor.InputLine("Log file:", "Turn Remote Statistics On"); // NOI18N
+            DialogDisplayer.getDefault().notify(notifyDescriptor);
+            if (notifyDescriptor.getValue() == NotifyDescriptor.OK_OPTION) {
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        RemoteStatistics.startTest(notifyDescriptor.getValue().toString(), null, 0, 10000);
+                    }
+                });
+            }
+        }
+    }
 }
