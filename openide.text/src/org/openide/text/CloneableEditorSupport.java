@@ -1127,12 +1127,6 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 }
             }
         };
-        if (ioException[0] != null) {
-            if (log) {
-                ERR.log(Level.FINE, documentID() + ": Save broken due to IOException", ioException[0]); // NOI18N
-            }
-            throw ioException[0];
-        }
 
         Runnable beforeSaveRunnable = (Runnable) myDoc.getProperty("beforeSaveRunnable");
         if (beforeSaveRunnable != null) {
@@ -1163,6 +1157,12 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
         } else { // No on-save tasks
             myDoc.render(saveToMemory); // Run under doc's readlock
+        }
+        if (ioException[0] != null) {
+            if (log) {
+                ERR.log(Level.FINE, documentID() + ": Save broken due to IOException", ioException[0]); // NOI18N
+            }
+            throw ioException[0];
         }
 
         OutputStream os = null;
