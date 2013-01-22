@@ -214,6 +214,7 @@ public class HgCommand {
     private static final String HG_RESOLVE_CMD = "resolve";             //NOI18N
     private static final String HG_RESOLVE_MARK_RESOLVED = "--mark";   //NOI18N
     
+    private static final String HG_MQ_EXT_CMD = "extensions.mq="; //NOI18N
     private static final String HG_QSERIES_CMD = "qseries"; //NOI18N
     private static final String HG_OPT_SUMMARY = "--summary"; //NOI18N
     private static final String HG_QGOTO_CMD = "qgoto"; //NOI18N
@@ -3413,6 +3414,8 @@ public class HgCommand {
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
+        command.add(HG_CONFIG_OPTION_CMD);
+        command.add(HG_MQ_EXT_CMD);
         command.add(HG_QSERIES_CMD);
 
         command.add(HG_OPT_REPOSITORY);
@@ -3437,6 +3440,8 @@ public class HgCommand {
 
         command.add(getHgCommand());
         command.add(HG_QPUSH_CMD);
+        command.add(HG_CONFIG_OPTION_CMD);
+        command.add(HG_MQ_EXT_CMD);
 
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
@@ -3460,6 +3465,8 @@ public class HgCommand {
 
         command.add(getHgCommand());
         command.add(HG_QPOP_CMD);
+        command.add(HG_CONFIG_OPTION_CMD);
+        command.add(HG_MQ_EXT_CMD);
 
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
@@ -3482,6 +3489,8 @@ public class HgCommand {
 
         command.add(getHgCommand());
         command.add(HG_QGOTO_CMD);
+        command.add(HG_CONFIG_OPTION_CMD);
+        command.add(HG_MQ_EXT_CMD);
 
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
@@ -3526,6 +3535,8 @@ public class HgCommand {
         List<String> command = new ArrayList<String>();
         command.add(getHgCommand());
         command.add(patchId == null ? HG_QREFRESH_PATCH : HG_QCREATE_CMD);
+        command.add(HG_CONFIG_OPTION_CMD);
+        command.add(HG_MQ_EXT_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
         command.add(HG_OPT_CWD_CMD);
@@ -3621,6 +3632,8 @@ public class HgCommand {
 
         command.add(getHgCommand());
         command.add(HG_QFINISH_CMD);
+        command.add(HG_CONFIG_OPTION_CMD);
+        command.add(HG_MQ_EXT_CMD);
 
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
