@@ -56,6 +56,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.Breakpoint.VALIDITY;
@@ -297,12 +299,10 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
         if (b instanceof LineBreakpoint) {
             LineBreakpoint lb = (LineBreakpoint) b;
             try {
-                if (fo.getURL().equals(new URL(lb.getURL()))) {
+                if (fo.toURL().equals(new URL(lb.getURL()))) {
                     return new int[] { lb.getLineNumber() };
                 }
             } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }
             return null;
@@ -471,7 +471,7 @@ public class BreakpointAnnotationProvider implements AnnotationProvider,
         try {
             dataObject = DataObject.find(fo);
         } catch (DataObjectNotFoundException donfex) {
-            donfex.printStackTrace();
+            Logger.getLogger(BreakpointAnnotationProvider.class.getName()).log(Level.INFO, "No DO for "+fo, donfex);
             return ;
         }
         LineCookie lc = dataObject.getCookie(LineCookie.class);

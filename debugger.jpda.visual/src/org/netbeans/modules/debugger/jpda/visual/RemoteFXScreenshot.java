@@ -318,7 +318,6 @@ public class RemoteFXScreenshot {
         } catch (InvocationException e) {
             throw new RetrievalException(e.getMessage(), e);
         } catch (ClassNotPreparedException e) {
-            e.printStackTrace();
             throw new RetrievalException(e.getMessage(), e);
         }
     }

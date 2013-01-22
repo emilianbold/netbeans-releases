@@ -221,8 +221,8 @@ public class FormDesigner {
             }
         };
         layeredPane.setLayout(new OverlayLayout(layeredPane));
-        layeredPane.add(designPanel, new Integer(1000));
-        layeredPane.add(handleLayer, new Integer(1001));
+        layeredPane.add(designPanel, Integer.valueOf(1000));
+        layeredPane.add(handleLayer, Integer.valueOf(1001));
         canvasRoot = layeredPane;
 
 //        updateAssistant();
@@ -2005,7 +2005,7 @@ public class FormDesigner {
             textEditLayer = new InPlaceEditLayer();
             textEditLayer.setVisible(false);
             textEditLayer.addFinishListener(getFinnishListener());
-            layeredPane.add(textEditLayer, new Integer(2001));
+            layeredPane.add(textEditLayer, Integer.valueOf(2001));
         }
         return textEditLayer;
     }
@@ -2014,7 +2014,7 @@ public class FormDesigner {
         if(menuEditLayer == null) {
             menuEditLayer = new MenuEditLayer(this);
             menuEditLayer.setVisible(false);
-            layeredPane.add(menuEditLayer, new Integer(2000));
+            layeredPane.add(menuEditLayer, Integer.valueOf(2000));
         }
         return menuEditLayer;
     }
@@ -2090,7 +2090,7 @@ public class FormDesigner {
             }
             if (getLayoutDesigner().logTestCode()) {
                 getLayoutDesigner().testCode.add("  compMinSize.put(\"" + componentId + "\", new Dimension(" +  //NOI18N
-                                                            new Double(dim.getWidth()).intValue() + ", " + new Double(dim.getHeight()).intValue() + "));"); //NOI18N
+                    dim.width + ", " + dim.height + "));"); //NOI18N
             }            
             return dim;
         }
@@ -2104,7 +2104,7 @@ public class FormDesigner {
             }
             if (getLayoutDesigner().logTestCode()) {
                 getLayoutDesigner().testCode.add("  compPrefSize.put(\"" + componentId + "\", new Dimension(" +  //NOI18N
-                                                            new Double(dim.getWidth()).intValue() + ", " + new Double(dim.getHeight()).intValue() + "));"); //NOI18N
+                    dim.width + ", " + dim.height + "));"); //NOI18N
             }
             return dim;
         }

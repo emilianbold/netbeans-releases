@@ -685,7 +685,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     * @exception IOException if an error occurs
     */
     public final void rename (String name) throws IOException {
-        if (name != null && name.trim ().length ()==0) {
+        if (name == null || name.trim ().length ()==0) {
             IllegalArgumentException iae = new IllegalArgumentException (this.getName ());
             String msg = NbBundle.getMessage (DataObject.class,
                                   "MSG_NotValidName", getName ()); // NOI18N
