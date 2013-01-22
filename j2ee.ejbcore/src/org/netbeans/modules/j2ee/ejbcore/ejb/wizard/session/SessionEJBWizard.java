@@ -125,7 +125,8 @@ public final class SessionEJBWizard implements WizardDescriptor.AsynchronousInst
                 true, // TODO: UI - add checkbox for creation of business interface
                 !isSimplified, // TODO: UI - add checkbox for option XML (not annotation) usage
                 ejbPanel.getTimerOptions(),
-                ejbPanel.exposeTimerMethod()
+                ejbPanel.exposeTimerMethod(),
+                ejbPanel.nonPersistentTimer()
                 );
         FileObject result = null;
         try {

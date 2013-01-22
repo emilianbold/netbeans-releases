@@ -175,8 +175,7 @@ public final class TimerOptions {
         }
     }
 
-    @Override
-    public String toString() {
+    public String getAnnotationValue() {
         StringBuilder sb = new StringBuilder();
         Iterator<Entry<String, String>> iterator = timerOptions.entrySet().iterator();
         while (iterator.hasNext()) {

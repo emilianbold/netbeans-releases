@@ -83,6 +83,7 @@ import org.openide.filesystems.FileObject;
  * @author  cwebster
  * @author Martin Adamek
  */
+@SuppressWarnings("serial") // not used to be serialized
 public class SessionEJBWizardPanel extends javax.swing.JPanel {
 
     private final ChangeListener listener;
@@ -97,12 +98,16 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
         this.project = project;
         this.timerOptions = timerOptions;
         initComponents();
+        updateComponents();
+        attachListeners();
+    }
 
+    private void updateComponents() {
         J2eeProjectCapabilities projectCap = J2eeProjectCapabilities.forProject(project);
-        if (projectCap.isEjb31LiteSupported()){
-            boolean serverSupportsEJB31 = Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_6_FULL) ||
-                    Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_7_FULL);
-            if (!projectCap.isEjb31Supported() && !serverSupportsEJB31){
+        if (projectCap.isEjb31LiteSupported()) {
+            boolean serverSupportsEJB31 = Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_6_FULL)
+                    || Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_7_FULL);
+            if (!projectCap.isEjb31Supported() && !serverSupportsEJB31) {
                 remoteCheckBox.setVisible(false);
                 remoteCheckBox.setEnabled(false);
             }
@@ -113,6 +118,11 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
             }  else {
                 statefulButton.setEnabled(false);
                 statefulButton.setVisible(false);
+                if (projectCap.isEjb32LiteSupported() && !projectCap.isEjb32Supported()) {
+                    // force non-persistent Timer in JavaEE7 Web application
+                    nonPersistentTimerCheckBox.setSelected(true);
+                    nonPersistentTimerCheckBox.setEnabled(false);
+                }
             }
         } else {
             // hide whole Schedule section
@@ -123,8 +133,12 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
             singletonButton.setEnabled(false);
             localCheckBox.setSelected(true);
         }
+        updateInProjectCombo(false);
+    }
 
+    private void attachListeners() {
         localCheckBox.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 listener.stateChanged(null);
             }
@@ -137,23 +151,26 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
             }
         });
         remoteCheckBox.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 listener.stateChanged(null);
                 updateInProjectCombo(remoteCheckBox.isSelected());
             }
         });
         scheduleTextArea.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 listener.stateChanged(null);
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 listener.stateChanged(null);
             }
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 listener.stateChanged(null);
             }
         });
-        updateInProjectCombo(false);
     }
 
     public static boolean isMaven(Project project) {
@@ -278,6 +295,7 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
         scheduleScrollPane = new javax.swing.JScrollPane();
         scheduleTextArea = new javax.swing.JTextArea();
         exposeTimerMethod = new javax.swing.JCheckBox();
+        nonPersistentTimerCheckBox = new javax.swing.JCheckBox();
 
         jInternalFrame1.setVisible(true);
 
@@ -329,9 +347,12 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
         scheduleScrollPane.setViewportView(scheduleTextArea);
         scheduleTextArea.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SessionEJBWizardPanel.class, "LBL_Schedule")); // NOI18N
 
-        exposeTimerMethod.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        exposeTimerMethod.setMnemonic('E');
         exposeTimerMethod.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(exposeTimerMethod, org.openide.util.NbBundle.getMessage(SessionEJBWizardPanel.class, "LBL_ExposeTimerMethod")); // NOI18N
+
+        nonPersistentTimerCheckBox.setMnemonic('a');
+        org.openide.awt.Mnemonics.setLocalizedText(nonPersistentTimerCheckBox, org.openide.util.NbBundle.getMessage(SessionEJBWizardPanel.class, "LBL_NonPersistentTimer")); // NOI18N
 
         javax.swing.GroupLayout schedulePanelLayout = new javax.swing.GroupLayout(schedulePanel);
         schedulePanel.setLayout(schedulePanelLayout);
@@ -340,13 +361,15 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
             .addGroup(schedulePanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(schedulePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(schedulePanelLayout.createSequentialGroup()
-                        .addComponent(exposeTimerMethod)
-                        .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(scheduleScrollPane)
                     .addGroup(schedulePanelLayout.createSequentialGroup()
-                        .addComponent(scheduleLabel)
-                        .addContainerGap())))
+                        .addGroup(schedulePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(exposeTimerMethod)
+                            .addComponent(nonPersistentTimerCheckBox))
+                        .addGap(0, 0, Short.MAX_VALUE))))
+            .addGroup(schedulePanelLayout.createSequentialGroup()
+                .addComponent(scheduleLabel)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         schedulePanelLayout.setVerticalGroup(
             schedulePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -356,7 +379,8 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
                 .addComponent(scheduleScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(exposeTimerMethod)
-                .addContainerGap())
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 2, Short.MAX_VALUE)
+                .addComponent(nonPersistentTimerCheckBox))
         );
 
         scheduleLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SessionEJBWizardPanel.class, "LBL_Schedule")); // NOI18N
@@ -423,6 +447,7 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
     private javax.swing.JLabel interfaceLabel;
     private javax.swing.JInternalFrame jInternalFrame1;
     private javax.swing.JCheckBox localCheckBox;
+    private javax.swing.JCheckBox nonPersistentTimerCheckBox;
     private javax.swing.JCheckBox remoteCheckBox;
     private javax.swing.JLabel scheduleLabel;
     private javax.swing.JPanel schedulePanel;
@@ -466,6 +491,10 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
 
     public boolean exposeTimerMethod() {
         return exposeTimerMethod.isSelected();
+    }
+
+    public boolean nonPersistentTimer() {
+        return nonPersistentTimerCheckBox.isSelected();
     }
     
     public String getTimerOptionsError() {
