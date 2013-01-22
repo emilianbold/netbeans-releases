@@ -235,6 +235,9 @@
                     <file name="org-netbeans-modules-websvc-rest-client-RESTClientGenerator$Factory.instance">
                         <attr name="position" intvalue="3715"/>
                     </file>
+                    <file name="org-netbeans-modules-websvc-rest-editor-AsynchronousGenerator$Factory.instance">
+                        <attr name="position" intvalue="3716"/>
+                    </file>
                 </folder>
             </folder>
         </folder>
