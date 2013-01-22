@@ -90,6 +90,9 @@ public class QDiffAction extends ContextAction {
 
             @Override
             protected void perform () {
+                if (!QUtils.isMQEnabledExtension(root)) {
+                    return;
+                }
                 try {
                     List<HgLogMessage> parents = HgCommand.getParents(root, null, null);
                     if (parents.size() != 1 || !Arrays.asList(parents.get(0).getTags()).contains(QPatch.TAG_QTIP)) {
