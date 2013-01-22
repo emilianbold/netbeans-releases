@@ -179,7 +179,7 @@ public class FormEditor {
         return formDataObject;
     }
 
-    EditorSupport getEditorSupport() {
+    public final EditorSupport getEditorSupport() {
         return editorSupport;
     }
 
@@ -774,7 +774,33 @@ public class FormEditor {
         bindingSupportInitialized = false;
         bindingSupport = null;
     }
-    
+
+    /**
+     * Changes the DataObject of the form. Should be used only in situations when
+     * the original java and form files are renamed or moved elsewhere and the
+     * form editor cannot be reloaded (recreated) with the new FormDataObject
+     * (e.g. because it is opened with unsaved changes). This may happen in JDev.
+     */
+    public void relocate(FormDataObject newDataObject) {
+        detachDataObjectListener();
+        detachPaletteListener();
+        FormDataObject oldDataObject = formDataObject;
+        formDataObject = newDataObject;
+        formJavaSource = null;
+        if (formLoaded) {
+            String name = formDataObject.getName();
+            formModel.setName(name);
+            formRootNode.updateName(name);
+            formModel.getCodeStructure().setFormJavaSource(getFormJavaSource(true));
+            ClassPathUtils.getProjectClassLoader(newDataObject.getPrimaryFile());
+            ClassPathUtils.releaseFormClassLoader(oldDataObject.getPrimaryFile());
+            ClassPathUtils.releaseFormClassLoader(oldDataObject.getFormFile());
+            attachDataObjectListener();
+            attachPaletteListener();
+            formModel.fireFormChanged(false);
+        }
+    }
+
     private void attachFormListener() {
         if (formListener != null || formDataObject.isReadOnly() || formModel.isReadOnly())
             return;
