@@ -1524,7 +1524,7 @@ class_specifier
     :
         class_head 
         LCURLY                  {action.class_body($LCURLY);}
-        member_specification[false]? 
+        member_specification[true]? 
         RCURLY                  {action.end_class_body($RCURLY);}
     ;
 finally                                                                         {if(state.backtracking == 0){action.end_class_declaration(input.LT(0));}}
@@ -2605,11 +2605,11 @@ scope {
 
 skip_balanced_Curl
             :
-            LCURLY
+            LCURLY                                                              {if(state.backtracking == 0){action.skip_balanced_curlies(input.LT(0));}}
             (options {greedy=false;}:
-                skip_balanced_Curl | .
+                skip_balanced_Curl | .                                          {if(state.backtracking == 0){action.skip_balanced_curlies(input.LT(0));}}
             )*
-            RCURLY
+            RCURLY                                                              {if(state.backtracking == 0){action.skip_balanced_curlies(input.LT(0));}}
         ;
 
 // $>
