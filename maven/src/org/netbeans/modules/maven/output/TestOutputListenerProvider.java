@@ -82,7 +82,8 @@ import org.openide.windows.OutputWriter;
 public class TestOutputListenerProvider implements OutputProcessor {
         
     private static final String[] TESTGOALS = new String[] {
-        "mojo-execute#surefire:test" //NOI18N
+        "mojo-execute#surefire:test",
+        "mojo-execute#failsafe:integration-test" 
     };
     private Pattern failSeparatePattern;
     private Pattern failWindowsPattern1;
@@ -104,7 +105,7 @@ public class TestOutputListenerProvider implements OutputProcessor {
         failWindowsPattern1 = Pattern.compile("(?:\\[surefire\\] )?Tests run.*", Pattern.DOTALL); //NOI18N
         failWindowsPattern2 = Pattern.compile(".*[<]* FAILURE [!]*.*", Pattern.DOTALL); //NOI18N
         runningPattern = Pattern.compile("(?:\\[surefire\\] )?Running (.*)", Pattern.DOTALL); //NOI18N
-        outDirPattern = Pattern.compile(".*Surefire report directory\\: (.*)", Pattern.DOTALL); //NOI18N
+        outDirPattern = Pattern.compile(".*(?:Surefire)?(?:Failsafe)? report directory\\: (.*)", Pattern.DOTALL); //NOI18N
         outDirPattern2 = Pattern.compile(".*Setting reports dir\\: (.*)", Pattern.DOTALL); //NOI18N
     }
     
