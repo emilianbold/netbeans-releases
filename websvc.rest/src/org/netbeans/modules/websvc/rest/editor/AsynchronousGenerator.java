@@ -65,6 +65,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.JTextComponent;
 
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
@@ -77,6 +78,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.model.api.RestMethodDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
@@ -130,6 +132,26 @@ public class AsynchronousGenerator implements CodeGenerator {
      */
     @Override
     public void invoke() {
+        Project project = FileOwnerQuery.getOwner(controller.getFileObject());
+        if (project == null) {
+            return;
+        }
+        WebModule webModule = WebModule.getWebModule(project
+                .getProjectDirectory());
+        if (webModule == null) {
+            return;
+        }
+        Profile profile = webModule.getJ2eeProfile();
+        if (!Profile.JAVA_EE_7_WEB.equals(profile)
+                && !Profile.JAVA_EE_7_FULL.equals( profile))
+        {
+            Toolkit.getDefaultToolkit().beep();
+            StatusDisplayer.getDefault().setStatusText(
+                    NbBundle.getMessage(AsynchronousGenerator.class, 
+                            "MSG_NotJee7Profile"));                  // NOI18N
+            return;
+        }
+        
         int position = textComponent.getCaret().getDot();
         TreePath tp = controller.getTreeUtilities().pathFor(position);
         Element contextElement = controller.getTrees().getElement(tp );
