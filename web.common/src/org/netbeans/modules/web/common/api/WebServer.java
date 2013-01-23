@@ -238,7 +238,7 @@ public final class WebServer {
         
         @Override
         public void run() {
-            ExecutorService pool = new RequestProcessor(WebServer.class.getName(), 3);
+            ExecutorService pool = new RequestProcessor(WebServer.class.getName(), 10);
             while (!stop.get()) {
                 final Socket s;
                 try {
