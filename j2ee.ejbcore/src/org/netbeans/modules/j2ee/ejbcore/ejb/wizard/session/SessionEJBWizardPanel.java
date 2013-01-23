@@ -104,34 +104,27 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
 
     private void updateComponents() {
         J2eeProjectCapabilities projectCap = J2eeProjectCapabilities.forProject(project);
-        if (projectCap.isEjb31LiteSupported()) {
-            boolean serverSupportsEJB31 = Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_6_FULL)
-                    || Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_7_FULL);
-            if (!projectCap.isEjb31Supported() && !serverSupportsEJB31) {
-                remoteCheckBox.setVisible(false);
-                remoteCheckBox.setEnabled(false);
-            }
-            // enable Schedule section if Timer Session EJB, disable otherwise
-            if (this.timerOptions == null) {
-                schedulePanel.setVisible(false);
-                schedulePanel.setEnabled(false);
-            }  else {
-                statefulButton.setEnabled(false);
-                statefulButton.setVisible(false);
-                if (projectCap.isEjb32LiteSupported() && !projectCap.isEjb32Supported()) {
-                    // force non-persistent Timer in JavaEE7 Web application
-                    nonPersistentTimerCheckBox.setSelected(true);
-                    nonPersistentTimerCheckBox.setEnabled(false);
-                }
-            }
-        } else {
-            // hide whole Schedule section
-            schedulePanel.setVisible(false);
-            schedulePanel.setEnabled(false);
-            // hide singleton radio button
+        if (!isSingletonSupported(projectCap)) {
             singletonButton.setVisible(false);
             singletonButton.setEnabled(false);
+        }
+        if (!isNoInterfaceViewSupported(projectCap)) {
             localCheckBox.setSelected(true);
+        }
+        if (timerOptions == null || !isTimerSupported(projectCap)) {
+            schedulePanel.setVisible(false);
+            schedulePanel.setEnabled(false);
+        } else {
+            statefulButton.setEnabled(false);
+            statefulButton.setVisible(false);
+            if (isOnlyNonPersistentTimerSupported(projectCap)) {
+                nonPersistentTimerCheckBox.setSelected(true);
+                nonPersistentTimerCheckBox.setEnabled(false);
+            }
+        }
+        if (!isRemoteInterfaceSupported(projectCap)) {
+            remoteCheckBox.setVisible(false);
+            remoteCheckBox.setEnabled(false);
         }
         updateInProjectCombo(false);
     }
@@ -506,5 +499,25 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
             return null;
         }
         return (Project)projectsList.getSelectedItem();
+    }
+
+    private boolean isSingletonSupported(J2eeProjectCapabilities projectCap) {
+        return projectCap.isEjb31LiteSupported();
+    }
+
+    private boolean isNoInterfaceViewSupported(J2eeProjectCapabilities projectCap) {
+        return projectCap.isEjb31LiteSupported();
+    }
+
+    private boolean isTimerSupported(J2eeProjectCapabilities projectCap) {
+        return projectCap.isEjb31Supported() || projectCap.isEjb32LiteSupported();
+    }
+
+    private boolean isRemoteInterfaceSupported(J2eeProjectCapabilities projectCap) {
+        return projectCap.isEjb30Supported();
+    }
+
+    private boolean isOnlyNonPersistentTimerSupported(J2eeProjectCapabilities projectCap) {
+        return projectCap.isEjb32LiteSupported() && !projectCap.isEjb32Supported();
     }
 }
