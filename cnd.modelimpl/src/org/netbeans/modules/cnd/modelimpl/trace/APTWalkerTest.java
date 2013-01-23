@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 
 import java.io.IOException;
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
@@ -55,7 +54,6 @@ import org.netbeans.modules.cnd.apt.support.APTAbstractWalker;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeState;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
-import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.support.PostIncludeData;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
@@ -104,7 +102,7 @@ public class APTWalkerTest extends APTAbstractWalker {
                 if (APTTraceFlags.INCLUDE_TOKENS_IN_TOKEN_STREAM) {
                     APTFile apt = APTDriver.findAPT(ModelSupport.createFileBuffer(resolvedPath.getFileObject()), APTLanguageSupport.UNKNOWN, APTLanguageSupport.FLAVOR_UNKNOWN);
                     APTWalkerTest walker = new APTWalkerTest(apt, getPreprocHandler());
-                    super.includeStream(apt, walker);
+                    includeStream(apt, walker);
                     resolvingTime += walker.resolvingTime;
                 } else {
                     APTFile apt = APTDriver.findAPTLight(ModelSupport.createFileBuffer(resolvedPath.getFileObject()));
