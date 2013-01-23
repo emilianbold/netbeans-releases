@@ -43,6 +43,8 @@
 package org.netbeans.modules.parsing.api;
 
 import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.SoftReference;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -400,12 +402,12 @@ public final class ParserManager {
                 throw new IllegalArgumentException("No parser for mime type: " + mimeType);
             }
             p = parserFactory.createParser(Collections.<Snapshot>emptyList());
-            cachedParsers.put(mimeType, new TimedWeakReference<Parser>(p));
+            cachedParsers.put(mimeType, new SoftReference<Parser>(p));
         }
         return p;
     }
     //where
-    private static Map<String,Reference<Parser>> cachedParsers = new HashMap<String,Reference<Parser>>();
+    private static Map<String,Reference<Parser>> cachedParsers = new HashMap<String,Reference<Parser>>();    
 }
 
 
