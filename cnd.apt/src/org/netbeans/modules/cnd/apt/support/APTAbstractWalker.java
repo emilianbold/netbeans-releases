@@ -173,7 +173,7 @@ public abstract class APTAbstractWalker extends APTWalker {
     protected void onDefine(APT apt) {
         APTDefine define = (APTDefine)apt;
         if (define.isValid()) {
-            getMacroMap().define(getRootFile(), define, Kind.DEFINED);
+            getMacroMap().define(getCurFile(), define, Kind.DEFINED);
         } else {
             if (DebugUtils.STANDALONE) {
                 if (APTUtils.LOG.getLevel().intValue() <= Level.SEVERE.intValue()) {
@@ -197,19 +197,19 @@ public abstract class APTAbstractWalker extends APTWalker {
                 super.stop();
             } else {
                 APTDefine fileOnce = APTUtils.createAPTDefineOnce(getFileOnceMacroName());
-                getMacroMap().define(getRootFile(), fileOnce, Kind.DEFINED);
+                getMacroMap().define(getCurFile(), fileOnce, Kind.DEFINED);
             }
         }
     }
     
     protected final CharSequence getFileOnceMacroName() {
-        return APTUtils.getFileOnceMacroName(getRootFile());
+        return APTUtils.getFileOnceMacroName(getCurFile());
     }
 
     @Override
     protected void onUndef(APT apt) {
         APTUndefine undef = (APTUndefine)apt;
-        getMacroMap().undef(getRootFile(), undef.getName());
+        getMacroMap().undef(getCurFile(), undef.getName());
     }
     
     @Override

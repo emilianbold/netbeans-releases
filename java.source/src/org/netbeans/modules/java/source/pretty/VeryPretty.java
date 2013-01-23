@@ -1347,7 +1347,7 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     @Override
-    public void visitAssign(JCAssign tree) {
+    public void visitAssign(final JCAssign tree) {
         int col = out.col;
 	printExpr(tree.lhs, TreeInfo.assignPrec + 1);
         boolean spaceAroundAssignOps = cs.spaceAroundAssignOps();
@@ -1355,23 +1355,11 @@ public final class VeryPretty extends JCTree.Visitor {
             print(' ');
 	print('=');
 	int rm = cs.getRightMargin();
-        switch(cs.wrapAssignOps()) {
-        case WRAP_IF_LONG:
-            if (widthEstimator.estimateWidth(tree.rhs, rm - out.col) + out.col <= cs.getRightMargin()) {
-                if(spaceAroundAssignOps)
-                    print(' ');
-                break;
+        wrapTree(cs.wrapAssignOps(), spaceAroundAssignOps, cs.alignMultilineAssignment() ? col : out.leftMargin + cs.getContinuationIndentSize(), new Runnable() {
+            @Override public void run() {
+                printExpr(tree.rhs, TreeInfo.assignPrec);
             }
-        case WRAP_ALWAYS:
-            newline();
-            toColExactly(cs.alignMultilineAssignment() ? col : out.leftMargin + cs.getContinuationIndentSize());
-            break;
-        case WRAP_NEVER:
-            if(spaceAroundAssignOps)
-                print(' ');
-            break;
-        }
-	printExpr(tree.rhs, TreeInfo.assignPrec);
+        });
     }
 
     @Override
@@ -2359,11 +2347,12 @@ public final class VeryPretty extends JCTree.Visitor {
             }
             
             if (!first || wrapFirst) {
-                switch(wrapStyle) {
+                switch(first && wrapStyle != WrapStyle.WRAP_NEVER ? WrapStyle.WRAP_IF_LONG : wrapStyle) {
                 case WRAP_IF_LONG:
                     int rm = cs.getRightMargin();
-                    if (widthEstimator.estimateWidth(l.head, rm - out.col) + out.col + 1 <= rm) {
-                        if (cs.spaceAfterComma() && !first)
+                    boolean space = cs.spaceAfterComma() && !first;
+                    if (widthEstimator.estimateWidth(l.head, rm - out.col) + out.col + (space ? 1 : 0) <= rm) {
+                        if (space)
                             print(' ');
                         break;
                     }
@@ -2394,6 +2383,7 @@ public final class VeryPretty extends JCTree.Visitor {
             int oldc = out.col;
             int oldu = out.used;
             int oldm = out.leftMargin;
+            int oldPrec = prec;
             try {
                 if (needsSpaceBefore)
                     needSpace();
@@ -2405,6 +2395,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 out.col = oldc;
                 out.used = oldu;
                 out.leftMargin = oldm;
+                prec = oldPrec;
             }
         case WRAP_ALWAYS:
             if (out.col > 0)

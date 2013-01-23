@@ -295,8 +295,8 @@ public class DiskRepositoryManager extends BaseRepository implements RepositoryW
         Set<CharSequence> requiredUnitNames = null;
         if (requiredUnits != null) {
             requiredUnitNames = new LinkedHashSet<CharSequence>(requiredUnits.size());
-            for (Integer integer : requiredUnits) {
-                requiredUnitNames.add(getTranslation().getUnitName(unitId));
+            for (Integer reqUnitId : requiredUnits) {
+                requiredUnitNames.add(getTranslation().getUnitName(reqUnitId));
             }
         }
         synchronized (getUnitLock(unitId)) {

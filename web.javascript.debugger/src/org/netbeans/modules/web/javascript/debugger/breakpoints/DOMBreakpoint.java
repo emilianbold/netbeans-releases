@@ -242,6 +242,18 @@ public class DOMBreakpoint extends AbstractBreakpoint {
         }
     }
     
+    final void setValid(String message) {
+        setValidity(VALIDITY.VALID, message);
+    }
+
+    final void setInvalid(String message) {
+        setValidity(VALIDITY.INVALID, message);
+    }
+    
+    final void resetValidity() {
+        setValidity(VALIDITY.UNKNOWN, null);
+    }
+
     private class DOMFileChange implements FileChangeListener {
 
         public DOMFileChange() {

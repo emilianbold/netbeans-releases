@@ -1657,10 +1657,10 @@ public class MetaComponentCreator {
         } else if (comp instanceof JTextArea) {
             JTextArea textArea = (JTextArea)comp;
             if (textArea.getRows() == 0) {
-                changes.put("rows", new Integer(5)); // NOI18N
+                changes.put("rows", Integer.valueOf(5)); // NOI18N
             }
             if (textArea.getColumns() == 0) {
-                changes.put("columns", new Integer(20)); // NOI18N
+                changes.put("columns", Integer.valueOf(20)); // NOI18N
             }
         }
 
@@ -1774,9 +1774,7 @@ public class MetaComponentCreator {
         Map<String, Object> changes = null;
 
         if (comp instanceof AbstractButton && targetComp instanceof JToolBar) {
-            if (changes == null) {
-                changes = new HashMap<String, Object>();
-            }
+            changes = new HashMap<String, Object>();
             changes.put("focusable", false); // NOI18N
             changes.put("horizontalTextPosition", SwingConstants.CENTER); // NOI18N
             changes.put("verticalTextPosition", SwingConstants.BOTTOM); // NOI18N
