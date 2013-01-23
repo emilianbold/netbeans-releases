@@ -53,7 +53,7 @@ import com.sun.tools.javac.api.DuplicateClassChecker;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTool;
 import com.sun.tools.javac.api.JavacTrees;
-import com.sun.tools.javac.parser.SimpleDocCommentTable;
+import com.sun.tools.javac.parser.LazyDocCommentTable;
 import com.sun.tools.javac.parser.Tokens.Comment;
 import com.sun.tools.javac.tree.EndPosTable;
 import com.sun.tools.javac.tree.JCTree;
@@ -1003,7 +1003,7 @@ public class JavacParser extends Parser {
                     assert dl instanceof CompilationInfoImpl.DiagnosticListenerImpl;
                     ((CompilationInfoImpl.DiagnosticListenerImpl)dl).startPartialReparse(origStartPos, origEndPos);
                     long start = System.currentTimeMillis();
-                    Map<JCTree,Comment> docComments = new HashMap<JCTree, Comment>();
+                    Map<JCTree,LazyDocCommentTable.Entry> docComments = new HashMap<JCTree, LazyDocCommentTable.Entry>();
                     block = pr.reparseMethodBody(cu, orig, newBody, firstInner, docComments);
                     if (LOGGER.isLoggable(Level.FINER)) {
                         LOGGER.log(Level.FINER, "Reparsed method in: {0}", fo);     //NOI18N
@@ -1018,8 +1018,8 @@ public class JavacParser extends Parser {
                         }
                         return false;
                     }
-                    ((SimpleDocCommentTable) ((JCTree.JCCompilationUnit)cu).docComments).table.keySet().removeAll(fav.docOwners);
-                    ((SimpleDocCommentTable) ((JCTree.JCCompilationUnit)cu).docComments).table.putAll(docComments);
+                    ((LazyDocCommentTable) ((JCTree.JCCompilationUnit)cu).docComments).table.keySet().removeAll(fav.docOwners);
+                    ((LazyDocCommentTable) ((JCTree.JCCompilationUnit)cu).docComments).table.putAll(docComments);
                     long end = System.currentTimeMillis();
                     if (fo != null) {
                         logTime (fo,Phase.PARSED,(end-start));

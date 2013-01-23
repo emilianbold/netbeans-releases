@@ -73,7 +73,7 @@ public class NBClassWriter extends ClassWriter {
     @Override
     protected int writeExtraClassAttributes(ClassSymbol c) {
         if (!target.hasEnclosingMethodAttribute())
-            return writeEnclosingMethodLikeAttribute(nbNames._org_netbeans_EnclosingMethod, c);
+            return writeEnclosingMethodAttribute(nbNames._org_netbeans_EnclosingMethod, c);
         else
             return 0;
     }

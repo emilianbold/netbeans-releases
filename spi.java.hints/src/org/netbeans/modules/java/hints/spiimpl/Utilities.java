@@ -98,7 +98,6 @@ import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.Filter;
 import com.sun.tools.javac.util.JCDiagnostic;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Log;
@@ -136,8 +135,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic;
-import javax.tools.DiagnosticCollector;
-import javax.tools.DiagnosticListener;
 import javax.tools.JavaCompiler.CompilationTask;
 import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
@@ -549,18 +546,17 @@ public class Utilities {
         }.scan(t, null);
     }
 
-    private static JCStatement parseStatement(Context context, CharSequence stmt, SourcePositions[] pos, List<Diagnostic<? extends JavaFileObject>> errors) {
+    private static JCStatement parseStatement(Context context, CharSequence stmt, SourcePositions[] pos, final List<Diagnostic<? extends JavaFileObject>> errors) {
         if (stmt == null || (pos != null && pos.length != 1))
             throw new IllegalArgumentException();
         JavaCompiler compiler = JavaCompiler.instance(context);
         JavaFileObject prev = compiler.log.useSource(new DummyJFO());
-        DiagnosticListener<? super JavaFileObject> oldDiag = compiler.log.getDiagnosticListener();
-        int origNErrors = compiler.log.nerrors;
-        int origNWarnings = compiler.log.nwarnings;
-        Filter<JCDiagnostic> origDeferDiagnostic = compiler.log.deferredDiagFilter;
-
-        compiler.log.deferAll();
-        compiler.log.setDiagnosticListener(new DiagnosticListenerImpl(errors));
+        Log.DiagnosticHandler discardHandler = new Log.DiscardDiagnosticHandler(compiler.log) {
+            @Override
+            public void report(JCDiagnostic diag) {
+                errors.add(diag);
+            }            
+        };
         try {
             CharBuffer buf = CharBuffer.wrap((stmt+"\u0000").toCharArray(), 0, stmt.length());
             ParserFactory factory = ParserFactory.instance(context);
@@ -575,25 +571,21 @@ public class Utilities {
             return null;
         } finally {
             compiler.log.useSource(prev);
-            compiler.log.setDiagnosticListener(oldDiag);
-            compiler.log.nerrors = origNErrors;
-            compiler.log.nwarnings = origNWarnings;
-            compiler.log.deferredDiagFilter = origDeferDiagnostic;
+            compiler.log.popDiagnosticHandler(discardHandler);
         }
     }
 
-    private static JCExpression parseExpression(Context context, CharSequence expr, boolean onlyFullInput, SourcePositions[] pos, List<Diagnostic<? extends JavaFileObject>> errors) {
+    private static JCExpression parseExpression(Context context, CharSequence expr, boolean onlyFullInput, SourcePositions[] pos, final List<Diagnostic<? extends JavaFileObject>> errors) {
         if (expr == null || (pos != null && pos.length != 1))
             throw new IllegalArgumentException();
         JavaCompiler compiler = JavaCompiler.instance(context);
         JavaFileObject prev = compiler.log.useSource(new DummyJFO());
-        DiagnosticListener<? super JavaFileObject> oldDiag = compiler.log.getDiagnosticListener();
-        int origNErrors = compiler.log.nerrors;
-        int origNWarnings = compiler.log.nwarnings;
-        Filter<JCDiagnostic> origDeferDiagnostic = compiler.log.deferredDiagFilter;
-
-        compiler.log.deferAll();
-        compiler.log.setDiagnosticListener(new DiagnosticListenerImpl(errors));
+        Log.DiagnosticHandler discardHandler = new Log.DiscardDiagnosticHandler(compiler.log) {
+            @Override
+            public void report(JCDiagnostic diag) {
+                errors.add(diag);
+            }            
+        };
         try {
             CharBuffer buf = CharBuffer.wrap((expr+"\u0000").toCharArray(), 0, expr.length());
             ParserFactory factory = ParserFactory.instance(context);
@@ -613,23 +605,19 @@ public class Utilities {
             return null;
         } finally {
             compiler.log.useSource(prev);
-            compiler.log.setDiagnosticListener(oldDiag);
-            compiler.log.nerrors = origNErrors;
-            compiler.log.nwarnings = origNWarnings;
-            compiler.log.deferredDiagFilter = origDeferDiagnostic;
+            compiler.log.popDiagnosticHandler(discardHandler);
         }
     }
 
-    private static TypeMirror attributeTree(JavacTaskImpl jti, Tree tree, Scope scope, List<Diagnostic<? extends JavaFileObject>> errors) {
+    private static TypeMirror attributeTree(JavacTaskImpl jti, Tree tree, Scope scope, final List<Diagnostic<? extends JavaFileObject>> errors) {
         Log log = Log.instance(jti.getContext());
         JavaFileObject prev = log.useSource(new DummyJFO());
-        DiagnosticListener<? super JavaFileObject> oldDiag = log.getDiagnosticListener();
-        int origNErrors = log.nerrors;
-        int origNWarnings = log.nwarnings;
-        Filter<JCDiagnostic> origDeferDiagnostic = log.deferredDiagFilter;
-
-        log.deferAll();
-        log.setDiagnosticListener(new DiagnosticListenerImpl(errors));
+        Log.DiagnosticHandler discardHandler = new Log.DiscardDiagnosticHandler(log) {
+            @Override
+            public void report(JCDiagnostic diag) {
+                errors.add(diag);
+            }            
+        };
         try {
             Attr attr = Attr.instance(jti.getContext());
             Env<AttrContext> env = ((JavacScope) scope).getEnv();
@@ -638,10 +626,7 @@ public class Utilities {
             return attr.attribStat((JCTree) tree,env);
         } finally {
             log.useSource(prev);
-            log.setDiagnosticListener(oldDiag);
-            log.nerrors = origNErrors;
-            log.nwarnings = origNWarnings;
-            log.deferredDiagFilter = origDeferDiagnostic;
+            log.popDiagnosticHandler(discardHandler);
         }
     }
 
@@ -724,21 +709,13 @@ public class Utilities {
         Context context = jti.getContext();
         JavaCompiler compiler = JavaCompiler.instance(context);
         Log log = Log.instance(context);
-        int origNErrors = log.nerrors;
-        int origNWarnings = log.nwarnings;
-        Filter<JCDiagnostic> origDeferDiagnostic = compiler.log.deferredDiagFilter;
-
-        compiler.log.deferAll();
-        log.nerrors = 0;
+        Log.DiagnosticHandler discardHandler = new Log.DiscardDiagnosticHandler(compiler.log);
 
         JavaFileObject jfo = FileObjects.memoryFileObject("$", "$", new File("/tmp/$" + count + ".java").toURI(), System.currentTimeMillis(), clazz.toString());
 
-        DiagnosticListener<? super JavaFileObject> old = log.getDiagnosticListener();
         boolean oldSkipAPs = compiler.skipAnnotationProcessing;
-        DiagnosticCollector<JavaFileObject> dc = new DiagnosticCollector<JavaFileObject>();
 
         try {
-            log.setDiagnosticListener(dc);
             compiler.skipAnnotationProcessing = true;
             
             JCCompilationUnit cut = compiler.parse(jfo);
@@ -765,10 +742,7 @@ public class Utilities {
 
             return res;
         } finally {
-            log.setDiagnosticListener(old);
-            log.nerrors = origNErrors;
-            log.nwarnings = origNWarnings;
-            log.deferredDiagFilter = origDeferDiagnostic;
+            log.popDiagnosticHandler(discardHandler);
             compiler.skipAnnotationProcessing = oldSkipAPs;
         }
     }
@@ -1460,18 +1434,6 @@ public class Utilities {
         }
 
         return wildcardTreeName.toString().startsWith("$$");
-    }
-
-    private static final class DiagnosticListenerImpl implements DiagnosticListener<JavaFileObject> {
-        private final Collection<Diagnostic<? extends JavaFileObject>> errors;
-
-        public DiagnosticListenerImpl(Collection<Diagnostic<? extends JavaFileObject>> errors) {
-            this.errors = errors;
-        }
-
-        public void report(Diagnostic<? extends JavaFileObject> diagnostic) {
-            errors.add(diagnostic);
-        }
     }
 
     private static final class OffsetSourcePositions implements SourcePositions {

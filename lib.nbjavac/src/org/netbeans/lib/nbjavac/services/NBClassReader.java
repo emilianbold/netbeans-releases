@@ -41,10 +41,12 @@
  */
 package org.netbeans.lib.nbjavac.services;
 
+import java.util.Set;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.jvm.ClassFile.Version;
 import com.sun.tools.javac.jvm.ClassReader;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Name;
 import com.sun.tools.javadoc.JavadocClassReader;
 
 /**
@@ -68,8 +70,8 @@ public class NBClassReader extends JavadocClassReader {
 
         nbNames = NBNames.instance(context);
 
-        AttributeReader[] readers = {
-            new AttributeReader(nbNames._org_netbeans_EnclosingMethod, Version.V45_3, CLASS_OR_MEMBER_ATTRIBUTE) {
+        NBAttributeReader[] readers = {
+            new NBAttributeReader(nbNames._org_netbeans_EnclosingMethod, Version.V45_3, CLASS_OR_MEMBER_ATTRIBUTE) {
                 public void read(Symbol sym, int attrLen) {
                     int newbp = bp + attrLen;
                     readEnclosingMethodAttr(sym);
@@ -78,8 +80,19 @@ public class NBClassReader extends JavadocClassReader {
             },
         };
 
-        for (AttributeReader r: readers)
-            attributeReaders.put(r.name, r);
+        for (NBAttributeReader r: readers)
+            attributeReaders.put(r.getName(), r);
+    }
+    
+    private abstract class NBAttributeReader extends AttributeReader {
+
+        private NBAttributeReader(Name name, Version version, Set<AttributeKind> kinds) {
+            super(name, version, kinds);
+        }
+        
+        private Name getName() {
+            return name;
+        }
     }
 
 }

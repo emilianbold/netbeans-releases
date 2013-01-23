@@ -73,6 +73,7 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Log;
+import com.sun.tools.javac.util.Log.DiscardDiagnosticHandler;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -326,8 +327,7 @@ public class TreeLoader extends LazyTreeLoader {
     public static void dumpSymFile(JavaFileManager jfm, JavacTaskImpl jti, ClassSymbol clazz) throws IOException {
         Log log = Log.instance(jti.getContext());
         JavaFileObject prevLogTo = log.useSource(null);
-        boolean oldSuppress = log.suppressErrorsAndWarnings;
-        log.suppressErrorsAndWarnings = true;
+        DiscardDiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
         try {
             String binaryName = null;
             String surl = null;
@@ -364,7 +364,7 @@ public class TreeLoader extends LazyTreeLoader {
             LOGGER.log(Level.INFO, "InvalidSourcePath reported when writing sym file for class: {0}", clazz.flatname); // NOI18N
         } finally {
             jfm.handleOption("output-root", Collections.singletonList("").iterator()); //NOI18N
-            log.suppressErrorsAndWarnings = oldSuppress;
+            log.popDiagnosticHandler(discardDiagnosticHandler);
             log.useSource(prevLogTo);
         }
     }

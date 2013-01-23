@@ -39,7 +39,6 @@ package org.netbeans.lib.nbjavac.services;
 
 import com.sun.tools.javac.parser.JavacParser;
 import com.sun.tools.javac.parser.Lexer;
-import com.sun.tools.javac.parser.Parser;
 import com.sun.tools.javac.parser.ParserFactory;
 import com.sun.tools.javac.parser.Scanner;
 import com.sun.tools.javac.parser.ScannerFactory;
@@ -71,6 +70,7 @@ public class NBParserFactory extends ParserFactory {
 
     public static void preRegister(Context context) {
         context.put(parserFactoryKey, new Context.Factory<ParserFactory>() {
+            @Override
             public ParserFactory make(Context c) {
                 return new NBParserFactory(c);
             }
@@ -89,26 +89,20 @@ public class NBParserFactory extends ParserFactory {
     }
 
     @Override
-    public Parser newParser(CharSequence input, boolean keepDocComments, boolean keepEndPos, boolean keepLineMap) {
-        return newParser (input, keepDocComments, keepEndPos, keepLineMap, false);
+    public JavacParser newParser(CharSequence input, boolean keepDocComments, boolean keepEndPos, boolean keepLineMap) {
+        Lexer lexer = scannerFactory.newScanner(input, keepDocComments);
+        return new NBJavacParser(this, lexer, keepDocComments, keepLineMap, keepEndPos, cancelService);
     }
 
     @Override
-    public Parser newParser(CharSequence input, int startPos, final EndPosTable endPos) {
+    public JavacParser newParser(CharSequence input, int startPos, final EndPosTable endPos) {
         Lexer lexer = scannerFactory.newScanner(input, true);
         ((Scanner)lexer).seek(startPos);
-        JavacParser p = new NBJavacParser(this, lexer, true, false, true, cancelService) {
+        return new NBJavacParser(this, lexer, true, false, true, cancelService) {
             @Override protected AbstractEndPosTable newEndPosTable(boolean keepEndPositions) {
                 return (AbstractEndPosTable) endPos;
             }
         };
-        return p;
-    }
-
-    @Override
-    public Parser newParser(CharSequence input, boolean keepDocComments, boolean keepEndPos, boolean keepLineMap, boolean partial) {
-        Lexer lexer = scannerFactory.newScanner(input, keepDocComments);
-        return new NBJavacParser(this, lexer, keepDocComments, keepLineMap, keepEndPos, cancelService);
     }
 
     public static class NBJavacParser extends JavacParser {

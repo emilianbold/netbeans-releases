@@ -57,7 +57,7 @@ import com.sun.tools.javac.comp.Flow;
 import com.sun.tools.javac.comp.MemberEnter;
 import com.sun.tools.javac.parser.JavacParser;
 import com.sun.tools.javac.parser.ParserFactory;
-import com.sun.tools.javac.parser.SimpleDocCommentTable;
+import com.sun.tools.javac.parser.LazyDocCommentTable;
 import com.sun.tools.javac.parser.Tokens.Comment;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
@@ -100,7 +100,7 @@ public class PartialReparser {
     }
 
     public JCBlock reparseMethodBody(CompilationUnitTree topLevel, MethodTree methodToReparse, String newBodyText, int annonIndex,
-            final Map<? super JCTree,? super Comment> docComments) {
+            final Map<? super JCTree,? super LazyDocCommentTable.Entry> docComments) {
         ParserFactory parserFactory = ParserFactory.instance(context);
         CharBuffer buf = CharBuffer.wrap((newBodyText+"\u0000").toCharArray(), 0, newBodyText.length());
         JavacParser parser = (JavacParser) parserFactory.newParser(buf, ((JCBlock)methodToReparse.getBody()).pos, ((JCCompilationUnit)topLevel).endPositions);
@@ -108,7 +108,7 @@ public class PartialReparser {
         NBParserFactory.assignAnonymousClassIndices(Names.instance(context), statement, Names.instance(context).empty, annonIndex);
         if (statement.getKind() == Tree.Kind.BLOCK) {
             if (docComments != null) {
-                docComments.putAll(((SimpleDocCommentTable) parser.getDocComments()).table);
+                docComments.putAll(((LazyDocCommentTable) parser.getDocComments()).table);
             }
             return (JCBlock) statement;
         }
