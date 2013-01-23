@@ -310,8 +310,13 @@ final class ViewBuilder {
             // Either endAffectedOffset points to begining of paragraph or inside it
             endCreationOffset = endPView.getStartOffset();
             if (endCreationOffset < endAffectedOffset) { // Inside paragraph
-                endCreationOffset += endPView.getLength();
                 endCreationIndex++;
+                if (endCreationIndex < docView.getViewCount()) {
+                    endPView = docView.getParagraphView(endCreationIndex);
+                    endCreationOffset = endPView.getStartOffset();
+                } else {
+                    endCreationOffset = docView.getDocument().getLength();
+                }
             }
             modOffset = endModOffset = Integer.MIN_VALUE; // No mod
             matchOffset = endCreationOffset;
