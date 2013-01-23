@@ -56,7 +56,7 @@ public class CXXParserActionImpl implements CXXParserActionEx {
     private final CppParserActionImpl orig;
 
     public CXXParserActionImpl(CsmParserProvider.CsmParserParameters params) {
-        orig = new CppParserActionImpl(params);
+        orig = new CppParserActionImpl(params, this);
     }
 
     @Override
@@ -614,6 +614,7 @@ public class CXXParserActionImpl implements CXXParserActionEx {
         orig.end_constant_expression(convertToken(token));
     }
 
-
+    @Override public void skip_balanced_curlies(Token token) {orig.skip_balanced_curlies(convertToken(token));}    
+    
     
 }

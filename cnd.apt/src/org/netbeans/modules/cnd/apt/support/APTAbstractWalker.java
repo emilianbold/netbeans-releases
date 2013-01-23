@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.apt.support;
 import java.util.Collection;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.impl.support.APTHandlersSupportImpl;
 import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.structure.APT;
@@ -56,6 +57,7 @@ import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;
 import org.netbeans.modules.cnd.apt.structure.APTPragma;
 import org.netbeans.modules.cnd.apt.structure.APTUndefine;
+import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeState;
 import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -137,25 +139,25 @@ public abstract class APTAbstractWalker extends APTWalker {
     }
 
     private void includeImpl(ResolvedPath resolvedPath, APTInclude aptInclude) {
+        IncludeState inclState = pushInclude(aptInclude, resolvedPath);
         try {
-            beforeInclude(aptInclude, resolvedPath);
             if (cacheEntry != null) {
                 if (!startPath.equals(cacheEntry.getFilePath())) {
                     System.err.println("using not expected entry " + cacheEntry + " when work with file " + startPath);
                 }
                 if (cacheEntry.isSerial()) {
-                    serialIncludeImpl(aptInclude, resolvedPath);
+                    serialIncludeImpl(aptInclude, resolvedPath, inclState);
                 } else {
                     Object lock = cacheEntry.getIncludeLock(aptInclude);
                     synchronized (lock) {
-                        serialIncludeImpl(aptInclude, resolvedPath);
+                        serialIncludeImpl(aptInclude, resolvedPath, inclState);
                     }
                 }
             } else {
-                include(resolvedPath, aptInclude, null);
+                include(resolvedPath, inclState, aptInclude, null);
             }
         } finally {
-            afterInclude(aptInclude, resolvedPath);
+            popInclude(aptInclude, resolvedPath, inclState);
         }
     }
 
@@ -166,7 +168,7 @@ public abstract class APTAbstractWalker extends APTWalker {
      * @param postIncludeState cached information about visit of this include directive
      * @return true if need to cache post include state
      */
-    abstract protected boolean include(ResolvedPath resolvedPath, APTInclude aptInclude, PostIncludeData postIncludeState);
+    abstract protected boolean include(ResolvedPath resolvedPath, IncludeState inclState, APTInclude aptInclude, PostIncludeData postIncludeState);
     abstract protected boolean hasIncludeActionSideEffects();
 
     @Override
@@ -277,19 +279,53 @@ public abstract class APTAbstractWalker extends APTWalker {
         return res;
     }
 
-    private void serialIncludeImpl(APTInclude aptInclude, ResolvedPath resolvedPath) {
+    private void serialIncludeImpl(APTInclude aptInclude, ResolvedPath resolvedPath, IncludeState inclState) {
         PostIncludeData postIncludeData = cacheEntry.getPostIncludeState(aptInclude);
         if (postIncludeData.hasPostIncludeMacroState() && !hasIncludeActionSideEffects()) {
             getPreprocHandler().getMacroMap().setState(postIncludeData.getPostIncludeMacroState());
             return;
         }
-        if (include(resolvedPath, aptInclude, postIncludeData)) {
+        if (include(resolvedPath, inclState, aptInclude, postIncludeData)) {
             APTMacroMap.State postIncludeMacroState = getPreprocHandler().getMacroMap().getState();
             PostIncludeData newData = new PostIncludeData(postIncludeMacroState, postIncludeData.getDeadBlocks());
             cacheEntry.setIncludeData(aptInclude, newData);
-        } else if (postIncludeData != null && !postIncludeData.hasPostIncludeMacroState()) {
+        } else if (!postIncludeData.hasPostIncludeMacroState()) {
             // clean what could be set in dead blocks, because of false include activity
             postIncludeData.setDeadBlocks(null);
         }
     }
+
+    protected APTIncludeHandler.IncludeState pushInclude(APTInclude aptInclude, ResolvedPath resolvedPath) {
+        APTIncludeHandler.IncludeState pushIncludeState = APTIncludeHandler.IncludeState.Fail;
+        if (resolvedPath != null) {
+            APTIncludeHandler includeHandler = getIncludeHandler();
+            if (includeHandler != null) {
+                pushIncludeState = includeHandler.pushInclude(resolvedPath.getPath(), aptInclude, resolvedPath.getIndex());
+            }
+        }
+//        System.out.println("\npushInclude:" + aptInclude.getOffset() + ":" + resolvedPath + " " + pushIncludeState + " " + getCurFile());
+        beforeInclude(aptInclude, resolvedPath);
+        return pushIncludeState;
+    }
+
+    protected void popInclude(APTInclude aptInclude, ResolvedPath resolvedPath, IncludeState pushState) {
+        afterInclude(aptInclude, resolvedPath);
+//        System.out.println("\npopInclude:" + aptInclude.getOffset() + ":" + resolvedPath + " " + pushState + " " + getCurFile());
+        if (pushState == IncludeState.Success) {
+            APTIncludeHandler includeHandler = getIncludeHandler();
+            if (includeHandler != null) {
+                includeHandler.popInclude();
+            }
+        }
+    }
+
+    protected final void includeStream(APTFile apt, APTWalker walker) {
+        TokenStream incTS = walker.getTokenStream();
+        pushTokenStream(incTS);
+    }
+    
+    @Override
+    protected void onEOF() {
+        
+    }    
 }

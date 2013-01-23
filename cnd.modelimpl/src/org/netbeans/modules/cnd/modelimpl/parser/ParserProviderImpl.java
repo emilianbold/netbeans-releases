@@ -130,7 +130,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
             CppParserActionEx cppCallback = (CppParserActionEx)callback;
             if (cppCallback == null) {
                 if(TraceFlags.CPP_PARSER_ACTION && ((FileImpl)params.getMainFile()).getParsingFileContent() != null) {
-                    cppCallback = new CppParserActionImpl(params);
+                    cppCallback = new CppParserActionImpl(params, null);
                 } else {
                     cppCallback = new CppParserEmptyActionImpl(file);
                 }
@@ -356,7 +356,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
         return (token instanceof Antlr3CXXParser.MyToken) ? ((Antlr3CXXParser.MyToken) token).t : null;
     }
 
-    private final static class Antlr3CXXParser implements CsmParserProvider.CsmParser, CsmParserProvider.CsmParserResult {
+    final static class Antlr3CXXParser implements CsmParserProvider.CsmParser, CsmParserProvider.CsmParserResult {
         private final FileImpl file;
         private final CsmParserProvider.CsmParserParameters params;
         private CXXParserEx parser;
@@ -397,6 +397,9 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     case TRANSLATION_UNIT:
                         parser.compilation_unit();
                         break;
+                    case COMPOUND_STATEMENT:
+                        parser.compound_statement(false);
+                        break;                        
                 }
             } catch (Throwable ex) {
                 System.err.println(ex.getClass().getName() + " at parsing file " + file.getAbsolutePath()); // NOI18N

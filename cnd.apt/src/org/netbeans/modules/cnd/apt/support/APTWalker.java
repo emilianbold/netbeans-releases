@@ -87,6 +87,7 @@ public abstract class APTWalker {
         while (!finished()) {
             toNextNode();
         }
+        onEOF();
     }
     
     public TokenStream getTokenStream() {
@@ -96,7 +97,7 @@ public abstract class APTWalker {
     protected boolean needPPTokens() {
         return false;
     }
-    
+
     private final class WalkerTokenStream implements TokenStream, APTTokenStream {
         private WalkerTokenStream() {
             init(true);

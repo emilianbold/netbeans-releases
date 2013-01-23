@@ -50,6 +50,7 @@ package org.netbeans.modules.nativeexecution.support.ui;
 import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
@@ -341,7 +342,12 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
         @Override
         public void run() {
             validate();
-            fireChange();
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    fireChange();
+                }
+            });
         }
 
         private boolean validate() {
