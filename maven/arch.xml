@@ -169,4 +169,24 @@ made subject to such option by the copyright holder.
  </answer>
 
 
+ <answer id="exec-property">
+  <p>
+      <api category="devel" group="property" name="netbeans.ignore.jdk.bootclasspath" type="export">
+          The maven support recognizes special tag in <q>maven-compiler-plugin</q> configuration
+          that instructs the IDE to <em>not</em> put JDK libraries on a classpath. One can use:<pre>
+    &lt;plugin&gt;
+        &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+        &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+        &lt;configuration&gt;
+            &lt;compilerArguments&gt;
+                &lt;bootclasspath&gt;netbeans.ignore.jdk.bootclasspath&lt;/bootclasspath&gt;
+            &lt;/compilerArguments&gt;
+        &lt;/configuration&gt;
+    &lt;/plugin&gt;
+          </pre>
+          section in <code>pom.xml</code> to <em>suppress</em> the JDK libraries.
+      </api>
+  </p>
+ </answer>
+
 </api-answers>

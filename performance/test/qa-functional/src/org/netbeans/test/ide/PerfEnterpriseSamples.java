@@ -82,34 +82,34 @@ public class PerfEnterpriseSamples extends JellyTestCase {
         suite.addTest(new PerfEnterpriseSamples("testBuildPetCatalogSample"));
         suite.addTest(new PerfEnterpriseSamples("testCleanPetCatalogSample"));
         suite.addTest(new PerfEnterpriseSamples("testRedeployPetCatalogSample"));
-        suite.addTest(new PerfEnterpriseSamples("testNewAnnotationOverrideInterceptorSample"));
-        suite.addTest(new PerfEnterpriseSamples("testBuildAnnotationOverrideInterceptorSample"));
-        suite.addTest(new PerfEnterpriseSamples("testCleanAnnotationOverrideInterceptorSample"));
-        suite.addTest(new PerfEnterpriseSamples("testRedeployAnnotationOverrideInterceptorSample"));
-        suite.addTest(new PerfEnterpriseSamples("testNewInterceptorStatelessSample"));
-        suite.addTest(new PerfEnterpriseSamples("testBuildInterceptorStatelessSample"));
-        suite.addTest(new PerfEnterpriseSamples("testCleanInterceptorStatelessSample"));
-        suite.addTest(new PerfEnterpriseSamples("testRedeployInterceptorStatelessSample"));
-        suite.addTest(new PerfEnterpriseSamples("testNewJSFJPASample"));
-        suite.addTest(new PerfEnterpriseSamples("testBuildJSFJPASample"));
-        suite.addTest(new PerfEnterpriseSamples("testCleanJSFJPASample"));
-        suite.addTest(new PerfEnterpriseSamples("testRedeployJSFJPASample"));
-        suite.addTest(new PerfEnterpriseSamples("testNewJSFJPACrudSample"));
-        suite.addTest(new PerfEnterpriseSamples("testBuildJSFJPACrudSample"));
-        suite.addTest(new PerfEnterpriseSamples("testCleanJSFJPACrudSample"));
-        suite.addTest(new PerfEnterpriseSamples("testRedeployJSFJPACrudSample"));
-        suite.addTest(new PerfEnterpriseSamples("testNewLotteryAnnotationSample"));
-        suite.addTest(new PerfEnterpriseSamples("testBuildLotteryAnnotationSample"));
-        suite.addTest(new PerfEnterpriseSamples("testCleanLotteryAnnotationSample"));
-        suite.addTest(new PerfEnterpriseSamples("testRedeployLotteryAnnotationSample"));
-        suite.addTest(new PerfEnterpriseSamples("testNewServletStatelessSample"));
-        suite.addTest(new PerfEnterpriseSamples("testBuildServletStatelessSample"));
-        suite.addTest(new PerfEnterpriseSamples("testCleanServletStatelessSample"));
-        suite.addTest(new PerfEnterpriseSamples("testRedeployServletStatelessSample"));
-        suite.addTest(new PerfEnterpriseSamples("testNewWebJPASample"));
-        suite.addTest(new PerfEnterpriseSamples("testBuildWebJPASample"));
-        suite.addTest(new PerfEnterpriseSamples("testCleanWebJPASample"));
-        suite.addTest(new PerfEnterpriseSamples("testRedeployWebJPASample"));
+//        suite.addTest(new PerfEnterpriseSamples("testNewAnnotationOverrideInterceptorSample"));
+//        suite.addTest(new PerfEnterpriseSamples("testBuildAnnotationOverrideInterceptorSample"));
+//        suite.addTest(new PerfEnterpriseSamples("testCleanAnnotationOverrideInterceptorSample"));
+//        suite.addTest(new PerfEnterpriseSamples("testRedeployAnnotationOverrideInterceptorSample"));
+//        suite.addTest(new PerfEnterpriseSamples("testNewInterceptorStatelessSample"));
+//        suite.addTest(new PerfEnterpriseSamples("testBuildInterceptorStatelessSample"));
+//        suite.addTest(new PerfEnterpriseSamples("testCleanInterceptorStatelessSample"));
+//        suite.addTest(new PerfEnterpriseSamples("testRedeployInterceptorStatelessSample"));
+//        suite.addTest(new PerfEnterpriseSamples("testNewJSFJPASample"));
+//        suite.addTest(new PerfEnterpriseSamples("testBuildJSFJPASample"));
+//        suite.addTest(new PerfEnterpriseSamples("testCleanJSFJPASample"));
+//        suite.addTest(new PerfEnterpriseSamples("testRedeployJSFJPASample"));
+//        suite.addTest(new PerfEnterpriseSamples("testNewJSFJPACrudSample"));
+//        suite.addTest(new PerfEnterpriseSamples("testBuildJSFJPACrudSample"));
+//        suite.addTest(new PerfEnterpriseSamples("testCleanJSFJPACrudSample"));
+//        suite.addTest(new PerfEnterpriseSamples("testRedeployJSFJPACrudSample"));
+//        suite.addTest(new PerfEnterpriseSamples("testNewLotteryAnnotationSample"));
+//        suite.addTest(new PerfEnterpriseSamples("testBuildLotteryAnnotationSample"));
+//        suite.addTest(new PerfEnterpriseSamples("testCleanLotteryAnnotationSample"));
+//        suite.addTest(new PerfEnterpriseSamples("testRedeployLotteryAnnotationSample"));
+//        suite.addTest(new PerfEnterpriseSamples("testNewServletStatelessSample"));
+//        suite.addTest(new PerfEnterpriseSamples("testBuildServletStatelessSample"));
+//        suite.addTest(new PerfEnterpriseSamples("testCleanServletStatelessSample"));
+//        suite.addTest(new PerfEnterpriseSamples("testRedeployServletStatelessSample"));
+//        suite.addTest(new PerfEnterpriseSamples("testNewWebJPASample"));
+//        suite.addTest(new PerfEnterpriseSamples("testBuildWebJPASample"));
+//        suite.addTest(new PerfEnterpriseSamples("testCleanWebJPASample"));
+//        suite.addTest(new PerfEnterpriseSamples("testRedeployWebJPASample"));
         suite.addTest(new PerfEnterpriseSamples("testStopServer"));
         return suite;
     }
@@ -155,7 +155,7 @@ public class PerfEnterpriseSamples extends JellyTestCase {
         projectWizard.selectCategory("Samples|Java EE"); // XXX use Bundle.getString instead
         projectWizard.selectProject("Pet Catalog");
         projectWizard.next();
-        NewWebProjectNameLocationStepOperator step = new NewWebProjectNameLocationStepOperator("New Enterprise Sample Project");
+        NewWebProjectNameLocationStepOperator step = new NewWebProjectNameLocationStepOperator();
         step.setProjectLocation(PROJECT_LOCATION);
         step.finish();
         sleep(5000);
@@ -166,7 +166,7 @@ public class PerfEnterpriseSamples extends JellyTestCase {
         projectWizard.selectCategory("Samples|Java EE"); // XXX use Bundle.getString instead
         projectWizard.selectProject("Annotation Override Interceptor");
         projectWizard.next();
-        NewWebProjectNameLocationStepOperator step = new NewWebProjectNameLocationStepOperator("New Enterprise Sample Project");
+        NewWebProjectNameLocationStepOperator step = new NewWebProjectNameLocationStepOperator();
         step.setProjectLocation(PROJECT_LOCATION);
         step.finish();
         sleep(5000);
@@ -177,7 +177,7 @@ public class PerfEnterpriseSamples extends JellyTestCase {
         projectWizard.selectCategory("Samples|Java EE"); // XXX use Bundle.getString instead
         projectWizard.selectProject("Interceptor Stateless");
         projectWizard.next();
-        NewWebProjectNameLocationStepOperator step = new NewWebProjectNameLocationStepOperator("New Enterprise Sample Project");
+        NewWebProjectNameLocationStepOperator step = new NewWebProjectNameLocationStepOperator();
         step.setProjectLocation(PROJECT_LOCATION);
         step.finish();
         sleep(5000);
@@ -188,7 +188,7 @@ public class PerfEnterpriseSamples extends JellyTestCase {
         projectWizard.selectCategory("Samples|Java EE"); // XXX use Bundle.getString instead
         projectWizard.selectProject("JSF JPA");
         projectWizard.next();
-        NewWebProjectNameLocationStepOperator step = new NewWebProjectNameLocationStepOperator("New Enterprise Sample Project");
+        NewWebProjectNameLocationStepOperator step = new NewWebProjectNameLocationStepOperator();
         step.setProjectLocation(PROJECT_LOCATION);
         step.finish();
         sleep(5000);
@@ -199,7 +199,7 @@ public class PerfEnterpriseSamples extends JellyTestCase {
         projectWizard.selectCategory("Samples|Java EE"); // XXX use Bundle.getString instead
         projectWizard.selectProject("JSF JPA CRUD");
         projectWizard.next();
-        NewWebProjectNameLocationStepOperator step = new NewWebProjectNameLocationStepOperator("New Enterprise Sample Project");
+        NewWebProjectNameLocationStepOperator step = new NewWebProjectNameLocationStepOperator();
         step.setProjectLocation(PROJECT_LOCATION);
         step.finish();
         sleep(5000);
@@ -210,7 +210,7 @@ public class PerfEnterpriseSamples extends JellyTestCase {
         projectWizard.selectCategory("Samples|Java EE"); // XXX use Bundle.getString instead
         projectWizard.selectProject("Lottery Annotation");
         projectWizard.next();
-        NewWebProjectNameLocationStepOperator step = new NewWebProjectNameLocationStepOperator("New Enterprise Sample Project");
+        NewWebProjectNameLocationStepOperator step = new NewWebProjectNameLocationStepOperator();
         step.setProjectLocation(PROJECT_LOCATION);
         step.finish();
         sleep(5000);
@@ -221,7 +221,7 @@ public class PerfEnterpriseSamples extends JellyTestCase {
         projectWizard.selectCategory("Samples|Java EE"); // XXX use Bundle.getString instead
         projectWizard.selectProject("Servlet Stateless");
         projectWizard.next();
-        NewWebProjectNameLocationStepOperator step = new NewWebProjectNameLocationStepOperator("New Enterprise Sample Project");
+        NewWebProjectNameLocationStepOperator step = new NewWebProjectNameLocationStepOperator();
         step.setProjectLocation(PROJECT_LOCATION);
         step.finish();
         sleep(5000);
@@ -232,7 +232,7 @@ public class PerfEnterpriseSamples extends JellyTestCase {
         projectWizard.selectCategory("Samples|Java EE"); // XXX use Bundle.getString instead
         projectWizard.selectProject("Web JPA");
         projectWizard.next();
-        NewWebProjectNameLocationStepOperator step = new NewWebProjectNameLocationStepOperator("New Enterprise Sample Project");
+        NewWebProjectNameLocationStepOperator step = new NewWebProjectNameLocationStepOperator();
         step.setProjectLocation(PROJECT_LOCATION);
         step.finish();
         sleep(5000);
