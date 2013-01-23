@@ -48,6 +48,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.j2ee.ejbverification.rules.AnnotationPostContruct;
+import org.netbeans.modules.j2ee.ejbverification.rules.AsynchronousSBInvocation;
 import org.netbeans.modules.j2ee.ejbverification.rules.BMnotPartOfRBIandLBI;
 import org.netbeans.modules.j2ee.ejbverification.rules.BeanHasDifferentLBIandRBI;
 import org.netbeans.modules.j2ee.ejbverification.rules.BeanImplementsBI;
@@ -82,7 +83,8 @@ public class EJBRulesRegistry {
             new ValueNotSpecifiedForRemoteAnnotationInterface(),
             new BusinessMethodExposed(),
             new AnnotationPostContruct(),
-            new PersistentTimerInEjbLite()
+            new PersistentTimerInEjbLite(),
+            new AsynchronousSBInvocation()
             );
     
     public static Collection<ErrorDescription> check(EJBProblemContext ctx){

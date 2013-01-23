@@ -45,6 +45,7 @@ package org.netbeans.modules.j2ee.ejbverification;
 
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
@@ -59,18 +60,21 @@ public class EJBProblemContext {
     private final FileObject fileObject;
     private final TypeElement clazz;
     private final Ejb ejb;
+    private final Project project;
     private final EjbJarMetadata metadata;
     private final CompilationInfo complilationInfo;
     private final EjbJar ejbModule;
 
     public EJBProblemContext(
             CompilationInfo complilationInfo,
+            Project project,
             EjbJar ejbModule,
             FileObject fileObject,
             TypeElement clazz,
             Ejb ejb,
             EjbJarMetadata metadata) {
         this.complilationInfo = complilationInfo;
+        this.project = project;
         this.ejbModule = ejbModule;
         this.fileObject = fileObject;
         this.clazz = clazz;
@@ -100,5 +104,9 @@ public class EJBProblemContext {
 
     public EjbJar getEjbModule() {
         return ejbModule;
+    }
+
+    public Project getProject() {
+        return project;
     }
 }
