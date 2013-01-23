@@ -161,8 +161,8 @@ public class JBDeploymentFactory implements DeploymentFactory {
     public static JBClassLoader createJBClassLoader(String serverRoot, String domainRoot) {
         try {
 
-            Version JBVer = JBPluginUtils.getServerVersion(new File (serverRoot));
-            boolean version5Above = (JBVer != null && JBVer.compareToIgnoreUpdate(JBPluginUtils.JBOSS_5_0_0) >= 0);
+            Version jbossVersion = JBPluginUtils.getServerVersion(new File (serverRoot));
+            boolean version5Above = (jbossVersion != null && jbossVersion.compareToIgnoreUpdate(JBPluginUtils.JBOSS_5_0_0) >= 0);
 
             // dom4j.jar library for JBoss Application Server 4.0.4 and lower and JBoss Application Server 5.0
             File domFile = new File(serverRoot , JBPluginUtils.LIB + "dom4j.jar"); // NOI18N
@@ -172,7 +172,7 @@ public class JBDeploymentFactory implements DeploymentFactory {
             }
 
             String sep = File.separator;
-            if (!domFile.exists() && "7".equals(JBVer.getMajorNumber())) {
+            if (!domFile.exists() && jbossVersion != null && "7".equals(jbossVersion.getMajorNumber())) {
                 domFile = new File(serverRoot, JBPluginUtils.MODULES + "org" + sep + "dom4j" + sep + "main" + sep + "dom4j-1.6.1.jar"); // NOI18N
             }
             if (!domFile.exists()) {
@@ -194,17 +194,17 @@ public class JBDeploymentFactory implements DeploymentFactory {
 
             List<URL> urlList = new ArrayList<URL>();
 
-              if (domFile != null) {
+            if (domFile != null) {
                 urlList.add(domFile.toURI().toURL());
             }
 
-            if ("7".equals(JBVer.getMajorNumber())) {
+            if (jbossVersion != null && "7".equals(jbossVersion.getMajorNumber())) {
                 File org = new File(serverRoot, JBPluginUtils.MODULES + "org");
                 File jboss = new File(org, "jboss");
                 File as = new File(jboss, "as");
-                String versionString = JBVer.getMajorNumber()+"."+JBVer.getMinorNumber()+"."+JBVer.getMicroNumber()+"."+JBVer.getUpdate();
+                String versionString = jbossVersion.getMajorNumber()+"."+jbossVersion.getMinorNumber()+"."+jbossVersion.getMicroNumber()+"."+jbossVersion.getUpdate();
                 
-                if (domFile.exists()) {
+                if (domFile != null && domFile.exists()) {
                     urlList.add(domFile.toURI().toURL());
                 }
                 
