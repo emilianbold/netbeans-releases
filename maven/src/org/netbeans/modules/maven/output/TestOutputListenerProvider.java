@@ -316,7 +316,7 @@ public class TestOutputListenerProvider implements OutputProcessor {
                 }
 
                 private Collection<? extends TestOutputObserver> getObservers() {
-                    Lookup.Result<TestOutputObserver> result = Lookup.getDefault().lookup(new Lookup.Template<TestOutputObserver>(TestOutputObserver.class));
+                    Lookup.Result<TestOutputObserver> result = Lookup.getDefault().lookupResult(TestOutputObserver.class);
                     return result.allInstances();
                 }
             });
