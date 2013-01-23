@@ -143,6 +143,6 @@ public class GroovyError implements Badging {
 
     @Override
     public boolean showExplorerBadge() {
-        return true;
+        return false;
     }
 }

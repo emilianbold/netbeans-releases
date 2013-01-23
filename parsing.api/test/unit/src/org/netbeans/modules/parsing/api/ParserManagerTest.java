@@ -59,7 +59,6 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.parsing.impl.Utilities;
-import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater.IndexingState;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdaterTestSupport;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -97,7 +96,6 @@ public class ParserManagerTest extends NbTestCase {
     }
 
     public void testParseCache () throws Exception {
-        TimedWeakReference.TIMEOUT = 5000;
         final boolean[] called = new boolean[] {false};
         FooParser.getResultCount = 0;
         FooParser.parseCount = 0;
@@ -123,8 +121,15 @@ public class ParserManagerTest extends NbTestCase {
         assertEquals(1, FooParserFactory.createParserCount);
         assertEquals(2, FooParser.parseCount);
         assertEquals(2, FooParser.getResultCount);
-        Thread.sleep(2 * TimedWeakReference.TIMEOUT);
+
+        try {
+            byte[] dummy = new byte[(int) Runtime.getRuntime().maxMemory()];
+        } catch (Throwable e) {
+            // Ignore OME
+        }
         System.gc(); System.gc();
+
+
         called[0] = false;
         ParserManager.parse("text/foo", new UserTask() {
             @Override
@@ -222,7 +227,6 @@ public class ParserManagerTest extends NbTestCase {
         writer.close ();
         Source source = Source.create (testFile);
 
-        TimedWeakReference.TIMEOUT = 5000;
         ParserManager.parse (Collections.singleton(source), new UserTask () {
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
