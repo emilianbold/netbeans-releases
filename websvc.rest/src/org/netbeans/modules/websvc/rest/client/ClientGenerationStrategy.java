@@ -64,6 +64,7 @@ import org.netbeans.modules.websvc.saas.model.wadl.Method;
 import org.netbeans.modules.websvc.saas.model.wadl.Representation;
 import org.netbeans.modules.websvc.saas.model.wadl.Request;
 import org.netbeans.modules.websvc.saas.model.wadl.Response;
+import org.openide.nodes.Node;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
@@ -116,6 +117,11 @@ abstract class ClientGenerationStrategy {
     
     abstract ClassTree generateOAuthMethods( String projectType,
             WorkingCopy copy, ClassTree modifiedClass, Metadata oauthMetadata );
+    
+    /**
+     * @return true if generation requires Jersey specific classes for specified method arguments.
+     */
+    abstract boolean requiresJersey(Node context, Security security); 
     
     List<MethodTree> generateHttpMethods( WorkingCopy copy,
             HttpMethod httpMethod )

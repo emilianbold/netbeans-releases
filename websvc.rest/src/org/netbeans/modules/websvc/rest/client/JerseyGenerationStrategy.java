@@ -63,6 +63,7 @@ import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.oauth.Metadata;
 import org.netbeans.modules.websvc.saas.model.wadl.Response;
+import org.openide.nodes.Node;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
@@ -123,6 +124,15 @@ class JerseyGenerationStrategy extends ClientGenerationStrategy {
     @Override
     protected void buildQParams(StringBuilder queryString){
         queryString.append( ".queryParams(getQParams(optionalQueryParams))");//NOI18N
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.websvc.rest.client.ClientGenerationStrategy#requiresJersey(org.openide.nodes.Node, org.netbeans.modules.websvc.rest.client.Security)
+     */
+    @Override
+    boolean requiresJersey( Node context, Security security ) {
+        // Jersey client generation strategy is completely based on Jersey and requires it in the classpath  
+        return true;
     }
     
     @Override
