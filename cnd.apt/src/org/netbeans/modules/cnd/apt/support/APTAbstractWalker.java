@@ -45,10 +45,13 @@
 package org.netbeans.modules.cnd.apt.support;
 
 import java.util.Collection;
+import java.util.IdentityHashMap;
+import java.util.Map;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.impl.support.APTHandlersSupportImpl;
+import org.netbeans.modules.cnd.apt.impl.support.APTPreprocessorToken;
 import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
@@ -60,7 +63,9 @@ import org.netbeans.modules.cnd.apt.structure.APTUndefine;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeState;
 import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.apt.utils.TokenBasedTokenStream;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.cache.TinyMaps;
 import org.openide.filesystems.FileSystem;
 
 /**
@@ -139,7 +144,7 @@ public abstract class APTAbstractWalker extends APTWalker {
     }
 
     private void includeImpl(ResolvedPath resolvedPath, APTInclude aptInclude) {
-        IncludeState inclState = pushInclude(aptInclude, resolvedPath);
+        IncludeState inclState = beforeIncludeImpl(aptInclude, resolvedPath);
         try {
             if (cacheEntry != null) {
                 if (!startPath.equals(cacheEntry.getFilePath())) {
@@ -157,7 +162,7 @@ public abstract class APTAbstractWalker extends APTWalker {
                 include(resolvedPath, inclState, aptInclude, null);
             }
         } finally {
-            popInclude(aptInclude, resolvedPath, inclState);
+            afterIncludeImpl(aptInclude, resolvedPath, inclState);
         }
     }
 
@@ -253,6 +258,19 @@ public abstract class APTAbstractWalker extends APTWalker {
     protected APTIncludeHandler getIncludeHandler() {
         return getPreprocHandler() == null ? null: getPreprocHandler().getIncludeHandler();
     }   
+
+    protected boolean needPPTokens() {
+        return false;
+    }
+//    
+//    @Override
+//    public TokenStream getTokenStream() {
+//        if (needPPTokens()) {
+//            return new PPTokensWrapper(super.getTokenStream());
+//        } else {
+//            return super.getTokenStream();
+//        }
+//    }
  
     ////////////////////////////////////////////////////////////////////////////
     // implementation details
@@ -295,6 +313,26 @@ public abstract class APTAbstractWalker extends APTWalker {
         }
     }
 
+    private APTIncludeHandler.IncludeState beforeIncludeImpl(APTInclude aptInclude, ResolvedPath resolvedPath) {
+        IncludeState inclState = pushInclude(aptInclude, resolvedPath);
+        if (isTokenProducer() && needPPTokens()) {
+            // put pre-include marker into token stream
+            pushTokenStream(new TokenBasedTokenStream(new APTPreprocessorToken(aptInclude, Boolean.TRUE, inclState, resolvedPath, nodeProperties)));            
+        }
+        return inclState;
+    }
+    
+    private void afterIncludeImpl(APTInclude aptInclude, ResolvedPath resolvedPath, IncludeState inclState) {
+        if (isTokenProducer() && needPPTokens()) {
+            APTPreprocessorToken afterInclToken = new APTPreprocessorToken(aptInclude, Boolean.FALSE, inclState, resolvedPath, nodeProperties);
+            // put after-include marker into token stream
+            // popInclude will be called before producing after-include marker token
+            pushTokenStream(new AfterIncludeTokenStream(afterInclToken));
+        } else {
+            popInclude(aptInclude, resolvedPath, inclState);
+        }
+    }
+    
     protected APTIncludeHandler.IncludeState pushInclude(APTInclude aptInclude, ResolvedPath resolvedPath) {
         APTIncludeHandler.IncludeState pushIncludeState = APTIncludeHandler.IncludeState.Fail;
         if (resolvedPath != null) {
@@ -303,14 +341,12 @@ public abstract class APTAbstractWalker extends APTWalker {
                 pushIncludeState = includeHandler.pushInclude(resolvedPath.getPath(), aptInclude, resolvedPath.getIndex());
             }
         }
-//        System.out.println("\npushInclude:" + aptInclude.getOffset() + ":" + resolvedPath + " " + pushIncludeState + " " + getCurFile());
-        beforeInclude(aptInclude, resolvedPath);
+//        System.out.println("\nPUSH from " + getCurFile() + " at Line " + aptInclude.getToken().getLine() + " " + pushIncludeState + ":" + resolvedPath);
         return pushIncludeState;
     }
 
     protected void popInclude(APTInclude aptInclude, ResolvedPath resolvedPath, IncludeState pushState) {
-        afterInclude(aptInclude, resolvedPath);
-//        System.out.println("\npopInclude:" + aptInclude.getOffset() + ":" + resolvedPath + " " + pushState + " " + getCurFile());
+//        System.out.println("\nPOP  from " + getCurFile() + " at Line " + aptInclude.getToken().getLine() + " " + pushState + ":" + resolvedPath);
         if (pushState == IncludeState.Success) {
             APTIncludeHandler includeHandler = getIncludeHandler();
             if (includeHandler != null) {
@@ -318,14 +354,73 @@ public abstract class APTAbstractWalker extends APTWalker {
             }
         }
     }
+    
+    private final Map<APT, Map<Object, Object>> nodeProperties = new IdentityHashMap<APT, Map<Object, Object>>();
 
+    protected final void putNodeProperty(APT node, Object key, Object value) {
+        Map<Object, Object> props = nodeProperties.get(node);
+        if (props == null) {
+            nodeProperties.put(node, props = TinyMaps.createMap(2));
+        } else {
+            Map<Object, Object> expanded = TinyMaps.expandForNextKey(props, node);
+            if (expanded != props) {
+                // was replacement
+                props = expanded;
+                nodeProperties.put(node, props);
+            }
+        }
+        props.put(key, value);
+    }
+    
     protected final void includeStream(APTFile apt, APTWalker walker) {
         TokenStream incTS = walker.getTokenStream();
         pushTokenStream(incTS);
     }
     
-    @Override
-    protected void onEOF() {
+    private final class AfterIncludeTokenStream implements TokenStream, APTTokenStream {
+
+        private APTPreprocessorToken token;
+        private boolean first;
+
+        /**
+         * Creates a new instance of TokenBasedTokenStream
+         */
+        public AfterIncludeTokenStream(APTPreprocessorToken token) {
+            if (token == null) {
+                throw new NullPointerException("not possible to create token stream for null token"); // NOI18N
+            }
+            this.token = token;
+            this.first = true;
+        }
+
+        @Override
+        public APTToken nextToken() {
+            APTToken ret;
+            if (first) {
+                ret = token;
+                first = false;
+                invokePopInclude(token);
+            } else {
+                ret = APTUtils.EOF_TOKEN;
+            }
+            return ret;
+        }
+
+        @Override
+        public String toString() {
+            String retValue;
+
+            retValue = "PPIS " + token.toString(); // NOI18N
+            return retValue;
+        }
         
+        private void invokePopInclude(APTPreprocessorToken ppToken) {
+            // pop include
+            assert (ppToken.getProperty(Boolean.class) == Boolean.FALSE);
+            IncludeState pushState = (IncludeState) ppToken.getProperty(IncludeState.class);
+            APTInclude aptInclude = (APTInclude) ppToken.getProperty(APT.class);
+            ResolvedPath resolvedPath = (ResolvedPath) ppToken.getProperty(ResolvedPath.class);
+            popInclude(aptInclude, resolvedPath, pushState);
+        }        
     }    
 }

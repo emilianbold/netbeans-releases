@@ -44,21 +44,15 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
-import java.util.IdentityHashMap;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.apt.impl.support.APTPreprocessorToken;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
-import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.structure.APTStream;
 import org.netbeans.modules.cnd.apt.utils.APTTraceUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
-import org.netbeans.modules.cnd.apt.utils.TokenBasedTokenStream;
-import org.netbeans.modules.cnd.utils.cache.TinyMaps;
 
 /**
  * base Tree walker for APT
@@ -94,8 +88,8 @@ public abstract class APTWalker {
         return new WalkerTokenStream();
     }
 
-    protected boolean needPPTokens() {
-        return false;
+    protected final boolean isTokenProducer() {
+        return walkerUsedForTokenStreamGeneration == Boolean.TRUE;
     }
 
     private final class WalkerTokenStream implements TokenStream, APTTokenStream {
@@ -377,24 +371,8 @@ public abstract class APTWalker {
         }
     }
     
-    private final Map<APT, Map<Object, Object>> nodeProperties = new IdentityHashMap<APT, Map<Object, Object>>();
-    protected final void putNodeProperty(APT node, Object key, Object value) {
-        Map<Object, Object> props = nodeProperties.get(node);
-        if (props == null) {
-            nodeProperties.put(node, props = TinyMaps.createMap(2));
-        } else {
-            Map<Object, Object> expanded = TinyMaps.expandForNextKey(props, node);
-            if (expanded != props) {
-                // was replacement
-                props = expanded;
-                nodeProperties.put(node, props);
-            }
-        }
-        props.put(key, value);
-    }
-    
     private void fillTokensIfNeeded(APT node) {
-        if (walkerUsedForTokenStreamGeneration == Boolean.TRUE) {
+        if (isTokenProducer()) {
             // only token stream nodes contain tokens as TokenStream
             if (node != null && node.getType() == APT.Type.TOKEN_STREAM) {
                 pushTokenStream(((APTStream)node).getTokenStream());
@@ -404,18 +382,6 @@ public abstract class APTWalker {
     
     protected final void pushTokenStream(TokenStream ts) {
         tokens.add(ts);
-    }
-    
-    /*package*/final void beforeInclude(APTInclude aptInclude, ResolvedPath resolvedPath) {
-        if (walkerUsedForTokenStreamGeneration == Boolean.TRUE && needPPTokens()) {
-            pushTokenStream(new TokenBasedTokenStream(new APTPreprocessorToken(aptInclude, true, resolvedPath, nodeProperties.get(aptInclude))));            
-        }
-    }
-
-    /*package*/final void afterInclude(APTInclude aptInclude, ResolvedPath resolvedPath) {
-        if (walkerUsedForTokenStreamGeneration == Boolean.TRUE && needPPTokens()) {
-            pushTokenStream(new TokenBasedTokenStream(new APTPreprocessorToken(aptInclude, false, resolvedPath, nodeProperties.get(aptInclude))));
-        }
     }
     
     private boolean finished() {
