@@ -91,7 +91,7 @@ public class J2SESetup extends PerformanceTestCase2 {
     public void testCloseMemoryToolbar() {
         CommonUtilities.closeMemoryToolbar();
         closeAllModal();
-        MainWindowOperator.getDefault().maximize();
+        //MainWindowOperator.getDefault().maximize();
     }
 
 }
