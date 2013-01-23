@@ -113,7 +113,7 @@ public abstract class EJBProblemFinder {
                 return;
             }
 
-            EjbJar ejbModule = EjbJar.getEjbJar(file);
+            final EjbJar ejbModule = EjbJar.getEjbJar(file);
             if (ejbModule == null) {
                 return;
             }
@@ -137,7 +137,7 @@ public abstract class EJBProblemFinder {
                             Ejb ejb = metadata.findByEjbClass(javaClass.getQualifiedName().toString());
                             
                             EJBProblemContext ctx = new EJBProblemContext(
-                                    info, file, javaClass, ejb, metadata);
+                                    info, ejbModule, file, javaClass, ejb, metadata);
                             
                             problemsFound.addAll(EJBRulesRegistry.check(ctx));
                             

@@ -94,9 +94,8 @@ public class PersistentTimerInEjbLite extends EJBVerificationRule {
     public Collection<ErrorDescription> check(EJBProblemContext ctx) {
         List<ErrorDescription> problems = new ArrayList<ErrorDescription>();
         if (ctx.getEjb() instanceof Session) {
-            EjbJar ejbJar = EjbJar.getEjbJar(ctx.getFileObject());
-            boolean ee7lite = ejbJar.getJ2eeProfile() == Profile.JAVA_EE_7_WEB;
-            boolean ee6lite = ejbJar.getJ2eeProfile() == Profile.JAVA_EE_6_WEB;
+            boolean ee7lite = ctx.getEjbModule().getJ2eeProfile() == Profile.JAVA_EE_7_WEB;
+            boolean ee6lite = ctx.getEjbModule().getJ2eeProfile() == Profile.JAVA_EE_6_WEB;
             if (ee6lite || ee7lite) {
                 for (Element element : ctx.getClazz().getEnclosedElements()) {
                     for (AnnotationMirror annm : element.getAnnotationMirrors()) {
