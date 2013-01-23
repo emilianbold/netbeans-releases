@@ -139,7 +139,7 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
     
     public void test_JScript_EditorTypingBig() {
         testProject = Projects.SCRIPTING_PROJECT;
-        fileName = "javascript200kb.js";
+        fileName = "javascript_200kb.js";
         nodePath = "Web Pages";
         doMeasurement();        
     }
