@@ -80,18 +80,11 @@ public class PHPFormatter implements Formatter {
 
     @Override
     public void reindent(final Context context) {
-        // Make sure we're not reindenting HTML content
-
-        // hotfix for for broken new line indentation after merging with dkonecny's changes
         String mimeType = getMimeTypeAtOffset(context.document(), context.startOffset());
-
-        if (!FileUtils.PHP_MIME_TYPE.equals(mimeType)) {
-            return;
+        if (FileUtils.PHP_MIME_TYPE.equals(mimeType)) {
+            Indentation indent = new IndentationCounter((BaseDocument) context.document()).count(context.caretOffset());
+            indent.modify(context);
         }
-        // end of hotfix
-
-        Indentation indent = new IndentationCounter((BaseDocument) context.document()).count(context.caretOffset());
-        indent.modify(context);
     }
 
     @Override
