@@ -204,8 +204,6 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         } catch (NullPointerException ex) {
             APTUtils.LOG.log(Level.SEVERE, "NPE when processing file " + inclPath, ex);// NOI18N
             DiagnosticExceptoins.register(ex);
-        } finally {
-            getIncludeHandler().popInclude();
         }
         return null;
     }
