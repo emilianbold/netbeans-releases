@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -66,6 +67,7 @@ public class FileBufferFile extends AbstractFileBuffer {
     private long crc = Long.MIN_VALUE;
     private final Object lock = new Object();
     private volatile long lastModifiedWhenCachedString;
+    private int lineCount = -1;
 
     public FileBufferFile(FileObject fileObject) {
         super(fileObject);
@@ -126,13 +128,16 @@ public class FileBufferFile extends AbstractFileBuffer {
                 return new char[0];
             }
             length++;
+            PerformanceLogger.PerformaceAction performanceEvent = PerformanceLogger.getLogger().start(FileImpl.READ_FILE_PERFORMANCE_EVENT, fo);
             char[] readChars = new char[(int)length];
             InputStream is = getInputStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(is, getEncoding()));
             try {
                 String line;
                 int position = 0;
+                int lines = 0;
                 while((line = reader.readLine())!= null) {
+                    lines++;
                     for(int i = 0; i < line.length(); i++) {
                         if (length == position) {
                             length = length*2;
@@ -150,6 +155,7 @@ public class FileBufferFile extends AbstractFileBuffer {
                     }
                     readChars[position++] = '\n'; // NOI18N
                 }
+                lineCount = lines;
                 // no need to copy if the same size
                 // TODO: can we also skip case readChars.length = position + 1 due to last '\n'?
                 if (readChars.length > position) {
@@ -161,6 +167,7 @@ public class FileBufferFile extends AbstractFileBuffer {
                 reader.close();
                 is.close();
             }
+            performanceEvent.log(readChars.length, lineCount);
             if (CndTraceFlags.WEAK_REFS_HOLDERS || MIMENames.isCppOrCOrFortran(fo.getMIMEType())) {
                 cachedArray = new WeakReference<char[]>(readChars);
             } else {
@@ -169,6 +176,14 @@ public class FileBufferFile extends AbstractFileBuffer {
             lastModifiedWhenCachedString = lastModified();
             return readChars;
         }
+    }
+
+    @Override
+    public int getLineCount() throws IOException {
+        if (lineCount == -1) {
+            doGetChar();
+        }
+        return lineCount;
     }
 
     private InputStream getInputStream() throws IOException {
