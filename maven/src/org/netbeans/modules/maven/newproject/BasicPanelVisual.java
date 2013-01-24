@@ -73,6 +73,7 @@ import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.maven.api.MavenValidators;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
@@ -85,6 +86,7 @@ import static org.netbeans.modules.maven.newproject.Bundle.*;
 import org.netbeans.modules.maven.options.MavenOptionController;
 import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.modules.options.java.api.JavaOptions;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.validation.api.AbstractValidator;
 import org.netbeans.validation.api.Problems;
@@ -531,7 +533,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         String name = projectNameTextField.getText().trim();
         String folder = createdFolderTextField.getText().trim();
         
-        d.putProperty("projdir", new File(folder)); //NOI18N
+        d.putProperty(CommonProjectActions.PROJECT_PARENT_FOLDER, new File(folder)); //NOI18N
         d.putProperty("name", name); //NOI18N
         d.putProperty("artifactId", txtArtifactId.getText().trim()); //NOI18N
         d.putProperty("groupId", txtGroupId.getText().trim()); //NOI18N
@@ -571,12 +573,10 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
                 handle = null;
             }
         }        
-        File projectLocation = (File) settings.getProperty("projdir"); //NOI18N
+        File projectLocation = (File) settings.getProperty(CommonProjectActions.PROJECT_PARENT_FOLDER); //NOI18N
         if (projectLocation == null || projectLocation.getParentFile() == null || !projectLocation.getParentFile().isDirectory()) {
             projectLocation = ProjectChooser.getProjectsFolder();
-        } else {
-            projectLocation = projectLocation.getParentFile();
-        }
+        } 
         this.projectLocationTextField.setText(projectLocation.getAbsolutePath());
         
         String projectName = (String) settings.getProperty("name"); //NOI18N

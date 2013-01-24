@@ -122,6 +122,10 @@ public class NewProject extends AbstractAction {
         if (folder != null) {
             wizard.putProperty(CommonProjectActions.EXISTING_SOURCES_FOLDER, folder);
         }
+        File f = (File) getValue(CommonProjectActions.PROJECT_PARENT_FOLDER);
+        if (f != null) {
+            wizard.putProperty(CommonProjectActions.PROJECT_PARENT_FOLDER, f);
+        }
         return wizard;
     }
     
