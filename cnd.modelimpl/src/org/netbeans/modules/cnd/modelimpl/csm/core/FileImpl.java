@@ -146,6 +146,12 @@ public final class FileImpl implements CsmFile,
         return parsingFileContentRef.get().get();
     }
     
+    public void prepareIncludedFileParsingContent() {
+        if (getParsingFileContent() == null) {
+            parsingFileContentRef.get().set(FileContent.getHardReferenceBasedCopy(this.currentFileContent, true));
+        }
+    }
+    
     public static final boolean reportErrors = TraceFlags.REPORT_PARSING_ERRORS | TraceFlags.DEBUG;
     public static final String PARSE_FILE_PERFORMANCE_EVENT = "PARSE_FILE_PERFORMANCE_EVENT"; //NOI18N
     public static final String READ_FILE_PERFORMANCE_EVENT = "READ_FILE_PERFORMANCE_EVENT"; //NOI18N
