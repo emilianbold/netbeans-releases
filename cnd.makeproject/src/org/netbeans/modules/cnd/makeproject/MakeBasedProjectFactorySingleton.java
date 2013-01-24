@@ -113,7 +113,7 @@ public final class MakeBasedProjectFactorySingleton implements ProjectFactory2 {
             return null;
         }
         try {
-            Document projectXml = loadProjectXml(projectDirectory);
+            Document projectXml = loadProjectXml(projectFile);
             if (projectXml != null) {
                 Element typeEl = XMLUtil.findElement(projectXml.getDocumentElement(), "type", PROJECT_NS); // NOI18N
                 if (typeEl != null) {
