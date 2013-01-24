@@ -60,16 +60,16 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public class MessageEJBWizardPanel implements WizardDescriptor.FinishablePanel {
+public class MdbLocationPanel implements WizardDescriptor.FinishablePanel {
     
-    private MessageEJBWizardVisualPanel wizardPanel;
+    private MdbLocationPanelVisual wizardPanel;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final WizardDescriptor wizardDescriptor;
     private final EJBNameOptions ejbNames;
     //TODO: RETOUCHE
 //    private boolean isWaitingForScan = false;
 
-    public MessageEJBWizardPanel(WizardDescriptor wizardDescriptor) {
+    public MdbLocationPanel(WizardDescriptor wizardDescriptor) {
         this.wizardDescriptor = wizardDescriptor;
         this.ejbNames = new EJBNameOptions();
     }
@@ -87,7 +87,7 @@ public class MessageEJBWizardPanel implements WizardDescriptor.FinishablePanel {
         J2eeModuleProvider j2eeModuleProvider = project.getLookup ().lookup (J2eeModuleProvider.class);
         String j2eeVersion = j2eeModuleProvider.getJ2eeModule().getModuleVersion();
         if (!EjbJar.VERSION_3_1.equals(j2eeVersion) && !EjbJar.VERSION_3_0.equals(j2eeVersion) && !EjbJar.VERSION_2_1.equals(j2eeVersion)) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(MessageEJBWizardPanel.class,"MSG_WrongJ2EESpecVersion")); //NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(MdbLocationPanel.class,"MSG_WrongJ2EESpecVersion")); //NOI18N
             return false;
         }
 
@@ -97,7 +97,7 @@ public class MessageEJBWizardPanel implements WizardDescriptor.FinishablePanel {
             String name = ejbNames.getMessageDrivenEjbClassPrefix() + targetName + ejbNames.getMessageDrivenEjbClassSuffix();
             if (targetFolder.getFileObject(name + ".java") != null) { // NOI18N
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
-                        NbBundle.getMessage(MessageEJBWizardPanel.class,"ERR_FileAlreadyExists", name + ".java")); //NOI18N
+                        NbBundle.getMessage(MdbLocationPanel.class,"ERR_FileAlreadyExists", name + ".java")); //NOI18N
                 return false;
             }
         }
@@ -127,14 +127,14 @@ public class MessageEJBWizardPanel implements WizardDescriptor.FinishablePanel {
         if (wizardPanel.getDestination() == null) {
             wizardDescriptor.putProperty(
                     WizardDescriptor.PROP_ERROR_MESSAGE, //NOI18N
-                    NbBundle.getMessage(MessageEJBWizardPanel.class,"ERR_NoDestinationSelected"));
+                    NbBundle.getMessage(MdbLocationPanel.class,"ERR_NoDestinationSelected"));
             return false;
         }
         // XXX warn about missing server (or error? or not needed?)
         if (!wizardPanel.isServerConfigured()) {
             wizardDescriptor.putProperty(
                     WizardDescriptor.PROP_ERROR_MESSAGE, //NOI18N
-                    NbBundle.getMessage(MessageEJBWizardPanel.class,"ERR_MissingServer"));
+                    NbBundle.getMessage(MdbLocationPanel.class,"ERR_MissingServer"));
             //return false;
         }
         return true;
@@ -164,11 +164,11 @@ public class MessageEJBWizardPanel implements WizardDescriptor.FinishablePanel {
             Project project = Templates.getProject(wizardDescriptor);
             J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
             MessageDestinationUiSupport.DestinationsHolder holder = MessageDestinationUiSupport.getDestinations(j2eeModuleProvider);
-            wizardPanel = MessageEJBWizardVisualPanel.newInstance(
+            wizardPanel = MdbLocationPanelVisual.newInstance(
                     j2eeModuleProvider,
                     holder.getModuleDestinations(),
                     holder.getServerDestinations());
-            wizardPanel.addPropertyChangeListener(MessageEJBWizardVisualPanel.CHANGED,
+            wizardPanel.addPropertyChangeListener(MdbLocationPanelVisual.CHANGED,
                     new PropertyChangeListener() {
                         public void propertyChange(PropertyChangeEvent event) {
                             fireChangeEvent();

@@ -69,20 +69,20 @@ import org.openide.util.NbBundle;
  * @author Chris Webster
  * @author Martin Adamek
  */
-public final class MessageEJBWizard implements WizardDescriptor.InstantiatingIterator {
+public final class MdbWizard implements WizardDescriptor.InstantiatingIterator {
 
     private WizardDescriptor.Panel[] panels;
     private int index = 0;
-    private MessageEJBWizardPanel ejbPanel;
+    private MdbLocationPanel ejbPanel;
     private WizardDescriptor wiz;
 
     private static final String [] SESSION_STEPS = new String [] {
-        NbBundle.getMessage(MessageEJBWizard.class, "LBL_SpecifyEJBInfo")
+        NbBundle.getMessage(MdbWizard.class, "LBL_SpecifyEJBInfo")
     };
 
     @Override
     public String name() {
-        return NbBundle.getMessage(MessageEJBWizard.class, "LBL_MessageEJBWizardTitle");
+        return NbBundle.getMessage(MdbWizard.class, "LBL_MessageEJBWizardTitle");
     }
 
     @Override
@@ -94,7 +94,7 @@ public final class MessageEJBWizard implements WizardDescriptor.InstantiatingIte
         wiz = wizardDescriptor;
         Project project = Templates.getProject(wiz);
         SourceGroup[] sourceGroups = SourceGroups.getJavaSourceGroups(project);
-        ejbPanel = new MessageEJBWizardPanel(wiz);
+        ejbPanel = new MdbLocationPanel(wiz);
         WizardDescriptor.Panel wizardPanel = new ValidatingPanel(new MultiTargetChooserPanel(project,sourceGroups, ejbPanel, true));
         panels = new WizardDescriptor.Panel[] {wizardPanel};
         Wizards.mergeSteps(wiz, panels, SESSION_STEPS);
@@ -168,7 +168,7 @@ public final class MessageEJBWizard implements WizardDescriptor.InstantiatingIte
         public boolean isValid() {
             if (!org.netbeans.modules.j2ee.common.Util.isValidServerInstance(getProject())) {
                 getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                        NbBundle.getMessage(MessageEJBWizard.class, "ERR_MissingServer")); // NOI18N
+                        NbBundle.getMessage(MdbWizard.class, "ERR_MissingServer")); // NOI18N
                 return false;
             }
             return super.isValid();

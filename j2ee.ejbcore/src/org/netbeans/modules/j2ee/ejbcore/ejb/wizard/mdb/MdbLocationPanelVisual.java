@@ -57,9 +57,9 @@ import org.openide.util.Exceptions;
  * Panel for specifying message destination. Project or server message destination can be chosen.
  * @author Tomas Mysik
  */
-public class MessageEJBWizardVisualPanel extends javax.swing.JPanel {
+public class MdbLocationPanelVisual extends javax.swing.JPanel {
     
-    public static final String CHANGED = MessageEJBWizardVisualPanel.class.getName() + ".CHANGED";
+    public static final String CHANGED = MdbLocationPanelVisual.class.getName() + ".CHANGED";
     
     private final J2eeModuleProvider provider;
     private final Set<MessageDestination> moduleDestinations;
@@ -67,7 +67,7 @@ public class MessageEJBWizardVisualPanel extends javax.swing.JPanel {
     private final boolean isDestinationCreationSupportedByServerPlugin;
     
     // private because correct initialization is needed
-    private MessageEJBWizardVisualPanel(J2eeModuleProvider provider, Set<MessageDestination> moduleDestinations, Set<MessageDestination> serverDestinations) {
+    private MdbLocationPanelVisual(J2eeModuleProvider provider, Set<MessageDestination> moduleDestinations, Set<MessageDestination> serverDestinations) {
         initComponents();
         
         this.provider = provider;
@@ -83,9 +83,9 @@ public class MessageEJBWizardVisualPanel extends javax.swing.JPanel {
      * @param serverDestinations server message destinations.
      * @return MessageEJBWizardVisualPanel instance.
      */
-    public static MessageEJBWizardVisualPanel newInstance(final J2eeModuleProvider provider, final Set<MessageDestination> moduleDestinations,
+    public static MdbLocationPanelVisual newInstance(final J2eeModuleProvider provider, final Set<MessageDestination> moduleDestinations,
             final Set<MessageDestination> serverDestinations) {
-        MessageEJBWizardVisualPanel mdp = new MessageEJBWizardVisualPanel(provider, moduleDestinations, serverDestinations);
+        MdbLocationPanelVisual mdp = new MdbLocationPanelVisual(provider, moduleDestinations, serverDestinations);
         mdp.initialize();
         return mdp;
     }
@@ -185,16 +185,16 @@ public class MessageEJBWizardVisualPanel extends javax.swing.JPanel {
 
         destinationsGroup.add(projectDestinationsRadio);
         projectDestinationsRadio.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(projectDestinationsRadio, org.openide.util.NbBundle.getMessage(MessageEJBWizardVisualPanel.class, "LBL_ProjectDestinations")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(projectDestinationsRadio, org.openide.util.NbBundle.getMessage(MdbLocationPanelVisual.class, "LBL_ProjectDestinations")); // NOI18N
         projectDestinationsRadio.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         projectDestinationsRadio.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         destinationsGroup.add(serverDestinationsRadio);
-        org.openide.awt.Mnemonics.setLocalizedText(serverDestinationsRadio, org.openide.util.NbBundle.getMessage(MessageEJBWizardVisualPanel.class, "LBL_ServerDestinations")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(serverDestinationsRadio, org.openide.util.NbBundle.getMessage(MdbLocationPanelVisual.class, "LBL_ServerDestinations")); // NOI18N
         serverDestinationsRadio.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         serverDestinationsRadio.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(MessageEJBWizardVisualPanel.class, "LBL_Add")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(MdbLocationPanelVisual.class, "LBL_Add")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
