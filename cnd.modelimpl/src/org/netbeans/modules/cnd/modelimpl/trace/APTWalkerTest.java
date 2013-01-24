@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 
 import java.io.IOException;
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
@@ -96,16 +95,14 @@ public class APTWalkerTest extends APTAbstractWalker {
     }
     
     @Override
-    protected boolean include(ResolvedPath resolvedPath, APTInclude aptInclude, PostIncludeData postIncludeState) {
+    protected boolean include(ResolvedPath resolvedPath, IncludeState inclState, APTInclude aptInclude, PostIncludeData postIncludeState) {
         resolvingTime += System.currentTimeMillis() - lastTime;
-        if (resolvedPath != null && 
-            getIncludeHandler().pushInclude(resolvedPath.getPath(), aptInclude, resolvedPath.getIndex()) == IncludeState.Success) {
+        if (inclState == IncludeState.Success) {
             try {
                 if (APTTraceFlags.INCLUDE_TOKENS_IN_TOKEN_STREAM) {
                     APTFile apt = APTDriver.findAPT(ModelSupport.createFileBuffer(resolvedPath.getFileObject()), APTLanguageSupport.UNKNOWN, APTLanguageSupport.FLAVOR_UNKNOWN);
                     APTWalkerTest walker = new APTWalkerTest(apt, getPreprocHandler());
-                    TokenStream incTS = walker.getTokenStream();
-                    super.pushTokenStream(incTS);
+                    includeStream(apt, walker);
                     resolvingTime += walker.resolvingTime;
                 } else {
                     APTFile apt = APTDriver.findAPTLight(ModelSupport.createFileBuffer(resolvedPath.getFileObject()));
@@ -114,10 +111,8 @@ public class APTWalkerTest extends APTAbstractWalker {
                     resolvingTime += walker.resolvingTime;
                 }
             } catch (IOException ex) {
-		DiagnosticExceptoins.register(ex);
+                DiagnosticExceptoins.register(ex);
                 APTUtils.LOG.log(Level.SEVERE, "error on include " + resolvedPath, ex);// NOI18N
-            } finally {
-                getIncludeHandler().popInclude(); 
             }
             return (postIncludeState == null) || !postIncludeState.hasPostIncludeMacroState();
         } else {
