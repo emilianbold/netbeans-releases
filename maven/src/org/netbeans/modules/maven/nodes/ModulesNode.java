@@ -68,6 +68,7 @@ import org.netbeans.modules.maven.model.pom.POMModel;
 import static org.netbeans.modules.maven.nodes.Bundle.*;
 import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -104,6 +105,7 @@ public class ModulesNode extends AbstractNode {
     public Action[] getActions(boolean bool) {
         return new Action[] {
             new AddModuleAction(),
+            new CreateModuleAction()
         };
     }
 
@@ -310,6 +312,25 @@ public class ModulesNode extends AbstractNode {
                     }
                 }
             }));
+        }
+
+    }
+    
+    private class CreateModuleAction extends AbstractAction {
+
+        @Messages("BTN_create_module=Create New Module...")
+        CreateModuleAction() {
+            super(BTN_create_module());
+        }
+
+        @Override public void actionPerformed(ActionEvent e) {
+            Action act = CommonProjectActions.newProjectAction();
+            act.putValue("PRESELECT_CATEGORY" /*ProjectTemplates.PRESELECT_CATEGORY */, "Maven2");
+            act.putValue(CommonProjectActions.PROJECT_PARENT_FOLDER, proj.getPOMFile().getParentFile());
+            act.putValue("initialValueProperties", new String[] {"groupId", "version"});
+            act.putValue("groupId", proj.getOriginalMavenProject().getGroupId());
+            act.putValue("version", proj.getOriginalMavenProject().getVersion());
+            act.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "actionPerformed"));
         }
 
     }

@@ -56,6 +56,7 @@ import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ArchetypeWizards;
 import static org.netbeans.modules.maven.newproject.Bundle.*;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -132,7 +133,7 @@ public class MavenWizardIterator implements WizardDescriptor.BackgroundInstantia
     
     @Override
     public void uninitialize(WizardDescriptor wiz) {
-        wiz.putProperty("projdir",null); //NOI18N
+//        wiz.putProperty(CommonProjectActions.PROJECT_PARENT_FOLDER, null); //NOI18N
         wiz.putProperty("name",null); //NOI18N
         this.wiz = null;
         panels = null;

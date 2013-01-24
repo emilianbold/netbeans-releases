@@ -110,7 +110,6 @@ public abstract class BaseWizardIterator implements WizardDescriptor.BackgroundI
     
     @Override
     public void uninitialize(WizardDescriptor wiz) {
-        this.wiz.putProperty("projdir",null); //NOI18N
         this.wiz.putProperty("name",null); //NOI18N
         this.wiz = null;
         panels = null;
