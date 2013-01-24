@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,79 +37,26 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.editor.bookmarks;
+package org.netbeans.modules.hudson.impl;
 
-import java.net.URI;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
- * Change of project bookmarks.
  *
- * @author Miloslav Metelka
+ * @author jhavlin
  */
-public final class ProjectBookmarksChange {
-    
-    private final ProjectBookmarks projectBookmarks;
-    
-    private final Map<URI,FileBookmarksChange> fileBookmarksChanges;
+public class HudsonInstanceImplTest {
 
-    private boolean added;
-    
-    private boolean loaded;
-    
-    private boolean released;
-    
-    public ProjectBookmarksChange(ProjectBookmarks projectBookmarks) {
-        this.projectBookmarks = projectBookmarks;
-        this.fileBookmarksChanges = new HashMap<URI, FileBookmarksChange>();
+    /**
+     * Test fix for bug 224857.
+     */
+    @Test
+    public void testHudsonInstanceImplPersistenceIsNotNull() {
+        HudsonInstanceImpl impl = HudsonInstanceImpl.createHudsonInstance(
+                "Test", "http://test/", "1");
+        assertNotNull(impl.getPersistence());
     }
-    
-    public ProjectBookmarks getProjectBookmarks() {
-        return projectBookmarks;
-    }
-
-    public boolean isAdded() {
-        return added;
-    }
-
-
-    public boolean isLoaded() {
-        return loaded;
-    }
-    
-    public boolean isReleased() {
-        return released;
-    }
-
-    public FileBookmarksChange getFileBookmarksChange(URI relativeURI) {
-        return fileBookmarksChanges.get(relativeURI);
-    }
-
-    public Collection<FileBookmarksChange> getFileBookmarksChanges() {
-        return fileBookmarksChanges.values();
-    }
-
-    void markAdded() {
-        this.added = true;
-    }
-
-    void markLoaded() {
-        this.loaded = true;
-    }
-    
-    void markReleased() {
-        this.released = true;
-    }
-    
-    void addChange(FileBookmarksChange change) {
-        Object o = fileBookmarksChanges.put(change.getFileBookmarks().getRelativeURI(), change);
-        if (o != null) {
-            throw new IllegalStateException("Change already present: " + change); // NOI18N
-        }
-    }
-
 }

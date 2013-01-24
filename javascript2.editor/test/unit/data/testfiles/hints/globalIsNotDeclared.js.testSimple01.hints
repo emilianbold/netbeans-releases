@@ -1,6 +1,6 @@
         for (var i = 0; i < wsim.images.length; i++) {
                             ----
-HINT:The global variable is not declared
+HINT:The global variable "wsim" is not declared.
             var image = wsim.images[i];
                         ----
-HINT:The global variable is not declared
+HINT:The global variable "wsim" is not declared.

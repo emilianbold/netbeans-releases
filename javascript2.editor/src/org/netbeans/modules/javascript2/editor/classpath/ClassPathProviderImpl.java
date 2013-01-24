@@ -51,6 +51,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.modules.javascript2.editor.index.JsIndex;
+import org.netbeans.modules.javascript2.editor.index.JsIndexer;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -74,8 +76,11 @@ public class ClassPathProviderImpl implements ClassPathProvider {
     public static final String BOOT_CP = "classpath/javascript-boot"; //NOI18N
     public static final AtomicBoolean JS_CLASSPATH_REGISTERED = new AtomicBoolean(false);
 
-    // GuardedBy(this)
+    // GuardedBy(ClassPathProviderImpl.class)
     private static ClassPath cachedBootClassPath;
+
+    // GuardedBy(ClassPathProviderImpl.class)
+    private static FileObject[] roots;
 
     /** Names of JavaScript signature bundles. */
     private static final StubsBundle[] STUBS_BUNDLES = {
@@ -100,7 +105,11 @@ public class ClassPathProviderImpl implements ClassPathProvider {
     }
 
     public static synchronized FileObject[] getJsStubs() {
-        List<FileObject> roots = new LinkedList<FileObject>();
+        if (roots != null) {
+            return roots;
+        }
+
+        List<FileObject> result = new LinkedList<FileObject>();
         for (StubsBundle bundle : STUBS_BUNDLES) {
             File stubFile = InstalledFileLocator.getDefault().locate("jsstubs/" + bundle.getNameOfDocumented(), "org.netbeans.modules.javascript2.editor", false); //NOI18N
             if (stubFile == null || !stubFile.exists()) {
@@ -118,10 +127,11 @@ public class ClassPathProviderImpl implements ClassPathProvider {
             if (!stubFile.isFile() || !stubFile.exists()) {
                 LOG.log(Level.WARNING, "JavaScript stubs file was not found: {0}", stubFile.getAbsolutePath());
             } else {
-                roots.add(FileUtil.getArchiveRoot(FileUtil.toFileObject(stubFile)));
+                result.add(FileUtil.getArchiveRoot(FileUtil.toFileObject(stubFile)));
             }
         }
-        return roots.toArray(new FileObject[roots.size()]);
+        roots = result.toArray(new FileObject[result.size()]);
+        return roots;
     }
 
     /**
@@ -130,9 +140,23 @@ public class ClassPathProviderImpl implements ClassPathProvider {
      * JavaScript classpath is properly initialized after returning from this method. <p> The JavaScript classpath
      * unregistration is done in module's install class.
      */
-    public static synchronized void registerJsClassPathIfNeeded() {
-        if (!JS_CLASSPATH_REGISTERED.get()) {
-            JS_CLASSPATH_REGISTERED.set(true);
+    public static void registerJsClassPathIfNeeded() {
+        final Runnable action = new Runnable() {
+            @Override
+            public void run() {
+                registerJsClassPathIfNeededImpl();
+            }            
+        };
+        if (JsIndexer.Factory.isScannerThread()) {
+            JsIndexer.Factory.addPostScanTask(action);
+        } else {
+            action.run();
+        }
+        
+    }
+
+    private static void registerJsClassPathIfNeededImpl() {
+        if (JS_CLASSPATH_REGISTERED.compareAndSet(false, true)) {
             RP.post(new Runnable() {
                 @Override
                 public void run() {

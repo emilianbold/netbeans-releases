@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
 public class WeirdAssignment extends JsAstRule {
 
     @Override
-    void computeHints(JsRuleContext context, List<Hint> hints, HintsProvider.HintsManager manager) {
+    void computeHints(JsRuleContext context, List<Hint> hints, int offset, HintsProvider.HintsManager manager) {
         WeirdVisitor conventionVisitor = new WeirdVisitor(this);
         conventionVisitor.process(context, hints);
     }

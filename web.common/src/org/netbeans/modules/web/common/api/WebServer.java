@@ -57,6 +57,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,6 +66,7 @@ import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * Simple Web Server supporting only GET command on project's source files.
@@ -236,8 +238,9 @@ public final class WebServer {
         
         @Override
         public void run() {
+            ExecutorService pool = new RequestProcessor(WebServer.class.getName(), 10);
             while (!stop.get()) {
-                Socket s;
+                final Socket s;
                 try {
                     s = sock.accept();
                 } catch (SocketException ex) {
@@ -254,12 +257,17 @@ public final class WebServer {
                 if (stop.get()) {
                     break;
                 }
-                try {
-                    read(s.getInputStream(), s.getOutputStream());
-                } catch (IOException ex) {
-                    // do not abort server in this case
-                    LOGGER.log(Level.FINE, "reading socket failed", ex); // NOI18N
-                }
+                pool.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            read(s.getInputStream(), s.getOutputStream());
+                        } catch (IOException ex) {
+                            // do not abort server in this case
+                            LOGGER.log(Level.FINE, "reading socket failed", ex); // NOI18N
+                        }
+                    }
+                });
             }
         }
 
