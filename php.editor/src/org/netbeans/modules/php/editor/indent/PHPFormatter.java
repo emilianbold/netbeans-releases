@@ -46,18 +46,15 @@ package org.netbeans.modules.php.editor.indent;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.indent.IndentationCounter.Indentation;
-import org.openide.util.Exceptions;
 
 /**
  * Formatting and indentation for PHP.
