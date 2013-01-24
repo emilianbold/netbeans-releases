@@ -84,7 +84,7 @@ class AsyncConverter {
     
     boolean isApplicable(Element element){
         if ( element == null || element.getKind() != ElementKind.METHOD){
-            return false;;
+            return false;
         }
         
         Element enclosingElement = element.getEnclosingElement();
