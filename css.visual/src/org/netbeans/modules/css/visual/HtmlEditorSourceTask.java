@@ -77,7 +77,6 @@ public final class HtmlEditorSourceTask extends ParserResultTask<HtmlParserResul
 
     @MimeRegistrations({
         @MimeRegistration(mimeType = "text/html", service = TaskFactory.class),
-        @MimeRegistration(mimeType = "text/xhtml", service = TaskFactory.class)
     })
     public static class Factory extends TaskFactory {
 
