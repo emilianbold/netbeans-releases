@@ -103,6 +103,11 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     // -J-Dorg.netbeans.modules.editor.lib2.view.HighlightsViewFactory.level=FINE
     private static final Logger LOG = Logger.getLogger(HighlightsViewFactory.class.getName());
     
+    private static final int UNKNOWN_CHAR_TYPE = 0;
+    private static final int LTR_CHAR_TYPE = 1;
+    private static final int RTL_CHAR_TYPE = 2;
+    private static final int TAB_CHAR_TYPE = 3;
+    
     private final DocumentView docView;
 
     private final HighlightingManager highlightingManager;
@@ -123,14 +128,25 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
     
     private int lineEndOffset;
     
-    /** Line index where tabs and highlights were last updated. */
-    private int hlLineIndex;
-
     private HighlightsReader highlightsReader;
     
     private Font defaultFont;
     
-    private int nextTabOffset;
+    /**
+     * Offset where either '\t' occurs or where boundary between LTR and RTL text is located.
+     */
+    private int nextTabOrRTLOffset;
+
+    /**
+     * Char type below nextTabOrRTLOffset (updated in createView() so it's actual
+     * from created view's startOffset till nextTabOrRTLOffset.
+     */
+    private int charType;
+    
+    /**
+     * Char type of character right at nextTabOrRTLOffset.
+     */
+    private int nextCharType;
     
     private boolean createViews;
     
@@ -180,7 +196,7 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
         lineIndex = lineElementRoot.getElementIndex(startOffset);
         lineEndOffset = lineElementRoot.getElement(lineIndex).getEndOffset();
         defaultFont = textComponent().getFont();
-        hlLineIndex = lineIndex - 1; // Make it different for updateTabsAndHighlights()
+        nextTabOrRTLOffset = -1;
         if (createViews) {
             highlightsReader = new HighlightsReader(highlightsContainer, startOffset, endOffset);
             highlightsReader.readUntil(endOffset);
@@ -200,7 +216,7 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
         assert (startOffset < limitOffset) : "startOffset=" + startOffset + " >= limitOffset=" + limitOffset; // NOI18N
         // Possibly update lineEndOffset since updateHighlight() will read till it
         updateLineEndOffset(startOffset);
-        updateTabsAndHighlights(startOffset);
+        updateTabsAndHighlightsAndRTL(startOffset);
         HighlightsList hList = highlightsReader.highlightsList();
         if (hList.startOffset() < startOffset) {
             hList.skip(startOffset);
@@ -209,30 +225,17 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
             AttributeSet attrs = hList.cutSingleChar();
             return new NewlineView(attrs);
         } else { // Regular view with possible highlight(s) or tab view
-            if (startOffset == nextTabOffset) { // Create TabView
-                int tabsEndOffset;
-                for (tabsEndOffset = nextTabOffset + 1; tabsEndOffset < lineEndOffset - 1; tabsEndOffset++) {
-                    if (docText.charAt(tabsEndOffset) != '\t') {
-                        break;
-                    }
-                }
+            if (charType == TAB_CHAR_TYPE) {
+                int tabsEndOffset = nextTabOrRTLOffset; 
                 AttributeSet attrs;
-                if (limitOffset < tabsEndOffset) {
-                    attrs = hList.cut(limitOffset);
-                    nextTabOffset = limitOffset;
-                } else {
-                    attrs = hList.cut(tabsEndOffset);
+                if (limitOffset > tabsEndOffset) {
                     limitOffset = tabsEndOffset;
-                    for (nextTabOffset = tabsEndOffset; nextTabOffset < lineEndOffset - 1; nextTabOffset++) {
-                        if (docText.charAt(nextTabOffset) == '\t') {
-                            break;
-                        }
-                    }
                 }
+                attrs = hList.cut(limitOffset);
                 return new TabView(limitOffset - startOffset, attrs);
 
-            } else { // Create regular view
-                limitOffset = Math.min(limitOffset, Math.min(nextTabOffset, lineEndOffset - 1));
+            } else { // Create regular view with either LTR or RTL text
+                limitOffset = Math.min(limitOffset, nextTabOrRTLOffset); // nextTabOrRTLOffset < lineEndOffset 
                 int wsEndOffset = limitOffset;
                 if (limitOffset - startOffset > SPLIT_TEXT_LAYOUT_LENGTH - MODIFICATION_TOLERANCE) {
                     if (nextOrigViewOffset <= limitOffset &&
@@ -280,6 +283,46 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
         }
     }
 
+    private void updateTabsAndHighlightsAndRTL(int offset) {
+        if (offset >= nextTabOrRTLOffset) { // Update nextTabOrRTLOffset
+            // Determine situation right at offset
+            if (nextCharType == UNKNOWN_CHAR_TYPE || offset > nextTabOrRTLOffset) {
+                char ch = docText.charAt(offset);
+                charType = getCharType(ch);
+            } else { // Reuse nextCharType
+                charType = nextCharType;
+            }
+
+            for (nextTabOrRTLOffset = offset + 1; nextTabOrRTLOffset < lineEndOffset - 1; nextTabOrRTLOffset++) {
+                char ch = docText.charAt(nextTabOrRTLOffset);
+                nextCharType = getCharType(ch);
+                if (charType == RTL_CHAR_TYPE && Character.isWhitespace(ch)) {
+                    nextCharType = RTL_CHAR_TYPE; // RTL followed by WS -> retain RTL
+                }
+                if (nextCharType != charType) {
+                    break;
+                }
+            }
+        }
+    }
+    
+    private int getCharType(char ch) {
+        if (ch == '\t') {
+            return TAB_CHAR_TYPE;
+        } else {
+            byte dir = Character.getDirectionality(ch);
+            switch (dir) {
+                case Character.DIRECTIONALITY_RIGHT_TO_LEFT:
+                case Character.DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC:
+                case Character.DIRECTIONALITY_RIGHT_TO_LEFT_EMBEDDING:
+                case Character.DIRECTIONALITY_RIGHT_TO_LEFT_OVERRIDE:
+                    return RTL_CHAR_TYPE;
+                default:
+                    return LTR_CHAR_TYPE;
+            }
+        }
+    }
+    
     @Override
     public int viewEndOffset(int startOffset, int limitOffset, boolean forcedLimit) {
         updateLineEndOffset(startOffset);
@@ -300,18 +343,6 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
             lineIndex++;
             Element line = lineElementRoot.getElement(lineIndex);
             lineEndOffset = line.getEndOffset();
-        }
-    }
-
-    private void updateTabsAndHighlights(int offset) {
-        if (hlLineIndex != lineIndex) {
-            hlLineIndex = lineIndex;
-            // Update nextTabOffset to point to nearest '\t'
-            for (nextTabOffset = offset; nextTabOffset < lineEndOffset - 1; nextTabOffset++) {
-                if (docText.charAt(nextTabOffset) == '\t') {
-                    break;
-                }
-            }
         }
     }
 
