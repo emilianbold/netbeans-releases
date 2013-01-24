@@ -42,11 +42,9 @@
 
 package org.netbeans.modules.cnd.modelimpl.parser;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import org.antlr.runtime.tree.CommonTree;
-import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.collections.AST;
@@ -73,7 +71,6 @@ import org.netbeans.modules.cnd.modelimpl.fsm.core.DataRenderer;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.FortranParser;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
-import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
