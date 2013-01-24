@@ -176,15 +176,18 @@ class SftpSupport {
     }
 
     private ChannelSftp getChannel() throws IOException, CancellationException, JSchException, ExecutionException, InterruptedException {
-        ConnectionManagerAccessor cmAccess = ConnectionManagerAccessor.getDefault();
+        final ConnectionManagerAccessor cmAccess = ConnectionManagerAccessor.getDefault();
         if (cmAccess == null) { // is it a paranoja?
             throw new ExecutionException("Error getting ConnectionManagerAccessor", new NullPointerException()); //NOI18N
-        }                
-        ChannelSftp channel = (ChannelSftp) cmAccess.openAndAcquireChannel(execEnv, "sftp", true); // NOI18N
-        if (channel == null) {
-            throw new ExecutionException("ConnectionManagerAccessor returned null channel while waitIfNoAvailable was set to true", new NullPointerException()); //NOI18N
         }
-        channel.connect();
+        ChannelSftp channel;
+        synchronized (channelLock) {
+            channel = (ChannelSftp) cmAccess.openAndAcquireChannel(execEnv, "sftp", true); // NOI18N
+            if (channel == null) {
+                throw new ExecutionException("ConnectionManagerAccessor returned null channel while waitIfNoAvailable was set to true", new NullPointerException()); //NOI18N
+            }
+            channel.connect();
+        }
         incrementStatistics();
         return channel;
     }
