@@ -126,6 +126,16 @@ public class NewProject extends AbstractAction {
         if (f != null) {
             wizard.putProperty(CommonProjectActions.PROJECT_PARENT_FOLDER, f);
         }
+        //#217087 semi-private contract for maven support that carries over properties like groupId and version when creating new submodule.
+        String[] moreProps = (String[]) getValue("initialValueProperties");
+        if (moreProps != null) {
+            for (String key : moreProps) {
+                Object obj = getValue(key);
+                if (obj != null) {
+                    wizard.putProperty(key, obj);
+                }
+            }
+        }
         return wizard;
     }
     

@@ -588,6 +588,15 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
             }
         }
         
+        String gr = (String) settings.getProperty("groupId");
+        if (gr != null) {
+            txtGroupId.setText(gr);
+        }
+        String ver = (String) settings.getProperty("version");
+        if (ver != null) {
+            txtVersion.setText(ver);
+        }
+        
         this.projectNameTextField.setText(projectName);
         this.projectNameTextField.selectAll();
         // skip additional properties if direct known archetypes without additional props used

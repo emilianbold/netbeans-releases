@@ -327,6 +327,9 @@ public class ModulesNode extends AbstractNode {
             Action act = CommonProjectActions.newProjectAction();
             act.putValue("PRESELECT_CATEGORY" /*ProjectTemplates.PRESELECT_CATEGORY */, "Maven2");
             act.putValue(CommonProjectActions.PROJECT_PARENT_FOLDER, proj.getPOMFile().getParentFile());
+            act.putValue("initialValueProperties", new String[] {"groupId", "version"});
+            act.putValue("groupId", proj.getOriginalMavenProject().getGroupId());
+            act.putValue("version", proj.getOriginalMavenProject().getVersion());
             act.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "actionPerformed"));
         }
 
