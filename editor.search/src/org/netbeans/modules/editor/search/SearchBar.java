@@ -421,7 +421,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
                     MultiKeymap multiKeymap = (MultiKeymap) keymap;
 
                     Action[] actions = lastFocusedComponent.getActions();
-                    for (Action action : actions) { // Discover the keyStrokes for incremental-search-forward
+                    for (Action action : actions) { 
                         String actionName = (String) action.getValue(Action.NAME);
                         if (actionName == null) {
                             LOG.log(Level.WARNING, "SearchBar: Null Action.NAME property of action: {0}\n", action); //NOI18N
