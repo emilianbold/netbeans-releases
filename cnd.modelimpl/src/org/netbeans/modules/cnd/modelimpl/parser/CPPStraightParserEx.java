@@ -44,11 +44,10 @@ package org.netbeans.modules.cnd.modelimpl.parser;
 import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
  *
@@ -57,7 +56,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 final class CPPStraightParserEx extends CPPParserEx {
     protected CPPStraightParserEx(TokenStream stream, CppParserActionEx callback) {
         super(stream, callback);
-        assert APTTraceFlags.INCLUDE_TOKENS_IN_TOKEN_STREAM;
+        assert TraceFlags.PARSE_HEADERS_WITH_SOURCES;
     }
 
     // Number of active markers
@@ -138,14 +137,13 @@ final class CPPStraightParserEx extends CPPParserEx {
     private void onIncludeToken(Token t) {
         if (t instanceof APTToken) {
             APTToken aptToken = (APTToken) t;
-            APTPreprocHandler.State stateBefore = (APTPreprocHandler.State) aptToken.getProperty(APTPreprocHandler.State.class);
+            Boolean preInclude = (Boolean) aptToken.getProperty(Boolean.class);
             CsmFile inclFile = (CsmFile) aptToken.getProperty(CsmFile.class);
-            if (stateBefore != null && inclFile != null) {
-                try {
+            if (inclFile != null) {
+                if (preInclude == Boolean.TRUE) {
                     action.pushFile(inclFile);
                     assert inclFile instanceof FileImpl;
-                    ((FileImpl) inclFile).parseOnInclude(stateBefore, action);
-                } finally {
+                } else {
                     CsmFile popFile = action.popFile();
                     assert popFile == inclFile;
                 }

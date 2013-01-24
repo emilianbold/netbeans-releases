@@ -180,6 +180,9 @@ class SftpSupport {
         if (cmAccess == null) { // is it a paranoja?
             throw new ExecutionException("Error getting ConnectionManagerAccessor", new NullPointerException()); //NOI18N
         }
+        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+            ConnectionManager.getInstance().connectTo(execEnv);
+        }
         ChannelSftp channel;
         synchronized (channelLock) {
             channel = (ChannelSftp) cmAccess.openAndAcquireChannel(execEnv, "sftp", true); // NOI18N

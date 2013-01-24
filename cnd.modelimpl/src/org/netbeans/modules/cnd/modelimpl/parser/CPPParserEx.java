@@ -72,7 +72,6 @@ import org.netbeans.modules.cnd.antlr.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.util.Hashtable;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -138,7 +137,7 @@ public class CPPParserEx extends CPPParser {
         assert (ts != null);
         assert (file != null);
         CPPParserEx parser;
-        if (APTTraceFlags.INCLUDE_TOKENS_IN_TOKEN_STREAM) {
+        if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
             parser = new CPPStraightParserEx(ts, callback);
         } else {
             parser = new CPPParserEx(ts, callback);

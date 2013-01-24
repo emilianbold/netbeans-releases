@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 
 /**
@@ -91,7 +92,7 @@ public class APTWalkerTest extends APTAbstractWalker {
 
     @Override
     protected boolean needPPTokens() {
-        return APTTraceFlags.INCLUDE_TOKENS_IN_TOKEN_STREAM;
+        return TraceFlags.PARSE_HEADERS_WITH_SOURCES;
     }
     
     @Override
@@ -99,7 +100,7 @@ public class APTWalkerTest extends APTAbstractWalker {
         resolvingTime += System.currentTimeMillis() - lastTime;
         if (inclState == IncludeState.Success) {
             try {
-                if (APTTraceFlags.INCLUDE_TOKENS_IN_TOKEN_STREAM) {
+                if (isTokenProducer() && TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
                     APTFile apt = APTDriver.findAPT(ModelSupport.createFileBuffer(resolvedPath.getFileObject()), APTLanguageSupport.UNKNOWN, APTLanguageSupport.FLAVOR_UNKNOWN);
                     APTWalkerTest walker = new APTWalkerTest(apt, getPreprocHandler());
                     includeStream(apt, walker);
