@@ -107,6 +107,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="CommonProjectActions.PROJECT_PARENT_FOLDER">
+            <api name="general"/>
+            <summary>Added CommonProjectActions.PROJECT_PARENT_FOLDER constant</summary>
+            <version major="1" minor="67"/>
+            <date day="24" month="1" year="2013"/>
+            <author login="psomol"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added CommonProjectActions.PROJECT_PARENT_FOLDER constant that is respected by the <code>CommonProjectActions.newProject()</code> action
+                    and the project's parent directory can be set that way.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.ui.support" name="CommonProjectActions"/>
+            <issue number="217087"/>
+        </change>
         <change id="ProjectCustomizer.Category.CloseListener">
             <api name="general"/>
             <summary>Added Close listener to ProjectCustomizer.Category.</summary>
