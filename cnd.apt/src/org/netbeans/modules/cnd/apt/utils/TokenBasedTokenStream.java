@@ -44,9 +44,7 @@
 
 package org.netbeans.modules.cnd.apt.utils;
 
-import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.antlr.TokenStream;
-import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenStream;
 

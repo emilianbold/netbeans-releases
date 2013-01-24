@@ -85,62 +85,53 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
     // impl of abstract methods
     
     @Override
-    protected boolean include(ResolvedPath resolvedPath, APTInclude apt, PostIncludeData postIncludeState) {
+    protected boolean include(ResolvedPath resolvedPath, IncludeState pushIncludeState, APTInclude aptInclude, PostIncludeData postIncludeState) {
         FileImpl included = null;
         boolean error = false;
-        IncludeState pushIncludeState;
-        if (resolvedPath != null) {
+        if (pushIncludeState == IncludeState.Success) {
             CharSequence path = resolvedPath.getPath();
-            pushIncludeState = getIncludeHandler().pushInclude(path, apt, resolvedPath.getIndex());
-            if (pushIncludeState== IncludeState.Success) {
-                ProjectBase aStartProject = this.getStartProject();
-                if (aStartProject != null){
-                    if (aStartProject.isValid()) {
-                        ProjectBase inclFileOwner = LibraryManager.getInstance(aStartProject).resolveFileProjectOnInclude(aStartProject, getFile(), resolvedPath);
-                        if (inclFileOwner == null) {
-                            if (aStartProject.getFileSystem() == resolvedPath.getFileSystem()) {
-                                inclFileOwner = aStartProject;
-                            } else {
-                                return false;
-                            }
+            ProjectBase aStartProject = this.getStartProject();
+            if (aStartProject != null) {
+                if (aStartProject.isValid()) {
+                    ProjectBase inclFileOwner = LibraryManager.getInstance(aStartProject).resolveFileProjectOnInclude(aStartProject, getFile(), resolvedPath);
+                    if (inclFileOwner == null) {
+                        if (aStartProject.getFileSystem() == resolvedPath.getFileSystem()) {
+                            inclFileOwner = aStartProject;
+                        } else {
+                            return false;
                         }
-                        if (CndUtils.isDebugMode()) {
-                            CndUtils.assertTrue(inclFileOwner.getFileSystem() == resolvedPath.getFileSystem(), "Different FS for " + path + ": " + inclFileOwner.getFileSystem() + " vs " + resolvedPath.getFileSystem()); // NOI18N
-                        }
-                        try {
-                            if (APTTraceFlags.INCLUDE_TOKENS_IN_TOKEN_STREAM) {
-                                APTPreprocHandler.State stateBefore = getPreprocHandler().getState();
-                                assert !stateBefore.isCleaned();
-                                included = includeAction(inclFileOwner, path, mode, apt, postIncludeState);
-                                if (included != null) {
-                                    putNodeProperty(apt, APTPreprocHandler.State.class, stateBefore);
-                                    putNodeProperty(apt, CsmFile.class, included);
-                                }
-                            } else {
-                                included = includeAction(inclFileOwner, path, mode, apt, postIncludeState);
-                            }
-                        } catch (FileNotFoundException ex) {
-                            APTUtils.LOG.log(Level.WARNING, "APTProjectFileBasedWalker: file {0} not found", new Object[] {path});// NOI18N
-                            DiagnosticExceptoins.register(ex);
-                        } catch (IOException ex) {
-                            APTUtils.LOG.log(Level.SEVERE, "APTProjectFileBasedWalker: error on including {0}:\n{1}", new Object[] {path, ex});
-                            DiagnosticExceptoins.register(ex);
-                        }
-                    } else {
-                        getIncludeHandler().popInclude();
                     }
-                } else {
-                    APTUtils.LOG.log(Level.SEVERE, "APTProjectFileBasedWalker: file {0} without project!!!", new Object[] {file});// NOI18N
-                    getIncludeHandler().popInclude();
+                    if (CndUtils.isDebugMode()) {
+                        CndUtils.assertTrue(inclFileOwner.getFileSystem() == resolvedPath.getFileSystem(), "Different FS for " + path + ": " + inclFileOwner.getFileSystem() + " vs " + resolvedPath.getFileSystem()); // NOI18N
+                    }
+                    try {
+                        if (APTTraceFlags.INCLUDE_TOKENS_IN_TOKEN_STREAM) {
+                            APTPreprocHandler.State stateBefore = getPreprocHandler().getState();
+                            assert !stateBefore.isCleaned();
+                            included = includeAction(inclFileOwner, path, mode, aptInclude, postIncludeState);
+                            if (included != null) {
+                                putNodeProperty(aptInclude, APTPreprocHandler.State.class, stateBefore);
+                                putNodeProperty(aptInclude, CsmFile.class, included);
+                            }
+                        } else {
+                            included = includeAction(inclFileOwner, path, mode, aptInclude, postIncludeState);
+                        }
+                    } catch (FileNotFoundException ex) {
+                        APTUtils.LOG.log(Level.WARNING, "APTProjectFileBasedWalker: file {0} not found", new Object[]{path});// NOI18N
+                        DiagnosticExceptoins.register(ex);
+                    } catch (IOException ex) {
+                        APTUtils.LOG.log(Level.SEVERE, "APTProjectFileBasedWalker: error on including {0}:\n{1}", new Object[]{path, ex});
+                        DiagnosticExceptoins.register(ex);
+                    }
                 }
             } else {
-                // Recursive include
-                error = true;
+                APTUtils.LOG.log(Level.SEVERE, "APTProjectFileBasedWalker: file {0} without project!!!", new Object[]{file});// NOI18N
             }
         } else {
-            pushIncludeState = IncludeState.Fail;
+            // Recursive or failed include
+            error = true;
         }
-        postInclude(apt, included, pushIncludeState);
+        postInclude(aptInclude, included, pushIncludeState);
         return ((postIncludeState == null) || !postIncludeState.hasPostIncludeMacroState()) && !error;
     }
     

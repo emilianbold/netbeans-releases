@@ -140,6 +140,8 @@ public class CppParserActionImpl implements CppParserActionEx {
     private final SymTabStack globalSymTab;
     private Pair currentContext;
     private final Deque<Pair> contexts;
+    private CsmParserProvider.CsmParserParameters params;
+    private CXXParserActionEx wrapper;
     
     private static final class Pair {
         final Map<Integer, CsmObject> objects = new HashMap<Integer, CsmObject>();
@@ -155,7 +157,9 @@ public class CppParserActionImpl implements CppParserActionEx {
         
     }
 
-    public CppParserActionImpl(CsmParserProvider.CsmParserParameters params) {
+    public CppParserActionImpl(CsmParserProvider.CsmParserParameters params, CXXParserActionEx wrapper) {
+        this.params = params;
+        this.wrapper = wrapper;
         this.contexts = new ArrayDeque<Pair>();
         currentContext = new Pair(params.getMainFile());
         this.contexts.push(currentContext);
@@ -563,14 +567,26 @@ public class CppParserActionImpl implements CppParserActionEx {
 
     @Override
     public void end_class_body(Token token) {
-        globalSymTab.pop();
         CsmObjectBuilder top = builderContext.top();
         if(top instanceof ClassBuilder) {
             ClassBuilder classBuilder = (ClassBuilder) top;
             if(token instanceof APTToken) {
                 classBuilder.setEndOffset(((APTToken)token).getEndOffset());
             }
+            for (MemberBuilder memberBuilder : classBuilder.getMemberBuilders()) {
+                if(memberBuilder instanceof MethodDDBuilder) {
+                    org.netbeans.modules.cnd.antlr.TokenStream bodyTokenStream = ((MethodDDBuilder)memberBuilder).getBodyTokenStream();
+                    if(bodyTokenStream != null) {
+                        builderContext.push((MethodDDBuilder)memberBuilder);
+                        ParserProviderImpl.Antlr3CXXParser parser = new ParserProviderImpl.Antlr3CXXParser(params);
+                        parser.init(null, ((MethodDDBuilder)memberBuilder).getBodyTokenStream(), wrapper);
+                        parser.parse(CsmParserProvider.CsmParser.ConstructionKind.COMPOUND_STATEMENT);
+                        builderContext.pop();
+                    }
+                }
+            }
         }
+        globalSymTab.pop();
     }
     
     @Override
@@ -2355,6 +2371,13 @@ public class CppParserActionImpl implements CppParserActionEx {
         end_expression(token);
     }    
     
+    @Override
+    public void skip_balanced_curlies(Token token) {
+        if (builderContext.top(1) instanceof MethodDDBuilder) {
+            MethodDDBuilder builder = (MethodDDBuilder) builderContext.top(1);
+            builder.addBodyToken(token);
+        }
+    }    
     
     private static final boolean TRACE = false;
     private void addReference(Token token, final CsmObject definition, final CsmReferenceKind kind) {
