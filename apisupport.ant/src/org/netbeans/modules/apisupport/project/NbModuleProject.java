@@ -91,6 +91,7 @@ import org.netbeans.modules.apisupport.project.queries.ClassPathProviderImpl;
 import org.netbeans.modules.apisupport.project.queries.FileEncodingQueryImpl;
 import org.netbeans.modules.apisupport.project.queries.JavadocForBinaryImpl;
 import org.netbeans.modules.apisupport.project.queries.ModuleProjectClassPathExtender;
+import org.netbeans.modules.apisupport.project.queries.ProjectWhiteListImplementation;
 import org.netbeans.modules.apisupport.project.queries.SourceForBinaryImpl;
 import org.netbeans.modules.apisupport.project.queries.SourceLevelQueryImpl;
 import org.netbeans.modules.apisupport.project.queries.SubprojectProviderImpl;
@@ -309,6 +310,8 @@ public final class NbModuleProject implements Project {
         ic.add(fileBuilt);
         ic.add(new AccessibilityQueryImpl(this));
         ic.add(new SourceLevelQueryImpl(this));
+        //ic.add(new ProjectWhiteListImplementation(this));
+        ic.add(new ProjectWhiteListImplementation(this));
         ic.add(helper.createSharabilityQuery2(evaluator(), new String[0], new String[]{
                     "${build.dir}", // NOI18N
                 }));
