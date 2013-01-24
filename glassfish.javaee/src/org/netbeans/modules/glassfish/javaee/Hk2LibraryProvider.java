@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -43,6 +43,7 @@ package org.netbeans.modules.glassfish.javaee;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,12 +51,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.glassfish.tools.ide.data.GlassFishLibrary;
+import org.glassfish.tools.ide.data.GlassFishServer;
 import org.glassfish.tools.ide.data.GlassFishVersion;
 import org.glassfish.tools.ide.server.config.LibraryBuilder;
 import org.glassfish.tools.ide.server.config.LibraryConfig;
+import org.glassfish.tools.ide.utils.ServerUtils;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
+import org.netbeans.spi.project.libraries.LibraryImplementation;
 
 /**
  * GlassFish bundled libraries provider.
@@ -115,6 +119,37 @@ public class Hk2LibraryProvider /*implements JaxRsStackSupportImplementation*/ {
     private Pattern JAXRS_PATTERN
             = Pattern.compile("[jJ][aA][xX][ -]{0,1}[rR][sS]");
 
+    /** Internal {@see GlassFishServer} to {@see Hk2LibraryProvider}
+     *  mapping. */
+    private static final Map <GlassFishServer, Hk2LibraryProvider> providers
+            = new HashMap();
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Static methods                                                         //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Returns {@see Hk2LibraryProvider} class instance for specific server
+     * instance.
+     * <p/>
+     * Provider instances for individual {@see GlassFishServer} instances
+     * are shared.
+     * <p/>
+     * @param server {@see GlassFishServer} instance for which provider
+     *               is returned.
+     * @return {@see Hk2LibraryProvider} class instance for given server
+     *         instance.
+     */
+    public static Hk2LibraryProvider getProvider(GlassFishServer server) {
+        Hk2LibraryProvider provider;
+        synchronized(providers) {
+            if ((provider = providers.get(server)) == null)
+                providers.put(
+                        server, provider = new Hk2LibraryProvider(server));
+        }
+        return provider;
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
@@ -129,6 +164,9 @@ public class Hk2LibraryProvider /*implements JaxRsStackSupportImplementation*/ {
 
     /** GlassFish server name. */
     private final String serverName;
+
+    /** GlassFish server version. */
+    private final GlassFishVersion serverVersion;
 
     /** Java EE library name associated with current GlassFish server context.
      *  This is lazy initialized internal cache. Do not access this attribute
@@ -152,17 +190,19 @@ public class Hk2LibraryProvider /*implements JaxRsStackSupportImplementation*/ {
     /**
      * Creates an instance of Jersey library provider.
      * <p/>
-     * @param url GlassFish server URL.
+     * @param server GlassFish Server Entity.
      */
-    Hk2LibraryProvider(Hk2DeploymentManager dm) {
-        if (dm == null) {
+    private Hk2LibraryProvider(GlassFishServer server) {
+        if (server == null) {
             throw new IllegalArgumentException(
-                    "GlassFish server deployment manager shall not be null.");
+                    "GlassFish server entity shall not be null.");
         }
-        serverHome = dm.getCommonServerSupport().getInstanceProperties()
-                .get(GlassfishModule.GLASSFISH_FOLDER_ATTR);
-        serverName = dm.getCommonServerSupport().getInstanceProperties()
-                .get(GlassfishModule.DISPLAY_NAME_ATTR);
+        serverHome = server.getServerHome();
+        serverName = server.getName();
+        if (server.getVersion() != null)
+            serverVersion = server.getVersion();
+        else
+            serverVersion = ServerUtils.getServerVersion(serverHome);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -248,12 +288,36 @@ public class Hk2LibraryProvider /*implements JaxRsStackSupportImplementation*/ {
     }
 
     /**
+     * Set {@see LibraryImplementation} content for Jersey libraries
+     * available in GlassFish.
+     * <p/>
+     * @param lib         Target {@see LibraryImplementation}.
+     * @param libraryName Library name in returned Library instance.
+     */
+    public void setJerseyImplementation(
+            LibraryImplementation lib, String libraryName) {
+        setLibraryImplementationContent(lib, JERSEY_PATTERN, libraryName);
+    }
+
+    /**
      * Return JAX-RS libraries available in GlassFish.
      * <p/>
      * @return JAX-RS libraries available in GlassFish.
      */
     public Library getJaxRsLibrary() {
         return getLibrary(JAXRS_PATTERN, getJaxRsName());
+    }
+
+   /**
+     * Set {@see LibraryImplementation} content for JAX-RS libraries
+     * available in GlassFish.
+     * <p/>
+     * @param lib         Target {@see LibraryImplementation}.
+     * @param libraryName Library name in returned Library instance.
+     */
+    public void setJaxRsLibraryImplementation(
+            LibraryImplementation lib, String libraryName) {
+        setLibraryImplementationContent(lib, JAXRS_PATTERN, libraryName);
     }
 
     /**
@@ -263,6 +327,27 @@ public class Hk2LibraryProvider /*implements JaxRsStackSupportImplementation*/ {
      */
     public Library getJavaEELibrary() {
         return getLibrary(JAVAEE_PATTERN, getJavaEEName());
+    }
+
+     /**
+     * Set {@see LibraryImplementation} content for Java EE libraries
+     * available in GlassFish.
+     * <p/>
+     * @param lib         Target {@see LibraryImplementation}.
+     * @param libraryName Library name in returned Library instance.
+     */
+    public void setJavaEELibraryImplementation(
+            LibraryImplementation lib, String libraryName) {
+        setLibraryImplementationContent(lib, JAVAEE_PATTERN, libraryName);
+    }
+
+    /**
+     * Get {@see List} of class path {@see URL}s for Java EE libraries.
+     * <p/>
+     * @return {@see List} of class path {@see URL}s for Java EE libraries.
+     */
+    public List<URL> getJavaEEClassPathURLs() {
+        return getLibraryClassPathURLs(JAVAEE_PATTERN);
     }
 
     /**
@@ -301,7 +386,7 @@ public class Hk2LibraryProvider /*implements JaxRsStackSupportImplementation*/ {
             return lib;
         }
         LibraryBuilder lb = getBuilder();
-        List<GlassFishLibrary> gfLibs = lb.getLibraries(GlassFishVersion.GF_3);
+        List<GlassFishLibrary> gfLibs = lb.getLibraries(serverVersion);
         for (GlassFishLibrary gfLib : gfLibs) {
             if (namePattern.matcher(gfLib.getLibraryID()).matches()) {
                 Map<String,List<URL>> contents
@@ -329,4 +414,44 @@ public class Hk2LibraryProvider /*implements JaxRsStackSupportImplementation*/ {
         return null;
     }
 
+    /**
+     * Set {@see LibraryImplementation} content for given library name.
+     * <p/>
+     * @param lib         Target {@see LibraryImplementation}.
+     * @param namePattern Library name pattern to search for it in
+     *                    <code>GlassFishLibrary</code> list.
+     * @param libraryName Library name in returned Library instance.
+     */
+    private void setLibraryImplementationContent(LibraryImplementation lib,
+            Pattern namePattern, String libraryName) {
+        LibraryBuilder lb = getBuilder();
+        List<GlassFishLibrary> gfLibs = lb.getLibraries(serverVersion);
+        for (GlassFishLibrary gfLib : gfLibs) {
+            if (namePattern.matcher(gfLib.getLibraryID()).matches()) {
+                lib.setName(libraryName);
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH,
+                        gfLib.getClasspath());
+                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC,
+                        gfLib.getJavadocs());
+            }
+        }
+    }
+
+    /**
+     * Get list of class path {@see URL}s for given library name.
+     * <p/>
+     * @param namePattern Library name pattern to search for it in
+     *                    <code>GlassFishLibrary</code> list.
+     * @param libraryName Library name in returned Library instance.
+     */
+    private List<URL> getLibraryClassPathURLs(Pattern namePattern) {
+        LibraryBuilder lb = getBuilder();
+        List<GlassFishLibrary> gfLibs = lb.getLibraries(serverVersion);
+        for (GlassFishLibrary gfLib : gfLibs) {
+            if (namePattern.matcher(gfLib.getLibraryID()).matches()) {
+                return gfLib.getClasspath();
+            }
+        }
+        return Collections.<URL>emptyList();
+    }
 }

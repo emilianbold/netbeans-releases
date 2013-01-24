@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -112,7 +112,8 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
     public Hk2JavaEEPlatformImpl(Hk2DeploymentManager dm, Hk2JavaEEPlatformFactory pf) {
         this.dm = dm;
         this.pf = pf;
-        this.libraryProvider = new Hk2LibraryProvider(dm);
+        this.libraryProvider = Hk2LibraryProvider.getProvider(
+                dm.getCommonServerSupport().getInstance());
         addFcl();
         initLibraries();
     }
@@ -304,7 +305,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
 
             File domainDir;
             File gfRoot = new File(gfRootStr);
-            if ((gfRoot != null) && (gfRoot.exists())) {
+            if (gfRoot.exists()) {
                 String domainDirName = dm.getProperties().getDomainDir();
                 if (domainDirName != null) {
                     domainDir = new File(domainDirName);
@@ -459,9 +460,8 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
 
             @Override
             public void run() {
-                lib.setName(pf.getLibraryName());
-                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH, dm.getProperties().getClasses());
-                lib.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC, dm.getProperties().getJavadocs());
+                libraryProvider.setJavaEELibraryImplementation(
+                        lib, pf.getLibraryName());
                 firePropertyChange(PROP_LIBRARIES, null, libraries.clone());
             }
         });
