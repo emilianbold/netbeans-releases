@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,43 +34,33 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.discovery.performance;
 
-
-package org.netbeans.modules.cnd.modelimpl.csm.core;
-
-import java.io.IOException;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
-import org.openide.filesystems.FileObject;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectLife;
+import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Represents the file state change event.
- * This event occurs when file is changed it's state
- * from saved to edited or vice versa.
- * @author Vladimir Kvashin
+ *
+ * @author Alexander Simon
  */
-public interface FileBuffer extends APTFileBuffer {
+@ServiceProvider(service=MakeProjectLife.class)
+public class MakeProjectLifeImpl implements MakeProjectLife{
+    private PerformanceIssueDetector detector;
 
-    public void addChangeListener(ChangeListener listener);
-    public void removeChangeListener(ChangeListener listener);
-
-    public boolean isFileBased();
-
-    public FileObject getFileObject();
-    public CharSequence getUrl();
-    
-    public String getText(int start, int end) throws IOException;
-    
-    public CharSequence getText() throws IOException;
-    
-    public long lastModified();
-
-    public long getCRC();
-
-    int[] getLineColumnByOffset(int offset) throws IOException;
-
-    int getLineCount() throws IOException;
-
-    int getOffsetByLineColumn(int line, int column) throws IOException;
+    @Override
+    public void start(Project project) {
+        synchronized(this) {
+             if (detector == null) {
+                 detector = new PerformanceIssueDetector();
+                 PerformanceLogger.getLogger().addPerformanceListener(detector);
+             }
+        }
+    }
 }
