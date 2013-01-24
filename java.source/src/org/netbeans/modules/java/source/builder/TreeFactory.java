@@ -123,6 +123,20 @@ public class TreeFactory {
         return make.at(NOPOS).Annotation((JCTree)type, lb.toList());
     }
 
+    public AnnotationTree TypeAnnotation(Tree type, List<? extends ExpressionTree> arguments) {
+        ListBuffer<JCExpression> lb = new ListBuffer<JCExpression>();
+        for (ExpressionTree t : arguments)
+            lb.append((JCExpression)t);
+        return make.at(NOPOS).TypeAnnotation((JCTree)type, lb.toList());
+    }
+    
+    public AnnotatedTypeTree AnnotatedType(List<? extends AnnotationTree> annotations, ExpressionTree underlyingType) {
+        ListBuffer<JCAnnotation> lb = new ListBuffer<JCAnnotation>();
+        for (AnnotationTree t : annotations)
+            lb.append((JCAnnotation)t);
+        return make.at(NOPOS).AnnotatedType(lb.toList(), (JCExpression)underlyingType);
+    }
+
     public ArrayAccessTree ArrayAccess(ExpressionTree array, ExpressionTree index) {
         return make.at(NOPOS).Indexed((JCExpression)array, (JCExpression)index);
     }
@@ -791,10 +805,9 @@ public class TreeFactory {
     }
 
     private AnnotationTree modifyAnnotationAttrValue(AnnotationTree annotation, int index, ExpressionTree attrValue, Operation op) {
-        AnnotationTree copy = Annotation(
-                annotation.getAnnotationType(),
-                c(annotation.getArguments(), index, attrValue, op)
-        );
+        AnnotationTree copy = annotation.getKind() == Kind.ANNOTATION
+                ? Annotation(annotation.getAnnotationType(), c(annotation.getArguments(), index, attrValue, op))
+                : TypeAnnotation(annotation.getAnnotationType(), c(annotation.getArguments(), index, attrValue, op));
         return copy;
     }
     

@@ -134,6 +134,17 @@ public final class TreeMaker {
         return delegate.Annotation(type, arguments);
     }
     
+    /** 
+     * Creates a new type AnnotationTree.
+     *
+     * @param type the annotation type.
+     * @param arguments the arguments for this annotation, or an empty list.
+     * @see com.sun.source.tree.AnnotationTree
+     */
+    public AnnotationTree TypeAnnotation(Tree type, List<? extends ExpressionTree> arguments) {
+        return delegate.TypeAnnotation(type, arguments);
+    }
+    
     /**
      * Creates a new ArrayAccessTree.
      *

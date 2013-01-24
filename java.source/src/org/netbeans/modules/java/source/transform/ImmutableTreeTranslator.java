@@ -507,6 +507,9 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
     public Tree visitWildcard(WildcardTree tree, Object p) {
         return rewriteChildren(tree);
     }
+    public Tree visitAnnotatedType(AnnotatedTypeTree tree, Object p) {
+        return rewriteChildren(tree);
+    }
     public Tree visitAnnotation(AnnotationTree tree, Object p) {
         return rewriteChildren(tree);
     }
@@ -1195,13 +1198,28 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
         return tree;
     }
     
+    protected final AnnotatedTypeTree rewriteChildren(AnnotatedTypeTree tree) {
+        List<? extends AnnotationTree> annotations = translate(tree.getAnnotations());
+        ExpressionTree underlyingType = (ExpressionTree)translate(tree.getUnderlyingType());
+        if (!annotations.equals(tree.getAnnotations()) || underlyingType != tree.getUnderlyingType()) {
+            AnnotatedTypeTree n = make.AnnotatedType(annotations, underlyingType);
+            model.setType(n, model.getType(tree));
+	    copyCommentTo(tree,n);
+            copyPosTo(tree,n);
+	    tree = n;
+        }
+        return tree;
+    }
+    
     protected final AnnotationTree rewriteChildren(AnnotationTree tree) {
         Tree annotationType = translate(tree.getAnnotationType());
 	List<? extends ExpressionTree> args = translate(tree.getArguments());
 	if (annotationType!=tree.getAnnotationType() || !args.equals(tree.getArguments())) {
             if (args != tree.getArguments())
                 args = optimize(args);
-	    AnnotationTree n = make.Annotation(annotationType, args);
+	    AnnotationTree n = tree.getKind() == Kind.ANNOTATION
+                    ? make.Annotation(annotationType, args)
+                    : make.TypeAnnotation(annotationType, args);
             model.setType(n, model.getType(tree));
 	    copyCommentTo(tree,n);
 	    tree = n;
