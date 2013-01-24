@@ -1115,7 +1115,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                         && ts.movePrevious()) {
                     // The curly is at the first nonwhite char at the line.
                     // Do we need to indent the { according previous line?
-                    int previousExprestion = PHPNewLineIndenter.findStartTokenOfExpression(ts);
+                    int previousExprestion = IndentationCounter.findStartTokenOfExpression(ts);
                     int previousIndent = Utilities.getRowIndent(doc, previousExprestion);
                     int currentIndent = Utilities.getRowIndent(doc, offset);
                     int newIndent = countIndent(doc, offset, previousIndent);

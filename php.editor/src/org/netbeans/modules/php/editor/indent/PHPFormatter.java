@@ -46,13 +46,18 @@ package org.netbeans.modules.php.editor.indent;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.editor.indent.IndentationCounter.Indentation;
+import org.openide.util.Exceptions;
 
 /**
  * Formatting and indentation for PHP.
@@ -74,7 +79,7 @@ public class PHPFormatter implements Formatter {
     }
 
     @Override
-    public void reindent(Context context) {
+    public void reindent(final Context context) {
         // Make sure we're not reindenting HTML content
 
         // hotfix for for broken new line indentation after merging with dkonecny's changes
@@ -85,8 +90,8 @@ public class PHPFormatter implements Formatter {
         }
         // end of hotfix
 
-        PHPNewLineIndenter indenter = new PHPNewLineIndenter(context);
-        indenter.process();
+        Indentation indent = new IndentationCounter((BaseDocument) context.document()).count(context.caretOffset());
+        indent.modify(context);
     }
 
     @Override

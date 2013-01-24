@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.indent;
 
@@ -55,27 +55,26 @@ import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.util.Exceptions;
 
 /**
+ * Extracted from Tomasz Slota's PHPNewLineIndenter.
  *
- * @author Tomasz.Slota@Sun.COM
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHPNewLineIndenter {
-
-    private Context context;
+public class IndentationCounter {
     private static final Collection<PHPTokenId> CONTROL_STATEMENT_TOKENS = Arrays.asList(
             PHPTokenId.PHP_DO, PHPTokenId.PHP_WHILE, PHPTokenId.PHP_FOR,
             PHPTokenId.PHP_FOREACH, PHPTokenId.PHP_IF, PHPTokenId.PHP_ELSE);
-    private Collection<ScopeDelimiter> scopeDelimiters = null;
-    private int indentSize;
-    private int continuationSize;
-    private int itemsArrayDeclararionSize;
+    private Collection<ScopeDelimiter> scopeDelimiters;
+    private final BaseDocument doc;
+    private final int indentSize;
+    private final int continuationSize;
+    private final int itemsArrayDeclararionSize;
 
-    public PHPNewLineIndenter(Context context) {
-        this.context = context;
-        indentSize = CodeStyle.get(context.document()).getIndentSize();
-        continuationSize = CodeStyle.get(context.document()).getContinuationIndentSize();
-        itemsArrayDeclararionSize = CodeStyle.get(context.document()).getItemsInArrayDeclarationIndentSize();
-        int initialIndentSize = CodeStyle.get(context.document()).getInitialIndent();
-
+    public IndentationCounter(BaseDocument doc) {
+        this.doc = doc;
+        indentSize = CodeStyle.get(doc).getIndentSize();
+        continuationSize = CodeStyle.get(doc).getContinuationIndentSize();
+        itemsArrayDeclararionSize = CodeStyle.get(doc).getItemsInArrayDeclarationIndentSize();
+        int initialIndentSize = CodeStyle.get(doc).getInitialIndent();
         scopeDelimiters = Arrays.asList(
                 new ScopeDelimiter(PHPTokenId.PHP_SEMICOLON, 0),
                 new ScopeDelimiter(PHPTokenId.PHP_OPENTAG, initialIndentSize),
@@ -92,240 +91,238 @@ public class PHPNewLineIndenter {
                 new ScopeDelimiter(PHPTokenId.PHP_DEFAULT, indentSize));
     }
 
-    public void process() {
-        final BaseDocument doc = (BaseDocument) context.document();
-        final int offset = context.caretOffset();
+    public Indentation count(int caretOffset) {
+        Indentation result = Indentation.NONE;
+        doc.readLock();
+        try {
+            result = countUnderReadLock(caretOffset);
+        } finally {
+            doc.readUnlock();
+        }
+        return result;
+    }
 
-        doc.runAtomic(new Runnable() {
+    private Indentation countUnderReadLock(int caretOffset) {
+        int newIndent = 0;
+        try {
+            boolean insideString = false;
+            TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, caretOffset);
+            int caretLineStart = Utilities.getRowStart(doc, Utilities.getRowStart(doc, caretOffset) - 1);
+            if (ts != null) {
+                ts.move(caretOffset);
+                ts.moveNext();
 
-            @Override
-            public void run() {
-                try {
+                boolean indentStartComment = false;
 
-                    int newIndent = 0;
-                    boolean insideString = false;
-                    TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, offset);
-                    int caretLineStart = Utilities.getRowStart(doc, Utilities.getRowStart(doc, offset) - 1);
-                    if (ts != null) {
-                        ts.move(offset);
-                        ts.moveNext();
+                boolean movePrevious = false;
+                if (ts.token() == null) {
+                    return Indentation.NONE;
+                }
+                if (ts.token().id() == PHPTokenId.PHP_OPENTAG) {
+                    int neOffset = Utilities.getFirstNonWhiteBwd(doc, caretOffset - 1);
+                    Indentation result = Indentation.NONE;
+                    if (neOffset != -1) {
+                        result = new IndentationImpl(Utilities.getRowIndent(doc, neOffset) + indentSize);
+                    }
+                    return result;
+                }
+                if (ts.token().id() == PHPTokenId.WHITESPACE && ts.moveNext()) {
+                    movePrevious = true;
+                }
+                if (ts.token().id() == PHPTokenId.PHP_COMMENT
+                        || ts.token().id() == PHPTokenId.PHP_LINE_COMMENT
+                        || ts.token().id() == PHPTokenId.PHP_COMMENT_START
+                        || ts.token().id() == PHPTokenId.PHP_COMMENT_END) {
 
-                        boolean indentStartComment = false;
-
-
-                        boolean movePrevious = false;
-                        if (ts.token() == null) {
-                            return;
-                        }
-                        if (ts.token().id() == PHPTokenId.PHP_OPENTAG) {
-                            int neOffset = Utilities.getFirstNonWhiteBwd(doc, offset - 1);
-                            if (neOffset != -1) {
-                                newIndent = Utilities.getRowIndent(doc, neOffset) + indentSize;
-                                context.modifyIndent(Utilities.getRowStart(doc, offset), newIndent);
-                            }
-                            return;
-                        }
-                        if (ts.token().id() == PHPTokenId.WHITESPACE && ts.moveNext()) {
-                            movePrevious = true;
-                        }
-                        if (ts.token().id() == PHPTokenId.PHP_COMMENT
-                                || ts.token().id() == PHPTokenId.PHP_LINE_COMMENT
-                                || ts.token().id() == PHPTokenId.PHP_COMMENT_START
-                                || ts.token().id() == PHPTokenId.PHP_COMMENT_END) {
-
-                            if (ts.token().id() == PHPTokenId.PHP_COMMENT_START && ts.offset() >= offset) {
-                                indentStartComment = true;
-                            } else {
-                                if (!movePrevious) {
-                                    // don't indent comment - issue #173979
-                                    return;
-                                } else {
-                                    if (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
-                                        ts.movePrevious();
-                                        CharSequence whitespace = ts.token().text();
-                                        if (ts.movePrevious() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
-                                            int index = 0;
-                                            while (index < whitespace.length() && whitespace.charAt(index) != '\n') {
-                                                index++;
-                                            }
-                                            if (index == whitespace.length()) {
-                                                // don't indent if the line commnet continue
-                                                // the last new line belongs to the line comment
-                                                return;
-                                            }
-                                        }
-                                        ts.moveNext();
-                                        movePrevious = false;
+                    if (ts.token().id() == PHPTokenId.PHP_COMMENT_START && ts.offset() >= caretOffset) {
+                        indentStartComment = true;
+                    } else {
+                        if (!movePrevious) {
+                            // don't indent comment - issue #173979
+                            return Indentation.NONE;
+                        } else {
+                            if (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
+                                ts.movePrevious();
+                                CharSequence whitespace = ts.token().text();
+                                if (ts.movePrevious() && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
+                                    int index = 0;
+                                    while (index < whitespace.length() && whitespace.charAt(index) != '\n') {
+                                        index++;
+                                    }
+                                    if (index == whitespace.length()) {
+                                        // don't indent if the line commnet continue
+                                        // the last new line belongs to the line comment
+                                        return Indentation.NONE;
                                     }
                                 }
+                                ts.moveNext();
+                                movePrevious = false;
                             }
                         }
-                        if (movePrevious) {
-                            ts.movePrevious();
-                        }
-                        if ((ts.token().id() == PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE || ts.token().id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING) && offset > ts.offset()) {
+                    }
+                }
+                if (movePrevious) {
+                    ts.movePrevious();
+                }
+                if ((ts.token().id() == PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE || ts.token().id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING) && caretOffset > ts.offset()) {
 
-                            int stringLineStart = Utilities.getRowStart(doc, ts.offset());
+                    int stringLineStart = Utilities.getRowStart(doc, ts.offset());
 
-                            if (stringLineStart >= caretLineStart) {
-                                // string starts on the same line:
-                                // current line indent + continuation size
-                                newIndent = Utilities.getRowIndent(doc, stringLineStart) + indentSize;
-                            } else {
-                                // string starts before:
-                                // repeat indent from the previous line
-                                newIndent = Utilities.getRowIndent(doc, caretLineStart);
-                            }
+                    if (stringLineStart >= caretLineStart) {
+                        // string starts on the same line:
+                        // current line indent + continuation size
+                        newIndent = Utilities.getRowIndent(doc, stringLineStart) + indentSize;
+                    } else {
+                        // string starts before:
+                        // repeat indent from the previous line
+                        newIndent = Utilities.getRowIndent(doc, caretLineStart);
+                    }
 
-                            insideString = true;
-                        }
+                    insideString = true;
+                }
 
-                        int bracketBalance = 0;
-                        int squaredBalance = 0;
-                        PHPTokenId previousTokenId = ts.token().id();
-                        boolean isFirstEqual = true;
-                        while (!insideString && ts.movePrevious()) {
-                            Token token = ts.token();
-                            ScopeDelimiter delimiter = getScopeDelimiter(token);
-                            int anchor = ts.offset();
-                            int shiftAtAncor = 0;
+                int bracketBalance = 0;
+                int squaredBalance = 0;
+                PHPTokenId previousTokenId = ts.token().id();
+                while (!insideString && ts.movePrevious()) {
+                    Token token = ts.token();
+                    ScopeDelimiter delimiter = getScopeDelimiter(token);
+                    int anchor = ts.offset();
+                    int shiftAtAncor = 0;
 
-                            if (delimiter != null) {
-                                if (delimiter.tokenId == PHPTokenId.PHP_SEMICOLON) {
-                                    int casePosition = breakProceededByCase(ts); // is after break in case statement?
-                                    if (casePosition > -1) {
-                                        newIndent = Utilities.getRowIndent(doc, anchor);
-                                        if (Utilities.getRowStart(doc, casePosition) != caretLineStart) {
-                                            // check that case is not on the same line, where enter was pressed
-                                            newIndent -= indentSize;
-                                        }
-                                        break;
-                                    }
-
-                                    CodeB4BreakData codeB4BreakData = processCodeBeforeBreak(ts, indentStartComment);
-                                    anchor = codeB4BreakData.expressionStartOffset;
-                                    shiftAtAncor = codeB4BreakData.indentDelta;
-
-                                    if (codeB4BreakData.processedByControlStmt) {
-                                        newIndent = Utilities.getRowIndent(doc, anchor) - indentSize;
-                                    } else {
-                                        newIndent = Utilities.getRowIndent(doc, anchor) + delimiter.indentDelta + shiftAtAncor;
-                                    }
-                                    break;
-                                } else if (delimiter.tokenId == PHPTokenId.PHP_CURLY_OPEN && ts.movePrevious()) {
-                                    int startExpression = findStartTokenOfExpression(ts);
-                                    newIndent = Utilities.getRowIndent(doc, startExpression) + indentSize;
-                                    break;
-                                }
-                                if (anchor >= 0) {
-                                    newIndent = Utilities.getRowIndent(doc, anchor) + delimiter.indentDelta + shiftAtAncor;
+                    if (delimiter != null) {
+                        if (delimiter.tokenId == PHPTokenId.PHP_SEMICOLON) {
+                            int casePosition = breakProceededByCase(ts); // is after break in case statement?
+                            if (casePosition > -1) {
+                                newIndent = Utilities.getRowIndent(doc, anchor);
+                                if (Utilities.getRowStart(doc, casePosition) != caretLineStart) {
+                                    // check that case is not on the same line, where enter was pressed
+                                    newIndent -= indentSize;
                                 }
                                 break;
-                            } else {
-                                if (ts.token().id() == PHPTokenId.PHP_TOKEN) {
-                                    char ch = ts.token().text().charAt(0);
-                                    boolean continualIndent = false;
-                                    boolean indent = false;
-                                    switch (ch) {
-                                        case ')':
-                                            bracketBalance++;
-                                            break;
-                                        case '(':
-                                            if (bracketBalance == 0) {
-                                                continualIndent = true;
-                                            }
-                                            bracketBalance--;
-                                            break;
-                                        case ']':
-                                            squaredBalance++;
-                                            break;
-                                        case '[':
-                                            if (squaredBalance == 0) {
-                                                continualIndent = true;
-                                            }
-                                            squaredBalance--;
-                                            break;
-                                        case ',':
-                                            continualIndent = true;
-                                            break;
-                                        case '.':
-                                            continualIndent = true;
-                                            break;
-                                        case ':':
-                                            if (isInTernaryOperatorStatement(ts)) {
-                                                continualIndent = true;
-                                            } else {
-                                                indent = true;
-                                            }
-                                            break;
-                                        case '=':
-                                            continualIndent = true;
-                                            break;
-                                        default:
-                                            //no-op
-                                    }
-                                    if (continualIndent || indent) {
-                                        ts.move(offset);
-                                        ts.moveNext();
-                                        int startExpression = findStartTokenOfExpression(ts);
-                                        if (startExpression != -1) {
-                                            if (continualIndent) {
-                                                int offsetArrayDeclaration = offsetArrayDeclaration(startExpression, ts);
-                                                if (offsetArrayDeclaration > -1) {
-                                                    newIndent = Utilities.getRowIndent(doc, offsetArrayDeclaration) + itemsArrayDeclararionSize;
-                                                } else {
-                                                    newIndent = Utilities.getRowIndent(doc, startExpression) + continuationSize;
-                                                }
-                                            }
-                                            if (indent) {
-                                                newIndent = Utilities.getRowIndent(doc, startExpression) + indentSize;
-                                            }
-                                        }
-                                        break;
-                                    }
-                                } else if ((previousTokenId == PHPTokenId.PHP_OBJECT_OPERATOR
-                                        || ts.token().id() == PHPTokenId.PHP_OBJECT_OPERATOR
-                                        || ts.token().id() == PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM) && bracketBalance <= 0) {
-                                    int startExpression = findStartTokenOfExpression(ts);
-                                    if (startExpression != -1) {
-                                        int rememberOffset = ts.offset();
-                                        ts.move(startExpression);
-                                        ts.moveNext();
-                                        if (ts.token().id() != PHPTokenId.PHP_IF
-                                                && ts.token().id() != PHPTokenId.PHP_WHILE
-                                                && ts.token().id() != PHPTokenId.PHP_FOR
-                                                && ts.token().id() != PHPTokenId.PHP_FOREACH) {
-                                            newIndent = Utilities.getRowIndent(doc, startExpression) + continuationSize;
-                                            break;
-                                        } else {
-                                            ts.move(rememberOffset);
-                                            ts.moveNext();
-                                        }
+                            }
 
+                            CodeB4BreakData codeB4BreakData = processCodeBeforeBreak(ts, indentStartComment);
+                            anchor = codeB4BreakData.expressionStartOffset;
+                            shiftAtAncor = codeB4BreakData.indentDelta;
+
+                            if (codeB4BreakData.processedByControlStmt) {
+                                newIndent = Utilities.getRowIndent(doc, anchor) - indentSize;
+                            } else {
+                                newIndent = Utilities.getRowIndent(doc, anchor) + delimiter.indentDelta + shiftAtAncor;
+                            }
+                            break;
+                        } else if (delimiter.tokenId == PHPTokenId.PHP_CURLY_OPEN && ts.movePrevious()) {
+                            int startExpression = findStartTokenOfExpression(ts);
+                            newIndent = Utilities.getRowIndent(doc, startExpression) + indentSize;
+                            break;
+                        }
+                        if (anchor >= 0) {
+                            newIndent = Utilities.getRowIndent(doc, anchor) + delimiter.indentDelta + shiftAtAncor;
+                        }
+                        break;
+                    } else {
+                        if (ts.token().id() == PHPTokenId.PHP_TOKEN) {
+                            char ch = ts.token().text().charAt(0);
+                            boolean continualIndent = false;
+                            boolean indent = false;
+                            switch (ch) {
+                                case ')':
+                                    bracketBalance++;
+                                    break;
+                                case '(':
+                                    if (bracketBalance == 0) {
+                                        continualIndent = true;
                                     }
-                                } else if (ts.token().id() == PHPTokenId.PHP_PUBLIC || ts.token().id() == PHPTokenId.PHP_PROTECTED
-                                        || ts.token().id() == PHPTokenId.PHP_PRIVATE || (ts.token().id() == PHPTokenId.PHP_VARIABLE && bracketBalance <= 0)) {
-                                    int startExpression = findStartTokenOfExpression(ts);
-                                    if (startExpression != -1) {
-                                        newIndent = Utilities.getRowIndent(doc, startExpression) + continuationSize;
-                                        break;
+                                    bracketBalance--;
+                                    break;
+                                case ']':
+                                    squaredBalance++;
+                                    break;
+                                case '[':
+                                    if (squaredBalance == 0) {
+                                        continualIndent = true;
+                                    }
+                                    squaredBalance--;
+                                    break;
+                                case ',':
+                                    continualIndent = true;
+                                    break;
+                                case '.':
+                                    continualIndent = true;
+                                    break;
+                                case ':':
+                                    if (isInTernaryOperatorStatement(ts)) {
+                                        continualIndent = true;
+                                    } else {
+                                        indent = true;
+                                    }
+                                    break;
+                                case '=':
+                                    continualIndent = true;
+                                    break;
+                                default:
+                                    //no-op
+                            }
+                            if (continualIndent || indent) {
+                                ts.move(caretOffset);
+                                ts.moveNext();
+                                int startExpression = findStartTokenOfExpression(ts);
+                                if (startExpression != -1) {
+                                    if (continualIndent) {
+                                        int offsetArrayDeclaration = offsetArrayDeclaration(startExpression, ts);
+                                        if (offsetArrayDeclaration > -1) {
+                                            newIndent = Utilities.getRowIndent(doc, offsetArrayDeclaration) + itemsArrayDeclararionSize;
+                                        } else {
+                                            newIndent = Utilities.getRowIndent(doc, startExpression) + continuationSize;
+                                        }
+                                    }
+                                    if (indent) {
+                                        newIndent = Utilities.getRowIndent(doc, startExpression) + indentSize;
                                     }
                                 }
+                                break;
                             }
-                            previousTokenId = ts.token().id();
-                        }
+                        } else if ((previousTokenId == PHPTokenId.PHP_OBJECT_OPERATOR
+                                || ts.token().id() == PHPTokenId.PHP_OBJECT_OPERATOR
+                                || ts.token().id() == PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM) && bracketBalance <= 0) {
+                            int startExpression = findStartTokenOfExpression(ts);
+                            if (startExpression != -1) {
+                                int rememberOffset = ts.offset();
+                                ts.move(startExpression);
+                                ts.moveNext();
+                                if (ts.token().id() != PHPTokenId.PHP_IF
+                                        && ts.token().id() != PHPTokenId.PHP_WHILE
+                                        && ts.token().id() != PHPTokenId.PHP_FOR
+                                        && ts.token().id() != PHPTokenId.PHP_FOREACH) {
+                                    newIndent = Utilities.getRowIndent(doc, startExpression) + continuationSize;
+                                    break;
+                                } else {
+                                    ts.move(rememberOffset);
+                                    ts.moveNext();
+                                }
 
-                        if (newIndent < 0) {
-                            newIndent = 0;
+                            }
+                        } else if (ts.token().id() == PHPTokenId.PHP_PUBLIC || ts.token().id() == PHPTokenId.PHP_PROTECTED
+                                || ts.token().id() == PHPTokenId.PHP_PRIVATE || (ts.token().id() == PHPTokenId.PHP_VARIABLE && bracketBalance <= 0)) {
+                            int startExpression = findStartTokenOfExpression(ts);
+                            if (startExpression != -1) {
+                                newIndent = Utilities.getRowIndent(doc, startExpression) + continuationSize;
+                                break;
+                            }
                         }
-
-                        context.modifyIndent(Utilities.getRowStart(doc, offset), newIndent);
                     }
-                } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
+                    previousTokenId = ts.token().id();
+                }
+
+                if (newIndent < 0) {
+                    newIndent = 0;
                 }
             }
-        });
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return new IndentationImpl(newIndent);
     }
 
     private static boolean isInTernaryOperatorStatement(TokenSequence<? extends PHPTokenId> ts) {
@@ -400,7 +397,7 @@ public class PHPNewLineIndenter {
      * @param ts
      * @return
      */
-    private int offsetArrayDeclaration(int startExpression, TokenSequence ts) {
+    private static int offsetArrayDeclaration(int startExpression, TokenSequence ts) {
         int result = -1;
         int origOffset = ts.offset();
         Token token;
@@ -642,25 +639,21 @@ public class PHPNewLineIndenter {
 
     private ScopeDelimiter getScopeDelimiter(Token token) {
         // TODO: more efficient impl
-
         for (ScopeDelimiter scopeDelimiter : scopeDelimiters) {
             if (scopeDelimiter.matches(token)) {
                 return scopeDelimiter;
             }
         }
-
         return null;
     }
 
     private static class CodeB4BreakData {
-
         int expressionStartOffset;
         boolean processedByControlStmt;
         int indentDelta;
     }
 
     private static class ScopeDelimiter {
-
         private PHPTokenId tokenId;
         private String tokenContent;
         private int indentDelta;
@@ -679,14 +672,67 @@ public class PHPNewLineIndenter {
             if (tokenId != token.id()) {
                 return false;
             }
-
             if (tokenContent != null
                     && TokenUtilities.equals(token.text(), tokenContent)) {
-
                 return false;
             }
-
             return true;
         }
     }
+
+    public interface Indentation {
+
+        Indentation NONE = new Indentation() {
+
+            @Override
+            public int getIndentation() {
+                return 0;
+            }
+
+            @Override
+            public void modify(Context context) {
+            }
+
+        };
+
+        int getIndentation();
+        void modify(Context context);
+
+    }
+
+    private static final class IndentationImpl implements Indentation {
+        private final int indentation;
+
+        public IndentationImpl(int indentation) {
+            this.indentation = indentation;
+        }
+
+        @Override
+        public int getIndentation() {
+            return indentation;
+        }
+
+        @Override
+        public void modify(final Context context) {
+            assert  context != null;
+            context.document().render(new Runnable() {
+
+                @Override
+                public void run() {
+                    modifyUnderWriteLock(context);
+                }
+            });
+        }
+
+        private void modifyUnderWriteLock(Context context) {
+            try {
+                context.modifyIndent(Utilities.getRowStart((BaseDocument) context.document(), context.caretOffset()), indentation);
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+    }
+
 }
+
