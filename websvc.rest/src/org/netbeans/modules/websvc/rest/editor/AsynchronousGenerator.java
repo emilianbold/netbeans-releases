@@ -55,10 +55,12 @@ import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
@@ -101,14 +103,16 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 
 
 /**
  * @author ads
  *
  */
-public class AsynchronousGenerator implements CodeGenerator {
+public class AsynchronousGenerator extends AsyncConverter implements CodeGenerator {
     
     private final Logger log = Logger.getLogger(AsynchronousGenerator.class.getName()); 
 
@@ -132,19 +136,7 @@ public class AsynchronousGenerator implements CodeGenerator {
      */
     @Override
     public void invoke() {
-        Project project = FileOwnerQuery.getOwner(controller.getFileObject());
-        if (project == null) {
-            return;
-        }
-        WebModule webModule = WebModule.getWebModule(project
-                .getProjectDirectory());
-        if (webModule == null) {
-            return;
-        }
-        Profile profile = webModule.getJ2eeProfile();
-        if (!Profile.JAVA_EE_7_WEB.equals(profile)
-                && !Profile.JAVA_EE_7_FULL.equals( profile))
-        {
+        if (!isApplicable(controller.getFileObject())){
             Toolkit.getDefaultToolkit().beep();
             StatusDisplayer.getDefault().setStatusText(
                     NbBundle.getMessage(AsynchronousGenerator.class, 
@@ -155,22 +147,14 @@ public class AsynchronousGenerator implements CodeGenerator {
         int position = textComponent.getCaret().getDot();
         TreePath tp = controller.getTreeUtilities().pathFor(position);
         Element contextElement = controller.getTrees().getElement(tp );
-        if ( contextElement == null || contextElement.getKind() != ElementKind.METHOD){
-            Toolkit.getDefaultToolkit().beep();
-            StatusDisplayer.getDefault().setStatusText(
-                    NbBundle.getMessage(AsynchronousGenerator.class, 
-                            "MSG_NotRestMethod"));                  // NOI18N
-            return;
-        }
-        
         Element enclosingElement = contextElement.getEnclosingElement();
-        if ( enclosingElement== null || !(enclosingElement instanceof TypeElement)){
+        if ( !isApplicable(contextElement)){
             Toolkit.getDefaultToolkit().beep();
             StatusDisplayer.getDefault().setStatusText(
                     NbBundle.getMessage(AsynchronousGenerator.class, 
                             "MSG_NotRestMethod"));                  // NOI18N
             return;
-        }
+        }        
         
         TypeElement clazz = (TypeElement)enclosingElement;
         final String fqn = clazz.getQualifiedName().toString();
@@ -221,11 +205,15 @@ public class AsynchronousGenerator implements CodeGenerator {
                             enclosingElement, restMethod);
                     
                     TreeMaker maker = copy.getTreeMaker();
-                    ClassTree newTree = addExecutionService(maker,copy,enclosingElement,
-                            classTree);
+                    boolean isEjb = isEjb(enclosingElement);
+                    ClassTree newTree = classTree;
+                    if ( !isEjb ){
+                        newTree = addExecutionService(maker,copy,enclosingElement,
+                                classTree);
+                    }
                     newTree = createAsyncMethod(maker, asyncName, serviceField,
-                            method, movedName, copy, newTree);
-                    newTree =moveRestMethod(maker, movedName, method, copy, 
+                            method, movedName, copy, newTree, isEjb);
+                    newTree = moveRestMethod(maker, movedName, method, copy, 
                             newTree);
                     copy.rewrite(classTree, newTree);
                 }
@@ -285,11 +273,34 @@ public class AsynchronousGenerator implements CodeGenerator {
         }
     }
     
+    private boolean isEjb(Element element){
+        List<? extends AnnotationMirror> annotations = element.getAnnotationMirrors();
+        for (AnnotationMirror annotation : annotations) {
+            Element annotationElement = annotation.getAnnotationType().asElement();
+            if ( annotationElement instanceof TypeElement){
+                String fqn = ((TypeElement)annotationElement).getQualifiedName().
+                        toString();
+                if ( fqn.equals("javax.ejb.Stateless") || 
+                        fqn.equals("javax.ejb.Singleton"))          // NOI18N
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     private ClassTree createAsyncMethod( TreeMaker maker,
             String asyncName, String service, MethodTree method, String movedName , 
-            WorkingCopy copy, ClassTree classTree)
+            WorkingCopy copy, ClassTree classTree, boolean isEjb)
     {
         ModifiersTree modifiers = method.getModifiers();
+        if ( isEjb ){
+            AnnotationTree async = maker.Annotation(maker.QualIdent(
+                    "javax.ejb.Asynchronous"),          // NOI18N 
+                    Collections.<ExpressionTree>emptyList());
+            modifiers  = maker.addModifiersAnnotation(modifiers, async);
+        }
         List<? extends VariableTree> parameters = method.getParameters();
         String asyncReponseParam = getAsynParam("asyncResponse",parameters);
         
@@ -304,12 +315,18 @@ public class AsynchronousGenerator implements CodeGenerator {
         List<VariableTree> params = new ArrayList<VariableTree>(parameters.size()+1);
         params.add(asyncParam);
         
-        
+        Tree returnType = method.getReturnType();
+        boolean noReturn =returnType.toString().equals("void");     // NOI18N
+
         StringBuilder body = new StringBuilder("{");
-        body.append(service);
-        body.append(".submit(new Runnable() { public void run() {");
-        body.append(asyncReponseParam);
-        body.append(".resume(");
+        if ( !isEjb ){
+            body.append(service);
+            body.append(".submit(new Runnable() { public void run() {");
+        }
+        if ( !noReturn ){
+            body.append(asyncReponseParam);
+            body.append(".resume(");
+        }
         body.append(movedName);
         body.append("(");
         for (VariableTree param : parameters) {
@@ -326,7 +343,17 @@ public class AsynchronousGenerator implements CodeGenerator {
         if ( !parameters.isEmpty()){
             body.deleteCharAt(body.length()-1);
         }
-        body.append("));");
+        if ( noReturn){
+            body.append(");");
+            body.append(asyncReponseParam);
+            body.append(".resume(javax.ws.rs.core.Response.ok().build());");
+        }
+        else {
+            body.append("));");
+        }
+        if ( !isEjb ){
+            body.append("}});");
+        }
         body.append('}');
         
         MethodTree newMethod = maker.Method(modifiers, asyncName, 
