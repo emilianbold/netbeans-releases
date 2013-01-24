@@ -230,7 +230,7 @@ public class VersioningAnnotationProvider {
 
         @Override
         public Action createContextAwareInstance(Lookup actionContext) {
-            return new RealVersioningSystemActions(system, Utils.contextForLookup(actionContext));
+            return new RealVersioningSystemActions(system, actionContext);
         }
 
         public void setVersioningSystem(VersioningSystem system) {
@@ -241,12 +241,12 @@ public class VersioningAnnotationProvider {
     private static class RealVersioningSystemActions extends AbstractAction implements Presenter.Popup {
 
         private final VersioningSystem system;
-        private final VCSContext context;
+        private final Lookup lkp;
 
-        public RealVersioningSystemActions(VersioningSystem system, VCSContext context) {
+        public RealVersioningSystemActions(VersioningSystem system, Lookup lkp) {
             super(system.getDisplayName());
             this.system = system;
-            this.context = context;
+            this.lkp = lkp;
         }
 
         @Override
@@ -271,6 +271,7 @@ public class VersioningAnnotationProvider {
             public void setSelected(boolean selected) {
                 if (selected && popupContructed == false) {
                     // lazy submenu construction
+                    VCSContext context = Utils.contextForLookup(lkp);
                     Action [] actions = system.getVCSAnnotator().getActions(context, VCSAnnotator.ActionDestination.PopupMenu);
                     for (int i = 0; i < actions.length; i++) {
                         Action action = actions[i];
