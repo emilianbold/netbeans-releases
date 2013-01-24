@@ -48,7 +48,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTAbstractWalker;
@@ -62,6 +61,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.LibraryManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
@@ -105,7 +105,7 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
                         CndUtils.assertTrue(inclFileOwner.getFileSystem() == resolvedPath.getFileSystem(), "Different FS for " + path + ": " + inclFileOwner.getFileSystem() + " vs " + resolvedPath.getFileSystem()); // NOI18N
                     }
                     try {
-                        if (APTTraceFlags.INCLUDE_TOKENS_IN_TOKEN_STREAM) {
+                        if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
                             APTPreprocHandler.State stateBefore = getPreprocHandler().getState();
                             assert !stateBefore.isCleaned();
                             included = includeAction(inclFileOwner, path, mode, aptInclude, postIncludeState);
