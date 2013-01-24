@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.modelimpl.parser;
 
 import org.antlr.runtime.RecognitionException;
+import org.antlr.runtime.RecognizerSharedState;
 import org.antlr.runtime.TokenStream;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CXXParser;
@@ -72,5 +73,8 @@ public class CXXParserEx extends CXXParser {
             errorDelegate.onError(new CsmParserProvider.ParserError(e.getMessage(), e.line, e.charPositionInLine, e.token.getText(), e.token.getType() == -1));
         }
     }
-    
+
+    public int backtrackingLevel() {
+        return state.backtracking;
+    }        
 }
