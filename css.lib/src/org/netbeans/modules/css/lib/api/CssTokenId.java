@@ -205,6 +205,15 @@ public enum CssTokenId implements TokenId {
     FONT_FACE_SYM(Css3Lexer.FONT_FACE_SYM, AT_RULE_SYMBOL),
     HASH_CHAR_ONLY(Css3Lexer.T__117, OTHERS),
     
+    /**
+     * '...' in less_args_list rule
+     */
+    LESS_VARARG(Css3Lexer.T__118, OTHERS),
+    /**
+     * '@rest...' in less_args_list rule
+     */
+    LESS_REST(Css3Lexer.T__119, OTHERS),
+    
     MOZ_DOCUMENT_SYM(Css3Lexer.MOZ_DOCUMENT_SYM, AT_RULE_SYMBOL),
     MOZ_DOMAIN(Css3Lexer.MOZ_DOMAIN, URIS),
     MOZ_URL_PREFIX(Css3Lexer.MOZ_URL_PREFIX, URIS),

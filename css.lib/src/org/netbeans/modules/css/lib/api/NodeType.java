@@ -335,6 +335,33 @@ public enum NodeType {
     /**
      * color: "(@base-color * 3);"
      */
-    less_function;
+    less_function,
+    
+    /**
+     * Same as expression, but allows more operators.
+     * 
+     * color: ("@base-color * 3");
+     */
+    less_expression,
+    
+    /**
+     * Less functions operators.
+     */
+    less_expression_operator,
+    
+    /**
+     * ".box-shadow (@x: 0, @y: 0, @blur: 1px, @color: #000)"
+     */
+    less_mixin_declaration,
+    
+    /**
+     * .box-shadow ("@x: 0, @y: 0, @blur: 1px, @color: #000")
+     */
+    less_args_list,
+    
+    /**
+     * .box-shadow ("@x: 0", @y: 0, @blur: 1px, @color: #000)
+     */
+    less_arg;
     
 }

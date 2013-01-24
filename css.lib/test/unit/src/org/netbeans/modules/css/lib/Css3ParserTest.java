@@ -1170,41 +1170,4 @@ public class Css3ParserTest extends CssTestBase {
 
     }
 
-    // *** LESS ***
-    public void testLessVariable() {
-        String source = "@color: #4D926F;\n"
-                + "\n"
-                + "#header {\n"
-                + "  color: @color;\n"
-                + "}\n"
-                + "h2 {\n"
-                + "  color: @color;\n"
-                + "}";
-
-        CssParserResult result = TestUtil.parse(source);
-
-        NodeUtil.dumpTree(result.getParseTree());
-        assertResultOK(result);
-
-//        assertEquals(0, result.getDiagnostics().size());
-
-    }
-
-    public void testLessFunction() {
-        String source = 
-                  "#header {\n"
-                + "  color: (@base-color * 3);\n"
-                + "  border-left: @the-border;\n"
-                + "  border-right: (@the-border * 2);\n"
-                + "}\n"
-                ;
-
-        CssParserResult result = TestUtil.parse(source);
-
-        NodeUtil.dumpTree(result.getParseTree());
-        assertResultOK(result);
-
-//        assertEquals(0, result.getDiagnostics().size());
-
-    }
 }

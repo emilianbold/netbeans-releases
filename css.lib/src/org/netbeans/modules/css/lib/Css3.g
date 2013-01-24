@@ -521,7 +521,7 @@ property
     ;
     
 rule 
-    :   selectorsGroup
+    :   ( selectorsGroup | less_mixin_declaration )
         LBRACE ws? syncToDeclarationsRule
             declarations
         RBRACE
@@ -680,7 +680,7 @@ declaration
     }
 
 propertyValue
-	:	expression
+	:	expression | less_function
 	;
 
 //recovery: syncs the parser to the first identifier in the token input stream or the closing curly bracket
@@ -718,7 +718,7 @@ expression
 term
     : ( unaryOperator ws? )?
         (
-        (
+        ( 
               NUMBER
             | PERCENTAGE
             | LENGTH
@@ -787,8 +787,10 @@ ws
     ;
     
 //*** LESS SYNTAX ***
+//Some additional modifications to the standard syntax rules has also been done.
+
 less_variable_declaration
-    : less_variable WS+ COLON WS+ expression SEMI
+    : less_variable ws? COLON ws? expression SEMI
     ;
     
 less_variable
@@ -796,14 +798,64 @@ less_variable
     ;
 
 less_function
-    : LPAREN WS+ less_expression WS+ RPAREN
+    : LPAREN ws? less_expression RPAREN
     ;
 
 less_expression
-    : term (less_expression_operator term)*
+    : term (less_expression_operator term)*    
     ;
     
 less_expression_operator
+    : (
+        SOLIDUS 
+//        | COMMA
+        | STAR 
+        | PLUS
+        | MINUS
+      ) ws?
+    ;
+
+//parametric mixins: 
+//    .border-radius (@radius) 
+//    .box-shadow (@x: 0, @y: 0, @blur: 1px, @color: #000)
+//
+//normal mixin has common css syntax: .mixin so cannot be distinguished from a css class
+less_mixin_declaration
+    :
+    cssClass ws? LPAREN less_args_list? RPAREN ws? less_mixin_guarded?
+    ;
+    
+//.box-shadow ("@x: 0, @y: 0, @blur: 1px, @color: #000")
+less_args_list
+    : 
+    ( less_arg ( COMMA ws? less_arg)* (COMMA ws? ('...' | '@rest...'))?)
+    | 
+    ('...' | '@rest...')
+    ;
+    
+//.box-shadow ("@x: 0", @y: 0, @blur: 1px, @color: #000)
+less_arg
+    :
+    less_variable ( COLON ws? less_expression )?
+    ;
+
+//.mixin (@a) "when (lightness(@a) >= 50%)" {
+//.mixin (@a) "when (@a > 10), (@a < -10)" { ... }
+less_mixin_guarded
+    :
+    'when' less_condition (COMMA ws? less_condition)
+    ;
+    
+less_condition
+    :
+    less_variable ( less_condition_operator ( less_expression | less_variable ) )    
+    ;
+    
+less_condition_operator
+    :
+    GREATER | GREATER_OR_EQ | OPEQ | LESS | LESS_OR_EQ | 'AND' | 
+    ;
+
 //*** END OF LESS SYNTAX ***
 
 // ==============================================================
@@ -1126,6 +1178,11 @@ COMMA           : ','       ;
 DOT             : '.'       ;
 TILDE		: '~'       ;
 PIPE            : '|'       ;
+
+LESS            : '<'       ;
+GREATER_OR_EQ   : '>='       ;
+LESS            : '<'       ;
+LESS_OR_EQ      : '=<'       ;
 
 // -----------------
 // Literal strings. Delimited by either ' or "
