@@ -55,6 +55,7 @@ import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
+import org.netbeans.modules.php.editor.parser.astnodes.SwitchCase;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
@@ -99,6 +100,11 @@ public class MethodRedeclarationHintError extends AbstractHintError {
         public void visit(IfStatement node) {
             addStatement(node.getTrueStatement());
             addStatement(node.getFalseStatement());
+        }
+
+        @Override
+        public void visit(SwitchCase node) {
+            addStatement(node);
         }
 
         private void addStatement(Statement statement) {
