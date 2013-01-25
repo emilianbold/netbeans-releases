@@ -96,6 +96,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     public static final String DEFAULT_FOLDER_NAME = "f"; // NOI18N
     public static final String DEFAULT_FOLDER_DISPLAY_NAME = getString("NewFolderName");
     public static final String DEFAULT_TEST_FOLDER_DISPLAY_NAME = getString("NewTestFolderName");
+    public static final String LS_FOLDER_PERFORMANCE_EVENT = "LS_FOLDER_PERFORMANCE_EVENT"; //NOI18N
     public static final String CREATE_ITEM_PERFORMANCE_EVENT = "CREATE_ITEM_PERFORMANCE_EVENT"; //NOI18N
     public static final String GET_ITEM_FILE_OBJECT_PERFORMANCE_EVENT = "GET_ITEM_FILE_OBJECT_PERFORMANCE_EVENT"; //NOI18N
     private final MakeConfigurationDescriptor configurationDescriptor;
