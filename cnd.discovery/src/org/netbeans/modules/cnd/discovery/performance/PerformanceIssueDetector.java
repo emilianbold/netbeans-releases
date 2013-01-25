@@ -59,8 +59,7 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -240,7 +239,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         }
     }
     
-    @NbBundle.Messages({
+    @Messages({
          "# {0} - time"
         ,"# {1} - items"
         ,"# {2} - speed"
@@ -277,7 +276,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         }
     }
     
-    @NbBundle.Messages({
+    @Messages({
          "# {0} - time"
         ,"# {1} - read"
         ,"# {2} - speed"
@@ -318,7 +317,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         }
     }
     
-    @NbBundle.Messages({
+    @Messages({
          "# {0} - time"
         ,"# {1} - lines"
         ,"# {2} - speed"
