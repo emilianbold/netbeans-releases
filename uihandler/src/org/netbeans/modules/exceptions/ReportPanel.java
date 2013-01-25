@@ -45,7 +45,10 @@
 package org.netbeans.modules.exceptions;
 
 import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.net.MalformedURLException;
+import javax.swing.Scrollable;
 import org.netbeans.lib.uihandler.PasswdEncryption;
 import org.openide.awt.HtmlBrowser;
 
@@ -55,7 +58,7 @@ import org.openide.awt.HtmlBrowser;
  */
 
 
-public class ReportPanel extends javax.swing.JPanel {
+public class ReportPanel extends javax.swing.JPanel implements Scrollable{
     private final ExceptionsSettings exSettings;
     
     public ReportPanel(boolean isOOM, ExceptionsSettings exSettings) {
@@ -358,4 +361,29 @@ public class ReportPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox rememberCheckBox;
     private javax.swing.JTextField summaryField;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public Dimension getPreferredScrollableViewportSize() {
+        return getPreferredSize();
+    }
+
+    @Override
+    public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+      return 10;
+    }
+
+    @Override
+    public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+       return 50;
+    }
+
+    @Override
+    public boolean getScrollableTracksViewportWidth() {
+        return false;
+    }
+
+    @Override
+    public boolean getScrollableTracksViewportHeight() {
+       return true;
+    }
 }

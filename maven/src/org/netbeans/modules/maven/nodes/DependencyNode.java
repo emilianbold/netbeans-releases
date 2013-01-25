@@ -196,7 +196,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             return null;
         }
         //artifact.getFile() should be eagerly normalized
-        if (fo != null) {
+        if (fo != null && FileUtil.isArchiveFile(fo)) {
             return PackageView.createPackageView(new ArtifactSourceGroup(art));
         }
         return null;        
@@ -359,9 +359,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     private void refreshNode() {
         assert !SwingUtilities.isEventDispatchThread();
         FileObject fo = FileUtil.toFileObject(art.getFile());
-        if (fo != null && !FileUtil.isArchiveFile(fo)) {
-            fo = null;
-        }
+        
         sourceExists.set(getSourceFile().exists());
         javadocExists.set(getJavadocFile().exists());
         fileObject.set(fo);

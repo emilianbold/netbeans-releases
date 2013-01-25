@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.AbstractCsmNode;
+import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.navigation.services.IncludedModel;
 import org.openide.loaders.DataObject;
@@ -95,12 +96,7 @@ public class IncludeNode extends AbstractCsmNode {
     @Override
     public Image getIcon(int param) {
         Image image;
-        DataObject dataObject =CsmUtilities.getDataObject(object);
-        if (dataObject != null){
-            image = dataObject.getNodeDelegate().getIcon(param);
-        } else {
-            image =  super.getIcon(param);
-        }
+        image = CsmImageLoader.getIcon(object).getImage();
         return mergeBadge(image);
     }
 

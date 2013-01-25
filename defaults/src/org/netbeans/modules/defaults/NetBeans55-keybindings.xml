@@ -96,8 +96,8 @@ made subject to such option by the copyright holder.
     <bind actionName="expand-fold" key="D-ADD"/>
     <bind actionName="expand-fold" key="D-EQUALS"/>
     <bind actionName="expand-fold" key="D-PLUS"/>
-    <bind actionName="incremental-search-forward" key="FIND"/>
-    <bind actionName="incremental-search-forward" key="D-F"/>
+    <bind actionName="find" key="FIND"/>
+    <bind actionName="find" key="D-F"/>
     <bind actionName="find-next" key="F3"/>
     <bind actionName="find-previous" key="S-F3"/>
     <bind actionName="find-selection" key="D-F3"/>

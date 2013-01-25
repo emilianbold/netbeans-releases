@@ -53,30 +53,30 @@ import org.netbeans.modules.maven.api.archetype.Archetype;
  * @author Martin Janicek
  */
 abstract class BaseJ2eeArchetypeProvider {
-    
+
     protected Map<Profile, Archetype> map;
 
-    
+
     protected BaseJ2eeArchetypeProvider() {
         map = new TreeMap<Profile, Archetype>(Profile.UI_COMPARATOR);
         setUpProjectArchetypes();
     }
-    
+
     /**
      * Implementor of this method should create proper archetypes and add them into the archetype map.
-     * 
+     *
      * It's possible to use {@link #addMojoArchetype} method for creating
      * new archetypes with groupId set to org.codehaus.mojo.archetypes or we can add archetypes directly to the map
-     * 
-     * If we want to create the same archetype for all possible profiles, we can use 
+     *
+     * If we want to create the same archetype for all possible profiles, we can use
      * {@link #addSameMojoArchetypeForAllProfiles} method
      */
     protected abstract void setUpProjectArchetypes();
-    
+
     protected void addMojoArchetype(Profile j2eeProfile, String version, String artifactId) {
         map.put(j2eeProfile, createMojoArchetype(version, artifactId));
     }
-    
+
     protected void addSameMojoArchetypeForAllProfiles(String version, String artifactId) {
         Archetype archetype = createMojoArchetype(version, artifactId);
         map.put(Profile.J2EE_13, archetype);
@@ -85,46 +85,47 @@ abstract class BaseJ2eeArchetypeProvider {
         map.put(Profile.JAVA_EE_6_FULL, archetype);
         map.put(Profile.JAVA_EE_6_WEB, archetype);
     }
-    
+
     private Archetype createMojoArchetype(String version, String artifactId) {
         Archetype archetype = new Archetype();
         archetype.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
         archetype.setVersion(version);
         archetype.setArtifactId(artifactId);
-        
+
         return archetype;
     }
-    
+
     /**
      * Returns archetype for a given profile.
      * If an exception is thrown, it means we have some kind of an inconsistency between UI and ConcreteArchetype class
-     * 
+     *
      * @param profile for which we want to get proper archetype
      * @return archetype found for the given Profile
      * @throws IllegalStateException if there isn't defined any Archetype for the given profile
      */
-    public @NonNull Archetype getArchetypeFor(Profile profile) {
+    @NonNull
+    public Archetype getArchetypeFor(Profile profile) {
         Archetype archetype = map.get(profile);
-        
+
         if (archetype != null) {
             return archetype;
         } else {
             throw new IllegalStateException("No archetype defined for profile " + profile + " in " + getClass() + "; check whether all possible <Profile, Archetype> pairs have been added"); //NOI18N
         }
     }
-    
+
     /**
-     * Returns whole map which contains <key = Profile, value = Archetype> pairs
+     * Returns whole map which contains <key = Profile, value = Archetype> pairs.
      * @return complete archetype map
      */
     public Map<Profile, Archetype> getArchetypeMap() {
         return map;
     }
-    
+
     /**
-     * Returns any Archetype saved in the map
+     * Returns any Archetype saved in the map.
      * Could be used if we want to have the same Archetype for every Profile
-     * 
+     *
      * @return any of Archetype saved in the map or null if there is no archetype in the map
      */
     @CheckForNull public Archetype getAnyArchetype() {

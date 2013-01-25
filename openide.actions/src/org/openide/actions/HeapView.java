@@ -71,6 +71,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -574,36 +575,45 @@ class HeapView extends JComponent {
     /**
      * Renders the text using a drop shadow.
      */
-    private void paintDropShadowText(Graphics g, int w, int h) {
-        if (textImage == null) {
-            textImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-            dropShadowImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+    private void paintDropShadowText(Graphics g, final int w, final int h) {
+        BufferedImage dsi = dropShadowImage;
+        BufferedImage tsi = textImage;
+        if (dsi != null && tsi != null) {
+            // And finally copy it.
+            Graphics2D blurryImageG = dsi.createGraphics();
+            blurryImageG.setComposite(AlphaComposite.Clear);
+            blurryImageG.fillRect(0, 0, w, h);
+            blurryImageG.setComposite(AlphaComposite.SrcOver);
+            blurryImageG.drawImage(tsi, blur, SHIFT_X, SHIFT_Y);
+            blurryImageG.setColor(TEXT_COLOR);
+            blurryImageG.setFont(getFont());
+
+            // Step 3: render the text again on top.
+            paintText(blurryImageG, w, h);
+            blurryImageG.dispose();
+            g.drawImage(dsi, 0, 0, null);
+        } else {
+            class InitTextAndDropShadow implements Runnable {
+                @Override
+                public void run() {
+                    BufferedImage ti = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    BufferedImage ds = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+                    // Step 1: render the text.
+                    Graphics2D textImageG = ti.createGraphics();
+                    textImageG.setComposite(AlphaComposite.Clear);
+                    textImageG.fillRect(0, 0, w, h);
+                    textImageG.setComposite(AlphaComposite.SrcOver);
+                    textImageG.setColor(TEXT_BLUR_COLOR);
+                    paintText(textImageG, w, h);
+                    textImageG.dispose();
+
+                    textImage = ti;
+                    dropShadowImage = ds;
+                    repaint();
+                }
+            }
+            RequestProcessor.getDefault().post(new InitTextAndDropShadow());
         }
-        // Step 1: render the text.
-        Graphics2D textImageG = textImage.createGraphics();
-        textImageG.setComposite(AlphaComposite.Clear);
-        textImageG.fillRect(0, 0, w, h);
-        textImageG.setComposite(AlphaComposite.SrcOver);
-        textImageG.setColor(TEXT_BLUR_COLOR);
-        paintText(textImageG, w, h);
-        textImageG.dispose();
-        
-        // Step 2: copy the image containing the text to dropShadowImage using
-        // the blur effect, which generates a nice drop shadow.
-        Graphics2D blurryImageG = dropShadowImage.createGraphics();
-        blurryImageG.setComposite(AlphaComposite.Clear);
-        blurryImageG.fillRect(0, 0, w, h);
-        blurryImageG.setComposite(AlphaComposite.SrcOver);
-        blurryImageG.drawImage(textImage, blur, SHIFT_X, SHIFT_Y);
-        blurryImageG.setColor(TEXT_COLOR);
-        blurryImageG.setFont(getFont());
-        
-        // Step 3: render the text again on top.
-        paintText(blurryImageG, w, h);
-        blurryImageG.dispose();
-        
-        // And finally copy it.
-        g.drawImage(dropShadowImage, 0, 0, null);
     }
     
     private String getHeapSizeText() {
@@ -706,8 +716,8 @@ class HeapView extends JComponent {
      */
     private void updateCache(int w, int h) {
         disposeImages();
-        textImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-        dropShadowImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        textImage = null;
+        dropShadowImage = null;
         bgImage = createImage(w, h);
         if (bgImage == null) {
             return;

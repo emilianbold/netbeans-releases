@@ -71,7 +71,7 @@ public class JsFunctionDocumentationRule extends JsAstRule {
     public static final String JSDOCUMENTATION_OPTION_HINTS = "jsdocumentation.option.hints"; //NOI18N
 
     @Override
-    void computeHints(JsRuleContext context, List<Hint> hints, HintsProvider.HintsManager manager) {
+    void computeHints(JsRuleContext context, List<Hint> hints, int offset, HintsProvider.HintsManager manager) {
         Map<?, List<? extends AstRule>> allHints = manager.getHints();
         List<? extends AstRule> conventionHints = allHints.get(JSDOCUMENTATION_OPTION_HINTS);
         Rule undocumentedParameterRule = null;

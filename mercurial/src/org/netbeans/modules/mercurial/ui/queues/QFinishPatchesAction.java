@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.mercurial.ui.queues;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -61,8 +62,7 @@ import org.netbeans.modules.versioning.hooks.HgQueueHook;
 import org.netbeans.modules.versioning.hooks.HgQueueHookContext;
 import org.netbeans.modules.versioning.hooks.VCSHooks;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
@@ -92,14 +92,25 @@ public class QFinishPatchesAction extends ContextAction {
         final File roots[] = HgUtils.getActionRoots(ctx);
         if (roots == null || roots.length == 0) return;
         final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
-        
-        FinishPatch finishPatch = new FinishPatch(root);
-        if (finishPatch.showDialog()) {
-            String patchName = finishPatch.getSelectedPatch();
-            if (patchName != null) {
-                finishPatch(root, roots, patchName);
+        Utils.post(new Runnable() {
+            @Override
+            public void run () {
+                if (QUtils.isMQEnabledExtension(root)) {
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run () {
+                            FinishPatch finishPatch = new FinishPatch(root);
+                            if (finishPatch.showDialog()) {
+                                String patchName = finishPatch.getSelectedPatch();
+                                if (patchName != null) {
+                                    finishPatch(root, roots, patchName);
+                                }
+                            }
+                        }
+                    });
+                }
             }
-        }
+        });
     }
 
     public void finishPatch (final File root, final File[] roots, final String patchName) {

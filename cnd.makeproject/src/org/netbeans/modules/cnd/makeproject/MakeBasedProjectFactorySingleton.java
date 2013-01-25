@@ -59,11 +59,13 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectManager.Result;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectLife;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectFactory2;
 import org.netbeans.spi.project.ProjectState;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -113,7 +115,7 @@ public final class MakeBasedProjectFactorySingleton implements ProjectFactory2 {
             return null;
         }
         try {
-            Document projectXml = loadProjectXml(projectDirectory);
+            Document projectXml = loadProjectXml(projectFile);
             if (projectXml != null) {
                 Element typeEl = XMLUtil.findElement(projectXml.getDocumentElement(), "type", PROJECT_NS); // NOI18N
                 if (typeEl != null) {
@@ -164,6 +166,7 @@ public final class MakeBasedProjectFactorySingleton implements ProjectFactory2 {
         }
         MakeProjectHelperImpl helper = MakeProjectHelperImpl.create(projectDirectory, projectXml, state, provider);
         Project project = provider.createProject(helper);
+        notifyProjectActivity(project);
         project2Helper.put(project, new WeakReference<MakeProjectHelperImpl>(helper));
         synchronized (helper2Project) {
             helper2Project.put(helper, new WeakReference<Project>(project));
@@ -256,5 +259,11 @@ public final class MakeBasedProjectFactorySingleton implements ProjectFactory2 {
             return ref.get();
         }
         return null;
+    }
+
+    private void notifyProjectActivity(Project project) {
+        for (MakeProjectLife service : Lookup.getDefault().lookupAll(MakeProjectLife.class)) {
+            service.start(project);
+        }
     }
 }

@@ -57,7 +57,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -130,8 +129,6 @@ class SftpSupport {
     // Instance stuff
     //
     private final ExecutionEnvironment execEnv;
-
-    private LinkedList<ChannelSftp> spareChannels = new LinkedList<ChannelSftp>();
     
     // just a primitive statistics
     private int currBusyChannels = 0;
@@ -161,7 +158,6 @@ class SftpSupport {
             }
         }
     }
-    
     private void decrementStatistics() {
         synchronized (channelLock) {
             currBusyChannels--;
@@ -169,36 +165,32 @@ class SftpSupport {
     }
     
     private void releaseChannel(ChannelSftp channel) {
-        synchronized (channelLock) {
-            spareChannels.push(channel);
+        ConnectionManagerAccessor cmAccess = ConnectionManagerAccessor.getDefault();
+        try {
+            cmAccess.closeAndReleaseChannel(execEnv, channel);
+        } catch (JSchException ex) {
+            LOG.log(Level.WARNING, "Error while releasing a channel: {0}", ex.getMessage()); // NOI18N
+        } finally {
             decrementStatistics();
         }
     }
 
     private ChannelSftp getChannel() throws IOException, CancellationException, JSchException, ExecutionException, InterruptedException {
-        // try to reuse channel
-        synchronized (channelLock) {
-            if (!spareChannels.isEmpty()) {
-                ChannelSftp channel = spareChannels.pop();
-                if (channel.isConnected()) {
-                    incrementStatistics();
-                    return channel;
-                }
-            }
+        final ConnectionManagerAccessor cmAccess = ConnectionManagerAccessor.getDefault();
+        if (cmAccess == null) { // is it a paranoja?
+            throw new ExecutionException("Error getting ConnectionManagerAccessor", new NullPointerException()); //NOI18N
         }
-        // no spare channels - create a new one            
         if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
             ConnectionManager.getInstance().connectTo(execEnv);
         }
-        ConnectionManagerAccessor cmAccess = ConnectionManagerAccessor.getDefault();
-        if (cmAccess == null) { // is it a paranoja?
-            throw new ExecutionException("Error getting ConnectionManagerAccessor", new NullPointerException()); //NOI18N
-        }                
-        ChannelSftp channel = (ChannelSftp) cmAccess.openAndAcquireChannel(execEnv, "sftp", true); // NOI18N
-        if (channel == null) {
-            throw new ExecutionException("ConnectionManagerAccessor returned null channel while waitIfNoAvailable was set to true", new NullPointerException()); //NOI18N
+        ChannelSftp channel;
+        synchronized (channelLock) {
+            channel = (ChannelSftp) cmAccess.openAndAcquireChannel(execEnv, "sftp", true); // NOI18N
+            if (channel == null) {
+                throw new ExecutionException("ConnectionManagerAccessor returned null channel while waitIfNoAvailable was set to true", new NullPointerException()); //NOI18N
+            }
+            channel.connect();
         }
-        channel.connect();
         incrementStatistics();
         return channel;
     }

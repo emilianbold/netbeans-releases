@@ -221,12 +221,12 @@ public final class TreeUtilities {
 
             assert assertsEnabled = true;
 
-            if (assertsEnabled) {
+            if (true) {
                 TreePath tp = info.getCompilationUnit() == tree ? new TreePath(info.getCompilationUnit()) : TreePath.getPath(info.getCompilationUnit(), tree);
 
                 if (tp == null) {
-                    Logger.getLogger(TreeUtilities.class.getName()).log(Level.WARNING, "Comment automap requested for Tree not from the root compilation info. Please, make sure to call GeneratorUtilities.importComments before Treeutilities.getComments. Tree: {0}", tree);
-                    Logger.getLogger(TreeUtilities.class.getName()).log(Level.INFO, "Caller", new Exception());
+                    Logger.getLogger(TreeUtilities.class.getName()).log(assertsEnabled ? Level.WARNING : Level.FINE, "Comment automap requested for Tree not from the root compilation info. Please, make sure to call GeneratorUtilities.importComments before Treeutilities.getComments. Tree: {0}", tree);
+                    Logger.getLogger(TreeUtilities.class.getName()).log(assertsEnabled ? Level.INFO : Level.FINE, "Caller", new Exception());
                     automap = false;
                 }
             }

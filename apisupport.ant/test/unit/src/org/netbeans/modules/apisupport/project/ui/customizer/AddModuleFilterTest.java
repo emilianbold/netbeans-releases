@@ -104,13 +104,13 @@ public class AddModuleFilterTest extends TestBase {
 //    }
     
     public void testMatchStrings() throws Exception {
-        ModuleDependency dep = filter.getMatches("callablesys").iterator().next();
+        ModuleDependency dep = filter.getMatches("callablesys", false).iterator().next();
         assertEquals(Collections.singleton("org.openide.util.actions.CallableSystemAction"), filter.getMatchesFor("callablesys", dep));
     }
     
     public void testMatchOrdering() throws Exception { // #71995
         List<String> matches = new ArrayList<String>();
-        for (ModuleDependency dep : filter.getMatches("systemaction")) {
+        for (ModuleDependency dep : filter.getMatches("systemaction", false)) {
             matches.add(dep.getModuleEntry().getCodeNameBase());
         }
         assertEquals(Arrays.asList(
@@ -122,7 +122,7 @@ public class AddModuleFilterTest extends TestBase {
     
     private void assertMatches(String text, String[] cnbs) {
         Set<String> matchedCNBs = new HashSet<String>();
-        for (ModuleDependency dep : filter.getMatches(text)) {
+        for (ModuleDependency dep : filter.getMatches(text, false)) {
             matchedCNBs.add(dep.getModuleEntry().getCodeNameBase());
         }
         assertEquals("correct matches for '" + text + "'", new HashSet<String>(Arrays.asList(cnbs)), matchedCNBs);

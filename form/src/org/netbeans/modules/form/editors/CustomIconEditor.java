@@ -153,8 +153,18 @@ public class CustomIconEditor extends javax.swing.JPanel {
         if ((nbIcon == null) || (nbIcon.getType() != IconEditor.TYPE_CLASSPATH)) {
             FileObject sourceFile = propertyEditor.getSourceFile();
             ClassPath cp = ClassPath.getClassPath(sourceFile, ClassPath.SOURCE);
-            setPackageRoot(cp.findOwnerRoot(sourceFile));
-            setPackage(propertyEditor.getDefaultResourceFolder());            
+            if (cp != null) {
+                setPackageRoot(cp.findOwnerRoot(sourceFile));
+                setPackage(propertyEditor.getDefaultResourceFolder());
+            } else {
+                externalRadio.setSelected(true);
+                classPathRadio.setEnabled(false);
+                packageCombo.setEnabled(false);
+                fileCombo.setEnabled(false);
+                browseFileButton.setEnabled(false);
+                importButton.setEnabled(false);
+                return;
+            }
         }
         
         if (nbIcon == null) {

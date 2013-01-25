@@ -101,6 +101,7 @@ import org.netbeans.modules.cnd.utils.FileObjectFilter;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
+import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -1911,11 +1912,13 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 dirfolder.markRemoved(false);
                 addFilesImpl(antiLoop, dirfolder, file, handle, filesAdded, notify, setModified, fileFilter, useOldSchemeBehavior);
             } else {
+                PerformanceLogger.PerformaceAction performanceEvent = PerformanceLogger.getLogger().start(Folder.CREATE_ITEM_PERFORMANCE_EVENT, file);
                 String path = ProjectSupport.toProperPath(baseDirFO, file, project);
                 Item item = Item.createInBaseDir(baseDirFO, path);
                 if (folder.addItemFromRefreshDir(item, notify, setModified, useOldSchemeBehavior) == item) {
                     filesAdded.add(item);
                 }
+                performanceEvent.log(item);
                 if (handle != null) {
                     handle.progress(item.getPath());
                 }

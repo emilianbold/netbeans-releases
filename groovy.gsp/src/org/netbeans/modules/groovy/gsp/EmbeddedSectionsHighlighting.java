@@ -62,6 +62,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.groovy.gsp.lexer.GspLexerLanguage;
 import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
@@ -93,7 +94,7 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
         String mimeType = (String) document.getProperty("mimeType"); //NOI18N
         FontColorSettings fcs = MimeLookup.getLookup(mimeType).lookup(FontColorSettings.class);
         if (fcs != null) {
-            Color jsBC = getColoring(fcs, GspTokenId.GROOVY.primaryCategory());
+            Color jsBC = getColoring(fcs, GspTokenId.GSTRING_CONTENT.primaryCategory());
             if (jsBC != null) {
                  attribs = AttributesUtilities.createImmutable(
                     StyleConstants.Background, jsBC, 
@@ -156,7 +157,7 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
         private final int startOffset;
         private final int endOffset;
 
-        private TokenSequence<?> sequence = null;
+        private TokenSequence<GspTokenId> sequence = null;
         private int sectionStart = -1;
         private int sectionEnd = -1;
         private boolean finished = false;
@@ -173,7 +174,7 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
             synchronized (EmbeddedSectionsHighlighting.this) {
                 if (checkVersion()) {
                     if (sequence == null) {
-                        sequence = scanner.tokenSequence();
+                        sequence = scanner.tokenSequence(GspLexerLanguage.getLanguage());
 
                         if (sequence == null) {
                             sectionStart = -1;
@@ -188,10 +189,10 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
 
                     int delimiterSize = 0;
                     while (sequence.moveNext() && sequence.offset() < endOffset) {
-                        if (sequence.token().id() == GspTokenId.DELIMITER) {
+                        if (sequence.token().id().isDelimiter()) {
                             // opening delimiters can have different lenght
                             delimiterSize = sequence.token().length();
-                        } else if (GspTokenId.isGroovy((sequence.token().id()))) {
+                        } else {
                             sectionStart = sequence.offset();
                             sectionEnd = sequence.offset() + sequence.token().length();
 

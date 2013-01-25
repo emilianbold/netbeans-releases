@@ -279,19 +279,23 @@ public final class LayoutDesigner implements LayoutConstants {
                     if (grow > 0) {
                         LayoutInterval p = li.getParent();
                         do {
-                            if (!LayoutInterval.canResize(p) || p.getParent() == null) {
-                                if (p.getDiffToDefaultSize() > 0) {
-                                    grow -= p.getDiffToDefaultSize();
-                                }
+                            int absorb;
+                            if (p.isSequential()) {
+                                absorb = p.getDiffToDefaultSize() - li.getDiffToDefaultSize();
+                            } else {
+                                absorb = LayoutInterval.getCurrentSize(p, dim) - LayoutInterval.getCurrentSize(li, dim);
                             }
-                            li = p; // (will be the root in the end)
+                            if (absorb > 0) {
+                                grow -= absorb;
+                            }
+                            li = p;
                             p = p.getParent();
-                        } while (p != null);
+                        } while (p != null && grow > 0);
                         if (grow > 0) { // can't absorb the grow without possibly
-                            // shrinking some resizing component under pref. size
+                            // shrinking some resizing component under default size
                             preferredSizeChanged = true;
                             if (li.getDiffToDefaultSize() > 0) { // absorb at least this part
-                                setDefaultSizeInContainer(li, false);
+                                setDefaultSizeInContainer(li, false); // li is root
                                 rebuild = true;
                             }
                         }

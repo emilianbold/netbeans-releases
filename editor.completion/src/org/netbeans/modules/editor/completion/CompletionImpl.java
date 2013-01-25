@@ -354,7 +354,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
     public void changedUpdate(javax.swing.event.DocumentEvent e) {
     }
     
-    public synchronized void caretUpdate(javax.swing.event.CaretEvent e) {
+    public void caretUpdate(javax.swing.event.CaretEvent e) {
         assert (SwingUtilities.isEventDispatchThread());
 
         if (ensureActiveProviders()) {

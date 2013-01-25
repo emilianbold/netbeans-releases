@@ -75,6 +75,7 @@ import org.openide.filesystems.FileUtil;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.openide.util.NbBundle.Messages;
 import static org.netbeans.modules.maven.apisupport.Bundle.*;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 
 public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiatingIterator<WizardDescriptor> {
 
@@ -143,7 +144,7 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
         ArchetypeWizards.logUsage(archetype.getGroupId(), archetype.getArtifactId(), archetype.getVersion());
 
             String nbm_artifactId = (String) wiz.getProperty(NBM_ARTIFACTID);
-            File projFile = FileUtil.normalizeFile((File) wiz.getProperty("projdir")); // NOI18N
+            File projFile = FileUtil.normalizeFile((File) wiz.getProperty(CommonProjectActions.PROJECT_PARENT_FOLDER)); // NOI18N
             String version = (String) wiz.getProperty(NB_VERSION);
             Map<String,String> additional = version != null ? Collections.singletonMap("netbeansVersion", version) : null; // NOI18N
             ArchetypeWizards.createFromArchetype(projFile, vi, archetype, additional, true);

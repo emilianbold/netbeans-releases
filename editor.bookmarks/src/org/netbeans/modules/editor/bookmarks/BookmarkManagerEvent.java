@@ -87,8 +87,11 @@ public final class BookmarkManagerEvent extends EventObject {
             for (ProjectBookmarksChange prjChange : projectBookmarksChanges.values()) {
                 for (FileBookmarksChange fileChange : prjChange.getFileBookmarksChanges()) {
                     for (BookmarkChange change : fileChange.getBookmarkChanges()) {
-                        assert (bookmarkChanges.put(change.getBookmark(), change) == null)
-                                : "Bookmark contained in multiple changes: " + change.getBookmark(); // NOI18N
+                        Object o = bookmarkChanges.put(change.getBookmark(), change);
+                        if (o != null) {
+                            throw new IllegalStateException(
+                                    "Bookmark contained in multiple changes: " + change.getBookmark()); // NOI18N
+                        }
                     }
                 }
             }
