@@ -75,7 +75,7 @@ public class ForLoopToFunctionalHintTest extends NbTestCase {
                 + "}")
                 .sourceLevel("1.8")
                 .run(ForLoopToFunctionalHint.class)
-                .findWarning("12:8-12:11:verifier:")
+                .findWarning("12:8-12:11:verifier:" + Bundle.ERR_ForLoopToFunctionalHint())
                 .applyFix()
                 .assertOutput("package testdemo;\n"
                 + "\n"
@@ -121,7 +121,7 @@ public class ForLoopToFunctionalHintTest extends NbTestCase {
                 + "}")
                 .sourceLevel("1.8")
                 .run(ForLoopToFunctionalHint.class)
-                .findWarning("12:8-12:11:verifier:")
+                .findWarning("12:8-12:11:verifier:" + Bundle.ERR_ForLoopToFunctionalHint())
                 .applyFix()
                 .assertOutput("package testdemo;\n"
                 + "\n"
@@ -171,7 +171,7 @@ public class ForLoopToFunctionalHintTest extends NbTestCase {
                 + "}")
                 .sourceLevel("1.8")
                 .run(ForLoopToFunctionalHint.class)
-                .findWarning("12:8-12:11:verifier:")
+                .findWarning("12:8-12:11:verifier:" + Bundle.ERR_ForLoopToFunctionalHint())
                 .applyFix()
                 .assertOutput("package testdemo;\n"
                 + "\n"
@@ -222,7 +222,7 @@ public class ForLoopToFunctionalHintTest extends NbTestCase {
                 + "}")
                 .sourceLevel("1.8")
                 .run(ForLoopToFunctionalHint.class)
-                .findWarning("12:8-12:11:verifier:")
+                .findWarning("12:8-12:11:verifier:" + Bundle.ERR_ForLoopToFunctionalHint())
                 .applyFix()
                 .assertOutput("package testdemo;\n"
                 + "\n"
@@ -275,7 +275,7 @@ public class ForLoopToFunctionalHintTest extends NbTestCase {
                 + "}")
                 .sourceLevel("1.8")
                 .run(ForLoopToFunctionalHint.class)
-                .findWarning("12:8-12:11:verifier:")
+                .findWarning("12:8-12:11:verifier:" + Bundle.ERR_ForLoopToFunctionalHint())
                 .applyFix()
                 .assertOutput("package testdemo;\n"
                 + "\n"
@@ -332,7 +332,7 @@ public class ForLoopToFunctionalHintTest extends NbTestCase {
                 + "}")
                 .sourceLevel("1.8")
                 .run(ForLoopToFunctionalHint.class)
-                .findWarning("12:8-12:11:verifier:")
+                .findWarning("12:8-12:11:verifier:" + Bundle.ERR_ForLoopToFunctionalHint())
                 .applyFix()
                 .assertOutput("package testdemo;\n"
                 + "\n"
@@ -389,7 +389,7 @@ public class ForLoopToFunctionalHintTest extends NbTestCase {
                 + "}")
                 .sourceLevel("1.8")
                 .run(ForLoopToFunctionalHint.class)
-                .findWarning("12:8-12:11:verifier:")
+                .findWarning("12:8-12:11:verifier:" + Bundle.ERR_ForLoopToFunctionalHint())
                 .applyFix()
                 .assertOutput("package testdemo;\n"
                 + "\n"
@@ -453,7 +453,7 @@ public class ForLoopToFunctionalHintTest extends NbTestCase {
                 + "}")
                 .sourceLevel("1.8")
                 .run(ForLoopToFunctionalHint.class)
-                .findWarning("12:8-12:11:verifier:")
+                .findWarning("12:8-12:11:verifier:" + Bundle.ERR_ForLoopToFunctionalHint())
                 .applyFix()
                 .assertOutput("package testdemo;\n"
                 + "\n"
@@ -517,7 +517,7 @@ public class ForLoopToFunctionalHintTest extends NbTestCase {
                 + "}")
                 .sourceLevel("1.8")
                 .run(ForLoopToFunctionalHint.class)
-                .findWarning("14:8-14:11:verifier:")
+                .findWarning("14:8-14:11:verifier:" + Bundle.ERR_ForLoopToFunctionalHint())
                 .applyFix()
                 .assertOutput("package testdemo;\n"
                 + "\n"
@@ -592,7 +592,7 @@ public class ForLoopToFunctionalHintTest extends NbTestCase {
                 + "}")
                 .sourceLevel("1.8")
                 .run(ForLoopToFunctionalHint.class)
-                .findWarning("12:8-12:11:verifier:")
+                .findWarning("12:8-12:11:verifier:" + Bundle.ERR_ForLoopToFunctionalHint())
                 .applyFix()
                 .assertOutput("package testdemo;\n"
                 + "\n"
@@ -659,7 +659,7 @@ public class ForLoopToFunctionalHintTest extends NbTestCase {
                 + "}")
                 .sourceLevel("1.8")
                 .run(ForLoopToFunctionalHint.class)
-                .findWarning("14:8-14:11:verifier:")
+                .findWarning("14:8-14:11:verifier:" + Bundle.ERR_ForLoopToFunctionalHint())
                 .applyFix()
                 .assertOutput("package testdemo;\n"
                 + "\n"
@@ -721,7 +721,7 @@ public class ForLoopToFunctionalHintTest extends NbTestCase {
                 + "}")
                 .sourceLevel("1.8")
                 .run(ForLoopToFunctionalHint.class)
-                .findWarning("14:8-14:11:verifier:")
+                .findWarning("14:8-14:11:verifier:" + Bundle.ERR_ForLoopToFunctionalHint())
                 .applyFix()
                 .assertOutput("package testdemo;\n"
                 + "\n"
@@ -793,7 +793,7 @@ public class ForLoopToFunctionalHintTest extends NbTestCase {
                 + "}")
                 .sourceLevel("1.8")
                 .run(ForLoopToFunctionalHint.class)
-                .findWarning("14:8-14:11:verifier:")
+                .findWarning("14:8-14:11:verifier:" + Bundle.ERR_ForLoopToFunctionalHint())
                 .applyFix()
                 .assertOutput("package testdemo;\n"
                 + "\n"
@@ -869,7 +869,7 @@ public class ForLoopToFunctionalHintTest extends NbTestCase {
                 + "}")
                 .sourceLevel("1.8")
                 .run(ForLoopToFunctionalHint.class)
-                .assertNotContainsWarnings("14:8-14:11:verifier:");
+                .assertWarnings();
     }
 
     public void testNoHintDueToBreak() throws Exception {
@@ -908,7 +908,7 @@ public class ForLoopToFunctionalHintTest extends NbTestCase {
                 + "}")
                 .sourceLevel("1.8")
                 .run(ForLoopToFunctionalHint.class)
-                .assertNotContainsWarnings("14:8-14:11:verifier:");
+                .assertWarnings();
     }
 
     public void testNoHintDueToReturnInt() throws Exception {
@@ -947,7 +947,7 @@ public class ForLoopToFunctionalHintTest extends NbTestCase {
                 + "}")
                 .sourceLevel("1.8")
                 .run(ForLoopToFunctionalHint.class)
-                .assertNotContainsWarnings("14:8-14:11:verifier:");
+                .assertWarnings();
     }
 
     public void testNoHintDueToMultipleReturnBoolean() throws Exception {
@@ -988,7 +988,7 @@ public class ForLoopToFunctionalHintTest extends NbTestCase {
                 + "}")
                 .sourceLevel("1.8")
                 .run(ForLoopToFunctionalHint.class)
-                .assertNotContainsWarnings("14:8-14:11:verifier:");
+                .assertWarnings();
     }
 
     public void testNoHintDueToLabeledContinue() throws Exception {
@@ -1030,7 +1030,7 @@ public class ForLoopToFunctionalHintTest extends NbTestCase {
                 + "}")
                 .sourceLevel("1.8")
                 .run(ForLoopToFunctionalHint.class)
-                .assertContainsWarnings("15:8-15:11:verifier:");
+                .assertWarnings("15:8-15:11:verifier:" + Bundle.ERR_ForLoopToFunctionalHint());
     }
 
     public void testNoHintDueToNonEliminableContinue() throws Exception {
@@ -1072,7 +1072,7 @@ public class ForLoopToFunctionalHintTest extends NbTestCase {
                 + "}")
                 .sourceLevel("1.8")
                 .run(ForLoopToFunctionalHint.class)
-                .assertContainsWarnings("15:8-15:11:verifier:");
+                .assertWarnings("15:8-15:11:verifier:" + Bundle.ERR_ForLoopToFunctionalHint());
     }
 
     public void testNoHintDueToMethodThrowingException() throws Exception {
@@ -1115,7 +1115,7 @@ public class ForLoopToFunctionalHintTest extends NbTestCase {
                 + "}")
                 .sourceLevel("1.8")
                 .run(ForLoopToFunctionalHint.class)
-                .assertNotContainsWarnings("15:8-15:11:verifier:");
+                .assertWarnings();
     }
 
     public void testNoHintDueToExplicitThrow() throws Exception {
@@ -1152,6 +1152,6 @@ public class ForLoopToFunctionalHintTest extends NbTestCase {
                 + "}")
                 .sourceLevel("1.8")
                 .run(ForLoopToFunctionalHint.class)
-                .assertNotContainsWarnings("15:8-15:11:verifier:");
+                .assertWarnings();
     }
 }
