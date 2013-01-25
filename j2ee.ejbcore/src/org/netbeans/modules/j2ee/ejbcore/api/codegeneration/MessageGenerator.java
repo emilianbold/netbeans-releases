@@ -83,6 +83,7 @@ public final class MessageGenerator {
     private final MessageDestination messageDestination;
     private final boolean isSimplified;
     private final boolean isXmlBased;
+    private final Map<String, String> activationProps;
 
     // EJB naming options
     private final EJBNameOptions ejbNameOptions;
@@ -95,15 +96,16 @@ public final class MessageGenerator {
     
     private final Map<String, String> templateParameters;
 
-    public static MessageGenerator create(String wizardTargetName, FileObject pkg, MessageDestination messageDestination, boolean isSimplified, boolean isXmlBased) {
-        return new MessageGenerator(wizardTargetName, pkg, messageDestination, isSimplified, isXmlBased, false);
+    public static MessageGenerator create(String wizardTargetName, FileObject pkg, MessageDestination messageDestination, boolean isSimplified, Map<String, String> properties) {
+        return new MessageGenerator(wizardTargetName, pkg, messageDestination, isSimplified, properties, false);
     }
     
-    protected MessageGenerator(String wizardTargetName, FileObject pkg, MessageDestination messageDestination, boolean isSimplified, boolean isXmlBased, boolean isTest) {
+    protected MessageGenerator(String wizardTargetName, FileObject pkg, MessageDestination messageDestination, boolean isSimplified, Map<String, String> properties, boolean isTest) {
         this.pkg = pkg;
         this.messageDestination = messageDestination;
         this.isSimplified = isSimplified;
-        this.isXmlBased = isXmlBased;
+        this.isXmlBased = !isSimplified;
+        this.activationProps = properties;
         this.ejbNameOptions = new EJBNameOptions();
         this.ejbName = ejbNameOptions.getMessageDrivenEjbNamePrefix() + wizardTargetName + ejbNameOptions.getMessageDrivenEjbNameSuffix();
         this.ejbClassName = ejbNameOptions.getMessageDrivenEjbClassPrefix() + wizardTargetName + ejbNameOptions.getMessageDrivenEjbClassSuffix();

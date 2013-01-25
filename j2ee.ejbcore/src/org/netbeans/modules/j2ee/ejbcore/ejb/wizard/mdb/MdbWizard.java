@@ -74,15 +74,17 @@ public final class MdbWizard implements WizardDescriptor.InstantiatingIterator {
     private WizardDescriptor.Panel[] panels;
     private int index = 0;
     private MdbLocationPanel ejbPanel;
+    private MdbPropertiesPanel propertiesPanel;
     private WizardDescriptor wiz;
 
-    private static final String [] SESSION_STEPS = new String [] {
-        NbBundle.getMessage(MdbWizard.class, "LBL_SpecifyEJBInfo")
+    private static final String[] SESSION_STEPS = new String [] {
+        NbBundle.getMessage(MdbWizard.class, "LBL_SpecifyEJBInfo"), //NOI18N
+        NbBundle.getMessage(MdbWizard.class, "LBL_SpecifyActivationProperties") //NOI18N
     };
 
     @Override
     public String name() {
-        return NbBundle.getMessage(MdbWizard.class, "LBL_MessageEJBWizardTitle");
+        return NbBundle.getMessage(MdbWizard.class, "LBL_MessageEJBWizardTitle"); //NOI18N
     }
 
     @Override
@@ -95,8 +97,11 @@ public final class MdbWizard implements WizardDescriptor.InstantiatingIterator {
         Project project = Templates.getProject(wiz);
         SourceGroup[] sourceGroups = SourceGroups.getJavaSourceGroups(project);
         ejbPanel = new MdbLocationPanel(wiz);
-        WizardDescriptor.Panel wizardPanel = new ValidatingPanel(new MultiTargetChooserPanel(project,sourceGroups, ejbPanel, true));
-        panels = new WizardDescriptor.Panel[] {wizardPanel};
+        WizardDescriptor.Panel locationPanel = new ValidatingPanel(
+                new MultiTargetChooserPanel(project, sourceGroups, ejbPanel, true));
+        propertiesPanel = new MdbPropertiesPanel(wizardDescriptor);
+        panels = new WizardDescriptor.Panel[] {locationPanel, propertiesPanel};
+        //TODO - disable second panel for EJB2.1
         Wizards.mergeSteps(wiz, panels, SESSION_STEPS);
     }
 
@@ -112,7 +117,7 @@ public final class MdbWizard implements WizardDescriptor.InstantiatingIterator {
                 pkg,
                 ejbPanel.getDestination(),
                 isSimplified,
-                !isSimplified);
+                propertiesPanel.getProperties());
         FileObject result = generator.generate();
         return result == null ? Collections.EMPTY_SET : Collections.singleton(result);
     }
@@ -142,6 +147,7 @@ public final class MdbWizard implements WizardDescriptor.InstantiatingIterator {
         }
         index++;
     }
+
     @Override
     public void previousPanel() {
         if (!hasPrevious()) {
@@ -149,6 +155,7 @@ public final class MdbWizard implements WizardDescriptor.InstantiatingIterator {
         }
         index--;
     }
+
     @Override
     public WizardDescriptor.Panel current() {
         return panels[index];
