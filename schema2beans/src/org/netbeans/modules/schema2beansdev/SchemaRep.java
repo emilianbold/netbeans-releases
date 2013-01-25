@@ -4704,18 +4704,6 @@ public class SchemaRep implements PrefixGuesser {
     }
 
     /**
-     * nice method which returns writeDTD in an InputStream.
-     */
-    public InputStream dtdInputStream() throws java.io.IOException {
-        StringWriter strWriter = new StringWriter();
-        PrintWriter pw = new PrintWriter(strWriter);
-        writeDTD(pw);
-        pw.flush();
-        ByteArrayInputStream bais = new ByteArrayInputStream(strWriter.toString().getBytes());
-        return bais;
-    }
-
-    /**
      * If you want an XML Schema written to a Writer, this is the method
      * to call.
      */
@@ -4738,19 +4726,6 @@ public class SchemaRep implements PrefixGuesser {
             realRootElement.writeXMLSchema(xw);
         }
         xw.writeTo(out);
-    }
-
-    /**
-     * Convience method which returns writeXMLSchemaStandalone in an
-     * InputStream.
-     */
-    public InputStream xmlSchemaInputStream() throws java.io.IOException {
-        StringWriter strWriter = new StringWriter();
-        PrintWriter pw = new PrintWriter(strWriter);
-        writeXMLSchemaStandalone(pw);
-        pw.flush();
-        ByteArrayInputStream bais = new ByteArrayInputStream(strWriter.toString().getBytes());
-        return bais;
     }
 
     public void writeXMLSchema(XMLWriter out) throws IOException {
