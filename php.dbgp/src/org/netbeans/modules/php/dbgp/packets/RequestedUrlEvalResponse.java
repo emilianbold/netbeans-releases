@@ -71,15 +71,18 @@ public class RequestedUrlEvalResponse extends EvalResponse {
     @Override
     @NbBundle.Messages("LBL_PhpRequestedUrls=PHP Requested Urls")
     public void process(DebugSession session, DbgpCommand command) {
-        InputOutput io = IOProvider.getDefault().getIO(Bundle.LBL_PhpRequestedUrls(), false);
-        try {
-            io.getOut().println(getProperty().getStringValue(), new OutputListenerImpl());
-        } catch (UnsufficientValueException ex) {
-            logger.log(Level.WARNING, null, ex);
-        } catch (IOException ex) {
-            logger.log(Level.WARNING, null, ex);
-        } finally {
-            io.getOut().close();
+        Property property = getProperty();
+        if (property != null) {
+            InputOutput io = IOProvider.getDefault().getIO(Bundle.LBL_PhpRequestedUrls(), false);
+            try {
+                io.getOut().println(property.getStringValue(), new OutputListenerImpl());
+            } catch (UnsufficientValueException ex) {
+                logger.log(Level.WARNING, null, ex);
+            } catch (IOException ex) {
+                logger.log(Level.WARNING, null, ex);
+            } finally {
+                io.getOut().close();
+            }
         }
     }
 
