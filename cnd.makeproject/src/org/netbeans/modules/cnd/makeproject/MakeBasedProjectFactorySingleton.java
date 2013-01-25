@@ -166,7 +166,6 @@ public final class MakeBasedProjectFactorySingleton implements ProjectFactory2 {
         }
         MakeProjectHelperImpl helper = MakeProjectHelperImpl.create(projectDirectory, projectXml, state, provider);
         Project project = provider.createProject(helper);
-        notifyProjectActivity(project);
         project2Helper.put(project, new WeakReference<MakeProjectHelperImpl>(helper));
         synchronized (helper2Project) {
             helper2Project.put(helper, new WeakReference<Project>(project));
@@ -259,11 +258,5 @@ public final class MakeBasedProjectFactorySingleton implements ProjectFactory2 {
             return ref.get();
         }
         return null;
-    }
-
-    private void notifyProjectActivity(Project project) {
-        for (MakeProjectLife service : Lookup.getDefault().lookupAll(MakeProjectLife.class)) {
-            service.start(project);
-        }
     }
 }

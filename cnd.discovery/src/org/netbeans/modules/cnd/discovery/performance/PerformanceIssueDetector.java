@@ -42,11 +42,16 @@
 package org.netbeans.modules.cnd.discovery.performance;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -63,27 +68,41 @@ import org.openide.util.RequestProcessor;
  * @author Alexander Simon
  */
 public class PerformanceIssueDetector implements PerformanceLogger.PerformanceListener {
+    private final Set<Project> projects = new HashSet<Project>();
     private final Map<String,ReadEntry> readPerformance = new HashMap<String,ReadEntry>();
     private final Map<String,CreateEntry> createPerformance = new HashMap<String,CreateEntry>();
     private final Map<String,ParseEntry> parsePerformance = new HashMap<String,ParseEntry>();
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-    private final RequestProcessor.Task task;
-    private static final int SCHEDULE = 15*1000;
+    private final ScheduledFuture<?> periodicTask;
+    private static final int SCHEDULE = 15; // period in seconds
     private boolean slowItemCreation = false;
     private boolean slowFileRead = false;
     private boolean slowParsed = false;
     private static final Logger LOG = Logger.getLogger(PerformanceIssueDetector.class.getName());
-    private static final Level level = Level.FINE;
+    private static final Level level = Level.INFO;
 
     public PerformanceIssueDetector() {
-        task = new RequestProcessor("PerformanceIssueDetector").create(new Runnable() { //NOI18N
-            @Override
-            public void run() {
-                analyze();
-            }
-        });
-        if (PerformanceLogger.IS_ACTIVE) {
-            task.schedule(SCHEDULE);
+        if (PerformanceLogger.isProfilingEnabled()) {
+            periodicTask = new RequestProcessor("PerformanceIssueDetector").scheduleAtFixedRate(new Runnable() { //NOI18N
+                @Override
+                public void run() {
+                    analyze();
+                }
+            }, SCHEDULE, SCHEDULE, TimeUnit.SECONDS);
+        } else {
+            periodicTask = null;
+        }
+    }
+    
+    public void start(Project project) {
+        synchronized(projects) {
+            projects.add(project);
+        }
+    }
+
+    public void stop(Project project) {
+        synchronized(projects) {
+            projects.remove(project);
         }
     }
     
@@ -209,22 +228,15 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         });
     }
     private void analyze() {
-        while(true) {
-            lock.readLock().lock();
-            try {
-                analyzeCreateItems();
-                analyzeReadFile();
-                analyzeParseFile();
-            } catch (Throwable ex) {
-                ex.printStackTrace(System.err);
-            } finally {
-                lock.readLock().unlock();
-            }
-            try {
-                Thread.sleep(SCHEDULE);
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+        lock.readLock().lock();
+        try {
+            analyzeCreateItems();
+            analyzeReadFile();
+            analyzeParseFile();
+        } catch (Throwable ex) {
+            ex.printStackTrace(System.err);
+        } finally {
+            lock.readLock().unlock();
         }
     }
     
@@ -257,7 +269,6 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
                     if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone()) {
                         notifyProblem(NotifyProjectProblem.CREATE_PROBLEM, details);
                     }
-                    ;
                     LOG.log(Level.INFO, details.replace("<br>", "").replace("\n", " ")); //NOI18N
                 }
             }
