@@ -271,7 +271,11 @@ public class ProjectEditorSupportImpl extends EditorSupportProvider {
                     if (doc == null) {
                         return -1;
                     }
-                    return NbDocument.findLineOffset(doc, line);
+                    try {
+                        return NbDocument.findLineOffset(doc, line);
+                    } catch (IndexOutOfBoundsException e) { // #225139, line number out of document bounds
+                        return -1;
+                    }
                 }
             });
         } catch (Exception e) {
