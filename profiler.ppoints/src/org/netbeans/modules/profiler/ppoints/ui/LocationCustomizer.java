@@ -73,6 +73,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JSeparator;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -452,7 +453,9 @@ public class LocationCustomizer extends ValidityAwarePanel implements ActionList
         JPanel lineSettingsContainer = new JPanel(new GridBagLayout());
 
         // lineNumberSpinner
-        lineNumberSpinner = new JExtendedSpinner() {
+        SpinnerNumberModel lineNumberModel = new SpinnerNumberModel();
+        lineNumberModel.setMinimum(1);
+        lineNumberSpinner = new JExtendedSpinner(lineNumberModel) {
                 public Dimension getPreferredSize() {
                     return new Dimension(Math.max(super.getPreferredSize().width, 55),
                                          getDefaultSpinnerHeight());
