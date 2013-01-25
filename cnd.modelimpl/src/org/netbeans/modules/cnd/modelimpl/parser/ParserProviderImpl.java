@@ -697,18 +697,20 @@ public final class ParserProviderImpl extends CsmParserProvider {
                 lastConsumed = super.LT(1);
                 super.consume();
                 if (TRACE) System.err.println("after consume LT(1)=" + super.LT(1) + "; consumed LT(0)=" + super.LT(0));
-                // consume following includes as well
-                while (isIncludeToken(super.LA(1))) {
-                    if (nMarkers == 0 && canUseCallback()) {
-                        org.antlr.runtime.Token t = super.LT(1);
-                        onIncludeToken(t);
-                        if (TRACE) System.err.println("extra consuming LT(1)=" + t + " LT(0)=" + super.LT(0));
-                        super.consume();
-                        if (TRACE) System.err.println("after extra consume LT(1)=" + super.LT(1) + "; consumed LT(0)=" + super.LT(0));
-                    } else {
-                        if (TRACE) System.err.println("skipping LT(1)=" + super.LT(1) + " LT(0)=" + super.LT(0));
-                        super.consume();
-                        if (TRACE) System.err.println("after skipping LT(1)=" + super.LT(1) + "; skipped LT(0)=" + super.LT(0));
+                if (false) { // DISABLED: let LA to be the only one consumer
+                    // consume following includes as well
+                    while (isIncludeToken(super.LA(1))) {
+                        if (nMarkers == 0 && canUseCallback()) {
+                            org.antlr.runtime.Token t = super.LT(1);
+                            onIncludeToken(t);
+                            if (TRACE) System.err.println("extra consuming LT(1)=" + t + " LT(0)=" + super.LT(0));
+                            super.consume();
+                            if (TRACE) System.err.println("after extra consume LT(1)=" + super.LT(1) + "; consumed LT(0)=" + super.LT(0));
+                        } else {
+                            if (TRACE) System.err.println("skipping LT(1)=" + super.LT(1) + " LT(0)=" + super.LT(0));
+                            super.consume();
+                            if (TRACE) System.err.println("after skipping LT(1)=" + super.LT(1) + "; skipped LT(0)=" + super.LT(0));
+                        }
                     }
                 }
             }
