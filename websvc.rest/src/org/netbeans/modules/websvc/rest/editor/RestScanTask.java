@@ -309,7 +309,7 @@ class RestScanTask {
         return stop.get();
     }
     
-    private List<Integer> getElementPosition(CompilationInfo info, Tree tree){
+    static List<Integer> getElementPosition(CompilationInfo info, Tree tree){
         SourcePositions srcPos = info.getTrees().getSourcePositions();
         
         int startOffset = (int) srcPos.getStartPosition(info.getCompilationUnit(), tree);
