@@ -148,7 +148,7 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
         return owners;
     }
     
-    private JComponent [] createVersioningSystemItems (VersioningSystem vs, Node[] nodes, boolean displayConnectAction) {
+    private Action [] createVersioningSystemActions (VersioningSystem vs, Node[] nodes, boolean displayConnectAction) {
         VCSContext ctx = VCSContext.forNodes(nodes);
         Action [] actions = null;
         if (displayConnectAction && ctx.getRootFiles().size() == 1) {
@@ -172,17 +172,7 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
                 actions = an.getActions(ctx, VCSAnnotator.ActionDestination.PopupMenu);
             }
         }
-        JComponent [] items = new JComponent[actions.length];
-        int i = 0;
-        for (Action action : actions) {
-            if (action == null) {
-                items[i++] = Utils.createJSeparator();
-            } else {
-                JMenuItem item = createmenuItem(action);
-                items[i++] = item;
-            }
-        }
-        return items;
+        return actions;
     }
 
     private JMenuItem createmenuItem(Action action) {
@@ -262,25 +252,25 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
                 Utils.postParallel(new Runnable() {
                     @Override
                     public void run () {
-                        final JComponent[] items;
+                        final Action[] actions;
                         if (owner == null) {
                             // default Versioning menu (Import into...)
                             List<VersioningSystem> vcs = new ArrayList<VersioningSystem>(Arrays.asList(VersioningManager.getInstance().getVersioningSystems()));
                             Collections.sort(vcs, new VersioningMainMenu.ByDisplayNameComparator());
-                            List<JComponent> allvsItems = new ArrayList<JComponent>(50);
+                            List<Action> allvsActions = new ArrayList<Action>(50);
                             for (VersioningSystem vs : vcs) {
                                 if (vs.isLocalHistory()) {
                                     continue;
                                 }
-                                JComponent[] vsitems = createVersioningSystemItems(vs, nodes, true);
-                                if (vsitems != null) {
-                                    allvsItems.addAll(Arrays.asList(vsitems));
+                                Action[] vsActions = createVersioningSystemActions(vs, nodes, true);
+                                if (vsActions != null) {
+                                    allvsActions.addAll(Arrays.asList(vsActions));
                                 }
                             }
-                            items = allvsItems.toArray(new JComponent[allvsItems.size()]);
+                            actions = allvsActions.toArray(new Action[allvsActions.size()]);
                         } else {
                             // specific versioning system menu
-                            items = createVersioningSystemItems(owner, nodes, false);
+                            actions = createVersioningSystemActions(owner, nodes, false);
                         }
                         EventQueue.invokeLater(new Runnable() {
                             @Override
@@ -290,9 +280,9 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
                                 popup.setVisible(false);
                                 removeAll();
                                 if (isShowing()) {
-                                    addVersioningSystemItems(items);
+                                    addVersioningSystemItems(actions);
                                     if (owner == null) {
-                                        if (items != null && items.length > 0) {
+                                        if (actions != null && actions.length > 0) {
                                             addSeparator();
                                             add(createmenuItem(SystemAction.get(PatchAction.class)));
                                         } else {
@@ -313,10 +303,14 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
             return super.getPopupMenu();
         }
 
-        private boolean addVersioningSystemItems (JComponent[] items) {
-            if (items != null && items.length > 0) {
-                for (JComponent item : items) {
-                    add(item);
+        private boolean addVersioningSystemItems (Action[] actions) {
+            if (actions != null && actions.length > 0) {
+                for (Action action : actions) {
+                    if (action == null) {
+                        add(Utils.createJSeparator());
+                    } else {
+                        add(createmenuItem(action));
+                    }
                 }
                 return true;
             }
