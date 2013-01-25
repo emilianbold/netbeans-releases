@@ -51,13 +51,13 @@ import org.openide.DialogDisplayer;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author Alexander Simon
  */
-@NbBundle.Messages({
+@Messages({
     "NotifyProjectProblem.title.text=Detected Project Performance Issues"
     ,"NotifyProjectProblem.action.text=details"
     ,"NotifyProjectProblem.open.message.text=Slow Project Opening"
@@ -101,6 +101,7 @@ public class NotifyProjectProblem extends javax.swing.JPanel {
     public static final int CREATE_PROBLEM = 1;
     public static final int READ_PROBLEM = 2;
     public static final int PARSE_PROBLEM = 3;
+        String qq = "Fail";
 
     /**
      * Creates new form NotifyProjectProblem
