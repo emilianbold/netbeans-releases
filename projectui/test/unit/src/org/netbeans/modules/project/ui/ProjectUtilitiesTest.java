@@ -173,18 +173,18 @@ public class ProjectUtilitiesTest extends NbTestCase {
         AuxiliaryConfiguration aux = project1.getLookup().lookup(AuxiliaryConfiguration.class);
         assertNotNull ("AuxiliaryConfiguration must be present if project's lookup", aux);
 
-        Element openFilesEl = aux.getConfigurationFragment (ProjectUtilities.OPEN_FILES_ELEMENT, ProjectUtilities.OPEN_FILES_NS, false);
+        Element openFilesEl = aux.getConfigurationFragment (ProjectUtilities.OPEN_FILES_ELEMENT, ProjectUtilities.OPEN_FILES_NS2, false);
         if (openFilesEl != null) {
             assertEquals ("OpenFiles element is empty or null.", 0, openFilesEl.getChildNodes ().getLength ());
         }
         
         Project[] projects = new Project[] {project1};
         
-        if (ProjectUtilities.closeAllDocuments(projects, false)) {
+        if (ProjectUtilities.closeAllDocuments(projects, false, null)) {
             OpenProjectList.getDefault().close(projects, false);
         }
         
-        openFilesEl = aux.getConfigurationFragment (ProjectUtilities.OPEN_FILES_ELEMENT, ProjectUtilities.OPEN_FILES_NS, false);
+        openFilesEl = aux.getConfigurationFragment (ProjectUtilities.OPEN_FILES_ELEMENT, ProjectUtilities.OPEN_FILES_NS2, false);
         assertNotNull ("OPEN_FILES_ELEMENT found in the private configuration.", openFilesEl);
         
         NodeList list = openFilesEl.getElementsByTagName (ProjectUtilities.FILE_ELEMENT);
@@ -222,7 +222,7 @@ public class ProjectUtilitiesTest extends NbTestCase {
         AuxiliaryConfiguration aux = project1.getLookup().lookup(AuxiliaryConfiguration.class);
         assertNotNull ("AuxiliaryConfiguration must be present if project's lookup", aux);
         
-        Element openFilesEl = aux.getConfigurationFragment (ProjectUtilities.OPEN_FILES_ELEMENT, ProjectUtilities.OPEN_FILES_NS, false);
+        Element openFilesEl = aux.getConfigurationFragment (ProjectUtilities.OPEN_FILES_ELEMENT, ProjectUtilities.OPEN_FILES_NS2, false);
         if (openFilesEl != null) {
             assertEquals ("OpenFiles element is empty or null.", 0, openFilesEl.getChildNodes ().getLength ());
         }
@@ -231,13 +231,13 @@ public class ProjectUtilitiesTest extends NbTestCase {
         
         Project[] projects = new Project[] {project1};
         
-        if (ProjectUtilities.closeAllDocuments(projects, true)) {
+        if (ProjectUtilities.closeAllDocuments(projects, true, null)) {
             OpenProjectList.getDefault().close(projects, true);
         }
         
         assertFalse("the do1_4_close not modified", do1_4_close.isModified());
         
-        openFilesEl = aux.getConfigurationFragment (ProjectUtilities.OPEN_FILES_ELEMENT, ProjectUtilities.OPEN_FILES_NS, false);
+        openFilesEl = aux.getConfigurationFragment (ProjectUtilities.OPEN_FILES_ELEMENT, ProjectUtilities.OPEN_FILES_NS2, false);
         assertNotNull ("OPEN_FILES_ELEMENT found in the private configuration.", openFilesEl);
         
         NodeList list = openFilesEl.getElementsByTagName (ProjectUtilities.FILE_ELEMENT);
@@ -274,12 +274,12 @@ public class ProjectUtilitiesTest extends NbTestCase {
             assertTrue("TopComponent has been closed successfully.", tc.close());
         }
         
-        if (ProjectUtilities.closeAllDocuments(new Project[] {project1}, false)) {
+        if (ProjectUtilities.closeAllDocuments(new Project[] {project1}, false, null)) {
             OpenProjectList.getDefault().close(new Project[] {project1}, false);
         }
 
         AuxiliaryConfiguration aux = project1.getLookup().lookup(AuxiliaryConfiguration.class);
-        Element openFilesEl = aux.getConfigurationFragment (ProjectUtilities.OPEN_FILES_ELEMENT, ProjectUtilities.OPEN_FILES_NS, false);
+        Element openFilesEl = aux.getConfigurationFragment (ProjectUtilities.OPEN_FILES_ELEMENT, ProjectUtilities.OPEN_FILES_NS2, false);
         assertNull ("OPEN_FILES_ELEMENT not found in the private configuration.", openFilesEl);
         
         assertFalse ("Project1 must be closed.", OpenProjectList.getDefault ().isOpen (project1));

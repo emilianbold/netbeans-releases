@@ -413,11 +413,14 @@ public class MasterDetailGenerator {
         InputStream is = file.getInputStream();
         BufferedReader br = new BufferedReader(new InputStreamReader(is, encoding));
         StringBuilder sb = new StringBuilder();
-        String s;
-        while ((s=br.readLine()) != null) {
-            sb.append(s).append('\n');
+        try {
+            String s;
+            while ((s=br.readLine()) != null) {
+                sb.append(s).append('\n');
+            }
+        } finally {
+            br.close();
         }
-        br.close();
         return sb.toString();
     }
 

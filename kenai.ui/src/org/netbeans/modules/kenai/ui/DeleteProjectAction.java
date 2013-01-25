@@ -83,7 +83,7 @@ public class DeleteProjectAction extends AbstractAction {
             return;
         }
         dashboard.deletingStarted();
-        RequestProcessor.getDefault().post(new Runnable() {
+        Utilities.getRequestProcessor().post(new Runnable() {
 
             public void run() {
                 try {

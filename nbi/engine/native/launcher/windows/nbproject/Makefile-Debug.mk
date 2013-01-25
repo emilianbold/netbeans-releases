@@ -22,6 +22,7 @@ AS=as.exe
 
 # Macros
 CND_PLATFORM=Cygwin-Windows
+CND_DLIB_EXT=dll
 CND_CONF=Debug
 CND_DISTDIR=dist
 CND_BUILDDIR=build

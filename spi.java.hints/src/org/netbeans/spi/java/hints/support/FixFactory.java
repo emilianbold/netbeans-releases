@@ -38,6 +38,7 @@ import java.util.EnumSet;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.hints.JavaFix;
@@ -99,17 +100,19 @@ public final class FixFactory {
         if (treePath.getLeaf().getKind() != Kind.MODIFIERS) {
             return null;
         }
-        return new ChangeModifiersFixImpl(compilationInfo, treePath, toAdd, toRemove, text).toEditorFix();
+        return new ChangeModifiersFixImpl(TreePathHandle.create(treePath, compilationInfo), toAdd, toRemove, text).toEditorFix();
     }
 
     private static final class ChangeModifiersFixImpl extends JavaFix {
 
+        private final TreePathHandle modsHandle;
         private final Set<Modifier> toAdd;
         private final Set<Modifier> toRemove;
         private final String text;
 
-        public ChangeModifiersFixImpl(CompilationInfo info, TreePath mods, Set<Modifier> toAdd, Set<Modifier> toRemove, String text) {
-            super(info, mods);
+        public ChangeModifiersFixImpl(TreePathHandle modsHandle, Set<Modifier> toAdd, Set<Modifier> toRemove, String text) {
+            super(modsHandle);
+            this.modsHandle = modsHandle;
             this.toAdd = toAdd;
             this.toRemove = toRemove;
             this.text = text;
@@ -133,7 +136,6 @@ public final class FixFactory {
             wc.rewrite(mt, newMod);
         }
 
-        //TODO: the following is currently not used by JavaFix, is it really needed?
         @Override
         public boolean equals(Object obj) {
             if (obj == null) {
@@ -143,9 +145,9 @@ public final class FixFactory {
                 return false;
             }
             final ChangeModifiersFixImpl other = (ChangeModifiersFixImpl) obj;
-//            if (this.modsHandle != other.modsHandle && (this.modsHandle == null || !this.modsHandle.equals(other.modsHandle))) {
-//                return false;
-//            }
+            if (this.modsHandle != other.modsHandle && (this.modsHandle == null || !this.modsHandle.equals(other.modsHandle))) {
+                return false;
+            }
             if (this.toAdd != other.toAdd && (this.toAdd == null || !this.toAdd.equals(other.toAdd))) {
                 return false;
             }
@@ -158,7 +160,7 @@ public final class FixFactory {
         @Override
         public int hashCode() {
             int hash = 5;
-//            hash = 71 * hash + (this.modsHandle != null ? this.modsHandle.hashCode() : 0);
+            hash = 71 * hash + (this.modsHandle != null ? this.modsHandle.hashCode() : 0);
             hash = 71 * hash + (this.toAdd != null ? this.toAdd.hashCode() : 0);
             hash = 71 * hash + (this.toRemove != null ? this.toRemove.hashCode() : 0);
             return hash;

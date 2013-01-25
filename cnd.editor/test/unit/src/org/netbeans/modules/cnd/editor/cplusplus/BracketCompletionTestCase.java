@@ -68,6 +68,11 @@ public class BracketCompletionTestCase extends EditorBase  {
         typeCharactersInText("  R\"()|\"", "\b", "  R");
     }
 
+    public void testRawStringNewLine() throws Exception {
+        setDefaultsOptions();
+        typeCharactersInText("  R\"XYZ(te|xt)XYZ\"", "\n", "  R\"XYZ(te\n|xt)XYZ\"");
+    }
+    
     public void testRawStringDelStartDelimeter() throws Exception {
         setDefaultsOptions();
         typeCharactersInText("  R\"|XYZ()XYZ\"", "\f", "  R\"|YZ()YZ\"");

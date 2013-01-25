@@ -69,10 +69,9 @@ public final class BookmarkChange {
     }
     
     /**
-     * Return affected bookmark or null in case the addition/removal from BookmarkManager
-     * applies to the whole project.
+     * Return affected bookmark.
      *
-     * @return bookmark or null.
+     * @return non-null bookmark.
      */
     public BookmarkInfo getBookmark() {
         return bookmark;

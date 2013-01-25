@@ -97,11 +97,6 @@ public abstract class RefactoringTestCase extends JellyTestCase {
         super(name);
     }
 
-    @Override
-    public void ref(String text) {
-        getRef().print(text);
-    }
-
     public void ref(Object o) {
         getRef().println(o);
     }
@@ -150,9 +145,9 @@ public abstract class RefactoringTestCase extends JellyTestCase {
     protected void browseChildren(TreeModel model, Object parent, int level) {
         String logNode = getPreviewItemLabel(parent);
         for (int i = 0; i < level; i++) {
-            ref("    ");
+            getRef().print("    ");
         }
-        ref(logNode + "\n");
+        ref(logNode);
 
         int childs = model.getChildCount(parent);
         ArrayList<Object> al = new ArrayList<Object>(childs);  //storing childs for sorting        
@@ -215,9 +210,7 @@ public abstract class RefactoringTestCase extends JellyTestCase {
      */
     public String getFileForSelectedNode(JTreeOperator tree) {
         TreePath selectionPath = tree.getSelectionPath();
-        System.err.println("SP " + selectionPath.getPath());
         Object pathComponent = selectionPath.getPathComponent(2);
-        System.err.println("PC " + pathComponent);
         return getPreviewItemLabel(pathComponent);
     }
 
@@ -234,8 +227,11 @@ public abstract class RefactoringTestCase extends JellyTestCase {
             method.setAccessible(true);
             Object invoke = method.invoke(parent);
             Label2Text parser = new Label2Text();
-            parser.parse(new StringReader((String)invoke));
-            return parser.result.toString();
+            String invoke_str = (String) invoke;
+            String ret = invoke_str.replaceAll("&nbsp;", " ");
+            parser.parse(new StringReader(ret));
+            ret = parser.result.toString();
+            return ret;
         } catch (IOException ex) {
             Logger.getLogger(RefactoringTestCase.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
@@ -298,7 +294,7 @@ public abstract class RefactoringTestCase extends JellyTestCase {
     protected void setUp() throws Exception {
         //jemmyOutput = new PrintStream(new File(getWorkDir(), getName() + ".jemmy"));
         System.setErr(new PrintStream(new File(getWorkDir(), getName() + ".error")));
-        System.out.println("Test " + getName() + " started");
+        System.out.println("Test " + getName() + " started ... ");
         openProject(REFACTORING_TEST);
     }
 
@@ -322,18 +318,66 @@ public abstract class RefactoringTestCase extends JellyTestCase {
 
     @Override
     protected void tearDown() throws Exception {
+        getRef().flush();
         getRef().close();
-        assertFile("Golden file differs ", new File(getWorkDir(), getName() + ".ref"), getGoldenFile(), getWorkDir(), new LineDiff());
-        System.out.println("Test " + getName() + " finished");
+        assertFile("Golden file differs ", getReferencFile(), getGoldenFile(), getWorkDir(), new LineDiff());
+        //compareReferenceFiles();
+        File diffFile = getDiffFile(getReferencFile().getAbsolutePath(), getWorkDir());
+        System.out.println("+++++++++ Diff file ["+diffFile.getAbsolutePath()+"] exists=" + diffFile.exists());
+        if (diffFile.exists()) {
+            System.out.println("============= DIFF >>>> =======================================");
+            FileReader fr = new FileReader(diffFile);
+            int oneByte;
+            while ((oneByte = fr.read()) != -1) {
+                System.out.print((char) oneByte);
+            }
+            System.out.flush();
+            System.out.println("============= <<<< DIFF =======================================");
+        }
+
+        System.out.println("Test " + getName() + " finished !");
     }
 
-    
-    
+    /**
+     * Copy of NbTestCate#getDiffName
+     *
+     * @param pass
+     * @param diff
+     * @return diff file
+     */
+    protected File getDiffFile(String pass, File diff) {
+        StringBuilder d = new StringBuilder();
+        int i1, i2;
+
+        d.append(diff.getAbsolutePath());
+        i1 = pass.lastIndexOf('\\');
+        i2 = pass.lastIndexOf('/');
+        i1 = i1 > i2 ? i1 : i2;
+        i1 = -1 == i1 ? 0 : i1 + 1;
+
+        i2 = pass.lastIndexOf('.');
+        i2 = -1 == i2 ? pass.length() : i2;
+
+        if (0 < d.length()) {
+            d.append("/");
+        }
+
+        d.append(pass.substring(i1, i2));
+        d.append(".diff");
+        return new File(d.toString());
+    }
+
+    private File getReferencFile() throws IOException {
+        File refFile = new File(getWorkDir(), getName() + ".ref");
+        return refFile;
+    }
+
     private static class Label2Text extends HTMLEditorKit.ParserCallback {
-        StringBuffer result;
+
+        StringBuilder result;
 
         public Label2Text() {
-            result = new StringBuffer();
+            result = new StringBuilder();
         }
 
         public void parse(StringReader in) throws IOException {
@@ -345,6 +389,4 @@ public abstract class RefactoringTestCase extends JellyTestCase {
             result.append(text);
         }
     }
-
-
 }

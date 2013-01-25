@@ -58,6 +58,8 @@ import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -65,6 +67,8 @@ import org.openide.util.ImageUtilities;
  * @author mkleint
  */
 public class NodeUtils {
+    
+    private static final Logger LOG = Logger.getLogger(NodeUtils.class.getName());
 
     /**
      * Returns default folder icon as {@link java.awt.Image}. Never returns
@@ -135,6 +139,25 @@ public class NodeUtils {
     }
     private static Reference<LocalFileSystem> repoFS;
 
+    
+    /**
+     * open pom file for given FileObject, for items from local repository creates a read-only FO.
+     * @param fo 
+     * @since 2.67
+     */
+    public static void openPomFile(FileObject fo) {
+        DataObject dobj;
+        try {
+            dobj = DataObject.find(NodeUtils.readOnlyLocalRepositoryFile(fo));
+            EditCookie edit = dobj.getLookup().lookup(EditCookie.class);
+            if (edit != null) {
+                edit.edit();
+            }
+        } catch (DataObjectNotFoundException ex) {
+            LOG.log(Level.FINE, "Cannot find dataobject", ex);
+        }
+    }
+    
     /**
      * Icon for a dependency JAR file.
      * @since 2.37

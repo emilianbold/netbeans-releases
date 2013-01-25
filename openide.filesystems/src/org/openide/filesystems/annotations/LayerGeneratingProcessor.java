@@ -48,8 +48,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +65,7 @@ import javax.tools.Diagnostic.Kind;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import org.openide.filesystems.XMLFileSystem;
+import org.openide.util.WeakSet;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.ls.DOMImplementationLS;
@@ -105,7 +106,7 @@ public abstract class LayerGeneratingProcessor extends AbstractProcessor {
     };
 
     private static final Map<Filer,Document> generatedLayerByProcessor = new WeakHashMap<Filer,Document>();
-    private static final Map<Filer,List<Element>> originatingElementsByProcessor = new WeakHashMap<Filer,List<Element>>();
+    private static final Map<Filer,Collection<Element>> originatingElementsByProcessor = new WeakHashMap<Filer,Collection<Element>>();
 
     /** For access by subclasses. */
     protected LayerGeneratingProcessor() {}
@@ -133,7 +134,7 @@ public abstract class LayerGeneratingProcessor extends AbstractProcessor {
         if (roundEnv.processingOver()) {
             Filer filer = processingEnv.getFiler();
             Document doc = generatedLayerByProcessor.remove(filer);
-            List<Element> originatingElementsL = originatingElementsByProcessor.remove(filer);
+            Collection<Element> originatingElementsL = originatingElementsByProcessor.remove(filer);
             if (doc != null && !roundEnv.errorRaised()) {
                 Element[] originatingElementsA = new Element[0];
                 if (originatingElementsL != null) {
@@ -223,9 +224,9 @@ public abstract class LayerGeneratingProcessor extends AbstractProcessor {
 
     private Document layerDocument(Element... originatingElements) {
         Filer filer = processingEnv.getFiler();
-        List<Element> originatingElementsL = originatingElementsByProcessor.get(filer);
+        Collection<Element> originatingElementsL = originatingElementsByProcessor.get(filer);
         if (originatingElementsL == null) {
-            originatingElementsL = new ArrayList<Element>();
+            originatingElementsL = new WeakSet<Element>();
             originatingElementsByProcessor.put(filer, originatingElementsL);
         }
         originatingElementsL.addAll(Arrays.asList(originatingElements));

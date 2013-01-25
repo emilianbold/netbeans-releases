@@ -48,9 +48,11 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -112,6 +114,8 @@ public abstract class JsElementImpl implements JsElement {
                 break;
             case FIELD:
                 result = ElementKind.FIELD;
+                break;
+            default:
                 break;
         }
         return result;
@@ -178,5 +182,22 @@ public abstract class JsElementImpl implements JsElement {
     public void addModifier(Modifier modifier) {
         modifiers.add(modifier);
     }
-    
+
+    @Override
+    public boolean isPlatform() {
+        FileObject fo = getFileObject();
+        if (fo != null) {
+            return isInternalFile(fo);
+        }
+        return false;
+    }
+
+    private static boolean isInternalFile(FileObject file) {
+        for (FileObject dir : ClassPathProviderImpl.getJsStubs()) {
+            if (dir.equals(file) || FileUtil.isParentOf(dir, file)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

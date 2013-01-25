@@ -64,7 +64,7 @@ public class FormSettings {
 
         // Variables Modifier
         int variablesModifier = FormLoaderSettings.getInstance().getVariablesModifier();
-        settings.put(FormLoaderSettings.PROP_VARIABLES_MODIFIER, new Integer(variablesModifier));
+        settings.put(FormLoaderSettings.PROP_VARIABLES_MODIFIER, Integer.valueOf(variablesModifier));
         
         // Local Variables
         boolean localVariables = FormLoaderSettings.getInstance().getVariablesLocal();
@@ -76,7 +76,7 @@ public class FormSettings {
         
         // Listener Generation Style
         int listenerGenerationStyle = FormLoaderSettings.getInstance().getListenerGenerationStyle();
-        settings.put(FormLoaderSettings.PROP_LISTENER_GENERATION_STYLE, new Integer(listenerGenerationStyle));
+        settings.put(FormLoaderSettings.PROP_LISTENER_GENERATION_STYLE, Integer.valueOf(listenerGenerationStyle));
 
         // Generate FQN
         boolean generateFQN = FormLoaderSettings.getInstance().getGenerateFQN();
@@ -92,7 +92,7 @@ public class FormSettings {
     }
     
     public void setVariablesModifier(int value) {
-        settings.put(FormLoaderSettings.PROP_VARIABLES_MODIFIER, new Integer(value));
+        settings.put(FormLoaderSettings.PROP_VARIABLES_MODIFIER, Integer.valueOf(value));
     }
     
     public boolean getVariablesLocal() {
@@ -148,7 +148,7 @@ public class FormSettings {
     }
     
     public void setListenerGenerationStyle(int value) {
-        settings.put(FormLoaderSettings.PROP_LISTENER_GENERATION_STYLE, new Integer(value));
+        settings.put(FormLoaderSettings.PROP_LISTENER_GENERATION_STYLE, Integer.valueOf(value));
     }
 
     public int getLayoutCodeTarget() {
@@ -156,7 +156,7 @@ public class FormSettings {
     }
 
     public void setLayoutCodeTarget(int value) {
-        settings.put(FormLoaderSettings.PROP_LAYOUT_CODE_TARGET, new Integer(value));
+        settings.put(FormLoaderSettings.PROP_LAYOUT_CODE_TARGET, Integer.valueOf(value));
     }
 
     private int checkLayoutCodeTarget() {

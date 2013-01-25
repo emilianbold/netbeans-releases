@@ -77,9 +77,9 @@ public class HttpMonitorWindowTest extends PerformanceTestCase {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SEBaseSetup.class)
-             .addTest(HttpMonitorWindowTest.class)
-             .enableModules(".*").clusters(".*")));
+        suite.addTest(NbModuleSuite.createConfiguration(J2SEBaseSetup.class)
+                .addTest(HttpMonitorWindowTest.class)
+                .enableModules(".*").clusters(".*").suite());
         return suite;
     }
     
@@ -98,7 +98,7 @@ public class HttpMonitorWindowTest extends PerformanceTestCase {
     
     public ComponentOperator open() {
         JMenuBarOperator jmbo = new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar());
-        jmbo.pushMenu("Window"); //NOI18N
+        jmbo.pushMenu("Window|Debugging"); //NOI18N
         jmbo.closeSubmenus();
         jmbo.pushMenuNoBlock(MENU);
         return new TopComponentOperator(TITLE);

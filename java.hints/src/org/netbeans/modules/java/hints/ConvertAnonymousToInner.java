@@ -43,6 +43,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.io.IOException;
@@ -448,7 +449,26 @@ public class ConvertAnonymousToInner extends AbstractHint {
                 ExecutableElement ee = (ExecutableElement) superConstructor;
                 TypeMirror nctTypes = copy.getTrees().getTypeMirror(newClassToConvert);
                 
-                assert nctTypes.getKind() == TypeKind.DECLARED : nctTypes.getKind() + ":" + nctTypes.toString();
+                if (nctTypes.getKind() != TypeKind.DECLARED) {
+                    StringBuilder debug = new StringBuilder();
+                    
+                    debug.append(nctTypes.getKind())
+                         .append(":")
+                         .append(nctTypes.toString())
+                         .append(":")
+                         .append(newClassToConvert.getLeaf().toString());
+                    
+                    SourcePositions sp = copy.getTrees().getSourcePositions();
+                    int s = (int) sp.getStartPosition(copy.getCompilationUnit(), newClassToConvert.getLeaf());
+                    int e = (int) sp.getEndPosition(copy.getCompilationUnit(), newClassToConvert.getLeaf());
+                    
+                    if (e > s) {
+                        debug.append(":");
+                        debug.append(copy.getText().substring(s, e));
+                    }
+                    
+                    assert false : debug.toString();
+                }
                 
                 ExecutableType et = (ExecutableType) copy.getTypes().asMemberOf((DeclaredType) nctTypes, ee);
                 

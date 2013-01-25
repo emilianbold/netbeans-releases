@@ -259,8 +259,6 @@ Customer.prototype = {
          ', "fax":"'+this.fax+'"'+
          ', "email":"'+this.email+'"'+
          ', "creditLimit":"'+this.creditLimit+'"'+
-         ', "discountCode":{"@uri":"'+this.discountCode.getUri()+'"}'+
-
          '}';
       if(useWrapCustomer) {
           myObj = '"customer":'+myObj;

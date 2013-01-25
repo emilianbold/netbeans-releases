@@ -78,6 +78,7 @@ import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.modules.form.project.ClassPathUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.WeakSet;
 
 /**
  * Form editor.
@@ -130,7 +131,11 @@ public class FormEditor {
     
     /** List of floating windows - must be closed when the form is closed. */
     private List<java.awt.Window> floatingWindows;
-    
+
+    /** Set of nodes for which a standalone Properties window was opened.
+     * The windows must be closed when the form is closed. */
+    private Set<FormNode> nodesWithPropertiesWindows;
+
     /** The DataObject of the form */
     private FormDataObject formDataObject;
     private PropertyChangeListener dataObjectListener;
@@ -174,7 +179,7 @@ public class FormEditor {
         return formDataObject;
     }
 
-    EditorSupport getEditorSupport() {
+    public final EditorSupport getEditorSupport() {
         return editorSupport;
     }
 
@@ -747,6 +752,13 @@ public class FormEditor {
                 }
                 floatingWindows = null;
             }
+
+            // close standalone properties window invoked explicitly on selected nodes via the Properties action
+            if (nodesWithPropertiesWindows != null) {
+                for (FormNode n : nodesWithPropertiesWindows) {
+                    n.fireNodeDestroyedHelper();
+                }
+            }
         }
         ClassPathUtils.releaseFormClassLoader(formDataObject.getPrimaryFile());
         ClassPathUtils.releaseFormClassLoader(formDataObject.getFormFile());
@@ -762,7 +774,33 @@ public class FormEditor {
         bindingSupportInitialized = false;
         bindingSupport = null;
     }
-    
+
+    /**
+     * Changes the DataObject of the form. Should be used only in situations when
+     * the original java and form files are renamed or moved elsewhere and the
+     * form editor cannot be reloaded (recreated) with the new FormDataObject
+     * (e.g. because it is opened with unsaved changes). This may happen in JDev.
+     */
+    public void relocate(FormDataObject newDataObject) {
+        detachDataObjectListener();
+        detachPaletteListener();
+        FormDataObject oldDataObject = formDataObject;
+        formDataObject = newDataObject;
+        formJavaSource = null;
+        if (formLoaded) {
+            String name = formDataObject.getName();
+            formModel.setName(name);
+            formRootNode.updateName(name);
+            formModel.getCodeStructure().setFormJavaSource(getFormJavaSource(true));
+            ClassPathUtils.getProjectClassLoader(newDataObject.getPrimaryFile());
+            ClassPathUtils.releaseFormClassLoader(oldDataObject.getPrimaryFile());
+            ClassPathUtils.releaseFormClassLoader(oldDataObject.getFormFile());
+            attachDataObjectListener();
+            attachPaletteListener();
+            formModel.fireFormChanged(false);
+        }
+    }
+
     private void attachFormListener() {
         if (formListener != null || formDataObject.isReadOnly() || formModel.isReadOnly())
             return;
@@ -1217,6 +1255,13 @@ public class FormEditor {
     public void unregisterFloatingWindow(java.awt.Window window) {
         if (floatingWindows != null)
             floatingWindows.remove(window);
+    }
+
+    void registerNodeWithPropertiesWindow(FormNode node) {
+        if (nodesWithPropertiesWindows == null) {
+            nodesWithPropertiesWindows = new WeakSet<FormNode>();
+        }
+        nodesWithPropertiesWindows.add(node);
     }
 
     public void registerDefaultComponentAction(Action action) {

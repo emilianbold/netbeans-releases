@@ -1669,6 +1669,22 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
+    public final FileImpl prepareIncludedFile(ProjectBase startProject, CharSequence file, APTPreprocHandler preprocHandler) {
+        assert preprocHandler != null : "null preprocHandler for " + file;
+        if (isDisposing() || startProject.isDisposing()) {
+            return null;
+        }
+        final CsmModelState modelState = ModelImpl.instance().getState();
+        if (modelState == CsmModelState.CLOSING || modelState == CsmModelState.OFF) {
+            if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
+                System.err.printf("prepareIncludedFile: %s file [%s] is interrupted on closing model\n", file, this.getName());
+            }
+            return null;
+        }
+        FileImpl csmFile = findFile(file, true, FileImpl.FileType.HEADER_FILE, preprocHandler, false, null, null);
+        return csmFile;
+    }
+    
     private static final boolean TRACE_FILE = (TraceFlags.TRACE_FILE_NAME != null);
     /**
      * called to inform that file was #included from another file with specific preprocHandler
@@ -1679,21 +1695,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * @return true if it's first time of file including
      *          false if file was included before
      */
-    public final FileImpl onFileIncluded(ProjectBase startProject, CharSequence file, APTPreprocHandler preprocHandler, PostIncludeData postIncludeState, int mode, boolean triggerParsingActivity) throws IOException {
-        assert preprocHandler != null : "null preprocHandler for " + file;
-        if (isDisposing() || startProject.isDisposing()) {
-            return null;
-        }
-        final CsmModelState modelState = ModelImpl.instance().getState();
-        if (modelState == CsmModelState.CLOSING || modelState == CsmModelState.OFF) {
-            if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
-                System.err.printf("onFileIncluded: %s file [%s] is interrupted on closing model\n", file, this.getName());
-            }
-            return null;
-        }
-        FileImpl csmFile = findFile(file, true, FileImpl.FileType.HEADER_FILE, preprocHandler, false, null, null);
+    public final FileImpl onFileIncluded(ProjectBase startProject, FileImpl csmFile, CharSequence file, APTPreprocHandler preprocHandler, PostIncludeData postIncludeState, int mode, boolean triggerParsingActivity) throws IOException {
+        assert preprocHandler != null: "null preprocHandler for " + file;
+        assert csmFile != null: "null FileImpl for " + file;
 
-        if (csmFile == null || isDisposing() || startProject.isDisposing()) {
+        if (isDisposing() || startProject.isDisposing()) {
+            if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
+                System.err.printf("onFileIncluded: %s file [%s] is interrupted on disposing project\n", file, this.getName());
+            }
             return csmFile;
         }
         APTPreprocHandler.State newState = preprocHandler.getState();
@@ -1720,7 +1729,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         // if not found in caches => visit include file
         if (!foundInCache) {
-            APTFile aptLight = getAPTLight(csmFile);
+            APTFile aptLight = null;
+            try {
+                aptLight = getAPTLight(csmFile);
+            } catch (IOException ex) {
+                Utils.LOG.log(Level.INFO, "can''t get apt for {0}\nreason: {1}", new Object[]{file, ex.getMessage()});//NOI18N
+            }
             if (aptLight == null) {
                 // in the case file was just removed
                 Utils.LOG.log(Level.INFO, "Can not find or build APT for file {0}", file); //NOI18N

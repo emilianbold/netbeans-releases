@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.formatter;
 
-import com.oracle.nashorn.ir.FunctionNode;
+import jdk.nashorn.internal.ir.FunctionNode;
 import java.util.Collections;
 import java.util.Dictionary;
 import java.util.HashMap;
@@ -1674,6 +1674,10 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testIssue221495() throws Exception {
         reformatFileContents("testfiles/formatter/issue221495.js",new IndentPrefs(4, 4));
+    }
+
+    public void testIssue224246() throws Exception {
+        reformatFileContents("testfiles/formatter/issue224246.js",new IndentPrefs(4, 4));
     }
 
     // test from original formatter

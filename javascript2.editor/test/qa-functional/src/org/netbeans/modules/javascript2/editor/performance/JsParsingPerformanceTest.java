@@ -95,7 +95,7 @@ public class JsParsingPerformanceTest extends JellyTestCase {
                 enableModules(".*").
                 failOnException(Level.INFO).
                 failOnMessage(Level.SEVERE);
-        conf = conf.addTest("testParsingTime");
+        conf = conf.addTest("testParsingTime").honorAutoloadEager(true);
         return NbModuleSuite.create(conf);
     }
 

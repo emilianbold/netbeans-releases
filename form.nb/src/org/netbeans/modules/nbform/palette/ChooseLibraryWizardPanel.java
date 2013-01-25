@@ -87,7 +87,7 @@ class ChooseLibraryWizardPanel implements WizardDescriptor.Panel<AddToPaletteWiz
             librarySelectorComponent.setName(
                 PaletteUtils.getBundleString("CTL_SelectLibrary_Caption")); // NOI18N
             ((JComponent) librarySelectorComponent).putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, // NOI18N
-                                              new Integer(0));
+                                              Integer.valueOf(0));
 
             librarySelector.addPropertyChangeListener(new PropertyChangeListener() {
                 @Override

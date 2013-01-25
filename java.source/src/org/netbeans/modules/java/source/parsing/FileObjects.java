@@ -86,6 +86,7 @@ import org.netbeans.modules.java.ClassDataLoader;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -138,7 +139,7 @@ public class FileObjects {
     public static final String RESOURCES = "resouces." + FileObjects.RES;  //NOI18N
 
     private static final String encodingName = new OutputStreamWriter(new ByteArrayOutputStream()).getEncoding();
-
+    private static final char NBFS_SEPARATOR_CHAR = '/';  //NOI18N
     //todo: If more clients than btrace will need this, create a SPI.
     private static final Set<String> javaFlavorExt = new HashSet<String>();
     static {
@@ -213,6 +214,37 @@ public class FileObjects {
     }
 
     /**
+     * Creates {@link File} based {@link JavaFileObject} for {@link Indexable}.
+     * @param indexable for which the {@link JavaFileObject} should be created
+     * @param root - the classpath root owning the file
+     * @param encoding - the file's encoding
+     * @return {@link JavaFileObject}, never returns null
+     */
+    @NonNull
+    public static PrefetchableJavaFileObject fileFileObject(
+        @NonNull final Indexable indexable,
+        @NonNull final File root,
+        @NullAllowed final JavaFileFilterImplementation filter,
+        @NullAllowed final Charset encoding) throws IOException {
+        assert indexable != null;
+        assert root != null;
+        final String[] pkgNamePair = getFolderAndBaseName(
+                indexable.getRelativePath(),
+                NBFS_SEPARATOR_CHAR);
+        try {
+            final File file = Utilities.toFile(indexable.getURL().toURI());
+            return new FileBase(
+                file,
+                convertFolder2Package(pkgNamePair[0]),
+                pkgNamePair[1],
+                filter,
+                encoding);
+        } catch (URISyntaxException use) {
+            throw new IOException(use);
+        }
+    }
+
+    /**
      * Creates a FileObject for newly created file
      * @param root owning the file
      * @param path the path (separated by '/') to target folder relative to root
@@ -228,7 +260,7 @@ public class FileObjects {
         if (rootFile == null) {
             throw new IllegalArgumentException ();
         }
-        File file = FileUtil.normalizeFile(new File (new File (rootFile, path.replace('/', File.separatorChar)), name));        //NOI18N
+        File file = FileUtil.normalizeFile(new File (new File (rootFile, path.replace(NBFS_SEPARATOR_CHAR, File.separatorChar)), name));
         return new NewFromTemplateFileObject (file, convertFolder2Package(path), name, filter, encoding);
     }
     
@@ -295,7 +327,7 @@ public class FileObjects {
             protected String getName(boolean includeExtension) {
                 String name = super.getName(includeExtension);
                 if (name == null) {
-                    name = FileObjects.getBaseName(path.getPath(),'/'); //NOI18N
+                    name = FileObjects.getBaseName(path.getPath(),NBFS_SEPARATOR_CHAR);
                     if (!includeExtension) {
                         name = FileObjects.stripExtension(name);
                     }
@@ -452,7 +484,7 @@ public class FileObjects {
         try {
             final URL url = fo.toUri().toURL();
             String path = url.getPath();
-            int index1 = path.lastIndexOf('/');
+            int index1 = path.lastIndexOf(NBFS_SEPARATOR_CHAR);
             int len;
             if (noExt) {
                final int index2 = path.lastIndexOf('.');
@@ -537,7 +569,7 @@ public class FileObjects {
      * @return the folder name
      */
     public static @NonNull String convertPackage2Folder(final @NonNull String packageName ) {
-        return convertPackage2Folder(packageName, '/' );    //NOI18N
+        return convertPackage2Folder(packageName, NBFS_SEPARATOR_CHAR );
     }
 
     /**
@@ -556,7 +588,7 @@ public class FileObjects {
      * @return the package name
      */
     public static @NonNull String convertFolder2Package (@NonNull String folderName) {
-        return convertFolder2Package (folderName, '/');    //NOI18N
+        return convertFolder2Package (folderName, NBFS_SEPARATOR_CHAR);
     }
 
     /**
@@ -589,8 +621,8 @@ public class FileObjects {
     public static @NonNull String getRelativePath (final @NonNull String packageName, final @NonNull String relativeName) {
         if (packageName.isEmpty()) return relativeName;
         StringBuilder relativePath = new StringBuilder ();
-        relativePath.append(packageName.replace('.','/'));  //NOI18N
-        relativePath.append('/');                           //NOI18N
+        relativePath.append(packageName.replace('.',NBFS_SEPARATOR_CHAR));  //NOI18N
+        relativePath.append(NBFS_SEPARATOR_CHAR);
         relativePath.append(relativeName);
         return relativePath.toString();
     }
@@ -603,7 +635,7 @@ public class FileObjects {
     public static @NonNull String[] getParentRelativePathAndName (@NonNull final String fqn) {
         final String[] result = getPackageAndName(fqn);
         if (result != null) {
-            result[0] = result[0].replace('.','/');      //NOI18N
+            result[0] = result[0].replace('.',NBFS_SEPARATOR_CHAR);      //NOI18N
         }
         return result;
     }     
@@ -704,7 +736,7 @@ public class FileObjects {
      */
     public static @NonNull String getRelativePath (@NonNull final URL root, @NonNull final URL fo) throws URISyntaxException {
         final String path = getRelativePath(Utilities.toFile(root.toURI()), Utilities.toFile(fo.toURI()));
-        return path.replace(File.separatorChar, '/');   //NOI18N
+        return path.replace(File.separatorChar, NBFS_SEPARATOR_CHAR);
     }
     
     @NonNull
@@ -1090,7 +1122,7 @@ public class FileObjects {
             }
             else {
                 StringBuilder rn = new StringBuilder (folderName);
-                rn.append('/');        //NOI18N
+                rn.append(NBFS_SEPARATOR_CHAR);
                 rn.append(baseName);
                 this.resName = rn.toString();
             }
@@ -1172,7 +1204,7 @@ public class FileObjects {
                         element = element.replace("+", "%20");               //NOI18N
                         sb.append(element);
                         if (i< elements.length - 1) {
-                            sb.append('/');
+                            sb.append(NBFS_SEPARATOR_CHAR);
                         }
                     }
                     return new URI("jar:"+zdirURI.toString()+"!/"+sb.toString());    //NOI18N
@@ -1415,7 +1447,7 @@ public class FileObjects {
                 return this.uri;
             }
             else {
-                return URI.create (convertPackage2Folder(this.pkgName) + '/' + this.nameWithoutExt);    //NOI18N
+                return URI.create (convertPackage2Folder(this.pkgName) + NBFS_SEPARATOR_CHAR + this.nameWithoutExt);
             }
         }
         

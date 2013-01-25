@@ -192,6 +192,11 @@ public abstract class AbstractFileBuffer implements FileBuffer {
         return getLine2Offset().getOffsetByLineColumn(line, column);
     }
 
+    @Override
+    public int getLineCount() throws IOException {
+        return getLine2Offset().getLineColumnByOffset(Integer.MAX_VALUE)[0];
+    }
+
     private Line2Offset getLine2Offset() throws IOException{
         Line2Offset lines2Offset = null;
         Reference<Line2Offset> aLines = lines;

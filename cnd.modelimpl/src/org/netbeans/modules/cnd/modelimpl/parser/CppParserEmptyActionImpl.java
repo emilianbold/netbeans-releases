@@ -544,5 +544,9 @@ public class CppParserEmptyActionImpl implements CppParserActionEx {
     @Override
     public void end_constant_expression(Token token) {
     }
+
+    @Override
+    public void skip_balanced_curlies(Token token) {
+    }
     
 }

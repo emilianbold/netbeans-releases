@@ -52,6 +52,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.refactoring.api.impl.ProgressSupport;
 import org.netbeans.modules.refactoring.api.impl.SPIAccessor;
 import org.netbeans.modules.refactoring.spi.ProgressProvider;
@@ -67,6 +68,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex.Action;
 import org.openide.util.Parameters;
 
 
@@ -114,7 +116,15 @@ public final class RefactoringSession {
      * @return instance of Problem or null, if everything is OK
      */
     @CheckForNull
-    public Problem doRefactoring(boolean saveAfterDone) {
+    public Problem doRefactoring(final boolean saveAfterDone) {
+        return Utilities.runWithOnSaveTasksDisabled(new Action<Problem>() {
+            @Override public Problem run() {
+                return reallyDoRefactoring(saveAfterDone);
+            }
+        });
+    }
+    
+    private Problem reallyDoRefactoring(boolean saveAfterDone) {
         long time = System.currentTimeMillis();
         
         Iterator it = internalList.iterator();
@@ -241,7 +251,15 @@ public final class RefactoringSession {
      * @return instance of Problem or null, if everything is OK
      */
     @CheckForNull
-    public Problem undoRefactoring(boolean saveAfterDone) {
+    public Problem undoRefactoring(final boolean saveAfterDone) {
+        return Utilities.runWithOnSaveTasksDisabled(new Action<Problem>() {
+            @Override public Problem run() {
+                return reallyUndoRefactoring(saveAfterDone);
+            }
+        });
+    }
+    
+    private Problem reallyUndoRefactoring(boolean saveAfterDone) {
         try {
             ListIterator it = internalList.listIterator(internalList.size());
             fireProgressListenerStart(0, internalList.size()+1);

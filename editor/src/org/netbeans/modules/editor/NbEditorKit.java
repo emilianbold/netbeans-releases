@@ -249,8 +249,6 @@ public class NbEditorKit extends ExtKit implements Callable {
         addSystemActionMapping(deleteNextCharAction, "delete");
         addSystemActionMapping(showPopupMenuAction, org.openide.actions.PopupAction.class);
 
-//        addSystemActionMapping(SearchAndReplaceBarHandler.INCREMENTAL_SEARCH_FORWARD, org.openide.actions.FindAction.class);
-//        addSystemActionMapping(SearchAndReplaceBarHandler.REPLACE_ACTION, org.openide.actions.ReplaceAction.class);
         addSystemActionMapping(gotoAction, org.openide.actions.GotoAction.class);
 
         addSystemActionMapping(undoAction, org.openide.actions.UndoAction.class);

@@ -46,6 +46,7 @@ package org.netbeans.core.actions;
 
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.security.KeyStore;
 import javax.swing.*;
@@ -85,6 +86,8 @@ public class AboutAction extends CallableSystemAction {
                 JDialog d = (JDialog) dlg;
                 InputMap map = d.getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
                 map.put(KeyStroke.getKeyStroke(KeyEvent.VK_W, KeyEvent.META_MASK), "Escape"); //NOI18N
+                //#221571
+                d.getRootPane().putClientProperty("nb.about.dialog", Boolean.TRUE); //NOI18N
             }
             dlg.setResizable(false);
             dlg.setVisible(true);

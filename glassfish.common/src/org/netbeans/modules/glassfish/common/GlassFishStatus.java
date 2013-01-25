@@ -380,8 +380,8 @@ public class GlassFishStatus {
                                 instance.getName(), value});
                     switch (versionCommandResult.getState()) {
                         case FAILED:
-                            if (notYetReady = (value == null
-                                    || ServerUtils.notYetReadyMsg(value))) {
+                            if (notYetReady
+                                    = ServerUtils.notYetReadyMsg(value)) {
                                 Logger.getLogger("glassfish").log(Level.FINEST,
                                         LOG_SERVER_STARTUP, instance.getName());
                                 continue;

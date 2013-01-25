@@ -56,6 +56,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitURI;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -104,15 +105,17 @@ class CloneWizard  implements ChangeListener {
         dialog.setVisible(true);
         dialog.toFront();
         Object value = wizardDescriptor.getValue();
-        boolean finnished = value == WizardDescriptor.FINISH_OPTION;
-        if (!finnished) {
+        boolean finished = value == WizardDescriptor.FINISH_OPTION;
+        if (finished) {
+            onFinished();
+        } else {
             // wizard wasn't properly finnished ...
             if (value == WizardDescriptor.CLOSED_OPTION || value == WizardDescriptor.CANCEL_OPTION ) {
                 // wizard was closed or canceled -> reset all steps & kill all running tasks
                 wizardIterator.repositoryStep.cancelBackgroundTasks();
             }            
         }
-        return finnished;
+        return finished;
     }
 
     private void setErrorMessage (AbstractWizardPanel.Message msg) {
@@ -158,6 +161,11 @@ class CloneWizard  implements ChangeListener {
     
     boolean scanForProjects() {
         return wizardIterator.cloneDestinationStep.scanForProjects();
+    }
+
+    private void onFinished () {
+        String targetFolderPath = getDestination().getParentFile().getAbsolutePath();
+        GitModuleConfig.getDefault().getPreferences().put(CloneDestinationStep.CLONE_TARGET_DIRECTORY, targetFolderPath);
     }
     
     private class PanelsIterator extends WizardDescriptor.ArrayIterator<WizardDescriptor> {

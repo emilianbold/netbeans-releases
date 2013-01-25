@@ -3,9 +3,9 @@ var issue220088 = new S|ynergy();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CONSTRUCTO Synergy(): Synergy              [PUBLIC]   issue220088.js
-METHOD     String(): String                [PUBLIC]   stub_CORE_String.js
-METHOD     SyntaxError(): Error            [PUBLIC]   stub_CORE_SyntaxError.js
-VARIABLE   Screen                          [PUBLIC]   stub_DOM_Screen.js
-VARIABLE   Storage                         [PUBLIC]   stub_DOM_Storage.js
-VARIABLE   StyleSheet                      [PUBLIC]   stub_DOM_StyleSheet.js
-VARIABLE   StyleSheetList                  [PUBLIC]   stub_DOM_StyleSheetList.js
+METHOD     String(): String                [PUBLIC]   JS Platform
+METHOD     SyntaxError(): Error            [PUBLIC]   JS Platform
+VARIABLE   Screen                          [PUBLIC]   JS Platform
+VARIABLE   Storage                         [PUBLIC]   JS Platform
+VARIABLE   StyleSheet                      [PUBLIC]   JS Platform
+VARIABLE   StyleSheetList                  [PUBLIC]   JS Platform

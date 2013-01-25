@@ -61,26 +61,24 @@ public final class GroovyUtils {
     public static final Set<String> DEFAULT_IMPORT_CLASSES;
 
     static {
-        Set<String> defaultImportPackages = new HashSet<String>(7);
-        Collections.addAll(defaultImportPackages, "java.io", "java.lang", "java.net", // NOI18N
-                "java.util", "groovy.util", "groovy.lang"); // NOI18N
-        DEFAULT_IMPORT_PACKAGES = Collections.unmodifiableSet(defaultImportPackages);
-        Set<String> defaultImportClasses = new HashSet<String>(3);
-        Collections.addAll(defaultImportClasses, "java.math.BigDecimal", "java.math.BigInteger"); // NOI18N
-        DEFAULT_IMPORT_CLASSES = Collections.unmodifiableSet(defaultImportClasses);
+        Set<String> defaultPackages = new HashSet<String>(7);
+        defaultPackages.add("java.io");     // NOI18N
+        defaultPackages.add("java.lang");   // NOI18N
+        defaultPackages.add("java.net");    // NOI18N
+        defaultPackages.add("java.util");   // NOI18N
+        defaultPackages.add("groovy.util"); // NOI18N
+        defaultPackages.add("groovy.lang"); // NOI18N
+
+        DEFAULT_IMPORT_PACKAGES = Collections.unmodifiableSet(defaultPackages);
+
+        Set<String> defaultClasses = new HashSet<String>(3);
+        defaultClasses.add("java.math.BigDecimal"); // NOI18N
+        defaultClasses.add("java.math.BigInteger"); // NOI18N
+
+        DEFAULT_IMPORT_CLASSES = Collections.unmodifiableSet(defaultClasses);
     }
 
     private GroovyUtils() {
-        super();
-    }
-    
-    public static String getLineCommentPrefix() {
-        return "//"; // NOI18N
-    }
-
-    /** Includes things you'd want selected as a unit when double clicking in the editor */
-    public static boolean isIdentifierChar(char c) {
-        return Character.isJavaIdentifierPart(c) || (c == '$') ;
     }
 
     /**

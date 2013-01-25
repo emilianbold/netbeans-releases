@@ -46,6 +46,7 @@ import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import org.netbeans.api.annotations.common.NonNull;
 
 /**
@@ -84,7 +85,7 @@ class TranslateIdentifier extends TreePathScanner<Void, Void>{
         TreePath path = getCurrentPath();
         Element element = info.getTrees().getElement(path);
         
-        if (element != null) {
+        if (element != null && element.asType().getKind() != TypeKind.ERROR) {
             // solve the imports only when declared type!!!
             if (element.getKind().isClass() || element.getKind().isInterface()
                     || (element.getKind().isField() && ((Symbol) element).isStatic())) {
