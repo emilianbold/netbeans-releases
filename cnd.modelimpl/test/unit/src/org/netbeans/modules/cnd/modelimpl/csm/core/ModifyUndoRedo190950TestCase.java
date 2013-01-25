@@ -49,8 +49,8 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
  *
  * @author vv159170
  */
-public class ModifyUndoTestCase extends ModifyDocumentTestCaseBase {
-    public ModifyUndoTestCase(String testName) {
+public class ModifyUndoRedo190950TestCase extends ModifyDocumentTestCaseBase {
+    public ModifyUndoRedo190950TestCase(String testName) {
         super(testName);
 //        System.setProperty("cnd.modelimpl.trace191307", "true");
     }
@@ -59,18 +59,13 @@ public class ModifyUndoTestCase extends ModifyDocumentTestCaseBase {
     protected void setUp() throws Exception {
         super.setUp();
     }
-    
-    public void testRemoveThenUndo191307() throws Exception {
-        // #191307:  Undo operation breaks code model
-        if (TraceFlags.TRACE_191307_BUG) {
-            System.err.printf("TEST UNDO REMOVE\n");
-        }
-        final File sourceFile = getDataFile("fileForModification.cc");
-        long length = sourceFile.length();
-        
-        super.deleteTextThenUndo(sourceFile, 0, (int)length, 3, 0);
+
+    @Override
+    protected File getTestCaseDataDir() {
+        File testCaseDataDir = super.getTestCaseDataDir();
+        return new File(testCaseDataDir.getParent(), "ModifyUndoTestCase");
     }
-    
+
     public void testInsertSaveThenUndoRedo190950() throws Exception {
         // #190950:  Highlighting does not work if undo/redo is done
         if (TraceFlags.TRACE_191307_BUG) {

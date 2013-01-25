@@ -46,6 +46,8 @@ import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.openide.util.RequestProcessor;
 
@@ -55,9 +57,23 @@ import org.openide.util.RequestProcessor;
  * @author Alexander Simon
  */
 public class PerformanceLogger {
-    public static final boolean IS_ACTIVE = false;
-    private static final ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+    
+    /**
+     * 
+     * @return true if profiling enabled
+     */
+    public static boolean isProfilingEnabled() {
+        return PROFILING_ENABLED;
+    }
 
+    /**
+     * 
+     * @return true if JVM support CPU profiling
+     */
+    public static boolean isCpuTimeProfilingAvailable() {
+        return CPU_TIME_AVAILABLE;
+    }
+    
     public final class PerformaceAction {
 
         public void log(Object... extra) {
@@ -73,9 +89,20 @@ public class PerformanceLogger {
         private PerformaceAction(String id, Object source) {
             this.id = id;
             this.source = source;
-            start = System.nanoTime();
-            cpuTime = threadMXBean.getCurrentThreadCpuTime();
-            userTime = threadMXBean.getCurrentThreadUserTime();
+            if (PROFILING_ENABLED) {
+                start = System.nanoTime();
+                if (CPU_TIME_AVAILABLE) {
+                    cpuTime = threadMXBean.getCurrentThreadCpuTime();
+                    userTime = threadMXBean.getCurrentThreadUserTime();
+                } else {
+                    cpuTime = 0;
+                    userTime = 0;
+                }
+            } else {
+                start = 0;
+                cpuTime = 0;
+                userTime = 0;
+            }
         }
         //</editor-fold>
     }
@@ -102,19 +129,19 @@ public class PerformanceLogger {
 
         /**
          *
-         * @return time of consumed from start event to log in nanoseconds
+         * @return wall time from start to log event in nanoseconds
          */
         long getTime();
         
         /**
          *
-         * @return CPU time of consumed from start event to log in nanoseconds
+         * @return CPU time from event to log start in nanoseconds
          */
         long getCpuTime();
 
         /**
          *
-         * @return user time of consumed from start event to log in nanoseconds
+         * @return user time from start to log event in nanoseconds
          */
         long getUserTime();
 
@@ -129,61 +156,88 @@ public class PerformanceLogger {
 
         void processEvent(PerformanceEvent event);
     }
+    
     //<editor-fold defaultstate="collapsed" desc="Private Implemenration">
+    private static final boolean PROFILING_ENABLED;
+    private static final boolean CPU_TIME_AVAILABLE;
+    private static final ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+    
+    static {
+        PROFILING_ENABLED = "true".equals(System.getProperty("dlight.libs.common.profiling.enabled", "true")); // NOI18N;
+        boolean cpu = true;
+        if (PROFILING_ENABLED) {
+            try {
+                threadMXBean.setThreadCpuTimeEnabled(true);
+            } catch (UnsupportedOperationException ex) {
+                cpu = false;
+            } catch (SecurityException ex) {
+                cpu = false;
+            }
+        } else {
+            cpu = false;
+        }
+        CPU_TIME_AVAILABLE = cpu;
+    }
+
     private static final PerformanceLogger INSANCE = new PerformanceLogger();
     private final ReentrantReadWriteLock listenersLock = new ReentrantReadWriteLock();
     private final List<PerformanceListener> listeners = new ArrayList<PerformanceListener>();
     private final ReentrantReadWriteLock lineLock = new ReentrantReadWriteLock();
     private final LinkedList<PerformanceEvent> line = new LinkedList<PerformanceEvent>();
-    private final RequestProcessor.Task task;
+    private final ScheduledFuture<?> periodicTask;
+    private static final int SCHEDULE = 1; // period in seconds
 
     private PerformanceLogger() {
-        task = new RequestProcessor("PerformanceLoggerUpdater").create(new Runnable() { //NOI18N
-            @Override
-            public void run() {
-                while (true) {
-                    PerformanceEvent last = null;
-                    lineLock.writeLock().lock();
-                    try {
-                        if (!line.isEmpty()) {
-                            last = line.pollLast();
-                        }
-                    } finally {
-                        lineLock.writeLock().unlock();
-                    }
-                    if (last != null) {
-                        listenersLock.readLock().lock();
+        if (PROFILING_ENABLED) {
+            periodicTask = new RequestProcessor("PerformanceLoggerUpdater").scheduleAtFixedRate(new Runnable() { //NOI18N
+                @Override
+                public void run() {
+                    while (true) {
+                        PerformanceEvent last = null;
+                        lineLock.writeLock().lock();
                         try {
-                            if (listeners.size() > 0) {
-                                for (PerformanceListener listener : listeners) {
-                                    listener.processEvent(last);
-                                }
+                            if (!line.isEmpty()) {
+                                last = line.pollLast();
                             }
                         } finally {
-                            listenersLock.readLock().unlock();
+                            lineLock.writeLock().unlock();
                         }
-                    } else {
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException ex) {
+                        if (last != null) {
+                            listenersLock.readLock().lock();
+                            try {
+                                if (listeners.size() > 0) {
+                                    for (PerformanceListener listener : listeners) {
+                                        listener.processEvent(last);
+                                    }
+                                }
+                            } finally {
+                                listenersLock.readLock().unlock();
+                            }
+                        } else {
+                            return;
                         }
                     }
                 }
-            }
-        });
-        task.setPriority(Thread.MIN_PRIORITY);
-        if (IS_ACTIVE) {
-            task.schedule(1000);
+            }, SCHEDULE, SCHEDULE, TimeUnit.SECONDS);
+        } else {
+            periodicTask = null;
         }
     }
 
     private void log(PerformaceAction action, Object... extra) {
-        if (IS_ACTIVE) {
+        if (PROFILING_ENABLED) {
             long delta = System.nanoTime() - action.start;
             Runtime runtime = Runtime.getRuntime();
             long usedMemeory = runtime.totalMemory() - runtime.freeMemory();
-            long cpuTime = threadMXBean.getCurrentThreadCpuTime() - action.cpuTime;
-            long userTime = threadMXBean.getCurrentThreadUserTime() - action.userTime;
+            long cpuTime;
+            long userTime;
+            if (CPU_TIME_AVAILABLE && action.cpuTime != -1 && action.userTime != -1) {
+                cpuTime = threadMXBean.getCurrentThreadCpuTime() - action.cpuTime;
+                userTime = threadMXBean.getCurrentThreadUserTime() - action.userTime;
+            } else {
+                cpuTime = 0;
+                userTime = 0;
+            }
             PerformanceEvent event = new PerformanceEventImpl(action.id, action.source, delta, cpuTime, userTime, usedMemeory, extra);
             lineLock.writeLock().lock();
             try {
