@@ -42,29 +42,38 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.CndBaseTestSuite;
+import java.io.File;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author vv159170
  */
-public class DocumentModificationTest extends CndBaseTestSuite {
-    public DocumentModificationTest() {
-        super("C/C++ Document modifications test");
-        this.addTest(ModifyUndo191307TestCase.class);
-        this.addTest(ModifyUndoRedo190950TestCase.class);
-        this.addTestSuite(InsertDeadBlockTestCase.class);
-        this.addTestSuite(RemoveDeadBlockTestCase.class);
-        this.addTestSuite(RemoveAndInsertDeadBlockTestCase.class);
-        this.addTestSuite(ModifyMultiIncludedHeaderTestCase.class);
-        this.addTestSuite(ModifyIncludedHeaderTestCase.class);
-        this.addTestSuite(ModifyMultiIncludedLibraryHeaderTestCase.class);
+public class ModifyUndo191307TestCase extends ModifyDocumentTestCaseBase {
+    public ModifyUndo191307TestCase(String testName) {
+        super(testName);
+//        System.setProperty("cnd.modelimpl.trace191307", "true");
     }
-
-    public static Test suite() {
-        TestSuite suite = new DocumentModificationTest();
-        return suite;
+    
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
     }
+    
+    @Override
+    protected File getTestCaseDataDir() {
+        File testCaseDataDir = super.getTestCaseDataDir();
+        return new File(testCaseDataDir.getParent(), "ModifyUndoTestCase");
+    }
+    
+    public void testRemoveThenUndo191307() throws Exception {
+        // #191307:  Undo operation breaks code model
+        if (TraceFlags.TRACE_191307_BUG) {
+            System.err.printf("TEST UNDO REMOVE\n");
+        }
+        final File sourceFile = getDataFile("fileForModification.cc");
+        long length = sourceFile.length();
+        
+        super.deleteTextThenUndo(sourceFile, 0, (int)length, 3, 0);
+    } 
 }
