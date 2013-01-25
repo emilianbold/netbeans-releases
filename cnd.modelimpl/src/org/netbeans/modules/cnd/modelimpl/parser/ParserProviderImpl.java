@@ -637,31 +637,40 @@ public final class ParserProviderImpl extends CsmParserProvider {
             }
             
             private int nMarkers = 0;
-
+            private static final boolean TRACE = false;
             @Override
             public int mark() {
                 nMarkers++;
-                return super.mark();
+                int mark = super.mark();
+                if (TRACE) System.err.println("mark " + mark);
+                return mark;
             }
 
             @Override
             public void rewind(int pos) {
                 nMarkers--;
+                if (TRACE) System.err.println("rewind to " + pos);
                 super.rewind(pos);
             }
 
             @Override
             public void rewind() {
+                if (TRACE) System.err.println("rewind");
                 super.rewind();
             }
 
             @Override
             public void seek(int arg0) {
+                if (TRACE) System.err.println("seek to " + arg0);
                 super.seek(arg0);
             }
 
             @Override
             public int LA(int i) {
+                if (i == 0) {
+                    assert lastConsumed != null;
+                    return lastConsumed.getType();
+                }
                 final int newIndex = skipIncludeTokensIfNeeded(i);
                 int LA = super.LA(newIndex);
                 assert !isIncludeToken(LA) : super.LT(newIndex) + " not expected";
@@ -670,20 +679,37 @@ public final class ParserProviderImpl extends CsmParserProvider {
 
             @Override
             public Antlr2ToAntlr3TokenAdapter LT(int i) {
+                if (i == 0) {
+                    assert lastConsumed != null;
+                    assert !isIncludeToken(lastConsumed.getType()) : lastConsumed + " not expected ";
+                    return lastConsumed;
+                }
                 Antlr2ToAntlr3TokenAdapter LT = super.LT(skipIncludeTokensIfNeeded(i));
                 assert !isIncludeToken(LT.getType()) : LT + " not expected ";
                 return LT;
             }
 
+            private Antlr2ToAntlr3TokenAdapter lastConsumed;
             @Override
             public void consume() {
+                if (TRACE) System.err.println("consuming LT(1)=" + super.LT(1) + " LT(0)=" + super.LT(0));
                 assert !isIncludeToken(super.LA(1)) : super.LT(1) + " not expected ";
+                lastConsumed = super.LT(1);
                 super.consume();
+                if (TRACE) System.err.println("after consume LT(1)=" + super.LT(1) + "; consumed LT(0)=" + super.LT(0));
                 // consume following includes as well
                 while (isIncludeToken(super.LA(1))) {
-                    org.antlr.runtime.Token t = super.LT(1);
-                    onIncludeToken(t);
-                    super.consume();
+                    if (nMarkers == 0 && canUseCallback()) {
+                        org.antlr.runtime.Token t = super.LT(1);
+                        onIncludeToken(t);
+                        if (TRACE) System.err.println("extra consuming LT(1)=" + t + " LT(0)=" + super.LT(0));
+                        super.consume();
+                        if (TRACE) System.err.println("after extra consume LT(1)=" + super.LT(1) + "; consumed LT(0)=" + super.LT(0));
+                    } else {
+                        if (TRACE) System.err.println("skipping LT(1)=" + super.LT(1) + " LT(0)=" + super.LT(0));
+                        super.consume();
+                        if (TRACE) System.err.println("after skipping LT(1)=" + super.LT(1) + "; skipped LT(0)=" + super.LT(0));
+                    }
                 }
             }
 
@@ -702,11 +728,14 @@ public final class ParserProviderImpl extends CsmParserProvider {
                         if (nMarkers == 0 && superIndex == 1 && canUseCallback()) {
                             // consume if the first and no markers
                             Antlr2ToAntlr3TokenAdapter t = super.LT(1);
+                            if (TRACE) System.err.println("CONSUMING include token: " + t + " for LA(" + i + ")");
                             assert isIncludeToken(t.getType()) : t + " not expected ";
                             onIncludeToken(t);
                             assert super.LT(1).t == t.t : t + " have to be the same as " + super.LT(1).t;
                             super.consume();
                             superIndex = 0;
+                        } else {
+                            if (TRACE) System.err.println("NOT consumed include token: " + nMarkers + " superIndex=" + superIndex + " canUseCallback=" + canUseCallback());
                         }
                     } else {
                         nonIncludeTokens++;
