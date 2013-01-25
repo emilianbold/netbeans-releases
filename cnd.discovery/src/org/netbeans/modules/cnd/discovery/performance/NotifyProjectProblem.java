@@ -51,13 +51,13 @@ import org.openide.DialogDisplayer;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author Alexander Simon
  */
-@NbBundle.Messages({
+@Messages({
     "NotifyProjectProblem.title.text=Detected Project Performance Issues"
     ,"NotifyProjectProblem.action.text=details"
     ,"NotifyProjectProblem.open.message.text=Slow Project Opening"

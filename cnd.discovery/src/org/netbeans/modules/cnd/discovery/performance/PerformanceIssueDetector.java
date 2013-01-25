@@ -42,11 +42,16 @@
 package org.netbeans.modules.cnd.discovery.performance;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -54,8 +59,7 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -63,12 +67,13 @@ import org.openide.util.RequestProcessor;
  * @author Alexander Simon
  */
 public class PerformanceIssueDetector implements PerformanceLogger.PerformanceListener {
+    private final Set<Project> projects = new HashSet<Project>();
     private final Map<String,ReadEntry> readPerformance = new HashMap<String,ReadEntry>();
     private final Map<String,CreateEntry> createPerformance = new HashMap<String,CreateEntry>();
     private final Map<String,ParseEntry> parsePerformance = new HashMap<String,ParseEntry>();
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-    private final RequestProcessor.Task task;
-    private static final int SCHEDULE = 15*1000;
+    private final ScheduledFuture<?> periodicTask;
+    private static final int SCHEDULE = 15; // period in seconds
     private boolean slowItemCreation = false;
     private boolean slowFileRead = false;
     private boolean slowParsed = false;
@@ -76,20 +81,35 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
     private static final Level level = Level.FINE;
 
     public PerformanceIssueDetector() {
-        task = new RequestProcessor("PerformanceIssueDetector").create(new Runnable() { //NOI18N
-            @Override
-            public void run() {
-                analyze();
-            }
-        });
-        if (PerformanceLogger.IS_ACTIVE) {
-            task.schedule(SCHEDULE);
+        if (PerformanceLogger.isProfilingEnabled()) {
+            periodicTask = new RequestProcessor("PerformanceIssueDetector").scheduleAtFixedRate(new Runnable() { //NOI18N
+                @Override
+                public void run() {
+                    analyze();
+                }
+            }, SCHEDULE, SCHEDULE, TimeUnit.SECONDS);
+        } else {
+            periodicTask = null;
+        }
+    }
+    
+    public void start(Project project) {
+        synchronized(projects) {
+            projects.add(project);
+        }
+    }
+
+    public void stop(Project project) {
+        synchronized(projects) {
+            projects.remove(project);
         }
     }
     
     @Override
     public void processEvent(PerformanceLogger.PerformanceEvent event) {
-        if (Folder.CREATE_ITEM_PERFORMANCE_EVENT.equals(event.getId())) {
+        if (Folder.LS_FOLDER_PERFORMANCE_EVENT.equals(event.getId())) {
+            processCreateFolder(event);
+        } else if (Folder.CREATE_ITEM_PERFORMANCE_EVENT.equals(event.getId())) {
             processCreateItem(event);
         } else if (Folder.GET_ITEM_FILE_OBJECT_PERFORMANCE_EVENT.equals(event.getId())) {
             processGetItemFileObject(event);
@@ -100,6 +120,28 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         }
     }
     
+    private void processCreateFolder(PerformanceLogger.PerformanceEvent event) {
+        FileObject fo = (FileObject) event.getSource();
+        String dirName = fo.getPath();
+        long time = event.getTime();
+        long cpu = event.getCpuTime();
+        long user = event.getUserTime();
+        lock.writeLock().lock();
+        try {
+            CreateEntry entry = createPerformance.get(dirName);
+            if (entry == null) {
+                entry = new CreateEntry();
+                createPerformance.put(dirName, entry);
+            }
+            entry.number++;
+            entry.time += time;
+            entry.cpu += cpu;
+            entry.user += user;
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
     private void processCreateItem(PerformanceLogger.PerformanceEvent event) {
         String dirName;
         if (event.getSource() != null) {
@@ -209,26 +251,19 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
         });
     }
     private void analyze() {
-        while(true) {
-            lock.readLock().lock();
-            try {
-                analyzeCreateItems();
-                analyzeReadFile();
-                analyzeParseFile();
-            } catch (Throwable ex) {
-                ex.printStackTrace(System.err);
-            } finally {
-                lock.readLock().unlock();
-            }
-            try {
-                Thread.sleep(SCHEDULE);
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+        lock.readLock().lock();
+        try {
+            analyzeCreateItems();
+            analyzeReadFile();
+            analyzeParseFile();
+        } catch (Throwable ex) {
+            ex.printStackTrace(System.err);
+        } finally {
+            lock.readLock().unlock();
         }
     }
     
-    @NbBundle.Messages({
+    @Messages({
          "# {0} - time"
         ,"# {1} - items"
         ,"# {2} - speed"
@@ -247,26 +282,26 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
             cpu +=  entry.getValue().cpu;
             user +=  entry.getValue().user;
         }
-        if (time > 0) {
-            long valTime = time/1000/1000/1000;
-            long creationSpeed = (itemCount*1000*1000*1000)/time;
-            if (valTime > 15 && itemCount > 100 && creationSpeed < 100) {
-                if (!slowItemCreation) {
-                    slowItemCreation = true;
-                    final String details = Bundle.Details_slow_item_creation(format(valTime), format(itemCount), format(creationSpeed));
-                    if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone()) {
-                        notifyProblem(NotifyProjectProblem.CREATE_PROBLEM, details);
-                    }
-                    ;
-                    LOG.log(Level.INFO, details.replace("<br>", "").replace("\n", " ")); //NOI18N
-                }
-            }
-            LOG.log(level, "Average item creatoin speed is {0} item/s Created {1} items Time {2} ms CPU {3} ms User {4} ms", //NOI18N
-                    new Object[]{format(creationSpeed), format(itemCount), format(time/1000/1000), format(cpu/1000/1000), format(user/1000/1000)});
+        if (time <= 0) {
+            return;
         }
+        long wallTime = time/1000/1000/1000;
+        long creationSpeed = (itemCount*1000*1000*1000)/time;
+        if (wallTime > 15 && itemCount > 100 && creationSpeed < 100) {
+            if (!slowItemCreation) {
+                slowItemCreation = true;
+                final String details = Bundle.Details_slow_item_creation(format(wallTime), format(itemCount), format(creationSpeed));
+                if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone()) {
+                    notifyProblem(NotifyProjectProblem.CREATE_PROBLEM, details);
+                }
+                LOG.log(Level.INFO, details.replace("<br>", "").replace("\n", " ")); //NOI18N
+            }
+        }
+        LOG.log(level, "Average item creatoin speed is {0} item/s Created {1} items Time {2} ms CPU {3} ms User {4} ms", //NOI18N
+                new Object[]{format(creationSpeed), format(itemCount), format(time/1000/1000), format(cpu/1000/1000), format(user/1000/1000)});
     }
     
-    @NbBundle.Messages({
+    @Messages({
          "# {0} - time"
         ,"# {1} - read"
         ,"# {2} - speed"
@@ -289,25 +324,26 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
             cpu +=  entry.getValue().cpu;
             user +=  entry.getValue().user;
         }
-        if (time > 0) {
-            long valTime = time/1000/1000/1000;
-            long readSpeed = (read*1000*1000)/time;
-            if (valTime > 100 && fileCount > 100 && readSpeed < 100) {
-                if (!slowFileRead) {
-                    slowFileRead = true;
-                    final String details = Bundle.Details_slow_file_read(format(valTime), format(read/1000), format(readSpeed));
-                    if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone()) {
-                        notifyProblem(NotifyProjectProblem.READ_PROBLEM, details);
-                    }
-                    LOG.log(Level.INFO, details.replace("<br>", "").replace("\n", " ")); //NOI18N
-                }
-            }
-            LOG.log(level, "Average file reading speed is {0} Kb/s Read {1} Kb Time {2} ms CPU {3} ms User {4} ms", //NOI18N
-                    new Object[]{format(readSpeed), format(read/1000), format(time/1000/1000), format(cpu/1000/1000), format(user/1000/1000)});
+        if (time <= 0) {
+            return;
         }
+        long wallTime = time/1000/1000/1000;
+        long readSpeed = (read*1000*1000)/time;
+        if (wallTime > 100 && fileCount > 100 && readSpeed < 100) {
+            if (!slowFileRead) {
+                slowFileRead = true;
+                final String details = Bundle.Details_slow_file_read(format(wallTime), format(read/1000), format(readSpeed));
+                if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone()) {
+                    notifyProblem(NotifyProjectProblem.READ_PROBLEM, details);
+                }
+                LOG.log(Level.INFO, details.replace("<br>", "").replace("\n", " ")); //NOI18N
+            }
+        }
+        LOG.log(level, "Average file reading speed is {0} Kb/s Read {1} Kb Time {2} ms CPU {3} ms User {4} ms", //NOI18N
+                new Object[]{format(readSpeed), format(read/1000), format(time/1000/1000), format(cpu/1000/1000), format(user/1000/1000)});
     }
     
-    @NbBundle.Messages({
+    @Messages({
          "# {0} - time"
         ,"# {1} - lines"
         ,"# {2} - speed"
@@ -333,26 +369,30 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
             cpu +=  entry.getValue().cpu;
             user +=  entry.getValue().user;
         }
-        if (time > 0) {
-            long valTime = time/1000/1000/1000;
-            long cpuTime = cpu/1000/1000/1000;
-            long parseSpeed = lines/valTime;
-            if (cpuTime > 1) {
-                long k = time/cpu;
-                if (valTime > 100 && fileCount > 100 && parseSpeed < 1000 && k > 5) {
-                    if (!slowParsed) {
-                        slowParsed = true;
-                        final String details = Bundle.Details_slow_file_parse(format(valTime), format(lines), format(parseSpeed), format(cpuTime), format(k));
-                        if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone()) {
-                            notifyProblem(NotifyProjectProblem.PARSE_PROBLEM, details);
-                        }
-                       LOG.log(Level.INFO, details.replace("<br>", "").replace("\n", " ")); //NOI18N
+        if (time <= 0) {
+            return;
+        }
+        long wallTime = time/1000/1000/1000;
+        long cpuTime = cpu/1000/1000/1000;
+        if (wallTime <= 0 ) {
+            return;
+        }
+        long parseSpeed = lines/wallTime;
+        if (cpuTime > 1) {
+            long k = time/cpu;
+            if (wallTime > 100 && fileCount > 100 && parseSpeed < 1000 && k > 5) {
+                if (!slowParsed) {
+                    slowParsed = true;
+                    final String details = Bundle.Details_slow_file_parse(format(wallTime), format(lines), format(parseSpeed), format(cpuTime), format(k));
+                    if (!CndUtils.isUnitTestMode() && !CndUtils.isStandalone()) {
+                        notifyProblem(NotifyProjectProblem.PARSE_PROBLEM, details);
                     }
+                   LOG.log(Level.INFO, details.replace("<br>", "").replace("\n", " ")); //NOI18N
                 }
             }
-            LOG.log(level, "Average parsing speed is {0} Lines/s Lines {1} Time {2} ms CPU {3} ms User {4} ms", //NOI18N
-                    new Object[]{format(parseSpeed), format(lines), format(time/1000/1000), format(cpu/1000/1000), format(user/1000/1000)});
         }
+        LOG.log(level, "Average parsing speed is {0} Lines/s Lines {1} Time {2} ms CPU {3} ms User {4} ms", //NOI18N
+                new Object[]{format(parseSpeed), format(lines), format(time/1000/1000), format(cpu/1000/1000), format(user/1000/1000)});
     }
 
     private String format(long val) {

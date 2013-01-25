@@ -72,6 +72,7 @@ import org.xml.sax.SAXParseException;
  *
  * @author  Milan Kuchtiak
  */
+@org.netbeans.api.annotations.common.SuppressWarnings("DMI_COLLECTION_OF_URLS") // justification="File URLs only"
 public final class DDProvider {
     
     private static final DDProvider ddProvider = new DDProvider();

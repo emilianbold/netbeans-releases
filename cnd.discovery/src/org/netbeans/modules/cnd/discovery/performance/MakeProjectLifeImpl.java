@@ -51,7 +51,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Alexander Simon
  */
 @ServiceProvider(service=MakeProjectLife.class)
-public class MakeProjectLifeImpl implements MakeProjectLife{
+public class MakeProjectLifeImpl implements MakeProjectLife {
     private PerformanceIssueDetector detector;
 
     @Override
@@ -60,6 +60,16 @@ public class MakeProjectLifeImpl implements MakeProjectLife{
              if (detector == null) {
                  detector = new PerformanceIssueDetector();
                  PerformanceLogger.getLogger().addPerformanceListener(detector);
+             }
+             detector.stop(project);
+        }
+    }
+
+    @Override
+    public void stop(Project project) {
+        synchronized(this) {
+             if (detector != null) {
+                 detector.stop(project);
              }
         }
     }

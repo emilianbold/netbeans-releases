@@ -100,6 +100,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectEvent;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectLife;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectListener;
 import org.netbeans.modules.cnd.makeproject.ui.FolderSearchInfo.FileObjectNameMatcherImpl;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
@@ -1361,6 +1362,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
     }
 
     private void onProjectOpened() {
+        notifyProjectStartActivity();
         synchronized (openStateAndLock) {
             if (openStateAndLock.get()) {
                 return;
@@ -1406,6 +1408,12 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
             });
         }
     }
+    
+    private void notifyProjectStartActivity() {
+        for (MakeProjectLife service : Lookup.getDefault().lookupAll(MakeProjectLife.class)) {
+            service.start(this);
+        }
+    }
 
     void setDeleted() {
         LOGGER.log(Level.FINE, "set deleted MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory()}); // NOI18N
@@ -1436,6 +1444,13 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
             MakeProjectClassPathProvider.removeProjectSources(sources);
             // project is in closed state
             openStateAndLock.set(false);
+        }
+        notifyProjectStopActivity();
+    }
+
+    private void notifyProjectStopActivity() {
+        for (MakeProjectLife service : Lookup.getDefault().lookupAll(MakeProjectLife.class)) {
+            service.stop(this);
         }
     }
 

@@ -1864,10 +1864,14 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             LOGGER.log(Level.INFO, ex.getMessage(), ex);
             return;
         }
+
+        PerformanceLogger.PerformaceAction lsPerformanceEvent = PerformanceLogger.getLogger().start(Folder.LS_FOLDER_PERFORMANCE_EVENT, dir);
         FileObject[] files = dir.getChildren();
         if (files == null) {
+            lsPerformanceEvent.log(0);
             return;
         }
+        lsPerformanceEvent.log(files.length);
 
         final boolean hideBinaryFiles = !MakeOptions.getInstance().getViewBinaryFiles();
         for (FileObject file : files) {
