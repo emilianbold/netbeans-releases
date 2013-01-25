@@ -101,7 +101,6 @@ public class NotifyProjectProblem extends javax.swing.JPanel {
     public static final int CREATE_PROBLEM = 1;
     public static final int READ_PROBLEM = 2;
     public static final int PARSE_PROBLEM = 3;
-        String qq = "Fail";
 
     /**
      * Creates new form NotifyProjectProblem
