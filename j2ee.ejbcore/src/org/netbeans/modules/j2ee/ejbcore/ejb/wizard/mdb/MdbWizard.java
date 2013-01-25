@@ -45,23 +45,23 @@
 package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb;
 
 import java.io.IOException;
-import org.netbeans.api.j2ee.core.Profile;
-import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.MessageGenerator;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.spi.project.ui.templates.support.Templates;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
 import org.netbeans.modules.j2ee.core.api.support.wizard.Wizards;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.MessageGenerator;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.MultiTargetChooserPanel;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -69,83 +69,95 @@ import org.openide.util.NbBundle;
  * @author Chris Webster
  * @author Martin Adamek
  */
-public final class MessageEJBWizard implements WizardDescriptor.InstantiatingIterator{
+public final class MdbWizard implements WizardDescriptor.InstantiatingIterator {
 
     private WizardDescriptor.Panel[] panels;
     private int index = 0;
-    private MessageEJBWizardPanel ejbPanel;
+    private MdbLocationPanel ejbPanel;
+    private MdbPropertiesPanel propertiesPanel;
     private WizardDescriptor wiz;
 
-    private static final String [] SESSION_STEPS = new String [] {
-        NbBundle.getMessage(MessageEJBWizard.class, "LBL_SpecifyEJBInfo")
+    private static final String[] SESSION_STEPS = new String [] {
+        NbBundle.getMessage(MdbWizard.class, "LBL_SpecifyEJBInfo"), //NOI18N
+        NbBundle.getMessage(MdbWizard.class, "LBL_SpecifyActivationProperties") //NOI18N
     };
 
-    public String name () {
-        return NbBundle.getMessage (MessageEJBWizard.class, "LBL_MessageEJBWizardTitle");
+    @Override
+    public String name() {
+        return NbBundle.getMessage(MdbWizard.class, "LBL_MessageEJBWizardTitle"); //NOI18N
     }
 
+    @Override
     public void uninitialize(WizardDescriptor wiz) {
     }
 
+    @Override
     public void initialize(WizardDescriptor wizardDescriptor) {
         wiz = wizardDescriptor;
         Project project = Templates.getProject(wiz);
         SourceGroup[] sourceGroups = SourceGroups.getJavaSourceGroups(project);
-        ejbPanel = new MessageEJBWizardPanel(wiz);
-        WizardDescriptor.Panel wizardPanel = new ValidatingPanel(new MultiTargetChooserPanel(project,sourceGroups, ejbPanel, true));
-        panels = new WizardDescriptor.Panel[] {wizardPanel};
+        ejbPanel = new MdbLocationPanel(wiz);
+        WizardDescriptor.Panel locationPanel = new ValidatingPanel(
+                new MultiTargetChooserPanel(project, sourceGroups, ejbPanel, true));
+        propertiesPanel = new MdbPropertiesPanel(wizardDescriptor);
+        panels = new WizardDescriptor.Panel[] {locationPanel, propertiesPanel};
+        //TODO - disable second panel for EJB2.1
         Wizards.mergeSteps(wiz, panels, SESSION_STEPS);
     }
 
+    @Override
     public Set instantiate() throws IOException {
         FileObject pkg = Templates.getTargetFolder(wiz);
         EjbJar ejbModule = EjbJar.getEjbJar(pkg);
-        
-        // TODO: UI - add checkbox for Java EE 5 to create also EJB 2.1 style EJBs
+
         Profile profile = ejbModule.getJ2eeProfile();
-        boolean isSimplified = Profile.JAVA_EE_5.equals(profile) ||
-                               Profile.JAVA_EE_6_FULL.equals(profile) ||
-                               Profile.JAVA_EE_6_WEB.equals(profile) ||
-                               Profile.JAVA_EE_7_FULL.equals(profile) ||
-                               Profile.JAVA_EE_7_WEB.equals(profile);
+        boolean isSimplified = Util.isAtLeastJavaEE5(profile);
         MessageGenerator generator = MessageGenerator.create(
                 Templates.getTargetName(wiz),
                 pkg,
                 ejbPanel.getDestination(),
                 isSimplified,
-                !isSimplified // TODO: UI - add checkbox for option XML (not annotation) usage
-                );
+                propertiesPanel.getProperties());
         FileObject result = generator.generate();
         return result == null ? Collections.EMPTY_SET : Collections.singleton(result);
     }
 
+    @Override
     public void addChangeListener(ChangeListener listener) {
     }
 
+    @Override
     public void removeChangeListener(ChangeListener listener) {
     }
 
-    public boolean hasPrevious () {
+    @Override
+    public boolean hasPrevious() {
         return index > 0;
     }
 
-    public boolean hasNext () {
+    @Override
+    public boolean hasNext() {
     return index < panels.length - 1;
     }
 
-    public void nextPanel () {
-        if (! hasNext ()) {
-            throw new NoSuchElementException ();
+    @Override
+    public void nextPanel() {
+        if (!hasNext()) {
+            throw new NoSuchElementException();
         }
         index++;
     }
-    public void previousPanel () {
-        if (! hasPrevious ()) {
-            throw new NoSuchElementException ();
+
+    @Override
+    public void previousPanel() {
+        if (!hasPrevious()) {
+            throw new NoSuchElementException();
         }
         index--;
     }
-    public WizardDescriptor.Panel current () {
+
+    @Override
+    public WizardDescriptor.Panel current() {
         return panels[index];
     }
 
@@ -159,10 +171,11 @@ public final class MessageEJBWizard implements WizardDescriptor.InstantiatingIte
             super(delegate);
         }
 
+        @Override
         public boolean isValid() {
             if (!org.netbeans.modules.j2ee.common.Util.isValidServerInstance(getProject())) {
                 getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                        NbBundle.getMessage(MessageEJBWizard.class, "ERR_MissingServer")); // NOI18N
+                        NbBundle.getMessage(MdbWizard.class, "ERR_MissingServer")); // NOI18N
                 return false;
             }
             return super.isValid();
