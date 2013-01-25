@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -197,6 +197,9 @@ public class SettingsTableModel extends AbstractTableModel {
     public Object getValueAt (int rowIndex, int columnIndex) {
         Object retval = null;
         UpdateUnitProvider unitProvider = updateProviders.get (rowIndex);
+        if (unitProvider == null) {
+            return null;
+        }
         switch(columnIndex) {
         case 0: retval = unitProvider.isEnabled ();break;
         case 1: retval = unitProvider;break;
