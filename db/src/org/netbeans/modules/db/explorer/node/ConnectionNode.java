@@ -64,6 +64,8 @@ import org.netbeans.modules.db.explorer.action.ConnectAction;
 import org.netbeans.modules.db.explorer.metadata.MetadataModelManager;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModels;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -344,8 +346,21 @@ public class ConnectionNode extends BaseNode {
         return result;
     }
     
+    @NbBundle.Messages({
+        "# {0} - Connection name",
+        "MSG_Confirm_Connection_Delete=Really delete connection {0}?",
+        "MSG_Confirm_Connection_Delete_Title=Delete Connection"})
     @Override
     public void destroy() {
+        NotifyDescriptor d =
+                new NotifyDescriptor.Confirmation(
+                Bundle.MSG_Confirm_Connection_Delete(connection.getName()),
+                Bundle.MSG_Confirm_Connection_Delete_Title(),
+                NotifyDescriptor.YES_NO_OPTION);
+        Object result = DialogDisplayer.getDefault().notify(d);
+        if (!NotifyDescriptor.OK_OPTION.equals(result)) {
+            return;
+        }
         RP.post(
             new Runnable() {
                 @Override

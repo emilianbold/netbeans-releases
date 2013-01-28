@@ -96,6 +96,11 @@ public class RevisionPicker implements PropertyChangeListener {
         }
     }
 
+    void displayMergedStatus (String revision) {
+        browserPanel.displayBrancheMergedStatus(revision);
+        infoPanelController.displayMergedStatus(revision);
+    }
+
     private void updateDialogState () {
         boolean enabled = revision != null;
         dd.setValid(enabled);

@@ -42,6 +42,7 @@
 package org.netbeans.modules.search.ui;
 
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -101,6 +102,9 @@ public class BasicReplaceResultsPanel extends BasicAbstractResultsPanel {
         buttonPanel.setLayout(new FlowLayout(FlowLayout.LEADING, 2, 1));
         buttonPanel.add(replaceButton);
         replaceButton.setMaximumSize(replaceButton.getPreferredSize());
+        buttonPanel.setMaximumSize(new Dimension( // #225246
+                (int) buttonPanel.getMaximumSize().getWidth(),
+                (int) buttonPanel.getPreferredSize().getHeight()));
         leftPanel.add(resultsOutlineSupport.getOutlineView());
         leftPanel.add(buttonPanel);
 

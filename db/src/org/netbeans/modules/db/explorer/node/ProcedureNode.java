@@ -306,31 +306,7 @@ public class ProcedureNode extends BaseNode {
         @Override
         protected void initialize() {
             super.initialize();
-            updateProcedureProperties();
-        }
-        
-        private void updateProcedureProperties() {
-            PropertySupport.Name ps = new PropertySupport.Name(this);
-            addProperty(ps);
-            Type type = provider.getType(getName());
-            if (type == null) {
-                Logger.getLogger(ProcedureNode.class.getName()).log(
-                        Level.WARNING, "Unknown type of object " + getName(), new Exception()); //NOI18N
-                return;
-            }
-            switch (type) {
-                case Function:
-                    addProperty(TYPE, TYPEDESC, String.class, false, NbBundle.getMessage (ProcedureNode.class, "StoredFunction")); // NOI18N
-                    break;
-                case Procedure:
-                    addProperty(TYPE, TYPEDESC, String.class, false, NbBundle.getMessage (ProcedureNode.class, "StoredProcedure")); // NOI18N
-                    break;
-                case Trigger:
-                    addProperty(TYPE, TYPEDESC, String.class, false, NbBundle.getMessage (ProcedureNode.class, "StoredTrigger")); // NOI18N
-                    break;
-                default:
-                    assert false : "Unknown type " + provider.getType(getName());
-            }
+            updateProcedureProperties(this, provider);
         }
 
         @Override
@@ -554,26 +530,7 @@ public class ProcedureNode extends BaseNode {
         @Override
         protected void initialize() {
             super.initialize();
-            updateProcedureProperties();
-        }
-        
-        private void updateProcedureProperties() {
-            PropertySupport.Name ps = new PropertySupport.Name(this);
-            addProperty(ps);
-            
-            switch (provider.getType(getName())) {
-                case Function:
-                    addProperty(TYPE, TYPEDESC, String.class, false, NbBundle.getMessage (ProcedureNode.class, "StoredFunction")); // NOI18N
-                    break;
-                case Procedure:
-                    addProperty(TYPE, TYPEDESC, String.class, false, NbBundle.getMessage (ProcedureNode.class, "StoredProcedure")); // NOI18N
-                    break;
-                case Trigger:
-                    addProperty(TYPE, TYPEDESC, String.class, false, NbBundle.getMessage (ProcedureNode.class, "StoredTrigger")); // NOI18N
-                    break;
-                default:
-                    assert false : "Unknown type " + provider.getType(getName());
-            }
+            updateProcedureProperties(this, provider);
         }
 
         @Override
@@ -718,5 +675,37 @@ public class ProcedureNode extends BaseNode {
                 assert false : "Unknown type " + t;
         }
         return name;
+    }
+
+    private static void updateProcedureProperties(ProcedureNode node,
+            ProcedureNodeProvider provider) {
+        PropertySupport.Name ps = new PropertySupport.Name(node);
+        node.addProperty(ps);
+        Type type = provider.getType(node.getName());
+        if (type == null) {
+            Logger.getLogger(ProcedureNode.class.getName()).log(
+                    Level.WARNING, "Unknown type of object " //NOI18N
+                    + node.getName(), new Exception());
+            return;
+        }
+        switch (type) {
+            case Function:
+                setTypeProperty(node, "StoredFunction");                //NOI18N
+                break;
+            case Procedure:
+                setTypeProperty(node, "StoredProcedure");               //NOI18N
+                break;
+            case Trigger:
+                setTypeProperty(node, "StoredTrigger");                 //NOI18N
+                break;
+            default:
+                assert false : "Unknown type " //NOI18N
+                        + provider.getType(node.getName());
+        }
+    }
+
+    private static void setTypeProperty(ProcedureNode node, String bundleKey) {
+        node.addProperty(TYPE, TYPEDESC, String.class, false,
+                NbBundle.getMessage(ProcedureNode.class, bundleKey));
     }
 }

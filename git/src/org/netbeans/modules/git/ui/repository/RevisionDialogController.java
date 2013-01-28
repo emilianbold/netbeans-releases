@@ -82,6 +82,7 @@ public class RevisionDialogController implements ActionListener, DocumentListene
     private boolean internally;
     private final File[] roots;
     private String revision;
+    private String mergingInto;
 
     public RevisionDialogController (File repository, File[] roots, String initialRevision) {
         this(repository, roots);
@@ -130,6 +131,11 @@ public class RevisionDialogController implements ActionListener, DocumentListene
         support.removePropertyChangeListener(list);
     }
 
+    public void setMergingInto (String revision) {
+        mergingInto = revision;
+        infoPanelController.displayMergedStatus(revision);
+    }
+
     private void attachListeners () {
         panel.btnSelectRevision.addActionListener(this);
         panel.revisionField.getDocument().addDocumentListener(this);
@@ -156,6 +162,7 @@ public class RevisionDialogController implements ActionListener, DocumentListene
 
     private void openRevisionPicker () {
         RevisionPicker picker = new RevisionPicker(repository, roots);
+        picker.displayMergedStatus(mergingInto);
         if (picker.open()) {
             Revision selectedRevision = picker.getRevision();
             internally = true;
