@@ -273,7 +273,7 @@ public final class CreateElement implements ErrorRule<Void> {
         }
 
         if (target instanceof TypeElement)
-            modifiers.addAll(getAccessModifiers(info, source, (TypeElement) target));
+            modifiers.addAll(Utilities.getAccessModifiers(info, source, (TypeElement) target).getRequiredModifiers());
         else
             modifiers.add(Modifier.PUBLIC);
 
@@ -339,7 +339,7 @@ public final class CreateElement implements ErrorRule<Void> {
 
             TypeElement clazzTarget = (TypeElement) clazz;
 
-            result.addAll(prepareCreateMethodFix(info, newClass, getAccessModifiers(info, source, clazzTarget), clazzTarget, "<init>", nct.getArguments(), null)); //NOI18N
+            result.addAll(prepareCreateMethodFix(info, newClass, Utilities.getAccessModifiers(info, source, clazzTarget).getRequiredModifiers(), clazzTarget, "<init>", nct.getArguments(), null)); //NOI18N
         }
 
         //field like or class (type):
@@ -368,7 +368,7 @@ public final class CreateElement implements ErrorRule<Void> {
             fixTypes.remove(ElementKind.FIELD);
         }
 
-        if (fixTypes.contains(ElementKind.FIELD) && isTargetWritable((TypeElement) target, info)) { //IZ 111048 -- don't offer anything if target file isn't writable
+        if (fixTypes.contains(ElementKind.FIELD) && Utilities.isTargetWritable((TypeElement) target, info)) { //IZ 111048 -- don't offer anything if target file isn't writable
             Element enclosingElement = e.getEnclosingElement();
             if (enclosingElement != null && enclosingElement.getKind() == ElementKind.ANNOTATION_TYPE) {
 //                FileObject targetFile = SourceUtils.getFile(target, info.getClasspathInfo());
@@ -437,7 +437,7 @@ public final class CreateElement implements ErrorRule<Void> {
         }
 
        	//IZ 111048 -- don't offer anything if target file isn't writable
-	if(!isTargetWritable(target, info))
+	if(!Utilities.isTargetWritable(target, info))
 	    return Collections.<Fix>emptyList();
 
         FileObject targetFile = SourceUtils.getFile(ElementHandle.create(target), info.getClasspathInfo());
@@ -474,7 +474,7 @@ public final class CreateElement implements ErrorRule<Void> {
         }
 
 	//IZ 111048 -- don't offer anything if target file isn't writable
-	if (!isTargetWritable(target, info))
+	if (!Utilities.isTargetWritable(target, info))
 	    return Collections.<Fix>emptyList();
 
         FileObject targetFile = SourceUtils.getFile(target, info.getClasspathInfo());
@@ -518,50 +518,5 @@ public final class CreateElement implements ErrorRule<Void> {
         return NbBundle.getMessage(CreateElement.class, "DSC_Create_Field");
     }
 
-    /**
-     * Detects if targets file is non-null and writable
-     * @return true if target's file is writable
-     */
-    private static boolean isTargetWritable(TypeElement target, CompilationInfo info) {
-        TypeElement outermostType = info.getElementUtilities().outermostTypeElement(target);
-        FileObject fo = SourceUtils.getFile(ElementHandle.create(outermostType), info.getClasspathInfo());
-	if(fo != null && fo.canWrite())
-	    return true;
-	else
-	    return false;
-    }
-
-
-    static EnumSet<Modifier> getAccessModifiers(CompilationInfo info, TypeElement source, TypeElement target) {
-        if (target.getKind().isInterface()) {
-            return EnumSet.of(Modifier.PUBLIC);
-        }
-
-        TypeElement outterMostSource = source != null ? info.getElementUtilities().outermostTypeElement(source) : null;
-        TypeElement outterMostTarget = info.getElementUtilities().outermostTypeElement(target);
-
-        if (outterMostTarget.equals(outterMostSource)) {
-            return EnumSet.of(Modifier.PRIVATE);
-        }
-
-        Element sourcePackage;
-
-        if (outterMostSource != null) {
-            sourcePackage = outterMostSource.getEnclosingElement();
-        } else if (info.getCompilationUnit().getPackageName() != null) {
-            sourcePackage = info.getTrees().getElement(new TreePath(new TreePath(info.getCompilationUnit()), info.getCompilationUnit().getPackageName()));
-        } else {
-            sourcePackage = info.getElements().getPackageElement("");
-        }
-
-        Element targetPackage = outterMostTarget.getEnclosingElement();
-
-        if (sourcePackage.equals(targetPackage)) {
-            return EnumSet.noneOf(Modifier.class);
-        }
-
-        //TODO: protected?
-        return EnumSet.of(Modifier.PUBLIC);
-    }
 
 }
