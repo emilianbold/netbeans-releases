@@ -45,18 +45,44 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <library version="3.0" xmlns="http://www.netbeans.org/ns/library-declaration/3">
-    <name>ejb3-persistence</name>
+    <name>hibernate4-support</name>
     <type>j2se</type>
-    <localizing-bundle>org/netbeans/modules/hibernatelib/resources/Bundle</localizing-bundle>
+    <localizing-bundle>org/netbeans/modules/hibernate4lib/resources/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst://org.netbeans.modules.hibernatelib/modules/ext/hibernate/hibernate-jpa-2.0-api-1.0.1.Final.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.hibernate4lib/modules/ext/hibernate4/antlr-2.7.7.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.hibernate4lib/modules/ext/hibernate4/c3p0-0.9.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.hibernate4lib/modules/ext/hibernate4/hibernate-c3p0-4.1.8.Final.jar!/</resource>
+        <!--resource>jar:nbinst://org.apache.commons.logging/modules/org-apache-commons-logging.jar!/</resource-->
+        <resource>jar:nbinst://org.netbeans.modules.hibernate4lib/modules/ext/hibernate4/dom4j-1.6.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.hibernate4lib/modules/ext/hibernate4/ehcache-core-2.4.3.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.hibernate4lib/modules/ext/hibernate4/hibernate-ehcache-4.1.8.Final.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.hibernate4lib/modules/ext/hibernate4/hibernate-core-4.1.8.Final.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.hibernate4lib/modules/ext/hibernate4/jboss-logging-3.1.0.GA.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.hibernate4lib/modules/ext/hibernate4/hibernate-commons-annotations-4.0.1.Final.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.hibernate4lib/modules/ext/hibernate4/hibernate-entitymanager-4.1.8.Final.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.hibernate4lib/modules/ext/hibernate4/javassist-3.15.0-GA.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.hibernate4lib/modules/ext/hibernate4/jboss-transaction-api_1.1_spec-1.0.0.Final.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.hibernate4lib/modules/ext/hibernate4/slf4j-api-1.6.1.jar!/</resource>
     </volume>
+    <!-- Have them later
+    <volume>
+        <type>javadoc</type>
+            <resource>jar:nbinst:///docs/hibernate-3.2.5-javadoc.zip!/</resource>
+    </volume>
+    <volume>
+        <type>src</type>
+        <resource>jar:nbinst:///docs/hibernate-3.2.5-src.zip!/</resource>
+    </volume>
+    -->
     <properties>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <property>
             <name>maven-dependencies</name>
-            <value>org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final:jar</value>
+            <value>
+                org.hibernate:hibernate:4.1.8.Final:jar
+                org.hibernate:hibernate-entitymanager:4.1.8.Final:jar
+            </value>
         </property>
     </properties>
 </library>
