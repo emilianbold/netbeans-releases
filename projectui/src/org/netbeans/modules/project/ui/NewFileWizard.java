@@ -47,6 +47,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
 import javax.swing.JComponent;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
@@ -62,18 +63,21 @@ import org.openide.util.Utilities;
 
 public final class NewFileWizard extends TemplateWizard {
 
+    @NonNull
     private Project currP;
     private MessageFormat format;
     // private String[] recommendedTypes;
+
+    @NonNull
     private Project getCurrentProject() {
         return currP;
     }
 
-    private void setCurrentProject(Project p) {
+    private void setCurrentProject(@NonNull Project p) {
         this.currP = p;
     }
 
-    public NewFileWizard(Project project /*, String recommendedTypes[] */) {
+    public NewFileWizard(@NonNull Project project /*, String recommendedTypes[] */) {
         setCurrentProject(project);
         putProperty(ProjectChooserFactory.WIZARD_KEY_PROJECT, getCurrentProject());
         format = new MessageFormat(NbBundle.getBundle(NewFileWizard.class).getString("LBL_NewFileWizard_MessageFormat"));

@@ -56,6 +56,9 @@ import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -79,17 +82,19 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     private static final Dimension PREF_DIM = new Dimension(500, 340);
     
     private final ListCellRenderer CELL_RENDERER = new GroupCellRenderer();
-        
+
+    @NonNull
     private Project project;
     private String expectedExtension;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    @NonNull
     private SourceGroup[] folders;
     private boolean isFolder;
     private boolean freeFileExtension;
     
     @SuppressWarnings("LeakingThisInConstructor")
     @Messages("LBL_SimpleTargetChooserPanel_Name=Name and Location")
-    public SimpleTargetChooserPanelGUI( Project project, SourceGroup[] folders, Component bottomPanel, boolean isFolder, boolean freeFileExtension) {
+    public SimpleTargetChooserPanelGUI( @NonNull Project project, @NonNull SourceGroup[] folders, Component bottomPanel, boolean isFolder, boolean freeFileExtension) {
         this.project = project;
         this.folders = folders.clone();
         this.isFolder = isFolder;
@@ -123,7 +128,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         "LBL_TargetChooser_CreatedFile_Label=&Created File:",
         "# sample folder name", "LBL_folder_name=folder"
     })
-    final void initValues(FileObject template, FileObject preselectedFolder, String documentName) {
+    final void initValues(FileObject template, @NullAllowed FileObject preselectedFolder, String documentName) {
         assert project != null;
         
         projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
@@ -206,7 +211,8 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     public SourceGroup getTargetGroup() {
         return (SourceGroup)locationComboBox.getSelectedItem();
     }
-        
+
+    @CheckForNull
     public String getTargetFolder() {
         
         String folderName = folderTextField.getText().trim();
@@ -392,6 +398,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     private javax.swing.JSeparator targetSeparator;
     // End of variables declaration//GEN-END:variables
 
+    @CheckForNull
     private SourceGroup getPreselectedGroup( SourceGroup[] groups, FileObject folder ) {        
         for( int i = 0; folder != null && i < groups.length; i++ ) {
             if( FileUtil.isParentOf( groups[i].getRootFolder(), folder )

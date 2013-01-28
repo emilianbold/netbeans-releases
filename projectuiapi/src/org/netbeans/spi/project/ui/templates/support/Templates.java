@@ -45,6 +45,7 @@
 package org.netbeans.spi.project.ui.templates.support;
 
 import java.io.IOException;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
@@ -267,7 +268,7 @@ public class Templates {
      * @return a builder which can be used to customize and then create the target chooser
      * @since org.netbeans.modules.projectuiapi/1 1.45
      */
-    public static SimpleTargetChooserBuilder buildSimpleTargetChooser(Project project, SourceGroup[] folders) {
+    public static SimpleTargetChooserBuilder buildSimpleTargetChooser(@NonNull Project project, @NonNull SourceGroup[] folders) {
         Parameters.notNull("project", project);
         Parameters.notNull("folders", folders);
         return new SimpleTargetChooserBuilder(project, folders);
@@ -279,11 +280,13 @@ public class Templates {
      * @since org.netbeans.modules.projectuiapi/1 1.45
      */
     public static final class SimpleTargetChooserBuilder {
+        @NonNull
         final Project project;
+        @NonNull
         final SourceGroup[] folders;
         WizardDescriptor.Panel<WizardDescriptor> bottomPanel;
         boolean freeFileExtension;
-        SimpleTargetChooserBuilder(Project project, SourceGroup[] folders) {
+        SimpleTargetChooserBuilder(@NonNull Project project, @NonNull SourceGroup[] folders) {
             this.project = project;
             this.folders = folders;
         }

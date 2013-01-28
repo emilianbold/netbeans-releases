@@ -63,6 +63,7 @@ import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu.Separator;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.NewFileWizard;
 import org.netbeans.modules.project.ui.NoProjectNew;
@@ -91,7 +92,7 @@ import org.openide.util.actions.Presenter.Popup;
 @Messages({
     "LBL_NewFileAction_Name=&New File...",
     "LBL_NewFileAction_PopupName=New",
-    "#{0} Name of the template", "LBL_NewFileAction_Template_PopupName={0}..."
+    "# {0} - Name of the template", "LBL_NewFileAction_Template_PopupName={0}..."
 })
 public class NewFile extends ProjectAction implements PropertyChangeListener, Popup {
 
@@ -240,6 +241,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
 
     // Private methods ---------------------------------------------------------
 
+    @NonNull
     private Project preselectedProject( Lookup context ) {
         Project preselectedProject = null;
 
@@ -299,7 +301,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         "LBL_NewFileAction_File_PopupName=Other...",
         "NewFile.please_wait=Please wait..."
     })
-    private void fillSubMenu(final JMenu menuItem, final Project project) {
+    private void fillSubMenu(final JMenu menuItem, @NonNull final Project project) {
         menuItem.removeAll();
         JMenuItem wait = new JMenuItem(NewFile_please_wait());
         wait.setEnabled(false);

@@ -49,6 +49,7 @@ import java.io.IOException;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import static org.netbeans.modules.project.ui.Bundle.*;
@@ -69,7 +70,9 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private SimpleTargetChooserPanelGUI gui;
 
+    @NonNull
     private Project project;
+    @NonNull
     private SourceGroup[] folders;
     private WizardDescriptor.Panel<WizardDescriptor> bottomPanel;
     private WizardDescriptor wizard;
@@ -77,7 +80,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
     private boolean freeFileExtension;
     
     @SuppressWarnings("LeakingThisInConstructor")
-    SimpleTargetChooserPanel(Project project, SourceGroup[] folders,
+    SimpleTargetChooserPanel(@NonNull Project project, @NonNull SourceGroup[] folders,
             WizardDescriptor.Panel<WizardDescriptor> bottomPanel, boolean isFolder, boolean freeFileExtension) {
         this.folders = folders;
         this.project = project;

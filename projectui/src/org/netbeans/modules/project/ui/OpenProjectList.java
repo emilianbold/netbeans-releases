@@ -956,7 +956,8 @@ public final class OpenProjectList {
             LOAD.exit();
         }
     }
-        
+
+    @NonNull
     public Project[] getOpenProjects() {
         return ProjectManager.mutex().readAccess(new Mutex.Action<Project[]>() {
             public @Override Project[] run() {
@@ -1087,7 +1088,7 @@ public final class OpenProjectList {
 
                
     // Used from NewFile action        
-    public List<DataObject> getTemplatesLRU( Project project,  PrivilegedTemplates priv ) {
+    public List<DataObject> getTemplatesLRU( @NonNull Project project,  PrivilegedTemplates priv ) {
         List<FileObject> pLRU = getTemplateNamesLRU( project,  priv );
         List<DataObject> templates = new ArrayList<DataObject>();
         for( Iterator<FileObject> it = pLRU.iterator(); it.hasNext(); ) {
@@ -1264,7 +1265,7 @@ public final class OpenProjectList {
             this.icon = icon;
         }
     }
-    public static List<TemplateItem> prepareTemplates(Project project, Lookup lookup) {
+    public static List<TemplateItem> prepareTemplates(@NonNull Project project, @NonNull Lookup lookup) {
         // check the action context for recommmended/privileged templates..
         PrivilegedTemplates privs = lookup.lookup(PrivilegedTemplates.class);
         final List<TemplateItem> items = new ArrayList<TemplateItem>();
@@ -1353,7 +1354,7 @@ public final class OpenProjectList {
             OpenProjectListSettings.getInstance().setMainProjectURL( mainRoot );
     }
         
-    private ArrayList<FileObject> getTemplateNamesLRU( final Project project, PrivilegedTemplates priv ) {
+    private ArrayList<FileObject> getTemplateNamesLRU( @NonNull final Project project, PrivilegedTemplates priv ) {
         // First take recently used templates and try to find those which
         // are supported by the project.
         

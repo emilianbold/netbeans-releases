@@ -110,7 +110,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         projectsComboBox.setRenderer (projectCellRenderer);
      }
     
-    public void readValues (Project p, String category, String template) {
+    public void readValues (@NonNull Project p, String category, String template) {
         assert p != null : "Project can not be null";   //NOI18N
         boolean wf;
         synchronized (this) {

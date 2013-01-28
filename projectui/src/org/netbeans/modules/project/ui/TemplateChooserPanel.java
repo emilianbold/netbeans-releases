@@ -49,6 +49,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -73,11 +74,12 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel<WizardDescrip
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private TemplateChooserPanelGUI gui;
 
+    @NonNull
     private Project project;
     // private String[] recommendedTypes;
     private WizardDescriptor wizard;
 
-    TemplateChooserPanel( Project p /*, String recommendedTypes[] */ ) {
+    TemplateChooserPanel( @NonNull Project p /*, String recommendedTypes[] */ ) {
         this.project = p;
         /* this.recommendedTypes = recommendedTypes; */
     }
