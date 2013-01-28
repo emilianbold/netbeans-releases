@@ -40,6 +40,9 @@
 package org.netbeans.installer.products.glassfish.mod.wizard.panels;
 
 import java.io.File;
+import java.util.List;
+import org.netbeans.installer.product.Registry;
+import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
@@ -47,9 +50,9 @@ import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.wizard.components.panels.DestinationPanel;
 import org.netbeans.installer.wizard.components.panels.DestinationPanel.DestinationPanelSwingUi;
 import org.netbeans.installer.wizard.components.panels.DestinationPanel.DestinationPanelUi;
+import org.netbeans.installer.wizard.containers.SwingContainer;
 import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.ui.WizardUi;
-import org.netbeans.installer.wizard.containers.SwingContainer;
 
 /**
  *
@@ -73,6 +76,8 @@ public class GlassFishPanel extends DestinationPanel {
                 DEFAULT_DESTINATION_LABEL_TEXT);
         setProperty(DESTINATION_BUTTON_TEXT_PROPERTY,
                 DEFAULT_DESTINATION_BUTTON_TEXT);
+        
+        setProperty(ERROR_IN_NETBEANS_INSTALLATION_FOLDER, DEFAULT_ERROR_IN_NETBEANS_INSTALLATION_FOLDER);
         /*
         setProperty(JDK_LOCATION_LABEL_TEXT_PROPERTY,
                 DEFAULT_JDK_LOCATION_LABEL_TEXT);
@@ -591,22 +596,46 @@ public class GlassFishPanel extends DestinationPanel {
                         httpsPort, adminPort);
             }
             */
+            
             //#128991: Installation not recognized not empty dir for GF
             File f = FileUtils.eliminateRelativity(getDestinationField().getText().trim());
-            if(FileUtils.exists(f)) {
+            if (FileUtils.exists(f)) {
                 File [] list = f.listFiles();
                 if (list!= null && list.length > 0) {
                     return StringUtils.format(
                             component.getProperty(ERROR_NOT_EMPTY_PROPERTY),
                             f.getAbsolutePath());
                 }
-            }            
+            }   
+            
             //#137248: Glassfish installation failed while using UNC paths
-            if(SystemUtils.isWindows() && FileUtils.isUNCPath(f.getAbsolutePath())) {
+            if (SystemUtils.isWindows() && FileUtils.isUNCPath(f.getAbsolutePath())) {
                 return StringUtils.format(
                         component.getProperty(ERROR_UNC_PATH_UNSUPPORTED_PROPERTY),
                         f.getAbsolutePath());
             }
+            
+            //#202619: org.netbeans.installer.utils.exceptions.UninstallationException: failed to stop the default domain
+            File actualFolder = f.getAbsoluteFile();
+            File netBeansInstallationLocation = null;
+            
+            List<Product> productsToInstall = Registry.getInstance().getProductsToInstall();
+            for (Product product : productsToInstall) {
+                if (product.getUid().equals("nb-base")) {
+                    netBeansInstallationLocation = product.getInstallationLocation().getAbsoluteFile();
+                    break;
+                }
+            }
+            
+            if (netBeansInstallationLocation != null) {
+                do {                    
+                    if (netBeansInstallationLocation.equals(actualFolder)) {
+                        return StringUtils.format(component.getProperty(ERROR_IN_NETBEANS_INSTALLATION_FOLDER));
+                    }
+                    actualFolder = actualFolder.getParentFile();
+                } while (actualFolder.getParentFile() != null);
+            }
+            
             return null;
         }
         
@@ -1200,6 +1229,8 @@ public class GlassFishPanel extends DestinationPanel {
      */
     public static final String ERROR_UNC_PATH_UNSUPPORTED_PROPERTY =
             "error.unc.path.unsupported"; // NOI18N
+     public static final String ERROR_IN_NETBEANS_INSTALLATION_FOLDER =
+            "error.in.nb.installation.folder"; // NOI18N
     /*
     public static final String WARNING_PORT_IN_USE_PROPERTY =
             "warning.port.in.use"; // NOI18N
@@ -1276,6 +1307,9 @@ public class GlassFishPanel extends DestinationPanel {
     public static final String DEFAULT_ERROR_UNC_PATH_UNSUPPORTED =
             ResourceUtils.getString(GlassFishPanel.class,
             "GFP.error.unc.path.unsupported"); // NOI18N
+    public static final String DEFAULT_ERROR_IN_NETBEANS_INSTALLATION_FOLDER =
+            ResourceUtils.getString(GlassFishPanel.class,
+            "GFP.error.in.nb.installation.folder"); // NOI18N
     /*        
     public static final String DEFAULT_WARNING_PORT_IN_USE =
             ResourceUtils.getString(GlassFishPanel.class,
