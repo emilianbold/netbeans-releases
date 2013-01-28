@@ -47,6 +47,7 @@ package org.netbeans.modules.project.uiapi;
 import java.io.File;
 import javax.swing.JFileChooser;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.openide.WizardDescriptor;
@@ -71,7 +72,7 @@ public interface ProjectChooserFactory {
 
     public JFileChooser createProjectChooser(); 
     
-    public WizardDescriptor.Panel<WizardDescriptor> createSimpleTargetChooser(@NonNull Project project, @NonNull SourceGroup[] folders,
+    public WizardDescriptor.Panel<WizardDescriptor> createSimpleTargetChooser(@NullAllowed Project project, @NonNull SourceGroup[] folders,
             WizardDescriptor.Panel<WizardDescriptor> bottomPanel, boolean freeFileExtension);
             
 }

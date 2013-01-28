@@ -415,6 +415,7 @@
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript2.editor.resources.Bundle"/>
                 <attr name="templateCategory" stringvalue="simple-files"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javascript2/editor/resources/javascript.html"/>
+                <attr name="requireProject" boolvalue="false"/>
             </file>
             <file name="json.json" url="nbresloc:/org/netbeans/modules/javascript2/editor/resources/jsontemplate.json">
                 <attr name="position" intvalue="450"/>
@@ -423,6 +424,7 @@
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript2.editor.resources.Bundle"/>
                 <attr name="templateCategory" stringvalue="simple-files"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javascript2/editor/resources/json.html"/>
+                <attr name="requireProject" boolvalue="false"/>
             </file>
         </folder>
     </folder>

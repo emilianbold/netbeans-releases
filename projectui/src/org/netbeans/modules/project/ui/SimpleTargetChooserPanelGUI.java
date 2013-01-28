@@ -62,7 +62,6 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -70,6 +69,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.ChangeSupport;
 import static org.netbeans.modules.project.ui.Bundle.*;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -83,18 +83,18 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     
     private final ListCellRenderer CELL_RENDERER = new GroupCellRenderer();
 
-    @NonNull
+    @NullAllowed
     private Project project;
     private String expectedExtension;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     @NonNull
-    private SourceGroup[] folders;
+    private final SourceGroup[] folders;
     private boolean isFolder;
     private boolean freeFileExtension;
     
     @SuppressWarnings("LeakingThisInConstructor")
     @Messages("LBL_SimpleTargetChooserPanel_Name=Name and Location")
-    public SimpleTargetChooserPanelGUI( @NonNull Project project, @NonNull SourceGroup[] folders, Component bottomPanel, boolean isFolder, boolean freeFileExtension) {
+    public SimpleTargetChooserPanelGUI( @NullAllowed Project project, @NonNull SourceGroup[] folders, Component bottomPanel, boolean isFolder, boolean freeFileExtension) {
         this.project = project;
         this.folders = folders.clone();
         this.isFolder = isFolder;
@@ -126,17 +126,14 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         "LBL_TargetChooser_FileName_Label=File &Name:",
         "LBL_TargetChooser_Folder_Label=Fo&lder:",
         "LBL_TargetChooser_CreatedFile_Label=&Created File:",
-        "# sample folder name", "LBL_folder_name=folder"
+        "# sample folder name", "LBL_folder_name=folder",
+        "LBL_TargetChooser_NoProject=None"
     })
     final void initValues(FileObject template, @NullAllowed FileObject preselectedFolder, String documentName) {
-        assert project != null;
-        
-        projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
-        
-        Sources sources = ProjectUtils.getSources( project );
-
-        if (folders == null) {
-            folders = sources.getSourceGroups( Sources.TYPE_GENERIC );
+        if (project != null) {
+            projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
+        } else {
+            projectTextField.setText(LBL_TargetChooser_NoProject());
         }
 
         if ( folders.length < 2 ) {
@@ -162,6 +159,9 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
                 throw new NullPointerException("#173645: null returned illegally from " + preselectedGroup.getClass().getName() + ".getRootFolder()");
             }
             folderTextField.setText(getRelativeNativeName(rootFolder, preselectedFolder));
+        }
+        else if (project == null && preselectedFolder != null) {
+            folderTextField.setText(preselectedFolder.getPath().replace('/', File.separatorChar));
         }
 
         String ext = template == null ? "" : template.getExt(); // NOI18N
@@ -217,10 +217,25 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         
         String folderName = folderTextField.getText().trim();
         
-        if ( folderName.length() == 0 ) {
+        if ( folderName.isEmpty() ) {
+            if (project == null) {
+                String home = System.getProperty("user.home");
+                if (home != null && new File(home).isDirectory()) {
+                    return home;
+                }
+            }
+
             return null;
         }
         else {           
+            if (project == null && !new File(folderName).isAbsolute()) {
+                String home = System.getProperty("user.home");
+                if (home != null && new File(home).isDirectory()) {
+                    FileObject homeFileObject = FileUtil.toFileObject(FileUtil.normalizeFile(new File(home)));
+                    folderName = FileUtil.getFileDisplayName(homeFileObject) + File.separatorChar + folderName;
+                }
+            }
+
             return folderName.replace( File.separatorChar, '/' ); // NOI18N
         }
     }
@@ -429,19 +444,15 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     private void updateCreatedFolder() {
         
         SourceGroup sg = (SourceGroup)locationComboBox.getSelectedItem();
-        if (sg == null) {
-            return;
-        }
-        FileObject root = sg.getRootFolder();
-        if (root == null) {
-            return;
-        }
-            
-        String folderName = folderTextField.getText().trim();
+        FileObject root = sg != null ? sg.getRootFolder() : null;
         String documentName = documentNameTextField.getText().trim();
+        String folderName = getTargetFolder();
+        if (folderName == null) {
+            folderName = "";
+        }
         
-        String createdFileName = FileUtil.getFileDisplayName( root ) + 
-            ( folderName.startsWith("/") || folderName.startsWith( File.separator ) ? "" : "/" ) + // NOI18N
+        String createdFileName = (root != null ? FileUtil.getFileDisplayName( root ) : "") +
+            ( root == null || folderName.startsWith("/") || folderName.startsWith( File.separator ) ? "" : "/" ) + // NOI18N
             folderName + 
             ( folderName.endsWith("/") || folderName.endsWith( File.separator ) || folderName.length() == 0 ? "" : "/" ) + // NOI18N
             documentName + (!freeFileExtension || documentName.indexOf('.') == -1 ? expectedExtension : "");
@@ -456,22 +467,39 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     
     public @Override void actionPerformed(ActionEvent e) {
         if ( browseButton == e.getSource() ) {
-            FileObject fo=null;
-            // Show the browse dialog             
-            
-            SourceGroup group = (SourceGroup)locationComboBox.getSelectedItem();
-            if (group == null) { // #161478
-                return;
+            if (project != null) {
+                FileObject fo;
+                // Show the browse dialog
+
+                SourceGroup group = (SourceGroup)locationComboBox.getSelectedItem();
+                if (group == null) { // #161478
+                    return;
+                }
+
+                fo = BrowseFolders.showDialog( new SourceGroup[] { group },
+                                               project,
+                                               folderTextField.getText().replace( File.separatorChar, '/' ) ); // NOI18N
+
+                if ( fo != null && fo.isFolder() ) {
+                    String relPath = FileUtil.getRelativePath( group.getRootFolder(), fo );
+                    folderTextField.setText( relPath.replace( '/', File.separatorChar ) ); // NOI18N
+                }
             }
-            
-            fo = BrowseFolders.showDialog( new SourceGroup[] { group }, 
-                                           project, 
-                                           folderTextField.getText().replace( File.separatorChar, '/' ) ); // NOI18N
-                        
-            if ( fo != null && fo.isFolder() ) {
-                String relPath = FileUtil.getRelativePath( group.getRootFolder(), fo );
-                folderTextField.setText( relPath.replace( '/', File.separatorChar ) ); // NOI18N
-            }                        
+            else {
+                String previousTargetFolder = getTargetFolder();
+                File targetFolder =
+                    new FileChooserBuilder(SimpleTargetChooserPanel.class)
+                        .setDirectoriesOnly(true)
+                        .setDefaultWorkingDirectory(new File(previousTargetFolder != null ? previousTargetFolder : "."))
+                        .forceUseOfDefaultWorkingDirectory(previousTargetFolder != null)
+                        .showSaveDialog();
+
+                FileObject fo = targetFolder != null ? FileUtil.toFileObject(FileUtil.normalizeFile(targetFolder)) : null;
+
+                if ( fo != null && fo.isFolder() ) {
+                    folderTextField.setText( fo.getPath().replace( '/', File.separatorChar ) ); // NOI18N
+                }
+            }
         }
         else if ( locationComboBox == e.getSource() )  {
             updateCreatedFolder();

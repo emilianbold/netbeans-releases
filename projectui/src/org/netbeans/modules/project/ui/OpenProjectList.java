@@ -1088,7 +1088,7 @@ public final class OpenProjectList {
 
                
     // Used from NewFile action        
-    public List<DataObject> getTemplatesLRU( @NonNull Project project,  PrivilegedTemplates priv ) {
+    public List<DataObject> getTemplatesLRU( @NullAllowed Project project,  PrivilegedTemplates priv ) {
         List<FileObject> pLRU = getTemplateNamesLRU( project,  priv );
         List<DataObject> templates = new ArrayList<DataObject>();
         for( Iterator<FileObject> it = pLRU.iterator(); it.hasNext(); ) {
@@ -1265,7 +1265,7 @@ public final class OpenProjectList {
             this.icon = icon;
         }
     }
-    public static List<TemplateItem> prepareTemplates(@NonNull Project project, @NonNull Lookup lookup) {
+    public static List<TemplateItem> prepareTemplates(@NullAllowed Project project, @NonNull Lookup lookup) {
         // check the action context for recommmended/privileged templates..
         PrivilegedTemplates privs = lookup.lookup(PrivilegedTemplates.class);
         final List<TemplateItem> items = new ArrayList<TemplateItem>();
@@ -1354,13 +1354,13 @@ public final class OpenProjectList {
             OpenProjectListSettings.getInstance().setMainProjectURL( mainRoot );
     }
         
-    private ArrayList<FileObject> getTemplateNamesLRU( @NonNull final Project project, PrivilegedTemplates priv ) {
+    private ArrayList<FileObject> getTemplateNamesLRU( @NullAllowed final Project project, PrivilegedTemplates priv ) {
         // First take recently used templates and try to find those which
         // are supported by the project.
         
         final ArrayList<FileObject> result = new ArrayList<FileObject>(NUM_TEMPLATES);
         
-        PrivilegedTemplates pt = priv != null ? priv : project.getLookup().lookup( PrivilegedTemplates.class );
+        PrivilegedTemplates pt = priv != null ? priv : project != null ? project.getLookup().lookup( PrivilegedTemplates.class ) : null;
         String ptNames[] = pt == null ? null : pt.getPrivilegedTemplates();        
         final ArrayList<String> privilegedTemplates = new ArrayList<String>( Arrays.asList( pt == null ? new String[0]: ptNames ) );
         
@@ -1379,7 +1379,7 @@ public final class OpenProjectList {
                     if ( fo == null ) {
                         it.remove(); // Does not exists remove
                     }
-                    else if ( isRecommended( rtNames, fo ) ) {
+                    else if ( isRecommended( project, rtNames, fo ) ) {
                         result.add( fo );
                         privilegedTemplates.remove( templateName ); // Not to have it twice
                     }
@@ -1424,6 +1424,20 @@ public final class OpenProjectList {
             // no category set, ok display it
             return true;
         }
+    }
+
+    static boolean isRecommended(@NullAllowed Project project, @NonNull String[] recommendedTypes, @NonNull FileObject primaryFile) {
+        if (project != null) {
+            return isRecommended(recommendedTypes, primaryFile);
+        }
+
+        if (primaryFile.isFolder()) {
+            // folders of templates do not require a project for display
+            return true;
+        }
+
+        Object requireProject = primaryFile.getAttribute("requireProject");
+        return Boolean.FALSE.equals(requireProject);
     }
 
     /**

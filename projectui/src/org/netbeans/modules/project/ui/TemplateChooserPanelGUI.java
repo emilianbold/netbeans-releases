@@ -56,7 +56,9 @@ import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import static org.netbeans.modules.project.ui.Bundle.*;
 import org.netbeans.modules.project.ui.spi.TemplateCategorySorter;
@@ -91,6 +93,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
 
     //GUI Builder
     private TemplatesPanelGUI.Builder builder;
+    @NullAllowed
     private Project project;
     private @NonNull String[] projectRecommendedTypes;
     private String category;
@@ -110,7 +113,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         projectsComboBox.setRenderer (projectCellRenderer);
      }
     
-    public void readValues (@NonNull Project p, String category, String template) {
+    public void readValues (@NullAllowed Project p, String category, String template) {
         assert p != null : "Project can not be null";   //NOI18N
         boolean wf;
         synchronized (this) {
@@ -135,16 +138,17 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
 
     /** Called from readSettings, to initialize the GUI with proper components
      */
-    private void initValues( Project p ) {
+    private void initValues( @NullAllowed Project p ) {
         // Populate the combo box with list of projects
         Project openProjects[] = OpenProjectList.getDefault().getOpenProjects();
         Arrays.sort(openProjects, OpenProjectList.projectByDisplayName());
         DefaultComboBoxModel projectsModel = new DefaultComboBoxModel( openProjects );
         projectsComboBox.setModel( projectsModel );
+        projectsComboBox.setEnabled(openProjects.length > 0);
         this.selectProject (p);
     }
 
-    private void selectProject (Project p) {
+    private void selectProject (@NullAllowed Project p) {
         if (p != null) {
             DefaultComboBoxModel projectsModel = (DefaultComboBoxModel) projectsComboBox.getModel ();
             if ( projectsModel.getIndexOf( p ) == -1 ) {
@@ -171,6 +175,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         this.defaultActionListener = al;
     }
 
+    @CheckForNull
     public Project getProject() {
         boolean wf;
         synchronized (this) {
@@ -371,7 +376,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         
         @Override protected boolean createKeys(List<DataObject> keys) {
             for (DataObject dobj : root.getChildren()) {
-                if (isTemplate(dobj) && OpenProjectList.isRecommended(projectRecommendedTypes, dobj.getPrimaryFile())) {
+                if (isTemplate(dobj) && OpenProjectList.isRecommended(project, projectRecommendedTypes, dobj.getPrimaryFile())) {
                     if (dobj instanceof DataShadow) {
                         dobj = ((DataShadow) dobj).getOriginal();
                     }
@@ -436,14 +441,14 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         }
         
         DataFolder f = (DataFolder) folder;
-        if (!OpenProjectList.isRecommended(projectRecommendedTypes, f.getPrimaryFile())) {
+        if (!OpenProjectList.isRecommended(p, projectRecommendedTypes, f.getPrimaryFile())) {
             // Eg. Licenses folder.
             //see #102508
             return false;
         }
         DataObject[] ch = f.getChildren ();
         for (int i = 0; i < ch.length; i++) {
-            if (isTemplate (ch[i]) && OpenProjectList.isRecommended(projectRecommendedTypes, ch[i].getPrimaryFile ())) {
+            if (isTemplate (ch[i]) && OpenProjectList.isRecommended(p, projectRecommendedTypes, ch[i].getPrimaryFile ())) {
                 // XXX: how to filter link to Package template in each java types folder?
                 if (!(ch[i] instanceof DataShadow)) {
                     return true;

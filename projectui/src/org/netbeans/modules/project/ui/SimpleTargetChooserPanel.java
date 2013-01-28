@@ -45,11 +45,13 @@
 package org.netbeans.modules.project.ui;
 
 import java.awt.Component;
+import java.io.File;
 import java.io.IOException;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import static org.netbeans.modules.project.ui.Bundle.*;
@@ -70,7 +72,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private SimpleTargetChooserPanelGUI gui;
 
-    @NonNull
+    @NullAllowed
     private Project project;
     @NonNull
     private SourceGroup[] folders;
@@ -80,7 +82,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
     private boolean freeFileExtension;
     
     @SuppressWarnings("LeakingThisInConstructor")
-    SimpleTargetChooserPanel(@NonNull Project project, @NonNull SourceGroup[] folders,
+    SimpleTargetChooserPanel(@NullAllowed Project project, @NonNull SourceGroup[] folders,
             WizardDescriptor.Panel<WizardDescriptor> bottomPanel, boolean isFolder, boolean freeFileExtension) {
         this.folders = folders;
         this.project = project;
@@ -105,7 +107,8 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
     }
 
     private boolean noFolders() { // #202410
-        return folders != null && folders.length == 0;
+        // if the project is null then any folder on the system is available
+        return project != null && folders != null && folders.length == 0;
     }
 
     public @Override HelpCtx getHelp() {
@@ -126,7 +129,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
             return false;
         }
 
-        boolean ok = ( gui != null && gui.getTargetName() != null && gui.getTargetGroup() != null &&
+        boolean ok = ( gui != null && gui.getTargetName() != null &&
                ( bottomPanel == null || bottomPanel.isValid() ) );
         
         if (!ok) {
@@ -136,8 +139,23 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
         // check if the file name can be created
         FileObject template = Templates.getTemplate( wizard );
 
-        String errorMessage = ProjectUtilities.canUseFileName(gui.getTargetGroup().getRootFolder(),
-                gui.getTargetFolder(), gui.getTargetName(), template.getExt(), isFolder, freeFileExtension);
+        FileObject rootFolder;
+        String targetFolder;
+        if (gui.getTargetGroup() != null) {
+            rootFolder = gui.getTargetGroup().getRootFolder();
+            targetFolder = gui.getTargetFolder();
+        }
+        else if (gui.getTargetFolder() != null) {
+            rootFolder = FileUtil.toFileObject(FileUtil.normalizeFile(new File(gui.getTargetFolder())));
+            targetFolder = "";
+        }
+        else {
+            rootFolder = null;
+            targetFolder = null;
+        }
+
+        String errorMessage = ProjectUtilities.canUseFileName(rootFolder,
+                targetFolder, gui.getTargetName(), template.getExt(), isFolder, freeFileExtension);
         wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errorMessage);
 
         return errorMessage == null;
@@ -170,7 +188,15 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
         // Try to preselect a folder            
         FileObject preselectedTarget = Templates.getTargetFolder( wizard );
         if (preselectedTarget == null) {
-            preselectedTarget = project.getProjectDirectory();
+            if (project != null) {
+                preselectedTarget = project.getProjectDirectory();
+            }
+            else {
+                String home = System.getProperty("user.home");
+                if (home != null && new File(home).isDirectory()) {
+                    preselectedTarget = FileUtil.toFileObject(FileUtil.normalizeFile(new File(home)));
+                }
+            }
         }
         // Try to preserve the already entered target name
         String targetName = isFolder ? null : Templates.getTargetName( wizard );
@@ -222,8 +248,21 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
     }
     
     private FileObject getTargetFolderFromGUI () {
-        FileObject rootFolder = gui.getTargetGroup().getRootFolder();
-        String folderName = gui.getTargetFolder();
+        FileObject rootFolder;
+        String folderName;
+        if (gui.getTargetGroup() != null) {
+            rootFolder = gui.getTargetGroup().getRootFolder();
+            folderName = gui.getTargetFolder();
+        }
+        else if (gui.getTargetFolder() != null) {
+            rootFolder = FileUtil.toFileObject(FileUtil.normalizeFile(new File(gui.getTargetFolder())));
+            folderName = "";
+        }
+        else {
+            rootFolder = null;
+            folderName = null;
+        }
+
         String newObject = gui.getTargetName ();
         
         if (newObject.indexOf ('/') > 0) { // NOI18N
