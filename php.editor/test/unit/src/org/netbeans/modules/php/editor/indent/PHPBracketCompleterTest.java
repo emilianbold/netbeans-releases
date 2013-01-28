@@ -1190,4 +1190,142 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
         insertBreak(original, expected);
     }
 
+    public void testStringConcatination_01() throws Exception {
+        String original = "$f=^\"lorem ipsum $foo dolor sit amet\";";
+        String expected = "$f=\n        ^\"lorem ipsum $foo dolor sit amet\";";
+        insertBreak(original, expected);
+    }
+
+    public void testStringConcatination_02() throws Exception {
+        String original = "$f=\"^lorem ipsum $foo dolor sit amet\";";
+        String expected = "$f=\"\"\n        . \"^lorem ipsum $foo dolor sit amet\";";
+        insertBreak(original, expected);
+    }
+
+    public void testStringConcatination_03() throws Exception {
+        String original = "$f=\"lorem ip^sum $foo dolor sit amet\";";
+        String expected = "$f=\"lorem ip\"\n        . \"^sum $foo dolor sit amet\";";
+        insertBreak(original, expected);
+    }
+
+    public void testStringConcatination_04() throws Exception {
+        String original = "$f=\"lorem ipsum ^$foo dolor sit amet\";";
+        String expected = "$f=\"lorem ipsum \"\n        . \"^$foo dolor sit amet\";";
+        insertBreak(original, expected);
+    }
+
+    public void testStringConcatination_05() throws Exception {
+        String original = "$f=\"lorem ipsum $foo^ dolor sit amet\";";
+        String expected = "$f=\"lorem ipsum $foo\"\n        . \"^ dolor sit amet\";";
+        insertBreak(original, expected);
+    }
+
+    public void testStringConcatination_06() throws Exception {
+        String original = "$f=\"lorem ipsum $foo dol^or sit amet\";";
+        String expected = "$f=\"lorem ipsum $foo dol\"\n        . \"^or sit amet\";";
+        insertBreak(original, expected);
+    }
+
+    public void testStringConcatination_07() throws Exception {
+        String original = "$f=\"lorem ipsum $foo dolor sit amet^\";";
+        String expected = "$f=\"lorem ipsum $foo dolor sit amet\"\n        . \"^\";";
+        insertBreak(original, expected);
+    }
+
+    public void testStringConcatination_08() throws Exception {
+        String original = "$f=\"lorem ipsum $foo dolor sit amet\"^;";
+        String expected = "$f=\"lorem ipsum $foo dolor sit amet\"\n        ^;";
+        insertBreak(original, expected);
+    }
+
+    public void testStringConcatination_09() throws Exception {
+        String original = "$b=^'lorem iprsum dolor';";
+        String expected = "$b=\n        ^'lorem iprsum dolor';";
+        insertBreak(original, expected);
+    }
+
+    public void testStringConcatination_10() throws Exception {
+        String original = "$b='^lorem iprsum dolor';";
+        String expected = "$b=''\n        . '^lorem iprsum dolor';";
+        insertBreak(original, expected);
+    }
+
+    public void testStringConcatination_11() throws Exception {
+        String original = "$b='lorem ipr^sum dolor';";
+        String expected = "$b='lorem ipr'\n        . '^sum dolor';";
+        insertBreak(original, expected);
+    }
+
+    public void testStringConcatination_12() throws Exception {
+        String original = "$b='lorem iprsum dolor^';";
+        String expected = "$b='lorem iprsum dolor'\n        . '^';";
+        insertBreak(original, expected);
+    }
+
+    public void testStringConcatination_13() throws Exception {
+        String original = "$b='lorem iprsum dolor'^;";
+        String expected = "$b='lorem iprsum dolor'\n        ^;";
+        insertBreak(original, expected);
+    }
+
+    public void testStringConcatination_14() throws Exception {
+        String original = "$c=^\"PHP version\";";
+        String expected = "$c=\n        ^\"PHP version\";";
+        insertBreak(original, expected);
+    }
+
+    public void testStringConcatination_15() throws Exception {
+        String original = "$c=\"^PHP version\";";
+        String expected = "$c=\"\"\n        . \"^PHP version\";";
+        insertBreak(original, expected);
+    }
+
+    public void testStringConcatination_16() throws Exception {
+        String original = "$c=\"PHP ver^sion\";";
+        String expected = "$c=\"PHP ver\"\n        . \"^sion\";";
+        insertBreak(original, expected);
+    }
+
+    public void testStringConcatination_17() throws Exception {
+        String original = "$c=\"PHP version^\";";
+        String expected = "$c=\"PHP version\"\n        . \"^\";";
+        insertBreak(original, expected);
+    }
+
+    public void testStringConcatination_18() throws Exception {
+        String original = "$c=\"PHP version\"^;";
+        String expected = "$c=\"PHP version\"\n        ^;";
+        insertBreak(original, expected);
+    }
+
+    public void testStringConcatination_19() throws Exception {
+        String original = "$checks[] = new G_Check(\"PHP version\",^ \"a\");";
+        String expected = "$checks[] = new G_Check(\"PHP version\",\n        ^\"a\");";
+        insertBreak(original, expected);
+    }
+
+    public void testStringConcatination_20() throws Exception {
+        String original = "$checks[] = new G_Check(\"PHP version\", ^\"a\");";
+        String expected = "$checks[] = new G_Check(\"PHP version\", \n        ^\"a\");";
+        insertBreak(original, expected);
+    }
+
+    public void testStringConcatination_21() throws Exception {
+        String original = "$checks[] = new G_Check(\"PHP version\", \"^a\");";
+        String expected = "$checks[] = new G_Check(\"PHP version\", \"\"\n        . \"^a\");";
+        insertBreak(original, expected);
+    }
+
+    public void testStringConcatination_22() throws Exception {
+        String original = "$checks[] = new G_Check(\"PHP version\", \"a^\");";
+        String expected = "$checks[] = new G_Check(\"PHP version\", \"a\"\n        . \"^\");";
+        insertBreak(original, expected);
+    }
+
+    public void testStringConcatination_23() throws Exception {
+        String original = "$checks[] = new G_Check(\"PHP version\", \"a\"^);";
+        String expected = "$checks[] = new G_Check(\"PHP version\", \"a\"\n        ^);";
+        insertBreak(original, expected);
+    }
+
 }

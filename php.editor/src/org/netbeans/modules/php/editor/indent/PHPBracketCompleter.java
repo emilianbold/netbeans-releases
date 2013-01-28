@@ -72,6 +72,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.editor.indent.IndentationCounter.Indentation;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.options.OptionsUtils;
@@ -619,7 +620,79 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             }
         }
 
+        if (concatPossibleStringToken(ts, offset, tokenOffsetOnCaret)) {
+            char stringDelimiter = extractStringDelimiter(ts);
+            String concatString = stringDelimiter + " . " + stringDelimiter; //NOI18N
+            doc.insertString(offset, concatString, null);
+            int breakPosition = offset + 1;
+            Indentation indentation = new IndentationCounter(doc).count(breakPosition);
+            caret.setDot(breakPosition);
+            return offset + indentation.getIndentation() + concatString.length();
+        }
+
         return -1;
+    }
+
+    private boolean concatPossibleStringToken(TokenSequence<? extends PHPTokenId> ts, int offset, int tokenOffsetOnCaret) {
+        assert ts != null;
+        boolean concat = false;
+        Token<? extends PHPTokenId> token = ts.token();
+        if (token != null) {
+            concat = concatCurrentStringToken(ts, offset, tokenOffsetOnCaret);
+            PHPTokenId id = token.id();
+            if (!concat && id != PHPTokenId.PHP_SEMICOLON && ts.movePrevious()) {
+                concat = concatCurrentStringToken(ts, offset, tokenOffsetOnCaret);
+            }
+        }
+        return concat;
+    }
+
+    private static boolean concatCurrentStringToken(TokenSequence<? extends PHPTokenId> ts, int offset, int tokenOffsetOnCaret) {
+        assert ts != null;
+        boolean concat = false;
+        Token<? extends PHPTokenId> token = ts.token();
+        if (token != null) {
+            PHPTokenId id = token.id();
+            if (isStringToken(token) && !isMultiline(token)) {
+                concat = offset != tokenOffsetOnCaret || (id == PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE && token.length() != 1);
+                if (token.length() == 1) {
+                    if (ts.moveNext()) {
+                        if (isStringToken(ts.token())) {
+                            concat = false;
+                        } else {
+                            concat = true;
+                        }
+                        ts.movePrevious();
+                    }
+                }
+            }
+        }
+        return concat;
+    }
+
+    private static boolean isMultiline(Token<? extends PHPTokenId> token) {
+        assert token != null;
+        return token.text().toString().contains("\n"); //NOI18N
+    }
+
+    private static char extractStringDelimiter(TokenSequence<? extends PHPTokenId> ts) {
+        assert ts != null;
+        Token<? extends PHPTokenId> token = ts.token();
+        PHPTokenId id = token.id();
+        if (isStringToken(token)) {
+            return (id == PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE ? '"' : token.text().charAt(0));
+        } else if (ts.movePrevious()) {
+            token = ts.token();
+            id = token.id();
+            ts.moveNext();
+            if (isStringToken(token)) {
+                return (id == PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE ? '"' : token.text().charAt(0));
+            } else {
+                throw new IllegalArgumentException();
+            }
+        } else {
+            throw new IllegalArgumentException();
+        }
     }
 
     private static Object[] beforeBreakInComments(
