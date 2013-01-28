@@ -463,6 +463,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             int insertOffset = offset; // offset < length ? offset+1 : offset;
             doc.insertString(insertOffset, sb.toString(), null);
             caret.setDot(insertOffset);
+            return -1;
         }
 
         // Support continual line comments
