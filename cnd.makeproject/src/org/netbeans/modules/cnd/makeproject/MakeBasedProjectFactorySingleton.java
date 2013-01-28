@@ -140,8 +140,16 @@ public final class MakeBasedProjectFactorySingleton implements ProjectFactory2 {
     public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
         FileObject projectFile = projectDirectory.getFileObject(PROJECT_XML_PATH);
         //#54488: Added check for virtual
-        if (projectFile == null || !projectFile.isData() || projectFile.isVirtual()) {
-            LOG.log(Level.FINE, "not concrete data file {0}/nbproject/project.xml", projectDirectory);
+        if (projectFile == null) {
+            LOG.log(Level.FINE, "not found data file {0}/nbproject/project.xml", projectDirectory.getPath()); // NOI18N
+            return null;
+        }
+        if (!projectFile.isData()) {
+            LOG.log(Level.FINE, "not found plain file {0}/nbproject/project.xml", projectDirectory.getPath()); // NOI18N
+            return null;
+        }
+        if (projectFile.isVirtual()) {
+            LOG.log(Level.FINE, "not concrete data file {0}/nbproject/project.xml", projectDirectory.getPath()); // NOI18N
             return null;
         }
         Document projectXml = loadProjectXml(projectFile);
