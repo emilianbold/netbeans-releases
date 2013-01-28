@@ -61,8 +61,8 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public class MdbLocationPanel implements WizardDescriptor.FinishablePanel {
-    
-    private MdbLocationPanelVisual wizardPanel;
+
+    private MdbLocationPanelVisual locationPanel;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final WizardDescriptor wizardDescriptor;
     private final EJBNameOptions ejbNames;
@@ -74,17 +74,20 @@ public class MdbLocationPanel implements WizardDescriptor.FinishablePanel {
         this.ejbNames = new EJBNameOptions();
     }
 
+    @Override
     public void addChangeListener(ChangeListener changeListener) {
         changeSupport.addChangeListener(changeListener);
     }
-    
+
+    @Override
     public void removeChangeListener(ChangeListener changeListener) {
         changeSupport.removeChangeListener(changeListener);
     }
-    
+
+    @Override
     public boolean isValid() {
         Project project = Templates.getProject(wizardDescriptor);
-        J2eeModuleProvider j2eeModuleProvider = project.getLookup ().lookup (J2eeModuleProvider.class);
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
         String j2eeVersion = j2eeModuleProvider.getJ2eeModule().getModuleVersion();
         if (!EjbJar.VERSION_3_1.equals(j2eeVersion) && !EjbJar.VERSION_3_0.equals(j2eeVersion) && !EjbJar.VERSION_2_1.equals(j2eeVersion)) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(MdbLocationPanel.class,"MSG_WrongJ2EESpecVersion")); //NOI18N
@@ -97,7 +100,7 @@ public class MdbLocationPanel implements WizardDescriptor.FinishablePanel {
             String name = ejbNames.getMessageDrivenEjbClassPrefix() + targetName + ejbNames.getMessageDrivenEjbClassSuffix();
             if (targetFolder.getFileObject(name + ".java") != null) { // NOI18N
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
-                        NbBundle.getMessage(MdbLocationPanel.class,"ERR_FileAlreadyExists", name + ".java")); //NOI18N
+                        NbBundle.getMessage(MdbLocationPanel.class, "ERR_FileAlreadyExists", name + ".java")); //NOI18N
                 return false;
             }
         }
@@ -121,67 +124,74 @@ public class MdbLocationPanel implements WizardDescriptor.FinishablePanel {
         // p.getName = valid NmToken
         // p.getName not already in module
         // remote and or local is selected
-        
+
         // component/panel validation
         getComponent();
-        if (wizardPanel.getDestination() == null) {
+        if (locationPanel.getDestination() == null) {
             wizardDescriptor.putProperty(
                     WizardDescriptor.PROP_ERROR_MESSAGE, //NOI18N
-                    NbBundle.getMessage(MdbLocationPanel.class,"ERR_NoDestinationSelected"));
+                    NbBundle.getMessage(MdbLocationPanel.class, "ERR_NoDestinationSelected"));
             return false;
         }
         // XXX warn about missing server (or error? or not needed?)
-        if (!wizardPanel.isServerConfigured()) {
+        if (!locationPanel.isServerConfigured()) {
             wizardDescriptor.putProperty(
                     WizardDescriptor.PROP_ERROR_MESSAGE, //NOI18N
-                    NbBundle.getMessage(MdbLocationPanel.class,"ERR_MissingServer"));
+                    NbBundle.getMessage(MdbLocationPanel.class, "ERR_MissingServer"));
             //return false;
         }
         return true;
     }
-    
+
+    @Override
     public void readSettings(Object settings) {
     }
-    
+
+    @Override
     public void storeSettings(Object settings) {
-        
+        WizardDescriptor descriptor = (WizardDescriptor) settings;
+        locationPanel.store(descriptor);
     }
-    
+
+    @Override
     public boolean isFinishPanel() {
         return isValid();
     }
-    
+
     protected final void fireChangeEvent() {
         changeSupport.fireChange();
     }
 
+    @Override
     public org.openide.util.HelpCtx getHelp() {
         return new HelpCtx(this.getClass());
     }
 
+    @Override
     public java.awt.Component getComponent() {
-        if (wizardPanel == null) {
+        if (locationPanel == null) {
             Project project = Templates.getProject(wizardDescriptor);
             J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
             MessageDestinationUiSupport.DestinationsHolder holder = MessageDestinationUiSupport.getDestinations(j2eeModuleProvider);
-            wizardPanel = MdbLocationPanelVisual.newInstance(
+            locationPanel = MdbLocationPanelVisual.newInstance(
                     j2eeModuleProvider,
                     holder.getModuleDestinations(),
                     holder.getServerDestinations());
-            wizardPanel.addPropertyChangeListener(MdbLocationPanelVisual.CHANGED,
+            locationPanel.addPropertyChangeListener(MdbLocationPanelVisual.CHANGED,
                     new PropertyChangeListener() {
+                        @Override
                         public void propertyChange(PropertyChangeEvent event) {
                             fireChangeEvent();
                         }
                     });
         }
-        return wizardPanel;
+        return locationPanel;
     }
 
     /**
      * @see MessageDestinationPanel#getDestination()
      */
     public MessageDestination getDestination() {
-        return wizardPanel.getDestination();
+        return locationPanel.getDestination();
     }
 }

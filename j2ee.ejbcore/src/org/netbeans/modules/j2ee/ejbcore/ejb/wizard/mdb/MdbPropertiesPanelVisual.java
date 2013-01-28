@@ -63,11 +63,13 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.ActivationConfigProperties.AcknowledgeMode;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.ActivationConfigProperties.ActivationConfigProperty;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.ActivationConfigProperties.DestinationType;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.ActivationConfigProperties.EjbVersion;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.ActivationConfigProperties.SubscriptionDurability;
+import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -79,6 +81,7 @@ public class MdbPropertiesPanelVisual extends javax.swing.JPanel {
 
     private final J2eeProjectCapabilities eeProjectCapabilities;
     private TableModel tableModel;
+    private MessageDestination destination;
 
     /**
      * Creates new form MdbPropertiesPanelVisual.
@@ -166,11 +169,12 @@ public class MdbPropertiesPanelVisual extends javax.swing.JPanel {
 
     private List<ActivationConfigProperty> getActivationConfigProperties() {
         List<ActivationConfigProperty> activationConfigProperties;
-        if (eeProjectCapabilities.isEjb32Supported()) {
-            activationConfigProperties = ActivationConfigProperties.getActivationConfigProperties(EjbVersion.EJB_3_2);
-        } else {
-            activationConfigProperties = ActivationConfigProperties.getActivationConfigProperties(EjbVersion.EJB_3_0);
-        }
+        // XXX - it looks like EJB32 properties should be assumed already since EJB30
+//        if (eeProjectCapabilities.isEjb32Supported()) {
+        activationConfigProperties = ActivationConfigProperties.getActivationConfigProperties(EjbVersion.EJB_3_2);
+//        } else {
+//            activationConfigProperties = ActivationConfigProperties.getActivationConfigProperties(EjbVersion.EJB_3_0);
+//        }
         return activationConfigProperties;
     }
 
@@ -189,6 +193,55 @@ public class MdbPropertiesPanelVisual extends javax.swing.JPanel {
             }
         }
         return props;
+    }
+
+    private void setProperty(String propertyName, Object propertyValue) {
+        for (int i = 0; i < propertiesTable.getRowCount(); i++) {
+            if (!propertyName.equals(propertiesTable.getValueAt(i, 0))) {
+                continue;
+            } else {
+                propertiesTable.setValueAt(propertyValue, i, 1);
+            }
+        }
+    }
+
+    public void setDefaultProperties(MessageDestination destination) {
+        eraseAllProperties();
+        switch (destination.getType()) {
+            case QUEUE:
+                setProperty(ActivationConfigProperties.ACKNOWLEDGE_MODE, AcknowledgeMode.AUTO_ACKNOWLEDGE);
+                setProperty(ActivationConfigProperties.DESTINATION_TYPE, DestinationType.QUEUE);
+                break;
+
+            case TOPIC:
+                setProperty(ActivationConfigProperties.ACKNOWLEDGE_MODE, AcknowledgeMode.AUTO_ACKNOWLEDGE);
+                setProperty(ActivationConfigProperties.CLIENT_ID, destination.getName());
+                setProperty(ActivationConfigProperties.DESTINATION_LOOKUP, destination.getName());
+                setProperty(ActivationConfigProperties.DESTINATION_TYPE, DestinationType.TOPIC);
+                setProperty(ActivationConfigProperties.SUBSCRIPTION_DURABILITY, SubscriptionDurability.DURABLE);
+                setProperty(ActivationConfigProperties.SUBSCRIPTION_NAME, destination.getName());
+                break;
+
+            default:
+                throw new UnsupportedOperationException("Not valid destination type: " + destination.getType().name());
+        }
+    }
+
+    void read(WizardDescriptor descriptor) {
+        destination = (MessageDestination) descriptor.getProperty(MdbWizard.PROP_DESTINATION_TYPE);
+        setDefaultProperties(destination);
+    }
+
+    private void eraseAllProperties() {
+        setProperty(ActivationConfigProperties.ACKNOWLEDGE_MODE, AcknowledgeMode.AUTO_ACKNOWLEDGE);
+        setProperty(ActivationConfigProperties.CLIENT_ID, "");
+        setProperty(ActivationConfigProperties.CONNECTION_FACTORY_LOOKUP, "");
+        setProperty(ActivationConfigProperties.DESTINATION_LOOKUP, "");
+        setProperty(ActivationConfigProperties.DESTINATION_TYPE, DestinationType.QUEUE);
+        setProperty(ActivationConfigProperties.MESSAGE_SELECTOR, "");
+        setProperty(ActivationConfigProperties.SHARE_SUBSCRIPTION, "");
+        setProperty(ActivationConfigProperties.SUBSCRIPTION_DURABILITY, SubscriptionDurability.DURABLE);
+        setProperty(ActivationConfigProperties.SUBSCRIPTION_NAME, "");
     }
 
     @SuppressWarnings("serial") // not used to be serialized

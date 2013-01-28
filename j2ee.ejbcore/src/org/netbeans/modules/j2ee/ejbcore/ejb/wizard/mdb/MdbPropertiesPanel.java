@@ -92,6 +92,8 @@ public class MdbPropertiesPanel implements WizardDescriptor.FinishablePanel {
 
     @Override
     public void readSettings(Object settings) {
+        WizardDescriptor descriptor = (WizardDescriptor) settings;
+        panel.read(descriptor);
     }
 
     @Override

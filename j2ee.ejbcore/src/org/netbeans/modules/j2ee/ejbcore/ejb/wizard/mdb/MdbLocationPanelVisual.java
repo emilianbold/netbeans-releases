@@ -51,6 +51,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.openide.WizardDescriptor;
 import org.openide.util.Exceptions;
 
 /**
@@ -167,6 +168,10 @@ public class MdbLocationPanelVisual extends javax.swing.JPanel {
     private void fire() {
         firePropertyChange(CHANGED, null, null);
     }
+
+    void store(WizardDescriptor descriptor) {
+        descriptor.putProperty(MdbWizard.PROP_DESTINATION_TYPE, getDestination());
+    }
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -252,5 +257,5 @@ public class MdbLocationPanelVisual extends javax.swing.JPanel {
     private javax.swing.JComboBox serverDestinationsCombo;
     private javax.swing.JRadioButton serverDestinationsRadio;
     // End of variables declaration//GEN-END:variables
-    
+
 }

@@ -71,6 +71,8 @@ import org.openide.util.NbBundle;
  */
 public final class MdbWizard implements WizardDescriptor.InstantiatingIterator {
 
+    public static final String PROP_DESTINATION_TYPE = "DESTINATION_TYPE";
+
     private WizardDescriptor.Panel[] panels;
     private int index = 0;
     private MdbLocationPanel ejbPanel;
