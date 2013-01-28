@@ -45,6 +45,7 @@
  */
 package org.netbeans.lib.terminalemulator;
 
+import java.awt.event.KeyEvent;
 import java.util.Stack;
 
 /**
@@ -261,7 +262,18 @@ public class InterpDumb extends AbstractInterp {
      * {@inheritDoc}
      */
     @Override
+    public void keyPressed(KeyEvent e) {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public char mapACS(char inChar) {
         return '\0';
+    }
+
+    @Override
+    public void softReset() {
     }
 }

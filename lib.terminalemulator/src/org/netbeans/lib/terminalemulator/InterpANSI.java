@@ -53,6 +53,8 @@
 
 package org.netbeans.lib.terminalemulator;
 
+import java.awt.event.KeyEvent;
+
 public class InterpANSI extends InterpProtoANSI {
 
     protected static class InterpTypeANSI extends InterpTypeProtoANSI {
@@ -249,6 +251,42 @@ public class InterpANSI extends InterpProtoANSI {
             case 0330: return '|'; // not-equal                       ACS_NEQUAL
             case 0234: return '}'; // UK pound sign                   ACS_STERLING
             case 0376: return '~'; // bullet                          ACS_BULLET
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void keyPressed(KeyEvent e) {
+
+        switch (e.getKeyCode()) {
+            //
+            // 6 key editing group
+            //
+            case KeyEvent.VK_INSERT:
+                sendChars(e, "\033[L");         // NOI18N
+                break;
+            case KeyEvent.VK_HOME:
+                sendChars(e, "\033[H");         // NOI18N
+                break;
+
+            //
+            // Arrow keys
+            //
+            case KeyEvent.VK_UP:
+                sendChars(e, "\033[A");         // NOI18N
+                break;
+            case KeyEvent.VK_DOWN:
+                sendChars(e, "\033[B");         // NOI18N
+                break;
+            case KeyEvent.VK_RIGHT:
+                sendChars(e, "\033[C");         // NOI18N
+                break;
+            case KeyEvent.VK_LEFT:
+                sendChars(e, "\033[D");         // NOI18N
+                break;
+
         }
     }
 }

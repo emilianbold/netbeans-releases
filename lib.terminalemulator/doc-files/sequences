@@ -68,9 +68,9 @@ sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term
 
 \ESCc		RIS (Reset to Initial State)
 					-		rs1		-	-	S-	S-	S-	protoansi	full reset
-\ESC>		DECPNM (normal keypad)	is		rmkx		-	-	?-	ST	ST	N -> ansix
+\ESC>		DECPNM (normal keypad)	is		rmkx		-	-	?-	ST	ST	protoansix
 \ESC=		DECPAM (application keypad)
-					ks				-	-	?-	S-	ST	N -> ansix
+					ks				-	-	?-	S-	ST	protoansix
 
 \ESC F		S7C1T (Select 7bit C1 Ctl Chars)
 					is				-	-	?-	ST	S-	N
@@ -182,7 +182,7 @@ sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term
 sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term
 ----------------------------------------------------------------------------------------------------------------------------------------
 \ESC[?1h	SM/DECCKM (Enable cursor key mode)
-					ks				-	-	??	S-	ST	N
+					ks				-	-	??	S-	ST	protoansix
 \ESC[?5h	SM/DECSCNM (Enable reverse video)
 					vb				?	?	?-	ST	ST	N	used for flashing
 \ESC[?7h	SM/DECAWM (Enable Auto Wrap)
@@ -199,7 +199,7 @@ sequence	mnemonic		termcap op	terminfo	numbers	margin	ansi	dtterm	xterm	Term
 
 
 \ESC[?1l	RM/DECCKM (Disable cursor key mode)
-					is		rmkx		-	-	??	ST	ST	N
+					is		rmkx		-	-	??	ST	ST	protoansix
 \ESC[?3l	RM/DECCOLM (disable 132 col mode)
 					is				-	-	??	S-	ST	N
 \ESC[?4l	RM/DECSCLM (Disable smooth scrolling)

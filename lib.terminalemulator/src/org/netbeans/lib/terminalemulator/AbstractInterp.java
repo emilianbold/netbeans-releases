@@ -46,6 +46,8 @@
 
 package org.netbeans.lib.terminalemulator;
 
+import java.awt.event.KeyEvent;
+
 public abstract class AbstractInterp implements Interp {
 
     protected interface Actor {
@@ -127,6 +129,11 @@ public abstract class AbstractInterp implements Interp {
 
     public void reset() {
     } 
+
+    protected final void sendChars(KeyEvent e, String s) {
+        e.consume();
+        ops.op_send_chars(s);
+    }
 
     /*
      * Management of number parsing

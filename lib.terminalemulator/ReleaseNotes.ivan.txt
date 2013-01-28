@@ -1,5 +1,36 @@
 207965 - Terminal incorrectly displays prompt string
 187345 - wrong characters in Terminals
+
+	Emit correct sequences for function, edit, numpad and arrow keys
+	for InterpProtoANSIX ("xterm" and "dtterm").
+
+		This comes at a slight price of regresions in Term
+		accessibility - for the above terminal types only.
+		PageUp, PageDown, Ctl-UpArrow and Ctl-DnArrow will no
+		longer scroll according to Swing L&F conventions.
+		This is acceptable if you consider Term to be the ultimate
+		keyboard accessibility mechanism where terminal conventions
+		override those of Swing L&F.
+
+	Implement DECPAM, DECPNM and DECCKM to control alternative
+	key sequences that get sent from above.
+
+	InterpANSI also emits special sequences for arrow keys and 
+	Insert and Home keys.
+
+	InterpProtoANSIX now keep's it's own state to keep tyrack of
+	PAM and CKM as opposed to using State.
+
+	Implementation depends on new method
+		Interp.keyPressed(KeyEvent e)
+	which, in turn, depends on
+		Ops.send_chars(String sequence)
+
+	Because state is now kept in interpreters had to add 
+		Interp.softReset().
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
 	- \ESC[%dl implementation moved from 'ansi' to 'protoansi'.
 
 207965 - Terminal incorrectly displays prompt string

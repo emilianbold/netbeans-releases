@@ -41,6 +41,8 @@
  */
 package org.netbeans.lib.terminalemulator;
 
+import java.awt.Toolkit;
+import java.awt.event.KeyEvent;
 import org.netbeans.lib.terminalemulator.AbstractInterp.Actor;
 
 /**
@@ -67,6 +69,8 @@ class InterpProtoANSIX extends InterpProtoANSI {
 	protected InterpTypeProtoANSIX() {
             st_esc.setAction('7', st_base, new ACT_SC());
             st_esc.setAction('8', st_base, new ACT_RC());
+            st_esc.setAction('>', st_base, new ACT_PNM());
+            st_esc.setAction('=', st_base, new ACT_PAM());
 
 	    st_esc.setAction('D', st_base, act_D);
 
@@ -102,6 +106,23 @@ class InterpProtoANSIX extends InterpProtoANSI {
 		return null;
 	    }
 	}
+
+	static final class ACT_PAM implements Actor {
+	    @Override
+	    public String action(AbstractInterp ai, char c) {
+                ((InterpProtoANSIX)ai).DECPAM = true;
+		return null;
+	    }
+	}
+
+	static final class ACT_PNM implements Actor {
+	    @Override
+	    public String action(AbstractInterp ai, char c) {
+                ((InterpProtoANSIX)ai).DECPAM = false;
+		return null;
+	    }
+	}
+
 	static final class ACT_RC implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
@@ -186,22 +207,36 @@ class InterpProtoANSIX extends InterpProtoANSI {
             // See http://www.xfree86.org/current/ctlseqs.html#Mouse%20Tracking
             
             private static String decPrivateSet(AbstractInterp ai, char c, int n) {
-			if (n == 5)
-			    ai.ops.op_reverse(true);
-			else if (n == 25)
-			    ai.ops.op_cursor_visible(true);
-			else 
-			    return "act_DEC_private: unrecognized cmd " + c;	// NOI18N
+                switch (n) {
+                    case 1:
+                        ((InterpProtoANSIX)ai).DECCKM = true;
+                        break;
+                    case 5:
+                        ai.ops.op_reverse(true);
+                        break;
+                    case 25:
+                        ai.ops.op_cursor_visible(true);
+                        break;
+                    default:
+                        return "act_DEC_private: unrecognized cmd " + c;	// NOI18N
+                }
                 return null;
             }
             
             private static String decPrivateReset(AbstractInterp ai, char c, int n) {
-			if (n == 5)
-			    ai.ops.op_reverse(false);
-			else if (n == 25)
-			    ai.ops.op_cursor_visible(false);
-			else 
-			    return "act_DEC_private: unrecognized cmd " + c;	// NOI18N
+                switch (n) {
+                    case 1:
+                        ((InterpProtoANSIX)ai).DECCKM = false;
+                        break;
+                    case 5:
+                        ai.ops.op_reverse(false);
+                        break;
+                    case 25:
+                        ai.ops.op_cursor_visible(false);
+                        break;
+                    default:
+                        return "act_DEC_private: unrecognized cmd " + c;	// NOI18N
+                }
                 return null;
             }
             
@@ -245,6 +280,10 @@ class InterpProtoANSIX extends InterpProtoANSI {
 
     private static final InterpTypeProtoANSIX type_singleton = new InterpTypeProtoANSIX();
 
+    private boolean DECCKM;             // CursorKeyboardMode
+    private boolean DECPAM;             // PadApplicationMode
+                                        // opposite of DECPNM (PadNormalMode)
+
     public InterpProtoANSIX(Ops ops) {
 	super(ops, type_singleton);
 	this.type = type_singleton;
@@ -269,6 +308,175 @@ class InterpProtoANSIX extends InterpProtoANSI {
     }
 
     private void setup() {
+    }
+
+    private static boolean numLock() {
+        final Toolkit toolkit = Toolkit.getDefaultToolkit();
+        return toolkit.getLockingKeyState(KeyEvent.VK_NUM_LOCK);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void keyPressed(KeyEvent e) {
+
+        final boolean pam = DECPAM && ! numLock();
+
+        switch (e.getKeyCode()) {
+            //
+            // 6 key editing group
+            //
+            case KeyEvent.VK_INSERT:
+                sendChars(e, "\033[2~");                        // NOI18N
+                break;
+            case KeyEvent.VK_DELETE:
+                sendChars(e, "\033[3~");                       // NOI18N
+                break;
+            case KeyEvent.VK_PAGE_UP:
+                sendChars(e, "\033[5~");                       // NOI18N
+                break;
+            case KeyEvent.VK_PAGE_DOWN:
+                sendChars(e, "\033[6~");                       // NOI18N
+                break;
+            case KeyEvent.VK_HOME:
+                sendChars(e, DECCKM? "\033OH": "\033[H");      // NOI18N
+                break;
+            case KeyEvent.VK_END:
+                sendChars(e, DECCKM? "\033OF": "\033[F");      // NOI18N
+                break;
+
+            //
+            // Arrow keys
+            //
+            case KeyEvent.VK_UP:
+                sendChars(e, DECCKM? "\033OA": "\033[A");      // NOI18N
+                break;
+            case KeyEvent.VK_DOWN:
+                sendChars(e, DECCKM? "\033OB": "\033[B");      // NOI18N
+                break;
+            case KeyEvent.VK_RIGHT:
+                sendChars(e, DECCKM? "\033OC": "\033[C");      // NOI18N
+                break;
+            case KeyEvent.VK_LEFT:
+                sendChars(e, DECCKM? "\033OD": "\033[D");      // NOI18N
+                break;
+
+            //
+            // Function keys
+            //
+            case KeyEvent.VK_F1:
+                sendChars(e, "\033OP");                // NOI18N
+                break;
+            case KeyEvent.VK_F2:
+                sendChars(e, "\033OQ");                // NOI18N
+                break;
+            case KeyEvent.VK_F3:
+                sendChars(e, "\033OR");                // NOI18N
+                break;
+            case KeyEvent.VK_F4:
+                sendChars(e, "\033OS");                // NOI18N
+                break;
+
+            case KeyEvent.VK_F5:
+                sendChars(e, "\033[15~");                      // NOI18N
+                break;
+            case KeyEvent.VK_F6:
+                sendChars(e, "\033[17~");                      // NOI18N
+                break;
+            case KeyEvent.VK_F7:
+                sendChars(e, "\033[18~");                      // NOI18N
+                break;
+            case KeyEvent.VK_F8:
+                sendChars(e, "\033[19~");                      // NOI18N
+                break;
+
+            case KeyEvent.VK_F9:
+                sendChars(e, "\033[20~");                      // NOI18N
+                break;
+            case KeyEvent.VK_F10:
+                sendChars(e, "\033[21~");                      // NOI18N
+                break;
+            case KeyEvent.VK_F11:
+                sendChars(e, "\033[23~");                      // NOI18N
+                break;
+            case KeyEvent.VK_F12:
+                sendChars(e, "\033[24~");                      // NOI18N
+                break;
+
+            //
+            // Keypad
+            //
+            case KeyEvent.VK_DIVIDE:
+                sendChars(e, pam? "\033Oo": "/");                      // NOI18N
+                break;
+            case KeyEvent.VK_MULTIPLY:
+                sendChars(e, pam? "\033Oj": "*");                      // NOI18N
+                break;
+            case KeyEvent.VK_SUBTRACT:
+                sendChars(e, pam? "\033Om": "-");                      // NOI18N
+                break;
+            case KeyEvent.VK_ADD:
+                sendChars(e, pam? "\033Ok": "+");                      // NOI18N
+                break;
+            /* Java doesn't provide a way to distinguish between the regular
+             * Enter/Return key and the keypad Enter key.
+            case KeyEvent.VK_ENTER:
+                if (pam)
+                    sendChars(e, "\033OM");
+                break;
+            */
+
+            case KeyEvent.VK_NUMPAD0:
+                sendChars(e, "0");                     // NOI18N
+                break;
+            case KeyEvent.VK_NUMPAD1:
+                sendChars(e, "1");                     // NOI18N
+                break;
+            case KeyEvent.VK_NUMPAD2:
+                sendChars(e, "2");                     // NOI18N
+                break;
+            case KeyEvent.VK_NUMPAD3:
+                sendChars(e, "3");                     // NOI18N
+                break;
+            case KeyEvent.VK_NUMPAD4:
+                sendChars(e, "4");                     // NOI18N
+                break;
+            case KeyEvent.VK_NUMPAD5:
+                sendChars(e, "5");                     // NOI18N
+                break;
+            case KeyEvent.VK_NUMPAD6:
+                sendChars(e, "6");                     // NOI18N
+                break;
+            case KeyEvent.VK_NUMPAD7:
+                sendChars(e, "7");                     // NOI18N
+                break;
+            case KeyEvent.VK_NUMPAD8:
+                sendChars(e, "8");                     // NOI18N
+                break;
+            case KeyEvent.VK_NUMPAD9:
+                sendChars(e, "9");                     // NOI18N
+                break;
+            case KeyEvent.VK_DECIMAL:
+                sendChars(e, ".");                     // NOI18N
+                break;
+
+            case KeyEvent.VK_BEGIN:
+                sendChars(e, "\033[E");                // NOI18N
+                break;
+            case KeyEvent.VK_KP_UP:
+                sendChars(e, "\033[A");                // NOI18N
+                break;
+            case KeyEvent.VK_KP_DOWN:
+                sendChars(e, "\033[B");                // NOI18N
+                break;
+            case KeyEvent.VK_KP_LEFT:
+                sendChars(e, "\033[D");                // NOI18N
+                break;
+            case KeyEvent.VK_KP_RIGHT:
+                sendChars(e, "\033[C");                // NOI18N
+                break;
+        }
     }
 
     /**
@@ -316,5 +524,11 @@ class InterpProtoANSIX extends InterpProtoANSI {
             case '}': return inChar; // UK pound sign                   ACS_STERLING
             case '~': return inChar; // bullet                          ACS_BULLET
         }
+    }
+
+    @Override
+    public void softReset() {
+        DECCKM = false;
+        DECPAM = false;
     }
 }

@@ -1807,9 +1807,15 @@ public class Term extends JComponent implements Accessible {
 
 	    @Override
             public void keyPressed(KeyEvent e) {
-                /* DEBUG
-                System.out.println("keyPressed " + e); // NOI18N
-                 */
+                if (debugKeys())
+                    System.out.printf("keyPressed %2d %s\n", e.getKeyCode(), KeyEvent.getKeyText(e.getKeyCode())); // NOI18N
+
+                // Let Interp's have a first go at special keys
+                interp.keyPressed(e);
+                if (e.isConsumed()) {
+                    passOn = false;
+                    return;
+                }
 
                 switch (e.getKeyCode()) {
                     case KeyEvent.VK_ESCAPE:
@@ -1846,22 +1852,16 @@ public class Term extends JComponent implements Accessible {
                     case KeyEvent.VK_UP:
                         if (e.getModifiers() == Event.CTRL_MASK) {
                             lineUp(1);
-                        } else {
-                            onCursorKey(e);
                         }
                         break;
                     case KeyEvent.VK_DOWN:
                         if (e.getModifiers() == Event.CTRL_MASK) {
                             lineDown(1);
-                        } else {
-                            onCursorKey(e);
                         }
                         break;
                     case KeyEvent.VK_LEFT:
-                        onCursorKey(e);
                         break;
                     case KeyEvent.VK_RIGHT:
-                        onCursorKey(e);
                         break;
                 }
                 passOn = maybeConsume(e);
@@ -3859,6 +3859,7 @@ public class Term extends JComponent implements Accessible {
             }
         }
 
+        @Override
         public void op_setG(int gx, int fx) {
             if (debugOps()) {
                 System.out.printf("op_setG(%d, %d)", gx, fx); // NOI18N
@@ -3866,6 +3867,7 @@ public class Term extends JComponent implements Accessible {
             Term.this.st.setG(gx, fx);
         }
 
+        @Override
         public void op_selectGL(int gx) {
             if (debugOps()) {
                 System.out.printf("op_selectGL(%d)", gx); // NOI18N
@@ -3976,6 +3978,9 @@ public class Term extends JComponent implements Accessible {
             top_margin = 0;		// 0 means default (see topMargin())
             bot_margin = 0;
             st.attr = 0;
+
+            interp.softReset();
+
             repaint(false);
         }
 
@@ -4037,6 +4042,11 @@ public class Term extends JComponent implements Accessible {
         @Override
         public void logCompletedSequence(String toString) {
             Term.this.logCompletedSequence(toString);
+        }
+
+        @Override
+        public void op_send_chars(String sequence) {
+            Term.this.sendChars(sequence.toCharArray(), 0, sequence.length());
         }
     }
 
@@ -4162,29 +4172,6 @@ public class Term extends JComponent implements Accessible {
         sendChar(c);
     }
     private static final char ESC = (char) 27;
-
-    /**
-     * Convert arrow keys to appropriate ANSI sequences
-     */
-    private void onCursorKey(KeyEvent e) {
-        sendChar(ESC);
-        sendChar('[');
-        e.consume();
-        switch (e.getKeyCode()) {
-            case KeyEvent.VK_UP:
-                sendChar('A');
-                break;
-            case KeyEvent.VK_DOWN:
-                sendChar('B');
-                break;
-            case KeyEvent.VK_RIGHT:
-                sendChar('C');
-                break;
-            case KeyEvent.VK_LEFT:
-                sendChar('D');
-                break;
-        }
-    }
 
     private void sendChars(char c[], int offset, int count) {
         dte_end.sendChars(c, offset, count);

@@ -126,4 +126,6 @@ interface Ops {
 
     public void logUnrecognizedSequence(String toString);
     public void logCompletedSequence(String toString);
+
+    public void op_send_chars(String sequence);
 }
