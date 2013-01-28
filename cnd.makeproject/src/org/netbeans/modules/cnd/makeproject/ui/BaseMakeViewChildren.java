@@ -63,7 +63,7 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
 
     private final static RequestProcessor LOAD_NODES_RP = new RequestProcessor("MakeLogicalViewProvider.LoadingNodes", 1); // NOI18N
     private final RequestProcessor.Task refreshKeysTask;
-    private static final int WAIT_DELAY = 50;
+    static final int WAIT_DELAY = 50;
 
     private Folder folder;
     protected final MakeLogicalViewProvider provider;

@@ -61,6 +61,7 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
 import static org.netbeans.modules.java.hints.bugs.NPECheck.State.*;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.spi.java.hints.*;
 import org.netbeans.spi.java.hints.Hint.Options;
 
@@ -419,8 +420,8 @@ public class NPECheck {
             
             scan(node.getElseStatement(), null);
             
-            boolean thenExitsFromAllBranches = new ExitsFromAllBranches(info).scan(new TreePath(getCurrentPath(), node.getThenStatement()), null) == Boolean.TRUE;
-            boolean elseExitsFromAllBranches = node.getElseStatement() != null && new ExitsFromAllBranches(info).scan(new TreePath(getCurrentPath(), node.getElseStatement()), null) == Boolean.TRUE;
+            boolean thenExitsFromAllBranches = Utilities.exitsFromAllBranchers(info, new TreePath(getCurrentPath(), node.getThenStatement()));
+            boolean elseExitsFromAllBranches = node.getElseStatement() != null && Utilities.exitsFromAllBranchers(info, new TreePath(getCurrentPath(), node.getElseStatement()));
             
             if (thenExitsFromAllBranches && !elseExitsFromAllBranches) {
                 //already set
@@ -974,54 +975,6 @@ public class NPECheck {
             
             return POSSIBLE_NULL;
         }
-    }
-    
-    //XXX copied from IntroduceHint:
-    private static final class ExitsFromAllBranches extends TreePathScanner<Boolean, Void> {
-        
-        private CompilationInfo info;
-        private Set<Tree> seenTrees = new HashSet<Tree>();
-
-        public ExitsFromAllBranches(CompilationInfo info) {
-            this.info = info;
-        }
-
-        @Override
-        public Boolean scan(Tree tree, Void p) {
-            seenTrees.add(tree);
-            return super.scan(tree, p);
-        }
-
-        @Override
-        public Boolean visitIf(IfTree node, Void p) {
-            return scan(node.getThenStatement(), null) == Boolean.TRUE && scan(node.getElseStatement(), null) == Boolean.TRUE;
-        }
-
-        @Override
-        public Boolean visitReturn(ReturnTree node, Void p) {
-            return true;
-        }
-
-        @Override
-        public Boolean visitBreak(BreakTree node, Void p) {
-            return !seenTrees.contains(info.getTreeUtilities().getBreakContinueTarget(getCurrentPath()));
-        }
-
-        @Override
-        public Boolean visitContinue(ContinueTree node, Void p) {
-            return !seenTrees.contains(info.getTreeUtilities().getBreakContinueTarget(getCurrentPath()));
-        }
-
-        @Override
-        public Boolean visitClass(ClassTree node, Void p) {
-            return false;
-        }
-
-        @Override
-        public Boolean visitThrow(ThrowTree node, Void p) {
-            return true; //XXX: simplification
-        }
-        
     }
     
     private static boolean isVariableElement(HintContext ctx, Element ve) {
