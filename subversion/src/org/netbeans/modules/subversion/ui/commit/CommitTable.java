@@ -401,12 +401,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
         item = menu.add(new AbstractAction(NbBundle.getMessage(CommitTable.class, "CTL_CommitTable_DiffAction")) { // NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
-                int[] rows = table.getSelectedRows();
-                SvnFileNode[] nodes = new SvnFileNode[rows.length];
-                for (int i = 0; i < rows.length; ++i) {
-                    nodes[i] = tableModel.getNode(sorter.modelIndex(rows[i]));
-                }
-                commitPanel.openDiff(nodes);
+                openDiff();
             }
         });
         Mnemonics.setLocalizedText(item, item.getText());
@@ -438,7 +433,18 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        // not interested
+        if (e.getClickCount() == 2) {
+            openDiff();
+        }
+    }
+
+    private void openDiff () {
+        int[] rows = table.getSelectedRows();
+        SvnFileNode[] nodes = new SvnFileNode[rows.length];
+        for (int i = 0; i < rows.length; ++i) {
+            nodes[i] = tableModel.getNode(sorter.modelIndex(rows[i]));
+        }
+        commitPanel.openDiff(nodes);
     }
 
     /**

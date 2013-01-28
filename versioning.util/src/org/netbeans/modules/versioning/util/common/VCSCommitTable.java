@@ -381,12 +381,7 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
         item = menu.add(new AbstractAction(NbBundle.getMessage(VCSCommitTable.class, "CTL_CommitTable_DiffAction")) { // NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
-                int[] rows = table.getSelectedRows();
-                VCSFileNode[] nodes = new VCSFileNode[rows.length];
-                for (int i = 0; i < rows.length; ++i) {
-                    nodes[i] = tableModel.getNode(sorter.modelIndex(rows[i]));
-                }
-                commitPanel.openDiff(nodes);
+                openDiff();
             }
         });
         Mnemonics.setLocalizedText(item, item.getText());
@@ -418,7 +413,9 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        // not interested
+        if (e.getClickCount() == 2) {
+            openDiff();
+        }
     }
 
     public void setCommitPanel(VCSCommitPanel panel) {
@@ -431,6 +428,15 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
 
     VCSCommitPanelModifier getCommitModifier () {
         return modifier;
+    }
+
+    private void openDiff () {
+        int[] rows = table.getSelectedRows();
+        VCSFileNode[] nodes = new VCSFileNode[rows.length];
+        for (int i = 0; i < rows.length; ++i) {
+            nodes[i] = tableModel.getNode(sorter.modelIndex(rows[i]));
+        }
+        commitPanel.openDiff(nodes);
     }
 
     private class CommitStringsCellRenderer extends DefaultTableCellRenderer {
