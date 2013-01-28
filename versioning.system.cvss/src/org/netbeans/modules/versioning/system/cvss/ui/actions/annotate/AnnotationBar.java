@@ -357,6 +357,39 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         
         return result;
     }
+
+    private String getCommitMessage (AnnotateLine al, boolean escape) {
+        StringBuilder annotation=new StringBuilder();
+        if (commitMessages != null) {
+            String message = (String) commitMessages.get(al.getRevision());
+            if (message != null) {
+                if (escape) {
+                    String escaped = null;
+                    try {
+                        escaped = XMLUtil.toElementContent(message);
+                    } catch (CharConversionException e1) {
+                        ErrorManager err = ErrorManager.getDefault();
+                        err.annotate(e1, "CVS.AB: can not HTML escape: " + message); // NOI18N
+                        err.notify(ErrorManager.INFORMATIONAL, e1);
+                    }
+                    if (escaped != null) {
+                        String lined = escaped.replaceAll(System.getProperty("line.separator"), "<br>");  // NOI18N
+                        annotation.append(lined); // NOI18N
+                    }
+                } else {
+                    annotation.append(message);
+                }
+            }
+        }
+        return annotation.toString();
+    }
+    /**
+     *
+     * @return
+     */
+    JTextComponent getTextComponent () {
+        return textComponent;
+    }
     
     /**
      * Registers "close" popup menu, tooltip manager
@@ -378,8 +411,11 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             private void maybeShowPopup(MouseEvent e) {
                 if (e.isPopupTrigger()) {
                     e.consume();
-                    createPopup().show(e.getComponent(),
+                    createPopup(e).show(e.getComponent(),
                                e.getX(), e.getY());
+                } else if (e.getID() == MouseEvent.MOUSE_RELEASED && e.getButton() == MouseEvent.BUTTON1) {
+                    e.consume();
+                    showTooltipWindow(e);
                 }
             }
         });
@@ -389,7 +425,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
     }
 
-    private JPopupMenu createPopup() {
+    private JPopupMenu createPopup(MouseEvent e) {
         final ResourceBundle loc = NbBundle.getBundle(AnnotationBar.class);
         final JPopupMenu popupMenu = new JPopupMenu();
         final JMenuItem diffMenu = new JMenuItem(loc.getString("CTL_MenuItem_DiffToRevision"));
@@ -747,7 +783,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             return null;
         int line = getLineFromMouseEvent(e);
 
-        StringBuffer annotation = new StringBuffer();
+        StringBuilder annotation = new StringBuilder();
         if (elementAnnotations != null) {
             AnnotateLine al = getAnnotateLine(line);
 
@@ -763,24 +799,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
                 // always return unique string to avoid tooltip sharing on mouse move over same revisions -->
                 annotation.append("<html><!-- line=" + line++ + " -->" + al.getRevision()  + " <b>" + escapedAuthor + "</b> " + al.getDateString()); // NOI18N
-                if (commitMessages != null) {
-                    String message = (String) commitMessages.get(al.getRevision());
-                    if (message != null) {
-                        String escaped = null;
-                        try {
-                            escaped = XMLUtil.toElementContent(message);
-                        } catch (CharConversionException e1) {
-                            ErrorManager err = ErrorManager.getDefault();
-                            err.annotate(e1, "CVS.AB: can not HTML escape: " + message); // NOI18N
-                            err.notify(ErrorManager.INFORMATIONAL, e1);
-                        }
-                        if (escaped != null) {
-                            String lined = escaped.replaceAll("\r\n", "\n").replaceAll("\r", "\n") //NOI18N
-                                    .replaceAll("\n", "<br>"); //NOI18N
-                            annotation.append("<p>" + lined); // NOI18N
-                        }
-                    }
-                }
+                annotation.append("<p>" + getCommitMessage(al, true));
             }
         } else {
             annotation.append(elementAnnotationsSubstitute);
@@ -885,6 +904,33 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             doc.readUnlock();
         }
     }
+    
+    /**
+     *
+     * @param event
+     */
+    private void showTooltipWindow (MouseEvent event) {
+        Point p = new Point(event.getPoint());
+        SwingUtilities.convertPointToScreen(p, this);
+        Point p2 = new Point(p);
+        SwingUtilities.convertPointFromScreen(p2, textComponent);
+        
+        // annotation for target line
+        AnnotateLine al = null;
+        if (elementAnnotations != null) {
+            al = getAnnotateLine(getLineFromMouseEvent(event));
+        }
+
+        /**
+         * al.getCommitMessage() != null - since commit messages are initialized separately from the AL constructor
+         */
+        if (al != null && al.getRevision() != null) {
+            String commitMessage = getCommitMessage(al, false);
+            TooltipWindow ttw = new TooltipWindow(this, al, commitMessage);
+            ttw.show(new Point(p.x - p2.x, p.y));
+        }
+    }
+
 
     private Color backgroundColor() {
         if (textComponent != null) {
@@ -1020,28 +1066,4 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     public void componentShown(ComponentEvent e) {
     }
 
-    private static class CvsAnnotation extends Annotation {
-        
-        private final String text;
-
-        private Line line;
-
-        public CvsAnnotation(String tooltip, Line line) {
-            text = tooltip;
-            this.line = line;
-        }
-
-        public void attach() {
-            attach(line);
-            line = null;
-        }
-
-        public String getShortDescription() {
-            return text;
-        }
-
-        public String getAnnotationType() {
-            return "org-netbeans-modules-versioning-system-cvss-Annotation";  // NOI18N
-        }        
-    }
 }
