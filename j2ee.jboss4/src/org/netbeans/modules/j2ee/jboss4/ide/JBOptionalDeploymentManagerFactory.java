@@ -55,7 +55,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
-import org.netbeans.modules.j2ee.jboss4.config.mdb.JBossMessageDestinationDeployment;
+import org.netbeans.modules.j2ee.jboss4.config.JBossMessageDestinationManager;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 
 /**
@@ -81,24 +81,27 @@ public class JBOptionalDeploymentManagerFactory extends OptionalDeploymentManage
     }
     
     public DatasourceManager getDatasourceManager(DeploymentManager dm) {
-        
-        if (!(dm instanceof JBDeploymentManager))
-            throw new IllegalArgumentException("");
+        if (!(dm instanceof JBDeploymentManager)) {
+            throw new IllegalArgumentException("Wrong instance of DeploymentManager: " + dm);
+        }
 
-        String serverUrl = ((JBDeploymentManager)dm).getUrl();
-        JBossDatasourceManager dsMgr = new JBossDatasourceManager(serverUrl);
-        
-        return dsMgr;
+        JBDeploymentManager jbdm = ((JBDeploymentManager) dm);
+        return new JBossDatasourceManager(jbdm.getUrl(), jbdm.isAs7());
     }
 
     public MessageDestinationDeployment getMessageDestinationDeployment(DeploymentManager dm) {
         if (!(dm instanceof JBDeploymentManager)) {
-            throw new IllegalArgumentException("");
+            throw new IllegalArgumentException("Wrong instance of DeploymentManager: " + dm);
         }
 
-        return new JBossMessageDestinationDeployment(((JBDeploymentManager)dm).getUrl());
+        JBDeploymentManager jbdm = ((JBDeploymentManager) dm);
+        if (jbdm.isAs7()) {
+            return new JBossMessageDestinationManager(jbdm.getUrl(), jbdm.isAs7());
+        }
+        return null;
     }
     
+    @Override
      public JDBCDriverDeployer getJDBCDriverDeployer(DeploymentManager dm) {
          return new JBDriverDeployer((JBDeploymentManager) dm);
      }

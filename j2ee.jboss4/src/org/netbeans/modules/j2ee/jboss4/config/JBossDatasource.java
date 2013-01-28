@@ -70,7 +70,8 @@ public final class JBossDatasource implements Datasource {
     
     private volatile int hash = -1;
     
-    public JBossDatasource(String jndiName, String url, String username, String password, String driverClassName) {
+    public JBossDatasource(String jndiName, String url, String username, String password,
+            String driverClassName) {
         this.rawName = jndiName;
         this.url = url;
         this.username = username;
