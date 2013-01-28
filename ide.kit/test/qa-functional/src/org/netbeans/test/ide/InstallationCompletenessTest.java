@@ -46,6 +46,7 @@ package org.netbeans.test.ide;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -62,7 +63,12 @@ public class InstallationCompletenessTest extends NbTestCase {
 
     public static final String DISTRO_PROPERTY = "netbeans.distribution";
     public static final String JAVACARD_PREFIX = "org.netbeans.modules.javacard";
+    public static final String EXPECTED_INCLUDES_PROPERTY = "expected.includes";
+    public static final String EXPECTED_EXCLUDES_PROPERTY = "expected.excludes";
 
+    private Set<String> expectedIncludes = new HashSet<String>();
+    private Set<String> expectedExcludes = new HashSet<String>();
+    
     public enum Type {
 
         JAVASE("base,javase,websvccommon"),
@@ -112,6 +118,11 @@ public class InstallationCompletenessTest extends NbTestCase {
         String distro = System.getProperty(DISTRO_PROPERTY);
         assertNotNull("Distribution not set, please set by setting property:" + DISTRO_PROPERTY, distro);
         Set<String> kitsGolden = getModulesForDistro(distro, new File(getDataDir(), "kits.properties"));
+        if(readExpectedParams()){
+            kitsGolden.addAll(expectedIncludes);
+            kitsGolden.removeAll(expectedExcludes);
+            listExpectedParams();
+        }
         Set<String> redundantKits = new HashSet<String>();
         UpdateManager um = UpdateManager.getDefault();
         List<UpdateUnit> l = um.getUpdateUnits(UpdateManager.TYPE.KIT_MODULE);
@@ -138,6 +149,27 @@ public class InstallationCompletenessTest extends NbTestCase {
             resStr = resStr.concat(s + "\n");
         }
         return resStr;
+    }
+    
+    private boolean readExpectedParams(){
+        String excludes = System.getProperty(EXPECTED_EXCLUDES_PROPERTY);
+        String includes = System.getProperty(EXPECTED_INCLUDES_PROPERTY);
+        if(excludes != null) expectedExcludes.addAll(Arrays.asList(excludes.split(":")));
+        if(includes != null) expectedIncludes.addAll(Arrays.asList(includes.split(":")));
+        return !expectedExcludes.isEmpty() || !expectedIncludes.isEmpty();
+    }
+    
+    private void listExpectedParams(){
+        System.out.println("Expected includes:");
+        for (String in : expectedIncludes) {
+            System.out.println(in);
+        }
+        System.out.println();
+        System.out.println("Expected excludes:");
+        for (String ex : expectedExcludes) {
+            System.out.println(ex);
+        }
+        System.out.println();
     }
     
     private  Set<String> getModulesForDistro(String distro, File f) {
