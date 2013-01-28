@@ -454,6 +454,19 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         });
         popupMenu.add(rollbackMenu);
 
+        // add action 'rollback to previous revision'
+        final JMenuItem rollbackToPreviousMenu = new JMenuItem(loc.getString("CTL_MenuItem_RollbackToPreviousRevision"));
+        rollbackToPreviousMenu.addActionListener(new ActionListener() {
+            public void actionPerformed (ActionEvent e) {
+                final String previousRevision = Utils.previousRevision(recentRevision);
+                if (null != previousRevision) {
+                    File file = getCurrentFile();
+                    GetCleanAction.rollback(file, previousRevision);
+                }
+            }
+        });
+        popupMenu.add(rollbackToPreviousMenu);
+
         Project prj = Utils.getProject(getCurrentFile());
         if (prj != null) {
             String prjName = ProjectUtils.getInformation(prj).getDisplayName();
@@ -508,12 +521,18 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
         diffMenu.setVisible(false);
         rollbackMenu.setVisible(false);
+        rollbackToPreviousMenu.setVisible(false);
         if (recentRevision != null) {
             String prevRevision = Utils.previousRevision(recentRevision);
             if (prevRevision != null) {
                 String format = loc.getString("CTL_MenuItem_DiffToRevision");
                 diffMenu.setText(MessageFormat.format(format, new Object [] { recentRevision, prevRevision }));
                 diffMenu.setVisible(true);
+                
+                String format2 = loc.getString("CTL_MenuItem_RollbackToPreviousRevision");
+                rollbackToPreviousMenu.setText(MessageFormat.format(format2, new Object [] { prevRevision}));
+                rollbackToPreviousMenu.setVisible(true);
+                
             }
             String format = loc.getString("CTL_MenuItem_RollbackToRevision");
             rollbackMenu.setText(MessageFormat.format(format, new Object [] { recentRevision }));
