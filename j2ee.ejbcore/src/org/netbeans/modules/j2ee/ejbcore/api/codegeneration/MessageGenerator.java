@@ -45,7 +45,9 @@
 package org.netbeans.modules.j2ee.ejbcore.api.codegeneration;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -75,15 +77,13 @@ import org.openide.util.Exceptions;
 public final class MessageGenerator {
 
     private static final String EJB21_EJBCLASS = "Templates/J2EE/EJB21/MessageDrivenEjbClass.java"; // NOI18N
-    private static final String EJB30_QUEUE_EJBCLASS = "Templates/J2EE/EJB30/MessageDrivenQueueEjbClass.java"; // NOI18N
-    private static final String EJB30_TOPIC_EJBCLASS = "Templates/J2EE/EJB30/MessageDrivenTopicEjbClass.java"; // NOI18N
+    private static final String EJB30_MESSAGE_DRIVEN_BEAN = "Templates/J2EE/EJB30/MessageDrivenBean.java"; // NOI18N
 
     // informations collected in wizard
     private final FileObject pkg;
     private final MessageDestination messageDestination;
     private final boolean isSimplified;
     private final boolean isXmlBased;
-    private final Map<String, String> activationProps;
 
     // EJB naming options
     private final EJBNameOptions ejbNameOptions;
@@ -94,7 +94,7 @@ public final class MessageGenerator {
     private final String packageName;
     private final String packageNameWithDot;
     
-    private final Map<String, String> templateParameters;
+    private final Map<String, Object> templateParameters;
 
     public static MessageGenerator create(String wizardTargetName, FileObject pkg, MessageDestination messageDestination, boolean isSimplified, Map<String, String> properties) {
         return new MessageGenerator(wizardTargetName, pkg, messageDestination, isSimplified, properties, false);
@@ -105,17 +105,17 @@ public final class MessageGenerator {
         this.messageDestination = messageDestination;
         this.isSimplified = isSimplified;
         this.isXmlBased = !isSimplified;
-        this.activationProps = properties;
         this.ejbNameOptions = new EJBNameOptions();
         this.ejbName = ejbNameOptions.getMessageDrivenEjbNamePrefix() + wizardTargetName + ejbNameOptions.getMessageDrivenEjbNameSuffix();
         this.ejbClassName = ejbNameOptions.getMessageDrivenEjbClassPrefix() + wizardTargetName + ejbNameOptions.getMessageDrivenEjbClassSuffix();
         this.displayName = ejbNameOptions.getMessageDrivenDisplayNamePrefix() + wizardTargetName + ejbNameOptions.getMessageDrivenDisplayNameSuffix();
         this.packageName = EjbGenerationUtil.getSelectedPackageName(pkg);
         this.packageNameWithDot = packageName + ".";
-        this.templateParameters = new HashMap<String, String>();
+        this.templateParameters = new HashMap<String, Object>();
         // fill all possible template parameters
         this.templateParameters.put("package", packageName);
         this.templateParameters.put("messageDestinationName", messageDestination.getName());
+        this.templateParameters.put("activationConfigProperties", transformProperties(properties));
         if (isTest) {
             // set date, time and user to values used in goldenfiles
             this.templateParameters.put("date", "{date}");
@@ -123,7 +123,15 @@ public final class MessageGenerator {
             this.templateParameters.put("user", "{user}");
         }
     }
-    
+
+    private static List<KeyValuePair> transformProperties(Map<String, String> properties) {
+        List<KeyValuePair> props = new ArrayList<KeyValuePair>();
+        for (Map.Entry<String, String> entry : properties.entrySet()) {
+            props.add(new KeyValuePair(entry.getKey(), entry.getValue()));
+        }
+        return props;
+    }
+
     public FileObject generate() throws IOException {
         FileObject resultFileObject = null;
         if (isSimplified) {
@@ -164,8 +172,7 @@ public final class MessageGenerator {
     }
     
     private FileObject generateEJB30Classes() throws IOException {
-        String ejbClassTemplate = isQueue() ? EJB30_QUEUE_EJBCLASS : EJB30_TOPIC_EJBCLASS;
-        return GenerationUtils.createClass(ejbClassTemplate,  pkg, ejbClassName, null, templateParameters);
+        return GenerationUtils.createClass(EJB30_MESSAGE_DRIVEN_BEAN,  pkg, ejbClassName, null, templateParameters);
     }
     
     @SuppressWarnings("deprecation") //NOI18N
@@ -244,5 +251,23 @@ public final class MessageGenerator {
     private void generateEJB30Xml() throws IOException {
         throw new UnsupportedOperationException("Method not implemented yet.");
     }
-    
+
+    public static final class KeyValuePair {
+
+        private String key;
+        private String value;
+
+        public KeyValuePair(String key, String value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        public String getKey() {
+            return key;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
 }

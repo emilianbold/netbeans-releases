@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package testGenerateJavaEE50;
+package testGenerateJavaEE70;
 
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;

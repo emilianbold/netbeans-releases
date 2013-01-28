@@ -91,7 +91,7 @@ public class ActivationConfigProperties {
         }
     }
 
-    protected static class ActivationConfigProperty {
+    public static class ActivationConfigProperty {
 
         private final String name;
         private final Class propertyClass;
@@ -117,7 +117,7 @@ public class ActivationConfigProperties {
 
     }
 
-    protected static enum AcknowledgeMode {
+    public static enum AcknowledgeMode {
         AUTO_ACKNOWLEDGE("Auto-acknowledge"),          //NOI18N
         DUPS_OK_ACKNOWLEDGE("Dups-ok-acknowledge");    //NOI18N
 
@@ -132,7 +132,7 @@ public class ActivationConfigProperties {
         }
     }
 
-    protected static enum DestinationType {
+    public static enum DestinationType {
         QUEUE("javax.jms.Queue"),   //NOI18N
         TOPIC("javax.jms.Topic");   //NOI18N
 
@@ -147,7 +147,7 @@ public class ActivationConfigProperties {
         }
     }
 
-    protected static enum SubscriptionDurability {
+    public static enum SubscriptionDurability {
         NON_DURABLE("non-durable"), //NOI18N
         DURABLE("durable");         //NOI18N
 

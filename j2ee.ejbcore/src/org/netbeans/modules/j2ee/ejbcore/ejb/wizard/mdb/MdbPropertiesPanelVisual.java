@@ -183,19 +183,25 @@ public class MdbPropertiesPanelVisual extends javax.swing.JPanel {
         for (int i = 0; i < propertiesTable.getRowCount(); i++) {
             Object value = propertiesTable.getValueAt(i, 1);
             if (value instanceof String) {
-                props.put((String) propertiesTable.getValueAt(i, 0), (String) value);
+                if (!((String) value).isEmpty()) {
+                    props.put((String) propertiesTable.getValueAt(i, 0), (String) value);
+                }
             } else if (value instanceof AcknowledgeMode) {
-                props.put((String) propertiesTable.getValueAt(i, 0), ((AcknowledgeMode) value).getValue());
+                if (((AcknowledgeMode) value) != AcknowledgeMode.AUTO_ACKNOWLEDGE) {
+                    props.put((String) propertiesTable.getValueAt(i, 0), ((AcknowledgeMode) value).getValue());
+                }
             } else if (value instanceof DestinationType) {
                 props.put((String) propertiesTable.getValueAt(i, 0), ((DestinationType) value).getValue());
             } else if (value instanceof SubscriptionDurability) {
-                props.put((String) propertiesTable.getValueAt(i, 0), ((SubscriptionDurability) value).getValue());
+                if (((SubscriptionDurability) value) != SubscriptionDurability.NON_DURABLE) {
+                    props.put((String) propertiesTable.getValueAt(i, 0), ((SubscriptionDurability) value).getValue());
+                }
             }
         }
         return props;
     }
 
-    private void setProperty(String propertyName, Object propertyValue) {
+    public void setProperty(String propertyName, Object propertyValue) {
         for (int i = 0; i < propertiesTable.getRowCount(); i++) {
             if (!propertyName.equals(propertiesTable.getValueAt(i, 0))) {
                 continue;
@@ -240,7 +246,7 @@ public class MdbPropertiesPanelVisual extends javax.swing.JPanel {
         setProperty(ActivationConfigProperties.DESTINATION_TYPE, DestinationType.QUEUE);
         setProperty(ActivationConfigProperties.MESSAGE_SELECTOR, "");
         setProperty(ActivationConfigProperties.SHARE_SUBSCRIPTION, "");
-        setProperty(ActivationConfigProperties.SUBSCRIPTION_DURABILITY, SubscriptionDurability.DURABLE);
+        setProperty(ActivationConfigProperties.SUBSCRIPTION_DURABILITY, SubscriptionDurability.NON_DURABLE);
         setProperty(ActivationConfigProperties.SUBSCRIPTION_NAME, "");
     }
 
