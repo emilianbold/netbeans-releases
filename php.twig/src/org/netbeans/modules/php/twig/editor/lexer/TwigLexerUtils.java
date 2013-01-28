@@ -44,8 +44,10 @@ package org.netbeans.modules.php.twig.editor.lexer;
 import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -64,6 +66,15 @@ public final class TwigLexerUtils {
     public static TokenSequence<? extends TwigTokenId> getTwigMarkupTokenSequence(final Document document, final int offset) {
         TokenHierarchy<Document> th = TokenHierarchy.get(document);
         return getTokenSequence(th, offset, TwigTokenId.language());
+    }
+
+    public static TokenSequence<? extends TwigTopTokenId> getTwigTokenSequence(final Snapshot snapshot, final int offset) {
+        return getTokenSequence(snapshot.getTokenHierarchy(), offset, TwigTopTokenId.language());
+    }
+
+    public static TokenSequence<? extends TwigTopTokenId> getTwigTokenSequence(final Document document, final int offset) {
+        TokenHierarchy<Document> th = TokenHierarchy.get(document);
+        return getTokenSequence(th, offset, TwigTopTokenId.language());
     }
 
     public static <L> TokenSequence<? extends L> getTokenSequence(final TokenHierarchy<?> th, final int offset, final Language<? extends L> language) {
@@ -95,6 +106,88 @@ public final class TwigLexerUtils {
 
     public static boolean isEndingDelimiter(final TwigTokenId tokenId) {
         return TwigTokenId.T_TWIG_BLOCK_END.equals(tokenId) || TwigTokenId.T_TWIG_VAR_END.equals(tokenId);
+    }
+
+    public static OffsetRange findForwardInTwig(TokenSequence<? extends TwigTopTokenId> ts, TwigTokenId tokenId, String tokenText) {
+        assert ts != null;
+        assert tokenId != null;
+        assert tokenText != null;
+        OffsetRange result = OffsetRange.NONE;
+        ts.moveNext();
+        int originalOffset = ts.offset();
+        while (ts.moveNext()) {
+            Token<? extends TwigTopTokenId> token = ts.token();
+            if (token != null && token.id() == TwigTopTokenId.T_TWIG) {
+                TokenSequence<TwigTokenId> twigMarkup = ts.embedded(TwigTokenId.language());
+                if (twigMarkup != null) {
+                    result = findForwardInTwigMarkup(twigMarkup, tokenId, tokenText);
+                }
+                if (result != OffsetRange.NONE) {
+                    break;
+                }
+            }
+        }
+        ts.move(originalOffset);
+        return result;
+    }
+
+    public static OffsetRange findForwardInTwigMarkup(TokenSequence<? extends TwigTokenId> ts, TwigTokenId tokenId, String tokenText) {
+        assert ts != null;
+        assert tokenId != null;
+        assert tokenText != null;
+        OffsetRange result = OffsetRange.NONE;
+        ts.moveNext();
+        int originalOffset = ts.offset();
+        while (ts.moveNext()) {
+            Token<? extends TwigTokenId> token = ts.token();
+            if (token != null && token.id() == tokenId && tokenText.equals(token.text().toString())) {
+                result = new OffsetRange(ts.offset(), ts.offset() + token.length());
+                break;
+            }
+        }
+        ts.move(originalOffset);
+        return result;
+    }
+
+    public static OffsetRange findBackwardInTwig(TokenSequence<? extends TwigTopTokenId> ts, TwigTokenId tokenId, String tokenText) {
+        assert ts != null;
+        assert tokenId != null;
+        assert tokenText != null;
+        OffsetRange result = OffsetRange.NONE;
+        ts.moveNext();
+        int originalOffset = ts.offset();
+        while (ts.movePrevious()) {
+            Token<? extends TwigTopTokenId> token = ts.token();
+            if (token != null && token.id() == TwigTopTokenId.T_TWIG) {
+                TokenSequence<TwigTokenId> twigMarkup = ts.embedded(TwigTokenId.language());
+                if (twigMarkup != null) {
+                    result = findForwardInTwigMarkup(twigMarkup, tokenId, tokenText);
+                }
+                if (result != OffsetRange.NONE) {
+                    break;
+                }
+            }
+        }
+        ts.move(originalOffset);
+        return result;
+    }
+
+    public static OffsetRange findBackwardInTwigMarkup(TokenSequence<? extends TwigTokenId> ts, TwigTokenId tokenId, String tokenText) {
+        assert ts != null;
+        assert tokenId != null;
+        assert tokenText != null;
+        OffsetRange result = OffsetRange.NONE;
+        ts.moveNext();
+        int originalOffset = ts.offset();
+        while (ts.movePrevious()) {
+            Token<? extends TwigTokenId> token = ts.token();
+            if (token != null && token.id() == tokenId && tokenText.equals(token.text().toString())) {
+                result = new OffsetRange(ts.offset(), ts.offset() + token.length());
+                break;
+            }
+        }
+        ts.move(originalOffset);
+        return result;
     }
 
 }

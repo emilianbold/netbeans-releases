@@ -76,16 +76,16 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
     private String defaultFQType;
     private String className;
 
-    FieldElementImpl(Scope inScope, String defaultType, String defaultFQType, ASTNodeInfo<FieldAccess> nodeInfo) {
-        super(inScope, nodeInfo, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), null);
+    FieldElementImpl(Scope inScope, String defaultType, String defaultFQType, ASTNodeInfo<FieldAccess> nodeInfo, boolean isDeprecated) {
+        super(inScope, nodeInfo, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), null, isDeprecated);
         this.defaultType = defaultType;
         this.defaultFQType = defaultFQType;
         assert inScope instanceof TypeScope;
         className = inScope.getName();
     }
 
-    FieldElementImpl(Scope inScope, String defaultType, String defaultFQType, SingleFieldDeclarationInfo nodeInfo) {
-        super(inScope, nodeInfo, nodeInfo.getAccessModifiers(), null);
+    FieldElementImpl(Scope inScope, String defaultType, String defaultFQType, SingleFieldDeclarationInfo nodeInfo, boolean isDeprecated) {
+        super(inScope, nodeInfo, nodeInfo.getAccessModifiers(), null, isDeprecated);
         this.defaultType = defaultType;
         this.defaultFQType = defaultFQType;
         assert inScope instanceof TypeScope;
@@ -93,7 +93,7 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
     }
 
     FieldElementImpl(Scope inScope, String defaultType, String defaultFQType, PhpDocTypeTagInfo nodeInfo) {
-        super(inScope, nodeInfo, nodeInfo.getAccessModifiers(), null);
+        super(inScope, nodeInfo, nodeInfo.getAccessModifiers(), null, inScope.isDeprecated());
         this.defaultType = defaultType;
         this.defaultFQType = defaultFQType;
         assert inScope instanceof TypeScope;
@@ -136,8 +136,8 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
 
     private FieldElementImpl(Scope inScope, String name,
             Union2<String/*url*/, FileObject> file, OffsetRange offsetRange,
-            PhpModifiers modifiers, String defaultType) {
-        super(inScope, name, file, offsetRange, PhpElementKind.FIELD, modifiers);
+            PhpModifiers modifiers, String defaultType, boolean isDeprecated) {
+        super(inScope, name, file, offsetRange, PhpElementKind.FIELD, modifiers, isDeprecated);
         this.defaultType = defaultType;
         this.defaultFQType = defaultType;
     }
@@ -287,6 +287,7 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
             sb.append(defaultFQType);
         }
         sb.append(Signature.ITEM_DELIMITER);
+        sb.append(isDeprecated() ? 1 : 0).append(Signature.ITEM_DELIMITER);
         return sb.toString();
     }
 
