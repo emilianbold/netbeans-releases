@@ -52,13 +52,13 @@ import java.io.*;
  */
 
 public class TraceLogger extends Object {
-    public static int MAXGROUP 		= 255;
+    public static int MAXGROUP = 255;
 
-    public static int DEBUG	   	= 1;
+    public static int DEBUG = 1;
 
-    public static int SVC_DD	   	= 1;
+    public static int SVC_DD = 1;
 
-    public static PrintStream	output 	= System.out;
+    public static PrintStream output = System.out;
 
     static DDLogFlags flags = new DDLogFlags();
 

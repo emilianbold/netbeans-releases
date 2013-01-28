@@ -172,7 +172,7 @@ public class PageUpPageDownScriptingEditorTest extends PerformanceTestCase {
     public void testPgUp_In_JSEditorBig() {
         testProject = Projects.SCRIPTING_PROJECT;
         nodePath = "Web Pages";
-        fileName = "javascript200kb.js";         
+        fileName = "javascript_200kb.js";         
         pgup = true;
         doMeasurement();
     }
@@ -180,7 +180,7 @@ public class PageUpPageDownScriptingEditorTest extends PerformanceTestCase {
     public void testPgDn_In_JSEditorBig() {
         testProject = Projects.SCRIPTING_PROJECT;
         nodePath = "Web Pages";
-        fileName = "javascript200kb.js";         
+        fileName = "javascript_200kb.js";         
         pgup = false;        
         doMeasurement();
     }

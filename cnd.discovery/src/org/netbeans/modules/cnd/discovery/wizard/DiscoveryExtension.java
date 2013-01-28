@@ -52,6 +52,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.model.CsmModel;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
@@ -66,6 +69,7 @@ import org.netbeans.modules.cnd.discovery.wizard.SelectConfigurationPanel.MyProg
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.support.impl.DiscoveryProjectGeneratorImpl;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -345,6 +349,15 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
     @Override
     public void discoverHeadersByModel(Project project) {
         DiscoveryManagerImpl.discoverHeadersByModel(project);
+    }
+
+    @Override
+    public void disableModel(Project makeProject) {
+        final CsmModel model = CsmModelAccessor.getModel();
+        if (model instanceof ModelImpl && makeProject != null) {
+            NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
+            ((ModelImpl) model).disableProject(np);
+        }
     }
 
     private static class ProjectProxyImpl implements ProjectProxy {

@@ -76,7 +76,7 @@ public class ServerStringConverter extends org.netbeans.spi.settings.DOMConverto
             FileObject dir = FileUtil.getConfigFile(destDir);
             FileObject fo = FileUtil.createData(dir, destFile);
             lock = fo.lock();
-            writer = new OutputStreamWriter(fo.getOutputStream(lock));
+            writer = new OutputStreamWriter(fo.getOutputStream(lock), "UTF-8"); // NOI18N
             create().write(writer, instance);
             return true;
             
@@ -105,7 +105,7 @@ public class ServerStringConverter extends org.netbeans.spi.settings.DOMConverto
             if (fo == null)
                 return null;
             
-            reader = new InputStreamReader(fo.getInputStream());
+            reader = new InputStreamReader(fo.getInputStream(), "UTF-8"); // NOI18N
             return (ServerString) create().read(reader);
         } catch(Exception ioe) {
             Logger.getLogger("global").log(Level.WARNING, null, ioe);

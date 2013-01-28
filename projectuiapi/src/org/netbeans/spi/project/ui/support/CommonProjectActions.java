@@ -63,6 +63,14 @@ public class CommonProjectActions {
      */
     public static final String EXISTING_SOURCES_FOLDER = "existingSourcesFolder";
     
+    /**
+     * {@link java.applet.File} value honored by {@link #newProjectAction}
+     * that defines initial value for parent folder
+     *
+     * @since 1.67
+     */
+    public static final String PROJECT_PARENT_FOLDER = "projdir";
+    
     private CommonProjectActions() {}
         
     /**

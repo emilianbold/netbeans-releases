@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,47 +37,18 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.spi.utils;
 
-package org.netbeans.modules.cnd.modelimpl.csm.core;
-
-import java.io.File;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import java.util.Map;
 
 /**
  *
- * @author vv159170
+ * @author inikiforov
  */
-public class ModifyUndoTestCase extends ModifyDocumentTestCaseBase {
-    public ModifyUndoTestCase(String testName) {
-        super(testName);
-//        System.setProperty("cnd.modelimpl.trace191307", "true");
-    }
+public interface UsagesCounter {
     
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
+    void count(String identity, Map<String, String> additionalInformation);
     
-    public void testRemoveThenUndo191307() throws Exception {
-        // #191307:  Undo operation breaks code model
-        if (TraceFlags.TRACE_191307_BUG) {
-            System.err.printf("TEST UNDO REMOVE\n");
-        }
-        final File sourceFile = getDataFile("fileForModification.cc");
-        long length = sourceFile.length();
-        
-        super.deleteTextThenUndo(sourceFile, 0, (int)length, 3, 0);
-    }
-    
-    public void testInsertSaveThenUndoRedo190950() throws Exception {
-        // #190950:  Highlighting does not work if undo/redo is done
-        if (TraceFlags.TRACE_191307_BUG) {
-            System.err.printf("TEST UNDO AFTER SAVE\n");
-        }
-        final File sourceFile = getDataFile("fileForModification.cc");
-        super.insertTextThenSaveAndCheck(sourceFile, 12 + 1, "void foo() {}\n", 
-                sourceFile, new DeclarationsNumberChecker(3, 4), true);
-    }    
 }

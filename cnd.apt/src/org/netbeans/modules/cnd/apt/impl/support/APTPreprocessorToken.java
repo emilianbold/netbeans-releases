@@ -42,9 +42,9 @@
 package org.netbeans.modules.cnd.apt.impl.support;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.apt.structure.APT;
+import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
@@ -56,18 +56,27 @@ import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 public final class APTPreprocessorToken extends APTTokenAbstact {
     private final APT ppNode;
     private final APTToken ppNodeToken;
-    private final Map<Object, Object> props;
+    private final Map<APT, Map<Object, Object>> props;
     private final ResolvedPath resolvedPath;
-    private final boolean enterInclude;
-    private static final Map<Object, Object> EMPTY = Collections.emptyMap();
+    private final Boolean enterInclude;
+    private static final Map<APT, Map<Object, Object>> EMPTY = Collections.emptyMap();
+    private final APTIncludeHandler.IncludeState inclState;
 
-    public APTPreprocessorToken(APT ppNode, boolean enterInclude, ResolvedPath resolvedPath, Map<Object, Object> props) {
+    /**
+     * 
+     * @param ppNode
+     * @param inclState resolved path include state
+     * @param resolvedPath
+     * @param props 
+     */
+    public APTPreprocessorToken(APT ppNode, Boolean enterInclude, APTIncludeHandler.IncludeState inclState, ResolvedPath resolvedPath, final Map<APT, Map<Object, Object>> props) {
         assert ppNode != null;
         this.ppNode = ppNode;
         this.enterInclude = enterInclude;
+        this.inclState = inclState;
         this.resolvedPath = resolvedPath;
         this.ppNodeToken = ppNode.getToken();
-        this.props = props == null ? EMPTY : new HashMap<Object, Object>(props);
+        this.props = props == null ? EMPTY : props;
     }
     
     @Override
@@ -76,8 +85,13 @@ public final class APTPreprocessorToken extends APTTokenAbstact {
             return resolvedPath;
         } else if (key == Boolean.class) {
             return enterInclude;
+        } else if (key == APTIncludeHandler.IncludeState.class) {
+            return inclState;
+        } else if (key == APT.class) {
+            return ppNode;
         }
-        return props.get(key);
+        Map<Object, Object> nodeProps = props.get(ppNode);
+        return nodeProps == null ? null : nodeProps.get(key);
     }
 
     @Override
@@ -114,8 +128,10 @@ public final class APTPreprocessorToken extends APTTokenAbstact {
     public CharSequence getTextID() {
         return ppNodeToken.getTextID();
     }
-    
-    public final APT getAPT() {
-        return ppNode;
-    }
+
+    @Override
+    public String toString() {
+        String suffix = super.toString();
+        return (enterInclude ? "Before " : "After ") + inclState + " " + resolvedPath + " " + suffix; // NOI18N
+    }        
 }

@@ -39,61 +39,40 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.remote.ui;
 
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.RemoteStatistics;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionRegistration;
-import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+package org.netbeans.modules.cnd.modelimpl.csm.core;
+
+import java.io.File;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author vv159170
  */
-@ActionID(id = "org.netbeans.modules.remote.ui.StatisticsAction", category = "NativeRemote")
-@ActionRegistration(displayName = "StatisticsMenuItem")
-@ActionReference(path = "Remote/Host/Actions", name = "StatisticsAction", position = 99998)
-public class StatisticsAction extends SingleHostAction {
-    
-    private static final RequestProcessor RP = new RequestProcessor("StatisticsAction", 1); // NOI18N
-    
-    public StatisticsAction() {
+public class ModifyUndoRedo190950TestCase extends ModifyDocumentTestCaseBase {
+    public ModifyUndoRedo190950TestCase(String testName) {
+        super(testName);
+//        System.setProperty("cnd.modelimpl.trace191307", "true");
     }
-
     
     @Override
-    public String getName() {
-        return NbBundle.getMessage(HostListRootNode.class, "StatisticsMenuItem");
+    protected void setUp() throws Exception {
+        super.setUp();
     }
 
     @Override
-    protected boolean enable(ExecutionEnvironment env) {
-        return env.isRemote();
+    protected File getTestCaseDataDir() {
+        File testCaseDataDir = super.getTestCaseDataDir();
+        return new File(testCaseDataDir.getParent(), "ModifyUndoTestCase");
     }
 
-    @Override
-    public boolean isVisible(Node node) {
-        ExecutionEnvironment env = node.getLookup().lookup(ExecutionEnvironment.class);
-        return env != null && env.isRemote() && RemoteStatistics.COLLECT_STATISTICS;
-    }
-
-    @Override
-    protected void performAction(final ExecutionEnvironment env, Node node) {
-        final NotifyDescriptor notifyDescriptor = new NotifyDescriptor.InputLine("Log file:", "Turn Remote Statistics On"); // NOI18N
-        DialogDisplayer.getDefault().notify(notifyDescriptor);
-        if (notifyDescriptor.getValue() == NotifyDescriptor.OK_OPTION) {
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    RemoteStatistics.startTest(notifyDescriptor.getValue().toString(), null, 0, 10000);
-                }
-            });
+    public void testInsertSaveThenUndoRedo190950() throws Exception {
+        // #190950:  Highlighting does not work if undo/redo is done
+        if (TraceFlags.TRACE_191307_BUG) {
+            System.err.printf("TEST UNDO AFTER SAVE\n");
         }
-    }
+        final File sourceFile = getDataFile("fileForModification.cc");
+        super.insertTextThenSaveAndCheck(sourceFile, 12 + 1, "void foo() {}\n", 
+                sourceFile, new DeclarationsNumberChecker(3, 4), true);
+    }    
 }

@@ -61,6 +61,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle.Messages;
 import static org.netbeans.modules.maven.j2ee.newproject.Bundle.*;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 
 /**
  * This class is responsible for creating Ejb, Web and App client projects
@@ -107,7 +108,7 @@ public class EEWizardIterator extends BaseWizardIterator {
         Archetype archetype = J2eeArchetypeFactory.getInstance().findArchetypeFor(projectType, profile);
         ArchetypeWizards.logUsage(archetype.getGroupId(), archetype.getArtifactId(), archetype.getVersion());
 
-        File rootFile = FileUtil.normalizeFile((File) wiz.getProperty("projdir")); // NOI18N
+        File rootFile = FileUtil.normalizeFile((File) wiz.getProperty(CommonProjectActions.PROJECT_PARENT_FOLDER)); // NOI18N
         ArchetypeWizards.createFromArchetype(rootFile, vi, archetype, null, true);
         
         Set<FileObject> projects = ArchetypeWizards.openProjects(rootFile, rootFile);

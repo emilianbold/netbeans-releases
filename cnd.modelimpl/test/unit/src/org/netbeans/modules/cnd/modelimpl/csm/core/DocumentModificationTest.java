@@ -53,7 +53,8 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 public class DocumentModificationTest extends CndBaseTestSuite {
     public DocumentModificationTest() {
         super("C/C++ Document modifications test");
-        this.addTest(ModifyUndoTestCase.class);
+        this.addTest(ModifyUndo191307TestCase.class);
+        this.addTest(ModifyUndoRedo190950TestCase.class);
         this.addTestSuite(InsertDeadBlockTestCase.class);
         this.addTestSuite(RemoveDeadBlockTestCase.class);
         this.addTestSuite(RemoveAndInsertDeadBlockTestCase.class);

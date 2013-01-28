@@ -41,9 +41,6 @@
  */
 package org.netbeans.modules.cnd.apt.support;
 
-import java.io.Reader;
-import java.io.StringReader;
-import java.math.BigInteger;
 import java.util.Arrays;
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -51,6 +48,7 @@ import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.impl.support.APTFileMacroMap;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
+import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeState;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.openide.filesystems.FileObject;
@@ -136,7 +134,7 @@ public class APTConditionResolverTest {
         }
 
         @Override
-        protected boolean include(ResolvedPath resolvedPath, APTInclude aptInclude, PostIncludeData postIncludeState) {
+        protected boolean include(ResolvedPath resolvedPath, IncludeState inclState, APTInclude aptInclude, PostIncludeData postIncludeState) {
             throw new UnsupportedOperationException();
         }
 

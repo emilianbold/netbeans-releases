@@ -76,6 +76,7 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
+import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
@@ -428,27 +429,32 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
      * If not found, returns a honest null, no dummies (InvalidFileObjectSupport.getInvalidFileObject)
      */
     private FileObject getFileObjectImpl() {
-        FileObject fileObject;
-        if (normalizedPath != null) {
-            return fileSystem.findResource(normalizedPath);
-        } else {
-            Folder f = getFolder();
-            if (f == null) {
-                // don't know file system, fall back to the default one
-                // but do not cache file object
-                String p = getPath();
-                if (CndPathUtilitities.isPathAbsolute(p)) {// UNIX path
-                    p = FileSystemProvider.normalizeAbsolutePath(p, fileSystem);                        
-                    return fileSystem.findResource(p);
-                } else {
-                    return null; // no folder and relative path
+        PerformanceLogger.PerformaceAction performanceEvent = PerformanceLogger.getLogger().start(Folder.GET_ITEM_FILE_OBJECT_PERFORMANCE_EVENT, this);
+        try {
+            if (normalizedPath != null) {
+                return fileSystem.findResource(normalizedPath);
+            } else {
+                FileObject fileObject;
+                Folder f = getFolder();
+                if (f == null) {
+                    // don't know file system, fall back to the default one
+                    // but do not cache file object
+                    String p = getPath();
+                    if (CndPathUtilitities.isPathAbsolute(p)) {// UNIX path
+                        p = FileSystemProvider.normalizeAbsolutePath(p, fileSystem);                        
+                        return fileSystem.findResource(p);
+                    } else {
+                        return null; // no folder and relative path
+                    }
+                } else {                    
+                    MakeConfigurationDescriptor cfgDescr = f.getConfigurationDescriptor();
+                    FileObject baseDirFO = cfgDescr.getBaseDirFileObject();
+                    fileObject = RemoteFileUtil.getFileObject(baseDirFO, getPath());
                 }
-            } else {                    
-                MakeConfigurationDescriptor cfgDescr = f.getConfigurationDescriptor();
-                FileObject baseDirFO = cfgDescr.getBaseDirFileObject();
-                fileObject = RemoteFileUtil.getFileObject(baseDirFO, getPath());
+                return fileObject;
             }
-            return fileObject;
+        } finally {
+            performanceEvent.log();
         }
     }
     

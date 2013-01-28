@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,67 +37,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.repository.sfs;
+package org.netbeans.modules.cnd.discovery.performance;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
-import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
-import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectLife;
+import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Alexander Simon
  */
-public class RepositoryRandomAccessFile extends RandomAccessFile implements RepositoryDataOutput, RepositoryDataInput, SharedStringBuffer {
-    
-    private final UnitCodec unitCodec;
-    
-    public RepositoryRandomAccessFile(File file, String mode, UnitCodec unitCodec) throws FileNotFoundException {
-        super(file, mode);
-        this.unitCodec = unitCodec;
+@ServiceProvider(service=MakeProjectLife.class)
+public class MakeProjectLifeImpl implements MakeProjectLife {
+    private PerformanceIssueDetector detector;
+
+    @Override
+    public void start(Project project) {
+        synchronized(this) {
+             if (detector == null) {
+                 detector = new PerformanceIssueDetector();
+                 PerformanceLogger.getLogger().addPerformanceListener(detector);
+             }
+             detector.stop(project);
+        }
     }
 
     @Override
-    public void writeCharSequenceUTF(CharSequence s) throws IOException {
-        UTF.writeUTF(s, this);
-    }
-
-    @Override
-    public void writeUnitId(int unitId) throws IOException {
-        writeInt(unitCodec.unmaskRepositoryID(unitId));
-    }
-
-    @Override
-    public CharSequence readCharSequenceUTF() throws IOException {
-        return UTF.readCharSequenceUTF(this);
-    }
-
-    @Override
-    public int readUnitId() throws IOException {
-        return unitCodec.maskByRepositoryID(readInt());
-    }
-
-    private static final int sharedArrySize = 1024;
-    private final byte[] sharedByteArray = new byte[sharedArrySize];
-    private final char[] sharedCharArray = new char[sharedArrySize];
-    
-    @Override
-    public final byte[] getSharedByteArray() {
-        return sharedByteArray;
-    }
-
-    @Override
-    public final char[] getSharedCharArray() {
-        return sharedCharArray;
-    }
-
-    @Override
-    public final int getSharedArrayLehgth() {
-        return sharedArrySize;
+    public void stop(Project project) {
+        synchronized(this) {
+             if (detector != null) {
+                 detector.stop(project);
+             }
+        }
     }
 }

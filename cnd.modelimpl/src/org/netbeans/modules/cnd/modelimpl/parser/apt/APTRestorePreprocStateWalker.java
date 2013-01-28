@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeInfo;
+import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeState;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.support.PostIncludeData;
@@ -143,10 +144,7 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
         } finally {
             if (foundDirective) {
                 // we restored everything. Time to stop
-                // but do not clear includes way => no popInclude
                 super.stop();
-            } else {
-                getIncludeHandler().popInclude(); 
             }
         }
         return csmFile;
@@ -171,12 +169,24 @@ public class APTRestorePreprocStateWalker extends APTProjectFileBasedWalker {
     }
 
     @Override
-    protected boolean include(ResolvedPath resolvedPath, APTInclude apt, PostIncludeData postIncludeState) {
-        boolean ret = super.include(resolvedPath, apt, postIncludeState);
+    protected boolean include(ResolvedPath resolvedPath, IncludeState inclState, APTInclude aptInclude, PostIncludeData postIncludeState) {
+        boolean ret = super.include(resolvedPath, inclState, aptInclude, postIncludeState);
         // does not allow to store post include state if we stopped before #include directive
-        if (hasIncludeActionSideEffects() && isStopped()) {
+        if (isRestored()) {
             ret = false;
         }
         return ret;
     }        
+
+    @Override
+    protected void popInclude(APTInclude aptInclude, ResolvedPath resolvedPath, IncludeState pushState) {
+        // do not clear includes path if restored => no popInclude
+        if (!isRestored()) {
+            super.popInclude(aptInclude, resolvedPath, pushState);
+        }
+    }
+    
+    private boolean isRestored() {
+        return searchInterestedFile && isStopped();
+    }
 }

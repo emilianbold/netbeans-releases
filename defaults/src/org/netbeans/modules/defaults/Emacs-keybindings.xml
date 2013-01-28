@@ -99,8 +99,8 @@ made subject to such option by the copyright holder.
     <bind actionName="expand-fold" key="C-ADD"/>
     <bind actionName="expand-fold" key="C-EQUALS"/>
     <bind actionName="expand-fold" key="C-PLUS"/>
-    <bind actionName="incremental-search-forward" key="FIND"/>
-    <bind actionName="incremental-search-forward" key="C-S"/>    
+    <bind actionName="find" key="FIND"/>
+    <bind actionName="find" key="C-S"/>    
     <bind actionName="find-next" key="O-S"/>
     <bind actionName="find-next" key="F3"/>
     <bind actionName="find-previous" key="O-R"/>
