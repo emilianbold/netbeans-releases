@@ -47,14 +47,16 @@ import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.actions.MultipleRepositoryAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.actions.SystemAction;
-import static org.netbeans.modules.git.ui.fetch.Bundle.*;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -62,35 +64,39 @@ import org.openide.util.NbBundle.Messages;
  */
 @ActionID(id = "org.netbeans.modules.git.ui.fetch.FetchFromUpstreamAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_FetchFromUpstreamAction_Name")
-public class FetchFromUpstreamAction extends GetRemoteChangesAction {
+public class FetchFromUpstreamAction extends MultipleRepositoryAction {
 
     @Override
-    protected void performAction (File repository, File[] roots, VCSContext context) {
-        fetch(repository);
+    protected RequestProcessor.Task performAction (File repository, File[] roots, VCSContext context) {
+        return fetch(repository);
     }
     
     @Messages({"LBL_Fetch.fetchFromUpstreamFailed=Fetch from Upstream Failed", "LBL_FetchFromUpstreamAction.preparing=Preparing Fetch..."})
-    private void fetch (final File repository) {
+    private Task fetch (final File repository) {
+        final Task[] t = new Task[1];
         GitProgressSupport supp = new GitProgressSupport.NoOutputLogging() {
             @Override
             protected void perform () {
                 RepositoryInfo info = RepositoryInfo.getInstance(repository);
                 info.refreshRemotes();
-                String errorLabel = LBL_Fetch_fetchFromUpstreamFailed();
-                GitBranch trackedBranch = getTrackedBranch(info, errorLabel);
+                String errorLabel = Bundle.LBL_Fetch_fetchFromUpstreamFailed();
+                GitBranch trackedBranch = FetchUtils.getTrackedBranch(info, errorLabel);
                 if (trackedBranch == null) {
                     return;
                 }
-                GitRemoteConfig cfg = getRemoteConfigForActiveBranch(trackedBranch, info, errorLabel);                        
+                GitRemoteConfig cfg = FetchUtils.getRemoteConfigForActiveBranch(trackedBranch, info, errorLabel);                        
                 if (cfg == null) {
                     return;
                 }
                 String uri = cfg.getUris().get(0);
                 Utils.logVCSExternalRepository("GIT", uri); //NOI18N
-                SystemAction.get(FetchAction.class).fetch(repository, uri, cfg.getFetchRefSpecs(), null);
+                if (!isCanceled()) {
+                    t[0] = SystemAction.get(FetchAction.class).fetch(repository, uri, cfg.getFetchRefSpecs(), null);
+                }
             }
         };
-        supp.start(Git.getInstance().getRequestProcessor(repository), repository, LBL_FetchFromUpstreamAction_preparing());
+        supp.start(Git.getInstance().getRequestProcessor(repository), repository, Bundle.LBL_FetchFromUpstreamAction_preparing()).waitFinished();
+        return t[0];
     }
 
 }
