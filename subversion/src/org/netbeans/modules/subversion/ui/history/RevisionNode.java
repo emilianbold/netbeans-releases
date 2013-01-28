@@ -47,15 +47,10 @@ import java.awt.Color;
 import org.openide.nodes.*;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.NbBundle;
-import org.openide.util.HelpCtx;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.actions.NodeAction;
-
 import javax.swing.*;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.lang.reflect.InvocationTargetException;
-import java.awt.event.ActionEvent;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.text.DateFormat;
@@ -129,16 +124,10 @@ class RevisionNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         if (context) return null;
-        // TODO: reuse action code from SummaryView
         if (event == null) {
-            return new Action [] {
-                SystemAction.get(RevertModificationsAction.class)
-            };
+            return container.getActions();
         } else {
-            return new Action [] {
-                new RollbackAction(),
-                SystemAction.get(RevertModificationsAction.class)
-            };
+            return event.getActions();
         }
     }
     
@@ -290,62 +279,6 @@ class RevisionNode extends AbstractNode {
         }
     }
 
-    private class RollbackAction extends AbstractAction {
-
-        public RollbackAction() {
-            putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackTo", // NOI18N
-                    event.getLogInfoHeader().getLog().getRevision().getNumber()));
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            SummaryView.rollback(event);
-        }
-
-        @Override
-        public boolean isEnabled () {
-            boolean enbl = false;
-            if (event != null && event.getFile() != null) {
-                enbl = true;
-            }
-            return enbl;
-        }
-    }
-
-    private static class RevertModificationsAction extends NodeAction {
-
-        @Override
-        protected void performAction(Node[] activatedNodes) {
-            Set<RepositoryRevision.Event> events = new HashSet<RepositoryRevision.Event>();
-            Set<RepositoryRevision> revisions = new HashSet<RepositoryRevision>();
-            for (Node n : activatedNodes) {
-                RevisionNode node = (RevisionNode) n;
-                if (node.event != null) {
-                    events.add(node.event);
-                } else {
-                    revisions.add(node.container);
-                }
-            }
-            SearchHistoryPanel master = (SearchHistoryPanel) activatedNodes[0].getLookup().lookup(SearchHistoryPanel.class);
-            SummaryView.revert(master, revisions.toArray(new RepositoryRevision[revisions.size()]), events.toArray(new RepositoryRevision.Event[events.size()]));
-        }
-
-        @Override
-        protected boolean enable(Node[] activatedNodes) {
-            return true;
-        }
-
-        @Override
-        public String getName() {
-            return NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackChange"); // NOI18N
-        }
-
-        @Override
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx(RevertModificationsAction.class);
-        }
-    }
-    
     private static class RevisionPropertyEditor extends PropertyEditorSupport {
 
         private static final JLabel renderer = new JLabel();

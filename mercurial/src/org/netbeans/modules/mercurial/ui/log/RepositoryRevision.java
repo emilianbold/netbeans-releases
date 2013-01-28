@@ -44,17 +44,25 @@
 package org.netbeans.modules.mercurial.ui.log;
 
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.HistoryRegistry;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
+import org.netbeans.modules.mercurial.ui.rollback.BackoutAction;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.util.NbBundle;
 
 /**
  * Describes log information for a file. This is the result of doing a
@@ -157,6 +165,21 @@ public class RepositoryRevision {
         return headOfBranches.contains(branchName);
     }
     
+    Action[] getActions () {
+        List<Action> actions = new ArrayList<Action>();
+        actions.add(new AbstractAction(NbBundle.getMessage(RepositoryRevision.class, "CTL_SummaryView_BackoutRevision")) { //NOI18N
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                backout();
+            }
+        });
+        return actions.toArray(new Action[actions.size()]);
+    }
+    
+    void backout () {
+        BackoutAction.backout(this);
+    }
+    
     public class Event {
     
         /**
@@ -228,6 +251,62 @@ public class RepositoryRevision {
 
         boolean isUnderRoots () {
             return underRoots;
+        }
+
+        Action[] getActions () {
+            List<Action> actions = new ArrayList<Action>();
+            boolean viewEnabled = getFile() != null && getChangedPath().getAction() != HgLogMessage.HgDelStatus;
+            if (getFile() != null) {
+                actions.add(new AbstractAction(NbBundle.getMessage(RepositoryRevision.class, "CTL_SummaryView_RollbackTo", getLogInfoHeader().getLog().getRevisionNumber())) { // NOI18N
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        revertModifications();
+                    }                
+                });
+            }
+            if (viewEnabled) {
+                actions.add(new AbstractAction(NbBundle.getMessage(RepositoryRevision.class, "CTL_SummaryView_View")) { //NOI18N
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
+                            @Override
+                            public void run() {
+                                viewFile(false);
+                            }
+                        });
+                    }
+                });
+                actions.add(new AbstractAction(NbBundle.getMessage(RepositoryRevision.class, "CTL_SummaryView_ShowAnnotations")) { // NOI18N
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
+                            @Override
+                            public void run() {
+                                viewFile(true);
+                            }
+                        });
+                    }
+                    });
+                actions.add(new AbstractAction(NbBundle.getMessage(RepositoryRevision.class, "CTL_SummaryView_ExportFileDiff")) { // NOI18N
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        ExportDiffAction.exportDiffFileRevision(Event.this);
+                    }
+                });
+            }
+            return actions.toArray(new Action[actions.size()]);
+        }
+        
+        void viewFile (boolean showAnnotations) {
+            try {
+                HgUtils.openInRevision(getFile(), -1, getLogInfoHeader().getLog().getHgRevision(), showAnnotations);
+            } catch (IOException ex) {
+                // Ignore if file not available in cache
+            }
+        }
+
+        void revertModifications () {
+            SummaryView.revert(null, new Event[] { this });
         }
     }
 

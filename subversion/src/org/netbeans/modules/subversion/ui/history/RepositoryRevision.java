@@ -44,6 +44,7 @@
 package org.netbeans.modules.subversion.ui.history;
 
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
@@ -55,14 +56,21 @@ import java.io.File;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.logging.Level;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.ui.update.RevertModifications;
+import org.netbeans.modules.subversion.ui.update.RevertModificationsAction;
+import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.util.NbBundle;
+import org.tigris.subversion.svnclientadapter.SVNRevision;
 
 /**
  * Describes log information for a file. This is the result of doing a
@@ -163,6 +171,26 @@ final class RepositoryRevision {
     public void removePropertyChangeListener (String propertyName, PropertyChangeListener listener) {
         support.removePropertyChangeListener(propertyName, listener);
     }
+    
+    Action[] getActions () {
+        List<Action> actions = new ArrayList<Action>();
+        actions.add(new AbstractAction(NbBundle.getMessage(RepositoryRevision.class, "CTL_SummaryView_RollbackChange")) { //NOI18N
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                SvnProgressSupport support = new SvnProgressSupport() {
+                    @Override
+                    public void perform() {
+                        RevertModifications.RevisionInterval revisionInterval = new RevertModifications.RevisionInterval(getLog().getRevision());
+                        final Context ctx = new Context(selectionRoots);
+                        RevertModificationsAction.performRevert(revisionInterval, false, false, ctx, this);
+                    }
+                };
+                support.start(Subversion.getInstance().getRequestProcessor(repositoryRootUrl),
+                        repositoryRootUrl, NbBundle.getMessage(SummaryView.class, "MSG_Revert_Progress")); //NOI18N
+            }
+        });
+        return actions.toArray(new Action[actions.size()]);
+    }
 
     public class Event {
 
@@ -180,6 +208,7 @@ final class RepositoryRevision {
         private final String originalPath;
         private final String action;
         private final String originalName;
+        private ArrayList<Action> actions;
 
         public Event (ISVNLogMessageChangePath changedPath, boolean underRoots, String displayAction) {
             this.changedPath = changedPath;
@@ -248,6 +277,98 @@ final class RepositoryRevision {
 
         String getAction() {
             return action;
+        }
+    
+        Action[] getActions () {
+            if (actions == null) {
+                actions = new ArrayList<Action>();
+                boolean rollbackToEnabled = getFile() != null && getChangedPath().getAction() != 'D';
+                boolean rollbackChangeEnabled = getFile() != null && (getChangedPath().getAction() != 'D' || !getFile().exists());
+                boolean viewEnabled = rollbackToEnabled && !getFile().isDirectory();
+                if (rollbackChangeEnabled) {
+                    actions.add(new AbstractAction(NbBundle.getMessage(RepositoryRevision.class, "CTL_SummaryView_RollbackChange")) { //NOI18N
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            revert();
+                        }
+                    });
+                }
+                if (rollbackToEnabled) {
+                    actions.add(new AbstractAction(NbBundle.getMessage(RepositoryRevision.class, "CTL_SummaryView_RollbackToShort")) { //NOI18N
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    rollback();
+                                }
+                            });
+                        }
+                    });
+                }
+                if (viewEnabled) {
+                    actions.add(new AbstractAction(NbBundle.getMessage(RepositoryRevision.class, "CTL_SummaryView_View")) { //NOI18N
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    viewFile(false);
+                                }
+                            });
+                        }
+                    });
+                    actions.add(new AbstractAction(NbBundle.getMessage(RepositoryRevision.class, "CTL_SummaryView_ShowAnnotations")) { //NOI18N
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    viewFile(true);
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+            return actions.toArray(new Action[actions.size()]);
+        }
+
+        void viewFile (boolean showAnnotations) {
+            File originFile = getFile();
+            SVNRevision rev = getLogInfoHeader().getLog().getRevision();
+            SVNUrl repoUrl = getLogInfoHeader().getRepositoryRootUrl();
+            SVNUrl fileUrl = repoUrl.appendPath(getChangedPath().getPath());
+            SvnUtils.openInRevision(originFile, repoUrl, fileUrl, rev, rev, showAnnotations);
+        }
+        
+        void rollback () {
+            SvnProgressSupport support = new SvnProgressSupport() {
+                @Override
+                public void perform() {
+                    File file = getFile();
+                    boolean wasDeleted = getChangedPath().getAction() == 'D';
+                    SVNUrl repoUrl = getLogInfoHeader().getRepositoryRootUrl();
+                    SVNUrl fileUrl = repoUrl.appendPath(getChangedPath().getPath());                    
+                    SVNRevision.Number revision = getLogInfoHeader().getLog().getRevision();
+                    SvnUtils.rollback(file, repoUrl, fileUrl, revision, wasDeleted, getLogger());
+                }
+            };
+            support.start(Subversion.getInstance().getRequestProcessor(repositoryRootUrl),
+                    repositoryRootUrl, NbBundle.getMessage(RepositoryRevision.class, "MSG_Rollback_Progress")); //NOI18N
+        }
+
+        void revert () {
+            SvnProgressSupport support = new SvnProgressSupport() {
+                @Override
+                public void perform() {
+                    RevertModifications.RevisionInterval revisionInterval = new RevertModifications.RevisionInterval(getLogInfoHeader().getLog().getRevision());
+                    final Context ctx = new Context(getFile());
+                    RevertModificationsAction.performRevert(revisionInterval, false, false, ctx, this);
+                }
+            };
+            support.start(Subversion.getInstance().getRequestProcessor(repositoryRootUrl),
+                    repositoryRootUrl, NbBundle.getMessage(SummaryView.class, "MSG_Revert_Progress")); //NOI18N
         }
     }
 
