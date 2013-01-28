@@ -43,14 +43,14 @@ package org.netbeans.modules.cnd.utils;
 
 import java.util.Collections;
 import java.util.Map;
-import org.netbeans.modules.cnd.spi.utils.UsagesCounter;
+import org.netbeans.modules.cnd.spi.utils.UsagesCounterProvider;
 import org.openide.util.Lookup;
 
 /**
  *
  * @author inikiforov
  */
-public final class ComponentUsages {
+public final class OSSComponentUsages {
 
     public static final String IDE = "ide"; //NOI18N
     public static final String GIZMO = "gizmo"; //NOI18N
@@ -59,11 +59,11 @@ public final class ComponentUsages {
     public static final String PROJECT_CREATOR = "createprj"; //NOI18N
     public static final String DBXTOOL = "dbxtool"; //NOI18N
     
-    private static final String FEATURE_SEPARATOR = "-"; //NOI18N
+    public static final String USED_PROVIDER = "oss_check_update"; //NOI18N
     
-    private static UsagesCounter counter = null;
+    private static UsagesCounterProvider.UsagesCounter counter = null;
 
-    private ComponentUsages() {
+    private OSSComponentUsages() {
     }
 
     public static void countIDEUsage() {
@@ -73,14 +73,14 @@ public final class ComponentUsages {
     public static void countIDEFeatureUsage(String feature) {
         countUsage(IDE, feature, Collections.EMPTY_MAP);
     }
-    
+
     public static void countGizmoUsage() {
         countUsage(GIZMO, null, Collections.EMPTY_MAP);
     }
 
     public static void countGizmoFeatureUsage(String feature) {
         countUsage(GIZMO, feature, Collections.EMPTY_MAP);
-    }    
+    }
 
     public static void countCodeAnalyzerUsage() {
         countUsage(CODE_ANALYZER, null, Collections.EMPTY_MAP);
@@ -88,8 +88,8 @@ public final class ComponentUsages {
 
     public static void countCodeAnalyzerFeatureUsage(String feature) {
         countUsage(CODE_ANALYZER, feature, Collections.EMPTY_MAP);
-    }    
-    
+    }
+
     public static void countDesktopDistributionUsage() {
         countUsage(DESKTOP_DISTRIBUTION, null, Collections.EMPTY_MAP);
     }
@@ -97,7 +97,7 @@ public final class ComponentUsages {
     public static void countDesktopDistributionFeatureUsage(String feature) {
         countUsage(DESKTOP_DISTRIBUTION, feature, Collections.EMPTY_MAP);
     }
-        
+
     public static void countProjectCreatorUsage() {
         countUsage(PROJECT_CREATOR, null, Collections.EMPTY_MAP);
     }
@@ -105,7 +105,7 @@ public final class ComponentUsages {
     public static void countProjectCreatorFeatureUsage(String feature) {
         countUsage(PROJECT_CREATOR, feature, Collections.EMPTY_MAP);
     }
-    
+
     public static void countDbxtoolUsage() {
         countUsage(DBXTOOL, null, Collections.EMPTY_MAP);
     }
@@ -113,15 +113,18 @@ public final class ComponentUsages {
     public static void countDbxtoolFeatureUsage(String feature) {
         countUsage(DBXTOOL, feature, Collections.EMPTY_MAP);
     }
-    
-    public static void countUsage(String component, String feature, Map<String, String> additionalInformation) {
-        String identity = feature == null ? component : component + FEATURE_SEPARATOR + feature;
+
+    public synchronized static void countUsage(String component, String feature, Map<String, String> additionalInformation) {
         if (counter == null) {
-            counter = Lookup.getDefault().lookup(UsagesCounter.class);
+            for (UsagesCounterProvider provider : Lookup.getDefault().lookupAll(UsagesCounterProvider.class)) {
+                counter = provider.getUsageCounter(USED_PROVIDER);
+                if (counter != null) {
+                    break;
+                }
+            }
         }
         if (counter != null) {
-            counter.count(identity, additionalInformation);
+            counter.count(component, feature, additionalInformation);
         }
     }
-
 }
