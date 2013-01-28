@@ -47,8 +47,12 @@ import java.util.Map;
  *
  * @author inikiforov
  */
-public interface UsagesCounter {
-    
-    void count(String identity, Map<String, String> additionalInformation);
-    
+public interface UsagesCounterProvider {
+
+    UsagesCounter getUsageCounter(String identity);
+
+    interface UsagesCounter {
+
+        void count(String component, String feature, Map<String, String> additionalInformation);
+    }
 }
