@@ -1,8 +1,7 @@
 Name: Hibernate Library
-Version: 3.2.5
+Version: 3.6.10
 License: LGPL-2.1
-OSR: 8144
-Files: hibernate-3.2.5-lib.zip
+Files: hibernate-3.6.10-lib.zip
 Origin: http://hibernate.org
 Description: The Hibernate library contains all the requried jars to implement the hibernate technologies.
 Source: http://sourceforge.net/projects/hibernate/files/hibernate3/3.2.5.ga/hibernate-3.2.5.ga.zip/download
