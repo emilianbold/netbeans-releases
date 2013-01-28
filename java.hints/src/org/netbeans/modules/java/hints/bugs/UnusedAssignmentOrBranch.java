@@ -59,7 +59,6 @@ import org.netbeans.api.java.source.CompilationInfo.CacheClearPolicy;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.modules.java.hints.infrastructure.Pair;
 import org.netbeans.modules.java.hints.introduce.Flow;
-import org.netbeans.modules.java.hints.introduce.Flow.Cancel;
 import org.netbeans.modules.java.hints.introduce.Flow.FlowResult;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
@@ -79,28 +78,7 @@ public class UnusedAssignmentOrBranch {
     
     private static final String UNUSED_ASSIGNMENT_ID = "org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.unusedAssignment";
     private static final String DEAD_BRANCH_ID = "org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.deadBranch";
-    private static final Object KEY_FLOW = new Object();
     private static final Object KEY_COMPUTED_ASSIGNMENTS = new Object();
-
-    private static FlowResult runFlow(final HintContext ctx) {
-        Object cachedFlow = ctx.getInfo().getCachedValue(KEY_FLOW);
-
-        if (cachedFlow instanceof FlowResult)
-            return (FlowResult) cachedFlow;
-
-        FlowResult flow = Flow.assignmentsForUse(ctx.getInfo(), new TreePath(ctx.getInfo().getCompilationUnit()), new Cancel() {
-            @Override
-            public boolean isCanceled() {
-                return ctx.isCanceled();
-            }
-        });
-
-        if (flow == null || ctx.isCanceled()) return null;
-        else {
-            ctx.getInfo().putCachedValue(KEY_FLOW, flow, CacheClearPolicy.ON_TASK_END);
-            return flow;
-        }
-    }
 
     private static Pair<Set<Tree>, Set<Element>> computeUsedAssignments(final HintContext ctx) {
         final CompilationInfo info = ctx.getInfo();
@@ -108,7 +86,7 @@ public class UnusedAssignmentOrBranch {
 
         if (result != null) return result;
 
-        FlowResult flow = runFlow(ctx);
+        FlowResult flow = Flow.assignmentsForUse(ctx);
 
         if (flow == null) return null;
 
@@ -193,7 +171,7 @@ public class UnusedAssignmentOrBranch {
     @TriggerTreeKind(Tree.Kind.IF)
     public static List<ErrorDescription> deadBranch(HintContext ctx) {
         String deadBranchLabel = NbBundle.getMessage(UnusedAssignmentOrBranch.class, "LBL_DEAD_BRANCH");
-        FlowResult flow = runFlow(ctx);
+        FlowResult flow = Flow.assignmentsForUse(ctx);
 
         if (flow == null) return null;
 
