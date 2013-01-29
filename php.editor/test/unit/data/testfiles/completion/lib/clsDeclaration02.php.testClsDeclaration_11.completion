@@ -96,6 +96,7 @@ CLASS      Interface2                      [PUBLIC]   test204104.php
 CLASS      Interface2                      [PUBLIC]   test204104_02.php
 CLASS      MyIface                         [PUBLIC]   insideInterface.php
 CLASS      MySecondIface                   [PUBLIC]   insideInterface.php
+CLASS      MyTestInterface                 [PUBLIC]   test225454.php
 CLASS      ParentInterface                 [PUBLIC]   interfaces.php
 CLASS      XUserInterface                  [PUBLIC]   XUser
 CLASS      a                               [PUBLIC]   issue137033.php
