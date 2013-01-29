@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.cnd.spi.toolchain;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -83,25 +82,32 @@ public abstract class ErrorParserProvider {
 
     public final static class OutputListenerRegistry {
         private final Map<FileObject,List<OutputListener>> storage = new HashMap<FileObject,List<OutputListener>>();
-        private final Map<OutputListener,FileObject> listeners = new HashMap<OutputListener,FileObject>();
     
         protected OutputListenerRegistry() {
         }
 
         public OutputListener register(FileObject file, int line, boolean isError, String description) {
             OutputListenerImpl res = new OutputListenerImpl(this, file, line, isError, description);
-            List<OutputListener> list = storage.get(file);
-            if (list == null) {
-                list = new ArrayList<OutputListener>();
-                storage.put(file, list);
+            synchronized(storage) {
+                List<OutputListener> list = storage.get(file);
+                if (list == null) {
+                    list = new ArrayList<OutputListener>();
+                    storage.put(file, list);
+                }
+                list.add(res);
             }
-            list.add(res);
-            listeners.put(res, file);
             return res;
         }
 
         public List<OutputListener> getFileListeners(FileObject file){
-            return storage.get(file);
+            List<OutputListener> res;
+            synchronized(storage) {
+                res = storage.get(file);
+                if (res != null) {
+                    res = new ArrayList<OutputListener>(res);
+                }
+            }
+            return res;
         }
     }
     
