@@ -39,65 +39,14 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.utils;
-
-import org.netbeans.modules.cnd.spi.utils.ComponentVersionProvider;
-import org.openide.util.Lookup;
+package org.netbeans.modules.cnd.spi.utils;
 
 /**
  *
  * @author inikiforov
  */
-public enum ComponentType {
-
-    CND("cnd"), //NOI18N
-    OSS_IDE("sside"), //NOI18N
-    DBXTOOL("dbxtool"), //NOI18N
-    DLIGHTTOOL("dlighttool"), //NOI18N
-    CODE_ANALYZER("analytics"); //NOI18N
+public interface ComponentVersionProvider {
     
-    private static ComponentType component;
-    private String version = ""; //NOI18N
-    private final String tag;
-
-    private ComponentType(String tag) {
-        this.tag = tag;
-    }
-
-    public String getTag() {
-        return tag;
-    }
-
-    public static ComponentType getComponent() {
-        if (component == null) {
-            component = CND;
-            String ide = System.getProperty("spro.ide.name"); // NOI18N
-            for (ComponentType c : ComponentType.values()) {
-                if (c.getTag().equals(ide)) {
-                    component = c;
-                    break;
-                }
-            }
-        }
-        return component;
-    }
-
-    public static String getVersion() {
-        ComponentType current = getComponent();
-        if (current.version == null) {
-            for (ComponentVersionProvider provider : Lookup.getDefault().lookupAll(ComponentVersionProvider.class)) {
-                String version = provider.getVersion(current.getTag());
-                if (version != null) {
-                    current.version = version;
-                    break;
-                }
-            }
-        }
-        return current.version;
-    }
-    
-    public static String getFullName() {
-        return getComponent().toString() + " " + getVersion(); //NOI18N
-    }
+    String getVersion(String component);
     
 }
