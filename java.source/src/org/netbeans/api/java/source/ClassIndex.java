@@ -110,15 +110,15 @@ public final class ClassIndex {
 
     //INV: Never null
     //@GuardedBy (this)
-    @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}/*,justification="URLs have never host part"*/)    //NOI18N
+    @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}, justification="URLs have never host part")    //NOI18N
     private final Set<URL> oldSources;
     //INV: Never null
     //@GuardedBy (this)
-    @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}/*,justification="URLs have never host part"*/)    //NOI18N
+    @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}, justification="URLs have never host part")    //NOI18N
     private final Set<URL> oldBoot;    
     //INV: Never null
     //@GuardedBy (this)
-    @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}/*,justification="URLs have never host part"*/)    //NOI18N
+    @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"},justification="URLs have never host part")    //NOI18N
     private final Set<URL> oldCompile;
     //INV: Never null
     //@GuardedBy (this)
@@ -796,7 +796,7 @@ public final class ClassIndex {
             }
         }
 
-        @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}/*,justification="URLs have never host part"*/)    //NOI18N
+        @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}, justification="URLs have never host part")    //NOI18N
         private boolean containsRoot (final ClassPath cp, final Set<? extends URL> roots, final List<? super URL> affectedRoots, final boolean translate) {
             final List<ClassPath.Entry> entries = cp.entries();
             final PathRegistry preg = PathRegistry.getDefault();
@@ -866,7 +866,7 @@ public final class ClassIndex {
             return result;
         }
 
-        @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}/*,justification="URLs have never host part"*/)    //NOI18N
+        @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}, justification="URLs have never host part")    //NOI18N
         public void propertyChange(PropertyChangeEvent evt) {
             if (ClassPath.PROP_ENTRIES.equals (evt.getPropertyName())) {
                 final List<URL> newRoots = new LinkedList<URL>();
