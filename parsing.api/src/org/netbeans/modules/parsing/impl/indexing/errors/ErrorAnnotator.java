@@ -200,8 +200,8 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
     }
 
     @org.netbeans.api.annotations.common.SuppressWarnings(
-    value="DMI_COLLECTION_OF_URLS"
-    /*,justification="URLs have never host part"*/)
+    value="DMI_COLLECTION_OF_URLS",
+    justification="URLs have never host part")
     public synchronized void updateInError(Set<URL> urls)  {
         Set<FileObject> toRefresh = new HashSet<FileObject>();
         for (Iterator<FileObject> it = knownFiles2Error.keySet().iterator(); it.hasNext(); ) {
@@ -408,8 +408,8 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
 
                 @Override
                 @org.netbeans.api.annotations.common.SuppressWarnings(
-                value="DMI_COLLECTION_OF_URLS"
-                /*,justification="URLs have never host part"*/)
+                value="DMI_COLLECTION_OF_URLS",
+                justification="URLs have never host part")
                 public void run() {
                     try {
                         Set<URL> toRefresh = new HashSet<URL>();
