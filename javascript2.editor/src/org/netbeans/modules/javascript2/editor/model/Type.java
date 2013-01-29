@@ -59,7 +59,9 @@ public interface Type {
      */
     static String UNRESOLVED = "unresolved"; //NOI18N
     static String UNDEFINED = "undefined";   //NOI18N
-
+    static String NULL = "null";            //NOI18N
+    static String OBJECT = "Object";        //NOI18N
+    
     String getType();
 
     int getOffset();

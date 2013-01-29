@@ -69,11 +69,13 @@ import org.netbeans.JaveleonModule;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.Stamps;
+import org.netbeans.TopSecurityManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.OnStop;
+import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
@@ -503,6 +505,17 @@ public final class ModuleSystem {
      */
     public boolean isShowInAutoUpdateClient(ModuleInfo mi) {
         return this.installer.isShowInAutoUpdateClient(mi);
+    }
+
+    /** Creates files that instruct the native launcher to perform restart as
+     * soon as the Java process finishes. 
+     * 
+     * @since 1.45
+     * @throws UnsupportedOperationException some environments (like WebStart)
+     *   do not support restart and may throw an exception to indicate that
+     */
+    public static void markForRestart() throws UnsupportedOperationException {
+        ModuleLifecycleManager.markReadyForRestart();
     }
     
     /** Dummy event handler that does not print anything.

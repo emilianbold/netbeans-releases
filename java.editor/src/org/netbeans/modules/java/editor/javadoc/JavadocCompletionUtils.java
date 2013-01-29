@@ -316,16 +316,15 @@ final class JavadocCompletionUtils {
         if (token == null || token.id() != JavadocTokenId.OTHER_TEXT) {
             return false;
         }
-        
-        CharSequence text = token.text();
-        if (pos < 0 || pos > token.length() || text.length() != token.length()) {
-            throw new IndexOutOfBoundsException("pos: " + pos + ", token.length: " + token.length() + ", token text: " + text);
+        try {
+            CharSequence text = token.text().subSequence(0, pos);
+            boolean result = pos > 0
+                    && JAVADOC_LINE_BREAK.matcher(text).find()
+                    && (pos == token.length() || !isInsideIndent(token, pos));
+            return result;
+        } catch (IndexOutOfBoundsException e) {
+            throw new IndexOutOfBoundsException("pos: " + pos + ", token.length: " + token.length() + ", token text: " + token.text());
         }
-
-        boolean result = pos > 0
-                && JAVADOC_LINE_BREAK.matcher(text.subSequence(0, pos)).find()
-                && (pos == token.length() || !isInsideIndent(token, pos));
-        return result;
     }
     
     public static boolean isWhiteSpace(CharSequence text) {

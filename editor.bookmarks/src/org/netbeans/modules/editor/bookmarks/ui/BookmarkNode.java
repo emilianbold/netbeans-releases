@@ -101,6 +101,11 @@ public class BookmarkNode extends AbstractNode {
         }
     }
 
+    void notifyBookmarkChanged() {
+        fireNameChange(null, null);
+        fireDisplayNameChange(null, null);
+    }
+
     @Override
     public String getDisplayName() {
         return bookmarkInfo.getDisplayName();

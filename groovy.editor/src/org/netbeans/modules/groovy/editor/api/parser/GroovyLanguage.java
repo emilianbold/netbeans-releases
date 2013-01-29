@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.groovy.editor.api.parser;
 
-import org.netbeans.modules.groovy.editor.language.GroovySemanticAnalyzer;
 import java.util.Collections;
 import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -63,17 +62,19 @@ import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
-import org.netbeans.modules.groovy.editor.language.GroovyBracketCompleter;
-import org.netbeans.modules.groovy.editor.language.GroovyDeclarationFinder;
 import org.netbeans.modules.groovy.editor.api.GroovyIndexer;
-import org.netbeans.modules.groovy.editor.language.GroovyInstantRenamer;
-import org.netbeans.modules.groovy.editor.language.GroovyTypeSearcher;
 import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.StructureAnalyzer;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import static org.netbeans.modules.groovy.editor.api.parser.GroovyLanguage.*;
 import org.netbeans.modules.groovy.editor.hints.infrastructure.GroovyHintsProvider;
+import org.netbeans.modules.groovy.editor.language.GroovyBracketCompleter;
+import org.netbeans.modules.groovy.editor.language.GroovyDeclarationFinder;
+import org.netbeans.modules.groovy.editor.language.GroovyFormatter;
+import org.netbeans.modules.groovy.editor.language.GroovyInstantRenamer;
+import org.netbeans.modules.groovy.editor.language.GroovySemanticAnalyzer;
+import org.netbeans.modules.groovy.editor.language.GroovyTypeSearcher;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
@@ -85,19 +86,27 @@ import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
 /**
- * Language/lexing configuration for Groovy
+ * Language/lexing configuration for Groovy.
  *
  * @author Tor Norbye
  * @author Martin Adamek
  */
 @MIMEResolver.ExtensionRegistration(
-    displayName="#GroovyResolver",
-    extension={ "groovy" },
-    mimeType=GROOVY_MIME_TYPE,
-    position=281
+    mimeType = GROOVY_MIME_TYPE,
+    displayName = "#GroovyResolver",
+    extension = "groovy",
+    position = 281
 )
-@LanguageRegistration(mimeType=GROOVY_MIME_TYPE, useMultiview=true)
-@PathRecognizerRegistration(mimeTypes=GROOVY_MIME_TYPE, sourcePathIds=ClassPath.SOURCE, libraryPathIds={}, binaryLibraryPathIds={}) //NOI18N
+@LanguageRegistration(
+    mimeType = GROOVY_MIME_TYPE,
+    useMultiview = true
+)
+@PathRecognizerRegistration(
+    mimeTypes = GROOVY_MIME_TYPE,
+    sourcePathIds = ClassPath.SOURCE,
+    libraryPathIds = {},
+    binaryLibraryPathIds = {}
+)
 @ActionReferences({
     @ActionReference(id = @ActionID(category = "System", id = "org.openide.actions.OpenAction"), path = ACTIONS, position = 100),
     @ActionReference(id = @ActionID(category = "Edit", id = "org.openide.actions.CutAction"), path = ACTIONS, position = 300, separatorBefore = 200),
@@ -113,13 +122,13 @@ import org.openide.windows.TopComponent;
 })
 public class GroovyLanguage extends DefaultLanguageConfig {
 
-    public static final String GROOVY_MIME_TYPE ="text/x-groovy";
-    public static final String ACTIONS = "Loaders/"+GROOVY_MIME_TYPE+"/Actions";
-    
+    public static final String GROOVY_MIME_TYPE = "text/x-groovy";
+    public static final String ACTIONS = "Loaders/" + GROOVY_MIME_TYPE + "/Actions";
+
     // Copy of groovy/support/resources icon because some API change caused
     // that it's not possible to refer to resource from different module
     private static final String GROOVY_FILE_ICON_16x16 = "org/netbeans/modules/groovy/editor/resources/GroovyFile16x16.png";
-    
+
     public GroovyLanguage() {
     }
 
@@ -134,15 +143,15 @@ public class GroovyLanguage extends DefaultLanguageConfig {
     public static MultiViewEditorElement createEditor(Lookup lkp) {
         return new MultiViewEditorElement(lkp);
     }
-    
+
     @Override
     public String getLineCommentPrefix() {
-        return GroovyUtils.getLineCommentPrefix();
+        return "//"; // NOI18N
     }
 
     @Override
     public boolean isIdentifierChar(char c) {
-        return GroovyUtils.isIdentifierChar(c);
+        return Character.isJavaIdentifierPart(c) || (c == '$');
     }
 
     @Override
@@ -152,7 +161,7 @@ public class GroovyLanguage extends DefaultLanguageConfig {
 
     @Override
     public String getDisplayName() {
-        return "Groovy";
+        return "Groovy"; // NOI18N
     }
 
     @Override
@@ -160,8 +169,6 @@ public class GroovyLanguage extends DefaultLanguageConfig {
         return "groovy"; // NOI18N
     }
 
-    // Service Registrations
-    
     @Override
     public Parser getParser() {
         return new GroovyParser();
@@ -174,7 +181,7 @@ public class GroovyLanguage extends DefaultLanguageConfig {
 
     @Override
     public Formatter getFormatter() {
-        return new org.netbeans.modules.groovy.editor.language.GroovyFormatter();
+        return new GroovyFormatter();
     }
 
     @Override
@@ -244,10 +251,6 @@ public class GroovyLanguage extends DefaultLanguageConfig {
 
     @Override
     public Set<String> getSourcePathIds() {
-        // We don't have our own source path id, because javascript files can be
-        // anywhere in a project. So, for index search we will use all available
-        // sourcepath ids.
-        // FIXME parsing API
         return Collections.singleton(ClassPath.SOURCE);
     }
 }

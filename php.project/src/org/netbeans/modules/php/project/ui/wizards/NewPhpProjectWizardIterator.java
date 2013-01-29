@@ -56,6 +56,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
@@ -111,6 +113,8 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         REMOTE,
     }
 
+    private static final Logger LOGGER = Logger.getLogger(NewPhpProjectWizardIterator.class.getName());
+
     private final WizardType wizardType;
     private WizardDescriptor descriptor;
     private WizardDescriptor.Panel<WizardDescriptor>[] panels;
@@ -158,6 +162,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return null;
     }
 
+    @NbBundle.Messages("NewPhpProjectWizardIterator.project.alreadyExists=Project was not created because it already exists (maybe only in memory).")
     @Override
     public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
         final Set<FileObject> resultSet = new HashSet<FileObject>();
@@ -203,7 +208,23 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                 assert false : "Unknown wizard type: " + wizardType;
         }
 
-        final AntProjectHelper helper = PhpProjectGenerator.createProject(createProperties, monitor);
+        AntProjectHelper projectHelper;
+        try {
+            projectHelper = PhpProjectGenerator.createProject(createProperties, monitor);
+        } catch (IllegalArgumentException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+            warnUser(Bundle.NewPhpProjectWizardIterator_project_alreadyExists());
+            File projectDirectory = createProperties.getProjectDirectory();
+            if (projectDirectory == null) {
+                projectDirectory = createProperties.getSourcesDirectory();
+            }
+            FileObject projDir = FileUtil.toFileObject(projectDirectory);
+            if (projDir != null && projDir.isValid()) {
+                resultSet.add(projDir);
+            }
+            return resultSet;
+        }
+        final AntProjectHelper helper = projectHelper;
         resultSet.add(helper.getProjectDirectory());
 
         final Project project = ProjectManager.getDefault().findProject(helper.getProjectDirectory());

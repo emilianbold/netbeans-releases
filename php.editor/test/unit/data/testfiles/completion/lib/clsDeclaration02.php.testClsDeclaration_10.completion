@@ -15,6 +15,7 @@ PACKAGE    ExtraThrow                      [PUBLIC]   null
 PACKAGE    First                           [PUBLIC]   null
 PACKAGE    Fom                             [PUBLIC]   null
 PACKAGE    FrontSpace                      [PUBLIC]   null
+PACKAGE    Froo                            [PUBLIC]   null
 PACKAGE    God                             [PUBLIC]   null
 PACKAGE    MC                              [PUBLIC]   null
 PACKAGE    MySpace                         [PUBLIC]   null
@@ -26,6 +27,7 @@ PACKAGE    Second                          [PUBLIC]   null
 PACKAGE    Shit                            [PUBLIC]   null
 PACKAGE    ShowMe                          [PUBLIC]   null
 PACKAGE    TC                              [PUBLIC]   null
+PACKAGE    Test                            [PUBLIC]   null
 PACKAGE    Test204925_01_C                 [PUBLIC]   null
 PACKAGE    Test204925_01_P                 [PUBLIC]   null
 PACKAGE    Test204925_02_C                 [PUBLIC]   null
@@ -44,6 +46,7 @@ PACKAGE    Test204925_08_C                 [PUBLIC]   null
 PACKAGE    Test204925_08_P                 [PUBLIC]   null
 PACKAGE    Test_03                         [PUBLIC]   null
 PACKAGE    Testing                         [PUBLIC]   null
+PACKAGE    Trest                           [PUBLIC]   null
 PACKAGE    XUser                           [PUBLIC]   null
 PACKAGE    bar                             [PUBLIC]   null
 PACKAGE    delme                           [PUBLIC]   null
@@ -62,6 +65,7 @@ PACKAGE    Controller                      [PUBLIC]   Brite
 PACKAGE    Data                            [PUBLIC]   Shit
 PACKAGE    NNS                             [PUBLIC]   CNS
 PACKAGE    Ns                              [PUBLIC]   Testing
+PACKAGE    Space                           [PUBLIC]   Test
 PACKAGE    Test                            [PUBLIC]   App
 PACKAGE    UI                              [PUBLIC]   Nette\Application
 PACKAGE    User                            [PUBLIC]   Package2
@@ -98,6 +102,7 @@ CLASS      Admin                           [PUBLIC]   Admin
 CLASS      AdminPresenter                  [PUBLIC,   AdminModule
 CLASS      AliasedClassName                [PUBLIC]   Foo\Bar
 CLASS      AnonymousObject                 [PUBLIC]   anonymousObjectVariables.php
+CLASS      Another                         [PUBLIC]   test224549.php
 CLASS      ArraysCc                        [PUBLIC]   arrays.php
 CLASS      Author                          [PUBLIC]   mixedtypes.php
 CLASS      Author_1                        [PUBLIC]   mixedtypes_1.php
@@ -106,6 +111,7 @@ CLASS      B                               [PUBLIC]   issue195232.php
 CLASS      B                               [PUBLIC]   test.php
 CLASS      B135618                         [PUBLIC]   issue135618.php
 CLASS      BadRequestException             [PUBLIC]   Nette\Application
+CLASS      Bar                             [PUBLIC]   Froo
 CLASS      Bar                             [PUBLIC]   issue191666.php
 CLASS      Barrr                           [PUBLIC]   test204104.php
 CLASS      Barrr                           [PUBLIC]   test204104_02.php
@@ -127,7 +133,12 @@ CLASS      Brejla                          [PUBLIC]   test211230.php
 CLASS      Buuu                            [PUBLIC]   ShowMe
 CLASS      C                               [PUBLIC]   test.php
 CLASS      CallableClass                   [PUBLIC]   callableTypeHint.php
+CLASS      Child                           [PUBLIC]   useCase2.php
 CLASS      ChildClass                      [PUBLIC]   class_member_visibility.php
+CLASS      ChildP                          [PUBLIC]   useCase3.php
+CLASS      ChildSe                         [PUBLIC]   useCase2.php
+CLASS      ChildSt                         [PUBLIC]   useCase1.php
+CLASS      ChildTh                         [PUBLIC]   useCase1.php
 CLASS      ClassName                       [PUBLIC]   Fom\Bom
 CLASS      ClassName                       [PUBLIC]   issue194300.php
 CLASS      ClassName123                    [PUBLIC]   issue209608.php
@@ -217,9 +228,15 @@ CLASS      NewClass                        [PUBLIC]   issue171232_01.php
 CLASS      NewClass                        [PUBLIC]   issue171232_02.php
 CLASS      ObjectTracker                   [PUBLIC]   test204908.php
 CLASS      Omg                             [PUBLIC]   test204104_05.php
+CLASS      OmgCls                          [PUBLIC]   declarations.php
 CLASS      Ondrej                          [PUBLIC]   test211230.php
 CLASS      PagePresenter                   [PUBLIC]   AdminModule
+CLASS      Parent7                         [PUBLIC]   useCase2.php
 CLASS      ParentClass                     [PUBLIC]   class_member_visibility.php
+CLASS      ParentP                         [PUBLIC]   useCase3.php
+CLASS      ParentSe                        [PUBLIC]   useCase2.php
+CLASS      ParentSt                        [PUBLIC]   useCase1.php
+CLASS      ParentTh                        [PUBLIC]   useCase1.php
 CLASS      Person148213                    [PUBLIC]   issue148213.php
 CLASS      PhpDoc01Magazine                [PUBLIC]   typeInPHPDoc01.php
 CLASS      PhpDoc01News                    [PUBLIC]   typeInPHPDoc01.php
@@ -230,14 +247,19 @@ CLASS      SecuredPresenter                [PUBLIC]   AdminModule
 CLASS      SetFoo                          [PUBLIC]   test221725.php
 CLASS      SimpleObject                    [PUBLIC,   issue159970.php
 CLASS      SmartCompletion                 [PUBLIC]   issue201032.php
+CLASS      SomeClass                       [PUBLIC]   useCase4.php
+CLASS      Space                           [PUBLIC]   Test\Space
+CLASS      SpaceUniverse                   [PUBLIC]   Test\Space
 CLASS      Strings                         [PUBLIC]   Nette\Utils
 CLASS      SubClass157534                  [PUBLIC]   issue157534.php
+CLASS      Super                           [PUBLIC]   declarations.php
 CLASS      SuperClass157534                [PUBLIC]   issue157534.php
 CLASS      SuperUser                       [PUBLIC]   XUser
 CLASS      System147427                    [PUBLIC]   issue147427.php
 CLASS      TaskList                        [PUBLIC]   TaskList.php
 CLASS      Test                            [PUBLIC]   issue142024.php
 CLASS      Test                            [PUBLIC]   test216119.php
+CLASS      Test                            [PUBLIC]   test225062.php
 CLASS      Test1                           [PUBLIC]   test207188.php
 CLASS      Test141999                      [PUBLIC]   issue141999.php
 CLASS      Test142234                      [PUBLIC]   issue142234.php
@@ -277,6 +299,7 @@ CLASS      TestCCOnMethods                 [PUBLIC]   test_cc_on_methods.php
 CLASS      TestCCOnMethodsParentClass      [PUBLIC]   test_cc_on_methods.php
 CLASS      TestCase                        [PUBLIC]   TC
 CLASS      TestClass                       [PUBLIC]   Extra
+CLASS      TestClass                       [PUBLIC]   Trest
 CLASS      TestClass                       [PUBLIC]   function_return_type.php
 CLASS      TestClass                       [PUBLIC]   issue194875.php
 CLASS      TestClass                       [PUBLIC]   issue201310.php

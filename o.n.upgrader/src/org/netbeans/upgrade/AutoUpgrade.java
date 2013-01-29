@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -117,7 +117,7 @@ public final class AutoUpgrade {
     
     // userdir on OS specific root of userdir (see issue 196075)
     static final List<String> NEWER_VERSION_TO_CHECK =
-            Arrays.asList ("7.2.1", "7.2"); //NOI18N
+            Arrays.asList ("7.3", "7.2.1", "7.2"); //NOI18N
 
             
     private static File checkPreviousOnOsSpecificPlace (final List<String> versionsToCheck) {

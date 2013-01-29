@@ -216,33 +216,26 @@ public final class AntDeploymentHelper {
     }
 
     private static boolean isEqual(InputStream stream1, InputStream stream2)
-            throws IOException
-    {
+            throws IOException {
         boolean retVal = false;
 
-        BufferedReader reader1 = new BufferedReader(new java.io.InputStreamReader(stream1));
-        BufferedReader reader2 = new BufferedReader(new java.io.InputStreamReader(stream2));
+        BufferedReader reader1 = new BufferedReader(new java.io.InputStreamReader(stream1, "UTF-8")); // NOI18N
+        BufferedReader reader2 = new BufferedReader(new java.io.InputStreamReader(stream2, "UTF-8")); // NOI18N
 
-        for(;;)
-        {
+        for (;;) {
             String line1 = reader1.readLine();
             String line2 = reader2.readLine();
 
-            if((line1 == null) && (line2 == null))
-            {
+            if ((line1 == null) && (line2 == null)) {
                 // Both streams has ended, and at this point both stream are the
                 // same;
                 retVal = true;
                 break;
-            }
-            else if((line1 == null) || (line2 == null))
-            {
+            } else if ((line1 == null) || (line2 == null)) {
                 // One stream has ended before the other.  Therefore they are
                 // not equal
                 break;
-            }
-            else if(line1.equals(line2) == false)
-            {
+            } else if (!line1.equals(line2)) {
                 break;
             }
         }

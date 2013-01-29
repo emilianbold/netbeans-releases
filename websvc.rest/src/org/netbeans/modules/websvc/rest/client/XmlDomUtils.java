@@ -112,6 +112,7 @@ public class XmlDomUtils {
                 xjcEl.setAttribute("target", "2.1");
                 xjcEl.setAttribute("package", packageNames[i]);
                 xjcEl.setAttribute("destdir", sourceRoot);
+                xjcEl.setAttribute("encoding", "${source.encoding}");
                 targetEl.appendChild(xjcEl);
             }
             rootNode.appendChild(targetEl);

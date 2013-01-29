@@ -406,7 +406,7 @@ public final class QuerySupport {
                     if (srcRoots != null) {
                         LOG.log(Level.FINE, "Translating {0} -> {1}", new Object [] { binRootUrl, srcRoots }); //NOI18N
                         for(URL srcRootUrl : srcRoots) {
-                            FileObject srcRoot = URLCache.getInstance().findFileObject(srcRootUrl);
+                            FileObject srcRoot = URLCache.getInstance().findFileObject(srcRootUrl, false);
                             if (srcRoot != null) {
                                 roots.add(srcRoot);
                             }
@@ -434,7 +434,7 @@ public final class QuerySupport {
             roots = new HashSet<FileObject>();
             Set<URL> urls = PathRegistry.getDefault().getRootsMarkedAs(classpathId);
             for(URL url : urls) {
-                FileObject f = URLCache.getInstance().findFileObject(url);
+                FileObject f = URLCache.getInstance().findFileObject(url, false);
                 if (f != null) {
                     roots.add(f);
                 }

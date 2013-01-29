@@ -50,7 +50,7 @@ import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
-import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
+import org.netbeans.modules.git.ui.actions.MultipleRepositoryAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
@@ -63,6 +63,8 @@ import org.openide.util.actions.SystemAction;
 import static org.netbeans.modules.git.ui.push.Bundle.*;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -70,17 +72,18 @@ import org.openide.util.NbBundle.Messages;
  */
 @ActionID(id = "org.netbeans.modules.git.ui.push.PushToUpstreamAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_PushToUpstreamAction_Name")
-public class PushToUpstreamAction extends SingleRepositoryAction {
+public class PushToUpstreamAction extends MultipleRepositoryAction {
     
     @Override
-    protected void performAction (File repository, File[] roots, VCSContext context) {
-        push(repository);
+    protected RequestProcessor.Task performAction (File repository, File[] roots, VCSContext context) {
+        return push(repository);
     }
     
     @NbBundle.Messages({"LBL_Push.pushToUpstreamFailed=Push to Upstream Failed",
         "LBL_PushToUpstreamAction.preparing=Preparing Push...",
         "MSG_Err.unknownRemoteBranchName=Cannot guess remote branch name for {0}"})
-    private void push (final File repository) {
+    private Task push (final File repository) {
+        final Task[] t = new Task[1];
         GitProgressSupport supp = new GitProgressSupport.NoOutputLogging() {
             @Override
             protected void perform () {
@@ -108,10 +111,13 @@ public class PushToUpstreamAction extends SingleRepositoryAction {
                 }
                 pushMappings.add(new PushMapping.PushBranchMapping(remoteBranchName, trackedBranch.getId(), activeBranch, false, false));
                 Utils.logVCSExternalRepository("GIT", uri); //NOI18N
-                SystemAction.get(PushAction.class).push(repository, uri, pushMappings, cfg.getFetchRefSpecs());
+                if (!isCanceled()) {
+                    t[0] = SystemAction.get(PushAction.class).push(repository, uri, pushMappings, cfg.getFetchRefSpecs());
+                }
             }
         };
-        supp.start(Git.getInstance().getRequestProcessor(repository), repository, LBL_PushToUpstreamAction_preparing());
+        supp.start(Git.getInstance().getRequestProcessor(repository), repository, LBL_PushToUpstreamAction_preparing()).waitFinished();
+        return t[0];
     }
         
     private static String parseRemote (String branchName) {

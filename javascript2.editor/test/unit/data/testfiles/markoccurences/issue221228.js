@@ -10,7 +10,7 @@ function Greetings() {
     };
 }
 
-Greetings.prototype.sayAhoj() = function () {
+Greetings.prototype.sayAhoj = function () {
     
 };
        

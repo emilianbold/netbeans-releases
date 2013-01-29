@@ -63,6 +63,7 @@ import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -95,11 +96,11 @@ public class RefreshWorkTest  extends NbTestCase {
 
         File rootAFile = new File(outerFolder1, "rootA");
         rootAFile.mkdirs();
-        rootAUrl = rootAFile.toURL();
+        rootAUrl = Utilities.toURI(rootAFile).toURL();
         scannedRoots2Dependencies.put(rootAUrl, Collections.<URL>emptyList());
         File rootBFile = new File(outerFolder1, "rootB");
         rootBFile.mkdirs();
-        rootBUrl = rootBFile.toURL();
+        rootBUrl = Utilities.toURI(rootBFile).toURL();
         scannedRoots2Dependencies.put(rootBUrl, Collections.<URL>emptyList());
 
         File rootCFile = new File(outerFolder2, "rootC");
@@ -110,7 +111,7 @@ public class RefreshWorkTest  extends NbTestCase {
                 "org/pckg1/pckg2/file2.txt",
                 "org/pckg2/"
         );
-        rootCUrl = rootCFile.toURL();
+        rootCUrl = Utilities.toURI(rootCFile).toURL();
         scannedRoots2Dependencies.put(rootCUrl, Collections.<URL>emptyList());
 
         RepositoryUpdater.getDefault().rootsListeners.setListener(new FileChangeAdapter(), new FileChangeAdapter());

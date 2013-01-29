@@ -290,6 +290,13 @@ public final class CloneDestinationPanel extends JPanel implements ActionListene
                 }
             }
         }
+        
+        if (defaultDir == null) {
+            String cloneDir = GitModuleConfig.getDefault().getPreferences().get(CloneDestinationStep.CLONE_TARGET_DIRECTORY, null);
+            if (cloneDir != null) {
+                defaultDir = new File(cloneDir);               
+            }            
+        }
 
         if (defaultDir == null) {
             File projectFolder = ProjectChooser.getProjectsFolder();

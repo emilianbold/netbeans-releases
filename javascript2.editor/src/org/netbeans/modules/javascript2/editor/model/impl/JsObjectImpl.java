@@ -53,11 +53,11 @@ import org.netbeans.modules.javascript2.editor.model.*;
  */
 public class JsObjectImpl extends JsElementImpl implements JsObject {
 
-    final private HashMap<String, JsObject> properties;
+    final private HashMap<String, JsObject> properties = new HashMap<String, JsObject>();
     final private Identifier declarationName;
     private JsObject parent;
-    final private List<Occurrence> occurrences;
-    final private Map<Integer, Collection<TypeUsage>> assignments;
+    final private List<Occurrence> occurrences = new ArrayList<Occurrence>();
+    final private NavigableMap<Integer, Collection<TypeUsage>> assignments = new TreeMap<Integer, Collection<TypeUsage>>();
     final private boolean hasName;
     private String documentation;
     protected JsElement.Kind kind;
@@ -65,11 +65,8 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange) {
         super((parent != null ? parent.getFileObject() : null), name.getName(), name.getName().equals("prototype"),  offsetRange, EnumSet.of(Modifier.PUBLIC));
-        this.properties = new HashMap<String, JsObject>();
         this.declarationName = name;
         this.parent = parent;
-        this.occurrences = new ArrayList<Occurrence>();
-        this.assignments = new HashMap<Integer, Collection<TypeUsage>>();
         this.hasName = name.getOffsetRange().getStart() != name.getOffsetRange().getEnd();
         this.kind = null;
         this.deprecated = false;
@@ -77,11 +74,8 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange, boolean isDeclared, Set<Modifier> modifiers) {
         super((parent != null ? parent.getFileObject() : null), name.getName(), isDeclared,  offsetRange, modifiers);
-        this.properties = new HashMap<String, JsObject>();
         this.declarationName = name;
         this.parent = parent;
-        this.occurrences = new ArrayList<Occurrence>();
-        this.assignments = new HashMap<Integer, Collection<TypeUsage>>();
         this.hasName = name.getOffsetRange().getStart() != name.getOffsetRange().getEnd();
         this.kind = null;
         this.deprecated = false;
@@ -93,11 +87,8 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
   
     protected JsObjectImpl(JsObject parent, String name, boolean isDeclared, OffsetRange offsetRange, Set<Modifier> modifiers) {
         super((parent != null ? parent.getFileObject() : null), name, isDeclared, offsetRange, modifiers);
-        this.properties = new HashMap<String, JsObject>();
         this.declarationName = null;
         this.parent = parent;
-        this.occurrences = new ArrayList<Occurrence>();
-        this.assignments = new HashMap<Integer, Collection<TypeUsage>>();
         this.hasName = false;
         this.deprecated = false;
     }
@@ -229,12 +220,9 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     @Override
     public Collection<? extends TypeUsage> getAssignmentForOffset(int offset) {
         Collection<? extends TypeUsage> result = Collections.EMPTY_LIST;
-        int closeOffset = -1;
-        for(Integer position : assignments.keySet()) {
-            if (closeOffset < position && position <= offset) {
-                closeOffset = position;
-                result = new ArrayList(assignments.get(position));
-            }
+        Map.Entry<Integer, Collection<TypeUsage>> found = assignments.floorEntry(offset);
+        if (found != null) {
+            result = new ArrayList(found.getValue());
         }
         if (result.isEmpty()) {
 //            Collection<TypeUsage> resolved = new HashSet();
@@ -305,12 +293,9 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         }
         visited.add(fqn);
         Collection<? extends Type> offsetAssignments = Collections.EMPTY_LIST;
-        int closeOffset = -1;
-        for(Integer position : ((JsObjectImpl)jsObject).assignments.keySet()) {
-            if (closeOffset < position && position <= offset) {
-                closeOffset = position;
-                offsetAssignments = ((JsObjectImpl)jsObject).assignments.get(position);
-            }
+        Map.Entry<Integer, Collection<TypeUsage>> found = ((JsObjectImpl)jsObject).assignments.floorEntry(offset);
+        if (found != null) {
+            offsetAssignments = found.getValue();
         }
         if (offsetAssignments.isEmpty() && !jsObject.getProperties().isEmpty()) {
             result.add(new TypeUsageImpl(ModelUtils.createFQN(jsObject), jsObject.getOffset(), true));
@@ -324,7 +309,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                         DeclarationScope scope = ModelUtils.getDeclarationScope(jsObject);
                         JsObject object = ModelUtils.getJsObjectByName(scope, assign.getType());
                         if(object != null) {
-                            Collection<TypeUsage> resolvedFromObject = resolveAssignments(object, closeOffset, visited);
+                            Collection<TypeUsage> resolvedFromObject = resolveAssignments(object, found != null ? found.getKey() : -1, visited);
                             if(resolvedFromObject.isEmpty()) {
                                 result.add(new TypeUsageImpl(ModelUtils.createFQN(object), assign.getOffset(), true));
                             } else {
@@ -343,9 +328,8 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             return;
         }
         Collection<TypeUsage> resolved = new ArrayList();
-        for(Integer index: assignments.keySet()) {
+        for(Collection<TypeUsage> unresolved : assignments.values()) {
             resolved.clear();
-            Collection<TypeUsage> unresolved = assignments.get(index);
             JsObject global = ModelUtils.getGlobalObject(parent);
             for (TypeUsage type : unresolved) {
                 Collection<TypeUsage> resolvedHere = new ArrayList<TypeUsage>();
@@ -358,14 +342,18 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                     for (TypeUsage typeHere : resolvedHere) {
                         if (typeHere.getOffset() > 0) {
                             JsObject jsObject = ModelUtils.findJsObjectByName(global, typeHere.getType());
-                            if (jsObject == null && typeHere.getType().indexOf('.') == -1) {
-                                JsObject decParent = (
-                                        this.parent.getJSKind() != JsElement.Kind.ANONYMOUS_OBJECT
-                                        && this.parent.getJSKind() != JsElement.Kind.OBJECT_LITERAL) 
-                                        ? this.parent : this.parent.getParent();
-                                while (jsObject == null && decParent != null) {
-                                    jsObject = decParent.getProperty(typeHere.getType());
-                                    decParent = decParent.getParent();
+                            if (jsObject == null && typeHere.getType().indexOf('.') == -1 && global instanceof DeclarationScope) {
+                                DeclarationScope declarationScope = ModelUtils.getDeclarationScope((DeclarationScope)global, typeHere.getOffset());
+                                jsObject = ModelUtils.getJsObjectByName(declarationScope, typeHere.getType());
+                                if (jsObject == null) {
+                                    JsObject decParent = (
+                                            this.parent.getJSKind() != JsElement.Kind.ANONYMOUS_OBJECT
+                                            && this.parent.getJSKind() != JsElement.Kind.OBJECT_LITERAL) 
+                                            ? this.parent : this.parent.getParent();
+                                    while (jsObject == null && decParent != null) {
+                                        jsObject = decParent.getProperty(typeHere.getType());
+                                        decParent = decParent.getParent();
+                                    }
                                 }
                             }
                             if (jsObject != null) {

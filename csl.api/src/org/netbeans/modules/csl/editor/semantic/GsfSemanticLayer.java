@@ -87,6 +87,7 @@ public class GsfSemanticLayer extends AbstractHighlightsContainer implements Doc
     private Map<Language,Map<Coloring, AttributeSet>> CACHE = new HashMap<Language,Map<Coloring, AttributeSet>>();
     private Document doc;
     private List<Lookup.Result> coloringResults = new ArrayList<Lookup.Result>(3);
+    private List<LookupListener> coloringListeners = new ArrayList<LookupListener>(3);
 
     public static GsfSemanticLayer getLayer(Class id, Document doc) {
         GsfSemanticLayer l = (GsfSemanticLayer) doc.getProperty(id);
@@ -173,9 +174,11 @@ public class GsfSemanticLayer extends AbstractHighlightsContainer implements Doc
             CACHE.put(language, map);
             Lookup.Result<FontColorSettings> res = MimeLookup.getLookup(MimePath.get(mime)).lookupResult(FontColorSettings.class);
             coloringResults.add(res);
+            LookupListener l;
+            
             res.addLookupListener(
                     WeakListeners.create(LookupListener.class, 
-                            new LookupListener() {
+                        l = new LookupListener() {
                         @Override
                         public void resultChanged(LookupEvent ev) {
                             clearLanguageColoring(language);
@@ -183,6 +186,7 @@ public class GsfSemanticLayer extends AbstractHighlightsContainer implements Doc
                         }
                     }, res)
             );
+            coloringListeners.add(l);
         } else {
             a = map.get(c);
             if (a == null) {

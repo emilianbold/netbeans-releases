@@ -103,6 +103,9 @@ abstract class CreateRefreshAction extends ContextAction {
 
             @Override
             protected void perform () {
+                if (!QUtils.isMQEnabledExtension(root)) {
+                    return;
+                }
                 // show commit dialog
                 final QCommitPanel panel = createPanel(root, roots);
                 if (panel != null) {

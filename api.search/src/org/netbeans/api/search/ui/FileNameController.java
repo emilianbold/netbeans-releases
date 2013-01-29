@@ -173,14 +173,7 @@ public final class FileNameController extends ComponentController<JComboBox> {
     }
 
     private void setFileNamePatternToolTip() {
-        String t;
-        if (regexp) {
-            t = null;
-        } else {
-            t = UiUtils.getText(
-                    "BasicSearchForm.cboxFileNamePattern.tooltip");     //NOI18N
-        }
-        component.setToolTipText(t);
+        component.setToolTipText(UiUtils.getFileNamePatternsExample(regexp));
     }
 
     /**

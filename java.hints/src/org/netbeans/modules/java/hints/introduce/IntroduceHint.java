@@ -2078,7 +2078,11 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         methodStatements.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), additionalName.next(), type, null));
                     }
 
-                    methodStatements.addAll(statements.subList(from, to + 1));
+                    if (from == to && statements.get(from).getKind() == Kind.BLOCK) {
+                        methodStatements.addAll(((BlockTree) statements.get(from)).getStatements());
+                    } else {
+                        methodStatements.addAll(statements.subList(from, to + 1));
+                    }
 
                     Tree returnTypeTree = make.Type(returnType);
                     ExpressionTree invocation = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier(name), realArguments);

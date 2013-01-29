@@ -60,6 +60,7 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.repository.RepositorySystem;
 import org.apache.maven.settings.Mirror;
+import org.apache.maven.settings.Settings;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -242,7 +243,8 @@ public final class RepositoryPreferences {
             MavenEmbedder embedder2 = EmbedderFactory.getOnlineEmbedder();
             DefaultMirrorSelector selectorWithGroups = new DefaultMirrorSelector();
             DefaultMirrorSelector selectorWithoutGroups = new DefaultMirrorSelector();
-            for (Mirror mirror : embedder2.getSettings().getMirrors()) {
+            final Settings settings = embedder2.getSettings();
+            for (Mirror mirror : settings.getMirrors()) {
                 String mirrorOf = mirror.getMirrorOf();
                 selectorWithGroups.add(mirror.getId(), mirror.getUrl(), mirror.getLayout(), false, mirrorOf, mirror.getMirrorOfLayouts());
                 if (!mirrorOf.contains("*")) {
@@ -253,7 +255,7 @@ public final class RepositoryPreferences {
             List<RepositoryInfo> semiTreed = new ArrayList<RepositoryInfo>();
             for (RepositoryInfo in: toRet) {
                 if (in.getMirrorStrategy() == RepositoryInfo.MirrorStrategy.ALL || in.getMirrorStrategy() == RepositoryInfo.MirrorStrategy.NON_WILDCARD) {
-                    RepositoryInfo processed = getMirrorInfo(in, in.getMirrorStrategy() == RepositoryInfo.MirrorStrategy.ALL ? selectorWithGroups : selectorWithoutGroups);
+                    RepositoryInfo processed = getMirrorInfo(in, in.getMirrorStrategy() == RepositoryInfo.MirrorStrategy.ALL ? selectorWithGroups : selectorWithoutGroups, settings);
                     boolean isMirror = true;
                     if (processed == null) {
                         isMirror = false;
@@ -279,12 +281,20 @@ public final class RepositoryPreferences {
      * if the repository has a mirror, then create a repositoryinfo object for it..
      */
     
-    private RepositoryInfo getMirrorInfo(RepositoryInfo info, MirrorSelector selector) {
+    private RepositoryInfo getMirrorInfo(RepositoryInfo info, MirrorSelector selector, Settings settings) {
         RemoteRepository original = new RemoteRepository(info.getId(), /* XXX do we even support any other layout?*/"default", info.getRepositoryUrl());
         RemoteRepository mirror = selector.getMirror(original);
         if (mirror != null) {
             try {
-                RepositoryInfo toret = new RepositoryInfo(mirror.getId(), mirror.getId(), null, mirror.getUrl());
+                String name = mirror.getId();
+                //#213078 need to lookup name for mirror
+                for (Mirror m : settings.getMirrors()) {
+                    if (m.getId() != null && m.getId().equals(mirror.getId())) {
+                        name = m.getName();
+                        break;
+                    }
+                }
+                RepositoryInfo toret = new RepositoryInfo(mirror.getId(), name, null, mirror.getUrl());
                 toret.setMirrorStrategy(RepositoryInfo.MirrorStrategy.NONE);
                 return toret;
             } catch (URISyntaxException ex) {

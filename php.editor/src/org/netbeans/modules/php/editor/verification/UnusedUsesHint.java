@@ -54,8 +54,8 @@ import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.SemanticAnalysis;
-import org.netbeans.modules.php.editor.parser.UnusedOffsetRanges;
+import org.netbeans.modules.php.editor.parser.UnusedUsesCollector;
+import org.netbeans.modules.php.editor.parser.UnusedUsesCollector.UnusedOffsetRanges;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
 
@@ -78,7 +78,7 @@ public class UnusedUsesHint extends AbstractHint {
         if (fileObject == null || CodeUtils.isPhp52(fileObject)) {
             return;
         }
-        for (UnusedOffsetRanges unusedOffsetRanges : SemanticAnalysis.computeUnusedUsesOffsetRanges(phpParseResult)) {
+        for (UnusedOffsetRanges unusedOffsetRanges : new UnusedUsesCollector(phpParseResult).collect()) {
             hints.add(new Hint(
                     UnusedUsesHint.this,
                     Bundle.UnsedUsesHintDisp(),

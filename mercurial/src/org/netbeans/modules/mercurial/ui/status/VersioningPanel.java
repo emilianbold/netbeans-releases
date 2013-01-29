@@ -314,7 +314,8 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     }
     
     private SyncFileNode [] getNodes(VCSContext context, int includeStatus) {
-        File [] files = Mercurial.getInstance().getFileStatusCache().listFiles(context, includeStatus);
+        Set<File> rootFiles = context.getRootFiles();
+        File [] files = Mercurial.getInstance().getFileStatusCache().listFiles(rootFiles.toArray(new File[rootFiles.size()]), includeStatus);
         Set<File> repositories = HgUtils.getRepositoryRoots(context);
 
         java.util.List<HgFileNode> fnodes = new LinkedList<HgFileNode>();

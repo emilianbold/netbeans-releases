@@ -523,14 +523,15 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 autoCompleteConstructors(completionResult, request, model, query);
             }
         } else {
-            query = NameKind.exact(prefix);
             for (ClassElement clazz : classes) {
                 if (!clazz.isAbstract()) {
                     // check whether the prefix is exactly the class
-                    if (clazz.getName().equals(request.prefix)) {
+                    NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(request.result.getModel().getFileScope(), request.anchor);
+                    String fqPrefixName = VariousUtils.qualifyTypeNames(request.prefix, request.anchor, namespaceScope);
+                    if (clazz.getFullyQualifiedName().toString().equals(fqPrefixName)) {
                         // find constructor of the class
                         if (!addedExact) { // add the constructors only once
-                            autoCompleteConstructors(completionResult, request, model, query);
+                            autoCompleteConstructors(completionResult, request, model, NameKind.exact(fqPrefixName));
                             addedExact = true;
                         }
                     } else {
@@ -1075,7 +1076,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                         //#183928 -  Extend model to allow CTRL + click for 'view/action' variables
                         proposals.put(name, new PHPCompletionItem.VariableItem(
                                 VariableElementImpl.create(name, 0, realFileObject,
-                                varName.getElementQuery(), TypeResolverImpl.forNames(qualifiedNames)), request) {
+                                varName.getElementQuery(), TypeResolverImpl.forNames(qualifiedNames), varName.isDeprecated()), request) {
                             @Override
                             public boolean isSmart() {
                                 return true;
@@ -1084,7 +1085,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     } else {
                         proposals.put(name, new PHPCompletionItem.VariableItem(
                                 VariableElementImpl.create(name, 0, request.currentlyEditedFileURL,
-                                varName.getElementQuery(), TypeResolverImpl.forNames(qualifiedNames)), request));
+                                varName.getElementQuery(), TypeResolverImpl.forNames(qualifiedNames), varName.isDeprecated()), request));
                     }
                 }
             }
@@ -1341,7 +1342,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     public ParameterInfo parameters(final ParserResult info, final int caretOffset, CompletionProposal proposal) {
         final org.netbeans.modules.php.editor.model.Model model = ((PHPParseResult) info).getModel();
         ParameterInfoSupport infoSupport = model.getParameterInfoSupport(caretOffset);
-        return infoSupport.getParameterInfo();
+        ParameterInfo parameterInfo = infoSupport.getParameterInfo();
+        return parameterInfo == null ? ParameterInfo.NONE : parameterInfo;
     }
 
     private boolean startsWith(String theString, String prefix) {

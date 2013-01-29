@@ -722,7 +722,8 @@
             <arg value="${nb.ignore.native}"/>
             <arg value="${nb.no.dependencies}"/>
             <arg value="${nb.dont.build.custom.tasks}"/>
-            <arg value="${nb.custom.tasks.cls}"/>
+            <!-- This argument removed due to bug #223625 - it is assumed that no longer need -->
+            <!-- <arg value="${nb.custom.tasks.cls}"/> -->
             <arg value="${nb.custom.parameter}"/>
         </exec>
         

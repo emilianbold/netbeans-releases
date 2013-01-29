@@ -54,6 +54,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -177,6 +178,17 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
                     if(variableElement.getSimpleName().toString().equals(name)) {
                         problem = new Problem(false, NbBundle.getMessage(InnerToOuterRefactoringPlugin.class, "WRN_OuterNameAlreadyUsed", name, variableElement.getEnclosingElement().getSimpleName())); // NOI18N
                         break;
+                    }
+                }
+                
+                List<ExecutableElement> constructors = ElementFilter.constructorsIn(((TypeElement)resolved).getEnclosedElements());
+                for( ExecutableElement execElement: constructors ) {
+                    List<? extends VariableElement> parameters = execElement.getParameters();
+                    
+                    for( VariableElement variableElement: parameters ) {
+                        if(variableElement.getSimpleName().toString().equals(name)) {
+                            return new Problem(true, NbBundle.getMessage(InnerToOuterRefactoringPlugin.class, "ERR_InnerToOuter_OuterNameClash", name, resolved.getSimpleName())); // NOI18N
+                        }
                     }
                 }
             }

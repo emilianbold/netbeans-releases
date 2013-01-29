@@ -89,6 +89,11 @@ public class Utils {
     private static String [] unversionedFolders;
 
     /**
+     * Request processor for parallel tasks.
+     */
+    private static final RequestProcessor vcsParallelRequestProcessor = new RequestProcessor("Versioning parallel tasks", 10, false, true);
+    
+    /**
      * Constructs a VCSContext out of a Lookup, basically taking all Nodes inside. 
      * Nodes are converted to Files based on their nature. 
      * For example Project Nodes are queried for their SourceRoots and those roots become the root files of this context.
@@ -217,6 +222,10 @@ public class Utils {
      */
     public static RequestProcessor.Task createTask(Runnable runnable) {
         return vcsBlockingRequestProcessor.create(runnable);
+    }
+
+    public static void postParallel (Runnable runnable) {
+        vcsParallelRequestProcessor.post(runnable);
     }
     
     public static JSeparator createJSeparator() {

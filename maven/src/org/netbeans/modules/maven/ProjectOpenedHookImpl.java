@@ -75,7 +75,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
-import org.netbeans.modules.maven.cos.CopyResourcesOnSave;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;

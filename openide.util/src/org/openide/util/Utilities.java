@@ -1949,6 +1949,11 @@ widthcheck:  {
             buf.append('A');
             b = true;
         }
+        // META fallback, see issue #224362
+        if (!Utilities.isMac() && ((modifiers & KeyEvent.META_MASK) != 0)) {
+            buf.append('M');
+            b = true;
+        }
 
         return b;
     }

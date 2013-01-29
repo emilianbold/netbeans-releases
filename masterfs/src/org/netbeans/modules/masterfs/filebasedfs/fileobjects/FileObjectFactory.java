@@ -154,34 +154,34 @@ public final class FileObjectFactory {
         }
     }
 
-    public int getSize() {
-        int retval = 0;
-
+    private List<FileObject> existingFileObjects() {
         List<Object> list = new ArrayList<Object>();
         synchronized (allIBaseFileObjects) {
             list.addAll(allIBaseFileObjects.values());
         }
-        List<Object> list2 = new ArrayList<Object>();
-
-
+        List<FileObject> res = new ArrayList<FileObject>();
         for (Object obj : list) {
+            Collection<?> all;
             if (obj instanceof Reference<?>) {
-                list2.add(obj);
+                all = Collections.singleton(obj);
             } else {
-                list2.addAll((List<?>) obj);
+                all = (List<?>)obj;
+            }
+            
+            for (Object r : all) {
+                Reference<?> ref = (Reference<?>)r;
+                Object fo = ref == null ? null : ref.get();
+                if (fo instanceof FileObject) {
+                    res.add((FileObject)fo);
+                }
             }
         }
-
-        for (Iterator<Object> it = list2.iterator(); it.hasNext();) {
-            @SuppressWarnings("unchecked")
-            Reference<FileObject> ref = (Reference<FileObject>) it.next();
-            FileObject fo = (ref != null) ? ref.get() : null;
-            if (fo != null) {
-                retval++;
-            }
-        }
-
-        return retval;
+        return res;
+    }
+    
+    public int getSize() {
+        List<FileObject> real = existingFileObjects();
+        return real.size();
     }
     
     
@@ -372,7 +372,7 @@ public final class FileObjectFactory {
                         exist = touchExists(file, realExists);
                         if (!exist) {
                             //parent is exception must be issued even if not valid
-                            retval.setValid(false);
+                            invalidateSubtree(retval);
                         }
                     }
                     assert checkCacheState(exist, file, caller);
@@ -426,6 +426,26 @@ public final class FileObjectFactory {
         }
     }
 
+    void invalidateSubtree(BaseFileObj root) {
+        synchronized (allIBaseFileObjects) {
+            for (FileNaming fn : NamingFactory.findSubTree(root.getFileName())) {
+                BaseFileObj cached = getCachedOnly(fn.getFile());
+                if (cached != null) {
+                    cached.setValid(false);
+                }
+            }
+        }
+    }
+    
+    public final String dumpObjects() {
+        StringBuilder sb = new StringBuilder();
+        for (FileObject fileObject : existingFileObjects()) {
+            sb.append(fileObject).append("\n");
+        }
+        return sb.toString();
+    }
+
+    
     private BaseFileObj create(final FileInfo fInfo) {
         if (!fInfo.isConvertibleToFileObject()) {
             return null;

@@ -56,10 +56,12 @@ import javax.lang.model.type.UnionType;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
 import static org.netbeans.modules.java.hints.bugs.NPECheck.State.*;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.spi.java.hints.*;
 import org.netbeans.spi.java.hints.Hint.Options;
 
@@ -70,6 +72,10 @@ import org.netbeans.spi.java.hints.Hint.Options;
 @Hint(displayName="#DN_NPECheck", description="#DESC_NPECheck", category="bugs", options=Options.QUERY, suppressWarnings = {"null", "ConstantConditions"})
 public class NPECheck {
 
+    static final boolean DEF_ENABLE_FOR_FIELDS = false;
+    @BooleanOption(displayName = "#LBL_NPECheck.ENABLE_FOR_FIELDS", tooltip = "#TP_NPECheck.ENABLE_FOR_FIELDS", defaultValue=DEF_ENABLE_FOR_FIELDS)
+    static final String KEY_ENABLE_FOR_FIELDS = "enable-for-fields";
+    
     @TriggerPatterns({
         @TriggerPattern("$mods$ $type $var = $expr;"),
         @TriggerPattern("$var = $expr")
@@ -77,12 +83,12 @@ public class NPECheck {
     public static ErrorDescription assignment(HintContext ctx) {
         Element e = ctx.getInfo().getTrees().getElement(ctx.getVariables().get("$var"));
 
-        if (e == null || !VARIABLE_ELEMENT.contains(e.getKind())) {
+        if (!isVariableElement(ctx, e)) {
             return null;
         }
         
         TreePath expr = ctx.getVariables().get("$expr");
-        State r = computeExpressionsState(ctx.getInfo()).get(expr.getLeaf());
+        State r = computeExpressionsState(ctx).get(expr.getLeaf());
 
         State elementState = getStateFromAnnotations(e);
 
@@ -108,7 +114,7 @@ public class NPECheck {
     @TriggerPattern("$select.$variable")
     public static ErrorDescription memberSelect(HintContext ctx) {
         TreePath select = ctx.getVariables().get("$select");
-        State r = computeExpressionsState(ctx.getInfo()).get(select.getLeaf());
+        State r = computeExpressionsState(ctx).get(select.getLeaf());
         
         if (r == NULL || r == NULL_HYPOTHETICAL) {
             String displayName = NbBundle.getMessage(NPECheck.class, "ERR_DereferencingNull");
@@ -129,7 +135,7 @@ public class NPECheck {
     public static List<ErrorDescription> methodInvocation(HintContext ctx) {
         MethodInvocationTree mit = (MethodInvocationTree) ctx.getPath().getLeaf();
         List<State> paramStates = new ArrayList<State>(mit.getArguments().size());
-        Map<Tree, State> expressionsState = computeExpressionsState(ctx.getInfo());
+        Map<Tree, State> expressionsState = computeExpressionsState(ctx);
 
         for (Tree param : mit.getArguments()) {
             State r = expressionsState.get(param);
@@ -172,7 +178,7 @@ public class NPECheck {
     })
     public static ErrorDescription notNullWouldBeNPE(HintContext ctx) {
         TreePath variable = ctx.getVariables().get("$variable");
-        State r = computeExpressionsState(ctx.getInfo()).get(variable.getLeaf());
+        State r = computeExpressionsState(ctx).get(variable.getLeaf());
         
         if (r != null && r.isNotNull()) {
             String displayName = NbBundle.getMessage(NPECheck.class, r == State.NOT_NULL_BE_NPE ? "ERR_NotNullWouldBeNPE" : "ERR_NotNull");
@@ -186,7 +192,7 @@ public class NPECheck {
     @TriggerPattern("return $expression;")
     public static ErrorDescription returnNull(HintContext ctx) {
         TreePath expression = ctx.getVariables().get("$expression");
-        State returnState = computeExpressionsState(ctx.getInfo()).get(expression.getLeaf());
+        State returnState = computeExpressionsState(ctx).get(expression.getLeaf());
 
         if (returnState == null) return null;
 
@@ -224,18 +230,18 @@ public class NPECheck {
     
     private static final Object KEY_EXPRESSION_STATE = new Object();
     //Cancelling:
-    private static Map<Tree, State> computeExpressionsState(CompilationInfo info) {
-        Map<Tree, State> result = (Map<Tree, State>) info.getCachedValue(KEY_EXPRESSION_STATE);
+    private static Map<Tree, State> computeExpressionsState(HintContext ctx) {
+        Map<Tree, State> result = (Map<Tree, State>) ctx.getInfo().getCachedValue(KEY_EXPRESSION_STATE);
         
         if (result != null) {
             return result;
         }
         
-        VisitorImpl v = new VisitorImpl(info);
+        VisitorImpl v = new VisitorImpl(ctx);
         
-        v.scan(info.getCompilationUnit(), null);
+        v.scan(ctx.getInfo().getCompilationUnit(), null);
         
-        info.putCachedValue(KEY_EXPRESSION_STATE, result = v.expressionState, CompilationInfo.CacheClearPolicy.ON_TASK_END);
+        ctx.getInfo().putCachedValue(KEY_EXPRESSION_STATE, result = v.expressionState, CompilationInfo.CacheClearPolicy.ON_TASK_END);
         
         return result;
     }
@@ -264,8 +270,9 @@ public class NPECheck {
         return def;
     }
         
-    private static final class VisitorImpl extends TreePathScanner<State, Void> {
+    private static final class VisitorImpl extends CancellableTreePathScanner<State, Void> {
         
+        private final HintContext ctx;
         private final CompilationInfo info;
         private Map<VariableElement, State> variable2State = new HashMap<VariableElement, NPECheck.State>();
         private final Map<Tree, Collection<Map<VariableElement, State>>> resumeBefore = new IdentityHashMap<Tree, Collection<Map<VariableElement, State>>>();
@@ -276,8 +283,14 @@ public class NPECheck {
         private boolean not;
         private boolean doNotRecord;
 
-        public VisitorImpl(CompilationInfo info) {
-            this.info = info;
+        public VisitorImpl(HintContext ctx) {
+            this.ctx = ctx;
+            this.info = ctx.getInfo();
+        }
+
+        @Override
+        protected boolean isCanceled() {
+            return ctx.isCanceled();
         }
 
         @Override
@@ -321,7 +334,7 @@ public class NPECheck {
             
             mergeHypotheticalVariable2State(orig);
             
-            if (e != null && VARIABLE_ELEMENT.contains(e.getKind())) {
+            if (isVariableElement(e)) {
                 variable2State.put((VariableElement) e, r);
             }
             
@@ -407,8 +420,8 @@ public class NPECheck {
             
             scan(node.getElseStatement(), null);
             
-            boolean thenExitsFromAllBranches = new ExitsFromAllBranches(info).scan(new TreePath(getCurrentPath(), node.getThenStatement()), null) == Boolean.TRUE;
-            boolean elseExitsFromAllBranches = node.getElseStatement() != null && new ExitsFromAllBranches(info).scan(new TreePath(getCurrentPath(), node.getElseStatement()), null) == Boolean.TRUE;
+            boolean thenExitsFromAllBranches = Utilities.exitsFromAllBranchers(info, new TreePath(getCurrentPath(), node.getThenStatement()));
+            boolean elseExitsFromAllBranches = node.getElseStatement() != null && Utilities.exitsFromAllBranchers(info, new TreePath(getCurrentPath(), node.getElseStatement()));
             
             if (thenExitsFromAllBranches && !elseExitsFromAllBranches) {
                 //already set
@@ -604,7 +617,7 @@ public class NPECheck {
             
             Element e = info.getTrees().getElement(getCurrentPath());
 
-            if (e == null) {
+            if (e == null || !isVariableElement(e)) {
                 return State.POSSIBLE_NULL;
             }
             
@@ -917,6 +930,10 @@ public class NPECheck {
             
             return s != null && s.isNotNull();
         }
+        
+        private boolean isVariableElement(Element ve) {
+            return NPECheck.isVariableElement(ctx, ve);
+        }
     }
     
     static enum State {
@@ -960,58 +977,11 @@ public class NPECheck {
         }
     }
     
-    //XXX copied from IntroduceHint:
-    private static final class ExitsFromAllBranches extends TreePathScanner<Boolean, Void> {
-        
-        private CompilationInfo info;
-        private Set<Tree> seenTrees = new HashSet<Tree>();
-
-        public ExitsFromAllBranches(CompilationInfo info) {
-            this.info = info;
-        }
-
-        @Override
-        public Boolean scan(Tree tree, Void p) {
-            seenTrees.add(tree);
-            return super.scan(tree, p);
-        }
-
-        @Override
-        public Boolean visitIf(IfTree node, Void p) {
-            return scan(node.getThenStatement(), null) == Boolean.TRUE && scan(node.getElseStatement(), null) == Boolean.TRUE;
-        }
-
-        @Override
-        public Boolean visitReturn(ReturnTree node, Void p) {
-            return true;
-        }
-
-        @Override
-        public Boolean visitBreak(BreakTree node, Void p) {
-            return !seenTrees.contains(info.getTreeUtilities().getBreakContinueTarget(getCurrentPath()));
-        }
-
-        @Override
-        public Boolean visitContinue(ContinueTree node, Void p) {
-            return !seenTrees.contains(info.getTreeUtilities().getBreakContinueTarget(getCurrentPath()));
-        }
-
-        @Override
-        public Boolean visitClass(ClassTree node, Void p) {
-            return false;
-        }
-
-        @Override
-        public Boolean visitThrow(ThrowTree node, Void p) {
-            return true; //XXX: simplification
-        }
-        
+    private static boolean isVariableElement(HintContext ctx, Element ve) {
+        return ve != null && (ctx.getPreferences().getBoolean(KEY_ENABLE_FOR_FIELDS, DEF_ENABLE_FOR_FIELDS) ? VARIABLE_ELEMENT_FIELDS : VARIABLE_ELEMENT_NO_FIELDS).contains(ve.getKind());
     }
-    
-    private static boolean isVariableElement(Element ve) {
-        return ve != null && VARIABLE_ELEMENT.contains(ve.getKind());
-    }
-    
-    private static final Set<ElementKind> VARIABLE_ELEMENT = EnumSet.of(ElementKind.EXCEPTION_PARAMETER, ElementKind.FIELD, ElementKind.LOCAL_VARIABLE, ElementKind.PARAMETER);
+        
+    private static final Set<ElementKind> VARIABLE_ELEMENT_NO_FIELDS = EnumSet.of(ElementKind.EXCEPTION_PARAMETER, ElementKind.LOCAL_VARIABLE, ElementKind.PARAMETER);
+    private static final Set<ElementKind> VARIABLE_ELEMENT_FIELDS = EnumSet.of(ElementKind.EXCEPTION_PARAMETER, ElementKind.FIELD, ElementKind.LOCAL_VARIABLE, ElementKind.PARAMETER);
     
 }

@@ -267,7 +267,12 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
                     public void actionPerformed(ActionEvent e) {
                         NotifyDescriptor.Confirmation ask = new NotifyDescriptor.Confirmation(Delete_Confirm(active.getName()), NotifyDescriptor.YES_NO_OPTION);
                         if (DialogDisplayer.getDefault().notify(ask) == NotifyDescriptor.YES_OPTION) {
-                            active.destroy();
+                            RP.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    active.destroy();
+                                }
+                            });
                         }
                     }
                 });

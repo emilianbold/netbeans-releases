@@ -43,9 +43,13 @@ package org.netbeans.modules.search;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import org.netbeans.api.search.SearchPattern;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 
 /**
  * Utilities for creation of search-related objects for testing.
@@ -66,6 +70,30 @@ public final class SearchTestUtils {
                 "test.txt");                                            //NOI18N
         rm.objectFound(fo, Charset.defaultCharset(),
                 Collections.<TextDetail>emptyList());
+        return rm;
+    }
+
+    /**
+     * Create result model with 10 matching files. The first matching file has 1
+     * text detail, the second has 2 details, the third has 3 details etc.
+     */
+    public static ResultModel createResultModelWithSampleData(boolean replace)
+            throws IOException {
+        ResultModel rm = new ResultModel(new BasicSearchCriteria(),
+                replace ? "replacement" : null);
+        FileObject root = FileUtil.createMemoryFileSystem().getRoot();
+        SearchPattern sp = SearchPattern.create("test", false, false, false);
+        for (int i = 0; i < 10; i++) {
+            FileObject fo = root.createData(i + ".txt");                //NOI18N
+            DataObject dob = DataObject.find(fo);
+            List<TextDetail> details = new ArrayList<TextDetail>(i);
+            for (int j = 0; j < i + 1; j++) {
+                TextDetail td = new TextDetail(dob, sp);
+                details.add(td);
+            }
+            rm.objectFound(fo, Charset.defaultCharset(),
+                    details);
+        }
         return rm;
     }
 }

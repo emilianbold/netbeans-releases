@@ -79,6 +79,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.Elements;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -141,6 +142,7 @@ public class ClipboardHandler {
 
                     TreePath context = copy.getTreeUtilities().pathFor(caret);
                     Scope scope = copy.getTrees().getScope(context);
+                    Scope cutScope = copy.getTrees().getScope(new TreePath(context.getCompilationUnit()));
                     List<Position[]> spans = new ArrayList<Position[]>(inSpans);
 
                     Collections.sort(spans, new Comparator<Position[]>() {
@@ -165,8 +167,8 @@ public class ClipboardHandler {
                                 handled = SourceUtils.resolveImport(copy, context, fqn);
                             } else {
                                 CompilationUnitTree cut = (CompilationUnitTree) copy.resolveRewriteTarget(copy.getCompilationUnit());
-                                if (e.getModifiers().contains(Modifier.STATIC) && copy.getTreeUtilities().isAccessible(scope, e, e.getEnclosingElement().asType())
-                                        && copy.getElementUtilities().outermostTypeElement(e) != copy.getElementUtilities().outermostTypeElement(scope.getEnclosingClass())) {
+                                if (e.getModifiers().contains(Modifier.STATIC) && copy.getTrees().isAccessible(cutScope, e, (DeclaredType)e.getEnclosingElement().asType())
+                                        && (scope.getEnclosingClass() == null || copy.getElementUtilities().outermostTypeElement(e) != copy.getElementUtilities().outermostTypeElement(scope.getEnclosingClass()))) {
                                     copy.rewrite(copy.getCompilationUnit(), GeneratorUtilities.get(copy).addImports(cut, Collections.singleton(e)));
                                 }
                                 handled = e.getSimpleName().toString();
@@ -271,8 +273,8 @@ public class ClipboardHandler {
                         Element elm = cc.getTrees().getElement(new TreePath(tp, ((MemberSelectTree) simpleName).getExpression()));
                         if (el.equals(elm)) continue;
                     } else {
-                        if (!cc.getTreeUtilities().isAccessible(context, el, el.getEnclosingElement().asType())
-                                || cc.getElementUtilities().outermostTypeElement(el) == cc.getElementUtilities().outermostTypeElement(context.getEnclosingClass())) continue;
+                        if (!cc.getTrees().isAccessible(context, el, (DeclaredType)el.getEnclosingElement().asType())
+                                || (context.getEnclosingClass() != null && cc.getElementUtilities().outermostTypeElement(el) == cc.getElementUtilities().outermostTypeElement(context.getEnclosingClass()))) continue;
                         for (ImportTree importTree : cc.getCompilationUnit().getImports()) {
                             if (importTree.isStatic() && importTree.getQualifiedIdentifier().getKind() == Tree.Kind.MEMBER_SELECT) {
                                 MemberSelectTree mst = (MemberSelectTree) importTree.getQualifiedIdentifier();

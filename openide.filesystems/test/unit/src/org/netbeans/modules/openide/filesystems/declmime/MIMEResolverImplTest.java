@@ -213,11 +213,12 @@ public class MIMEResolverImplTest extends NbTestCase {
     /** Test possible cascading of pattern elements. */
     private void doTestPatternElementValidity(String resolver, boolean fails) throws Exception {
         final AtomicBoolean failed = new AtomicBoolean(false);
+        final StringBuffer sb = new StringBuffer();
         Handler handler = new Handler() {
-
             @Override
             public void publish(LogRecord record) {
-                if (record.getThrown().getMessage().startsWith("Second pattern element on the same level not allowed")) {
+                sb.append(record).append("\n");
+                if (startsWith(record)) {
                     LOG.info("failed.set(true");
                     LOG.log(record);
                     failed.set(true);
@@ -231,12 +232,25 @@ public class MIMEResolverImplTest extends NbTestCase {
             @Override
             public void close() throws SecurityException {
             }
+
+            private boolean startsWith(LogRecord record) {
+                if (record == null) {
+                    return false;
+                }
+                if (record.getThrown() == null) {
+                    return false;
+                }
+                if (record.getThrown().getMessage() == null) {
+                    return false;
+                }
+                return record.getThrown().getMessage().startsWith("Second pattern element on the same level not allowed");
+            }
         };
         Logger.getLogger(DefaultParser.class.getName()).setLevel(Level.ALL);
         Logger.getLogger(DefaultParser.class.getName()).addHandler(handler);
         MIMEResolver declarativeResolver = createResolver(resolversRoot.getFileObject(resolver));
         declarativeResolver.findMIMEType(root.getFileObject("empty.dtd"));
-        assertFalse(resolver, failed.get() ^ fails);
+        assertFalse("Resolver " + resolver + "\nMessages:\n" + sb, failed.get() ^ fails);
     }
 
     public void testPatternElementValidityValid() throws Exception {

@@ -427,12 +427,11 @@ private void jMenuItemScopeActionPerformed(java.awt.event.ActionEvent evt) {//GE
         if (this.model != null) {
             this.model.removePropertyChangeListener(modelListener);
         }
+        if (model != null) {
+            model.addPropertyChangeListener(modelListener);
+        }
         this.model = model;
         switchRootNode();
-        if (model == null) {
-            return;
-        }
-        model.addPropertyChangeListener(modelListener);
     }
 
     public void reset() {

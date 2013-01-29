@@ -93,20 +93,11 @@ public class EmbeddedHTMLTest extends GeneralJavaScript {
         EditorOperator eo = new EditorOperator(EmbeddedHTMLTest.currentFile);
 
         cleanFile(eo);
-        type(eo, "function Foo(){\n this.x=1; \n var foo = 2; \n");
-        type(eo, "\n Foo.prototype.add = function(i){\n this.x+=y;};\n");
-        eo.setCaretPositionToEndOfLine(eo.getLineNumber() + 1);
-        type(eo, "} \n obj = new Foo();\n obj.");
-
-        try {
-            waitScanFinished();
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
-            evt.waitNoEvent(3000); // fallback
-        }
+        type(eo, "function Foo(){ this.x=1; var foo = 2; }");
+        type(eo, "\n Foo.prototype.add = function(i){ this.x+=y;};\n");
+        type(eo, "obj = new Foo();\n obj.");
 
         evt.waitNoEvent(1000);
-
 
         CompletionInfo completion = getCompletion();
         String[] res = {"add", "x"};
@@ -211,9 +202,8 @@ public class EmbeddedHTMLTest extends GeneralJavaScript {
 
         EditorOperator eo = new EditorOperator(EmbeddedHTMLTest.currentFile);
         cleanFile(eo);
-        type(eo, "var foo = {\n value:0,\nincrement: function(inc){\nthis.value += typeof inc === 'number' ? inc : 1;}");
-        eo.setCaretPosition("</script>", true);
-        type(eo, "} foo.");
+        type(eo, "var foo = { value:0,increment: function(inc){this.value += typeof inc === 'number' ? inc : 1;}}; ");
+        type(eo, "foo.");
         evt.waitNoEvent(100);
 
         CompletionInfo completion = getCompletion();
@@ -244,7 +234,7 @@ public class EmbeddedHTMLTest extends GeneralJavaScript {
         completion.listItself.hideAll();
 
         type(eo, "param1; var pr = 1; this.start = function(){}; ");
-        type(eo, " function secret(){};\n  } ");
+        type(eo, " function secret(){};\n  ");
         eo.setCaretPosition("}", true);
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(100);
@@ -282,7 +272,9 @@ public class EmbeddedHTMLTest extends GeneralJavaScript {
         checkCompletionItems(cjo, res6);
         completion.listItself.hideAll();
 
-        type(eo, "Foo(); o.");
+        type(eo, "Foo(); o. ");
+        eo.setCaretPosition("Foo(); o.", false);
+        eo.typeKey(' ', InputEvent.CTRL_MASK);
         // public variable & method & prototype
         evt.waitNoEvent(100);
         completion = getCompletion();

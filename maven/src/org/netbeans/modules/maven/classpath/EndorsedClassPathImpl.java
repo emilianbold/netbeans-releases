@@ -108,12 +108,22 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation, Fil
     }
 
     public @Override List<? extends PathResourceImplementation> getResources() {
+        boolean[] arr = { false };
+        return getResources(arr);
+    }
+    
+    final List<? extends PathResourceImplementation> getResources(boolean[] includeJDK) {
         assert bcp != null;
         synchronized (bcp.LOCK) {
             if (this.resourcesCache == null) {
                 ArrayList<PathResourceImplementation> result = new ArrayList<PathResourceImplementation> ();
                 String[] boot = getBootClasspath();
                 if (boot != null) {
+                    for (String b : boot) {
+                        if ("netbeans.ignore.jdk.bootclasspath".equals(b)) { // NOI18N
+                            includeJDK[0] = false;
+                        }
+                    }
                     for (URL u :  stripDefaultJavaPlatform(boot)) {
                         result.add (ClassPathSupport.createResource(u));
                     }

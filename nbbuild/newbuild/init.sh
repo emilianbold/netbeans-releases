@@ -2,7 +2,7 @@
 
  # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  #
- # Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ # Copyright 2012-2013 Oracle and/or its affiliates. All rights reserved.
  #
  # Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  # Other names may be trademarks of their respective owners.
@@ -113,6 +113,11 @@ fi
 if [ -z ${JDK_BUILDS_HOST} ]; then
     JDK_BUILDS_HOST=http://jre.us.oracle.com
     export JDK_BUILDS_HOST
+fi
+
+if [ -z ${DEBUGLEVEL} ]; then
+    DEBUGLEVEL=source,lines,vars
+    export DEBUGLEVEL
 fi
 
 export ANT_OPTS="-Xmx2G -XX:MaxPermSize=500m"

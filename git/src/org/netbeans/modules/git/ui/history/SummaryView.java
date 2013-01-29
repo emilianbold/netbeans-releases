@@ -50,17 +50,15 @@ import org.openide.util.NbBundle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -69,7 +67,6 @@ import javax.swing.JPopupMenu;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitTag;
 import org.netbeans.libs.git.GitUser;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.diff.ExportCommitAction;
@@ -85,8 +82,6 @@ import org.openide.util.actions.SystemAction;
 class SummaryView extends AbstractSummaryView {
 
     private final SearchHistoryPanel master;
-    
-    private static final Logger LOG = Logger.getLogger(SummaryView.class.getName());
     
     private static DateFormat defaultFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
     private static final Color HIGHLIGHT_BRANCH_FG = Color.BLACK;
@@ -191,29 +186,7 @@ class SummaryView extends AbstractSummaryView {
                     }
                 });
             }
-            actions.add(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_TagCommit")) { //NOI18N
-                @Override
-                public void actionPerformed (ActionEvent e) {
-                    CreateTagAction action = SystemAction.get(CreateTagAction.class);
-                    action.createTag(master.getRepository(), revision.getLog().getRevision());
-                }
-            });
-            if (revision.getLog().getParents().length < 2) {
-                actions.add(new AbstractAction(NbBundle.getMessage(ExportCommitAction.class, "LBL_ExportCommitAction_PopupName")) { //NOI18N
-                    @Override
-                    public void actionPerformed (ActionEvent e) {
-                        ExportCommitAction action = SystemAction.get(ExportCommitAction.class);
-                        action.exportCommit(master.getRepository(), revision.getLog().getRevision());
-                    }
-                });
-                actions.add(new AbstractAction(NbBundle.getMessage(RevertCommitAction.class, "LBL_RevertCommitAction_PopupName")) { //NOI18N
-                    @Override
-                    public void actionPerformed (ActionEvent e) {
-                        RevertCommitAction action = SystemAction.get(RevertCommitAction.class);
-                        action.revert(master.getRepository(), master.getRoots(), revision.getLog().getRevision());
-                    }
-                });
-            }
+            actions.addAll(Arrays.asList(revision.getActions()));
             return actions.toArray(new Action[actions.size()]);
         }
 
@@ -311,7 +284,6 @@ class SummaryView extends AbstractSummaryView {
         @Override
         public Action[] getUserActions () {
             List<Action> actions = new ArrayList<Action>();
-            boolean viewEnabled = event.getFile() != null && event.getAction() != 'D';
             boolean hasParents = event.getLogInfoHeader().getLog().getParents().length > 0;
             
             if (hasParents) {
@@ -322,30 +294,7 @@ class SummaryView extends AbstractSummaryView {
                     }
                 });
             }
-            if (viewEnabled) {
-                actions.add(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_View")) { // NOI18N
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        new GitProgressSupport() {
-                            @Override
-                            protected void perform () {
-                                openFile(event, false, getProgressMonitor());
-                            }
-                        }.start(Git.getInstance().getRequestProcessor(), master.getRepository(), NbBundle.getMessage(SummaryView.class, "MSG_SummaryView.openingFilesFromHistory")); //NOI18N
-                    }
-                });
-                actions.add(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_ShowAnnotations")) { // NOI18N
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        new GitProgressSupport() {
-                            @Override
-                            protected void perform () {
-                                openFile(event, true, getProgressMonitor());
-                            }
-                        }.start(Git.getInstance().getRequestProcessor(), master.getRepository(), NbBundle.getMessage(SummaryView.class, "MSG_SummaryView.openingFilesFromHistory")); //NOI18N
-                    }
-                });
-            }
+            actions.addAll(Arrays.asList(event.getActions()));
             return actions.toArray(new Action[actions.size()]);
         }
 
@@ -493,7 +442,7 @@ class SummaryView extends AbstractSummaryView {
                         @Override
                         protected void perform () {
                             for (RepositoryRevision.Event evt : drev) {
-                                openFile(evt, false, getProgressMonitor());
+                                evt.openFile(false, getProgressMonitor());
                             }
                         }
                     }.start(Git.getInstance().getRequestProcessor(), master.getRepository(), NbBundle.getMessage(SummaryView.class, "MSG_SummaryView.openingFilesFromHistory")); //NOI18N
@@ -509,7 +458,7 @@ class SummaryView extends AbstractSummaryView {
                         @Override
                         protected void perform () {
                             for (RepositoryRevision.Event evt : drev) {
-                                openFile(evt, true, getProgressMonitor());
+                                evt.openFile(true, getProgressMonitor());
                             }
                         }
                     }.start(Git.getInstance().getRequestProcessor(), master.getRepository(), NbBundle.getMessage(SummaryView.class, "MSG_SummaryView.openingFilesFromHistory")); //NOI18N
@@ -517,16 +466,6 @@ class SummaryView extends AbstractSummaryView {
             }));
         }
         menu.show(invoker, p.x, p.y);
-    }
-
-    private static void openFile (RepositoryRevision.Event evt, boolean showAnnotations, ProgressMonitor pm) {
-        try {
-            File originalFile = evt.getFile();
-            String revision = evt.getLogInfoHeader().getLog().getRevision();
-            GitUtils.openInRevision(originalFile, -1, revision, showAnnotations, pm);
-        } catch (IOException ex) {
-            LOG.log(Level.FINE, null, ex);
-        }
     }
 
     private static void diffPrevious (Object o, SearchHistoryPanel master) {

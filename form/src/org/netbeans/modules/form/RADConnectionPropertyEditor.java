@@ -406,9 +406,6 @@ public class RADConnectionPropertyEditor
                 if (radComponent == null || radComponent.getCodeExpression() == null)
                     return FormUtils.getBundleString("CTL_CONNECTION_INVALID"); // NOI18N
 
-                if (radComponent == null)
-                    return null;
-
                 if (type == TYPE_PROPERTY)
                     return FormUtils.getFormattedBundleString(
                         "FMT_PROPERTY_CONN", // NOI18N
@@ -604,7 +601,7 @@ public class RADConnectionPropertyEditor
             } else if ("boolean".equals(typeName)) { // NOI18N
                 return Boolean.valueOf(value);
             } else if ("char".equals(typeName)) { // NOI18N
-                if (value.length() > 0) return new Character(value.charAt(0));
+                if (value.length() > 0) return Character.valueOf(value.charAt(0));
             }
             return FormDesignValue.IGNORED_VALUE;
         } catch (Exception e) {

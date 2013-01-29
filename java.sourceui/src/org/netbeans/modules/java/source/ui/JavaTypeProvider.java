@@ -84,6 +84,7 @@ import org.netbeans.modules.java.source.usages.ClassIndexImplListener;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.DocumentUtil;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
+import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.lucene.support.IndexManager.Action;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
@@ -679,12 +680,16 @@ public class JavaTypeProvider implements TypeProvider {
                 //simple name
                 searchScope = baseSearchScope;
             }
-            index.getDeclaredTypes(
-                typeName,
-                kind,
-                Collections.unmodifiableSet(Collections.<SearchScopeType>singleton(searchScope)),
-                new JavaTypeDescriptionConvertor(this),
-                collector);
+            try {
+                index.getDeclaredTypes(
+                    typeName,
+                    kind,
+                    Collections.unmodifiableSet(Collections.<SearchScopeType>singleton(searchScope)),
+                    new JavaTypeDescriptionConvertor(this),
+                    collector);
+            } catch (Index.IndexClosedException ice) {
+                //Closed after put into rootCache, ignore
+            }
             return true;
         }
         

@@ -49,6 +49,9 @@ import org.openide.filesystems.FileUtil;
  */
 public class DataRenameTest extends NbTestCase {
     Logger LOG;
+    private DataObject my;
+    private FileObject root;
+    private File dir;
     
     public DataRenameTest(String name) {
         super(name);
@@ -68,20 +71,20 @@ public class DataRenameTest extends NbTestCase {
         LOG = Logger.getLogger("test." + getName());
         
         MockServices.setServices(Pool.class);
-    }
-    public void testRenameBehaviour() throws Exception {
         File fJava = new File(getWorkDir(), "F.java");
         fJava.createNewFile();
-        File dir = new File(getWorkDir(), "dir");
+        dir = new File(getWorkDir(), "dir");
         dir.mkdirs();
 
         //LocalFileSystem lfs = new LocalFileSystem();
         //lfs.setRootDirectory(getWorkDir());
-        FileObject root = FileUtil.toFileObject(getWorkDir());
+        root = FileUtil.toFileObject(getWorkDir());
         //FileObject root = lfs.getRoot();
         assertNotNull("root found", root);
         
-        DataObject my = DataObject.find(root.getFileObject("F.java"));
+        my = DataObject.find(root.getFileObject("F.java"));
+    }
+    public void testRenameBehaviour() throws Exception {
         assertEquals(WithRenameObject.class, my.getClass());
         
         DataFolder f = DataFolder.findFolder(root.getFileObject("dir"));
@@ -100,6 +103,15 @@ public class DataRenameTest extends NbTestCase {
             String[] all = dir.list();
             assertEquals("One: " + Arrays.asList(all), 1, all.length);
             assertEquals("Jarda.java", all[0]);
+        }
+    }
+    
+    public void testRenameToNull() throws IOException {
+        try {
+            my.rename(null);
+            fail("The rename should fail with IllegalArgumentException");
+        } catch (IllegalArgumentException ex) {
+            // OK
         }
     }
 

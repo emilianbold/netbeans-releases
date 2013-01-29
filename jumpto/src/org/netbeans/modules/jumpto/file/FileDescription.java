@@ -54,6 +54,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.netbeans.api.actions.Editable;
+import org.netbeans.api.actions.Openable;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
@@ -164,8 +166,13 @@ public class FileDescription extends FileDescriptor {
                 } catch (IndexOutOfBoundsException oob) {
                     LOG.log(Level.FINE, "Line no more exists.", oob);   //NOI18N
                 }
-            }                            
-            final OpenCookie oc = od.getLookup().lookup(OpenCookie.class);
+            }
+            final Editable editable = od.getLookup().lookup(Editable.class);
+            if (editable != null) {
+                editable.edit();
+                return;
+            }
+            final Openable oc = od.getLookup().lookup(Openable.class);
             if (oc != null) {
                 oc.open();
             }

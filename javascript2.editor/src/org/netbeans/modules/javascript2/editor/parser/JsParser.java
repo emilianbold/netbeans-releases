@@ -37,11 +37,11 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
-import com.oracle.nashorn.codegen.CompilerConstants;
-import com.oracle.nashorn.ir.FunctionNode;
-import com.oracle.nashorn.parser.Parser;
-import com.oracle.nashorn.runtime.Source;
-import com.oracle.nashorn.runtime.options.Options;
+import jdk.nashorn.internal.codegen.CompilerConstants;
+import jdk.nashorn.internal.ir.FunctionNode;
+import jdk.nashorn.internal.parser.Parser;
+import jdk.nashorn.internal.runtime.Source;
+import jdk.nashorn.internal.runtime.options.Options;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;
 
@@ -88,11 +88,17 @@ public class JsParser extends SanitizingParser {
             "--debug-lines=false"}); // NOI18N
 
         errorManager.setLimit(0);
-        com.oracle.nashorn.runtime.Context contextN = new com.oracle.nashorn.runtime.Context(options, errorManager);
-        com.oracle.nashorn.runtime.Context.setContext(contextN);
-        com.oracle.nashorn.codegen.Compiler compiler = new com.oracle.nashorn.codegen.Compiler(source, contextN);
+        jdk.nashorn.internal.runtime.Context nashornContext = new jdk.nashorn.internal.runtime.Context(options, errorManager);
+        // XXX
+        //jdk.nashorn.internal.runtime.Context.setContext(contextN);
+        jdk.nashorn.internal.codegen.Compiler compiler = jdk.nashorn.internal.codegen.Compiler.compiler(source, nashornContext);
         Parser parser = new Parser(compiler);
-        FunctionNode node = parser.parse(CompilerConstants.runScriptName);
+        FunctionNode node = parser.parse(CompilerConstants.RUN_SCRIPT.tag());
         return node;
+    }
+
+    @Override
+    protected String getMimeType() {
+        return JsTokenId.JAVASCRIPT_MIME_TYPE;
     }
 }

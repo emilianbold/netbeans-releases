@@ -83,7 +83,7 @@ public interface HudsonJob extends Comparable<HudsonJob> {
         disabled("grey"), disabled_anime("grey"), // NOI18N
         aborted("grey"), aborted_anime("grey"), // NOI18N
         grey("grey"), grey_anime("grey"), // NOI18N
-        not_built("grey"), not_built_anime("grey"), // JENKINS-11013
+        notbuilt("grey"), notbuilt_anime("grey"), // JENKINS-11013
         secured("secured"); // fake color
         public static @NonNull Color find(@NonNull String name) {
             try {

@@ -900,6 +900,25 @@ public class FlowTest extends NbTestCase {
                     "null");
     }
     
+    public void testLoops() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "     public Test getParent() {\n" +
+                    "          return this;\n" +
+                    "     }\n" +
+                    "     public static void t(Iterable<? extends Test> tps) {\n" +
+                    "          for (Test tp : tps) {\n" +
+                    "               Test toResume = tp;\n" +
+                    "               while (toR`esume != null) {\n" +
+                    "                    toResume = toResume.getParent();\n" +
+                    "               }\n" +
+                    "          }\n" +
+                    "     }\n" +
+                    "}\n",
+                    "tp",
+                    "toResume.getParent()");
+    }
+    
     public void testDeadBranch207514() throws Exception {
         performDeadBranchTest("package test;\n" +
                               "public class Test {\n" +
@@ -1119,5 +1138,260 @@ public class FlowTest extends NbTestCase {
         boolean actual = Flow.definitellyAssigned(info, (VariableElement) el, Collections.singletonList(tp), new AtomicBoolean());
         
         assertEquals(definitellyAssigned, actual);
+    }
+    
+    public void testFinalCandidatesConstr1() throws Exception {
+        performFinalCandidatesTest("package test;\n" +
+                                   "public class Test {\n" +
+                                   "    private int i;\n" +
+                                   "    public Test() {\n" +
+                                   "        i = 0;\n" +
+                                   "    }\n" +
+                                   "}\n",
+                                   false,
+                                   "i");
+    }
+    
+    public void testFinalCandidatesConstr2() throws Exception {
+        performFinalCandidatesTest("package test;\n" +
+                                   "public class Test {\n" +
+                                   "    private int i;\n" +
+                                   "    public Test() {\n" +
+                                   "    }\n" +
+                                   "    public Test(int i) {\n" +
+                                   "        this.i = i;\n" +
+                                   "    }\n" +
+                                   "}\n",
+                                   false);
+    }
+    
+    public void testFinalCandidatesInit1() throws Exception {
+        performFinalCandidatesTest("package test;\n" +
+                                   "public class Test {\n" +
+                                   "    private int i;\n" +
+                                   "    {\n" +
+                                   "        this.i = 0;\n" +
+                                   "    }\n" +
+                                   "}\n",
+                                   false,
+                                   "i");
+    }
+    
+    public void testFinalCandidatesInit2() throws Exception {
+        performFinalCandidatesTest("package test;\n" +
+                                   "public class Test {\n" +
+                                   "    private int i;\n" +
+                                   "    {\n" +
+                                   "        this.i = 0;\n" +
+                                   "    }\n" +
+                                   "    {\n" +
+                                   "        this.i = 0;\n" +
+                                   "    }\n" +
+                                   "}\n",
+                                   false);
+    }
+    
+    public void testFinalCandidatesInit3() throws Exception {
+        performFinalCandidatesTest("package test;\n" +
+                                   "public class Test {\n" +
+                                   "    private int i;\n" +
+                                   "    {\n" +
+                                   "        this.i = 0;\n" +
+                                   "    }\n" +
+                                   "    public Test() {\n" +
+                                   "        this.i = 0;\n" +
+                                   "    }\n" +
+                                   "}\n",
+                                   false);
+    }
+    
+    public void testFinalCandidatesMethod1() throws Exception {
+        performFinalCandidatesTest("package test;\n" +
+                                   "public class Test {\n" +
+                                   "    private int i;\n" +
+                                   "    {\n" +
+                                   "        this.i = 0;\n" +
+                                   "    }\n" +
+                                   "    private void test() {\n" +
+                                   "        this.i = 0;\n" +
+                                   "    }\n" +
+                                   "}\n",
+                                   false);
+    }
+    
+    public void testFinalCandidatesMethod2() throws Exception {
+        performFinalCandidatesTest("package test;\n" +
+                                   "public class Test {\n" +
+                                   "    private int i;\n" +
+                                   "    private void test() {\n" +
+                                   "        this.i = 0;\n" +
+                                   "    }\n" +
+                                   "    public Test() {\n" +
+                                   "        this.i = 0;\n" +
+                                   "    }\n" +
+                                   "}\n",
+                                   false);
+    }
+    
+    public void testFinalCandidatesVarInit1() throws Exception {
+        performFinalCandidatesTest("package test;\n" +
+                                   "public class Test {\n" +
+                                   "    private int i = 0;\n" +
+                                   "    public Test() {\n" +
+                                   "    }\n" +
+                                   "}\n",
+                                   false,
+                                   "i");
+    }
+    
+    public void testFinalCandidatesVarInit2() throws Exception {
+        performFinalCandidatesTest("package test;\n" +
+                                   "public class Test {\n" +
+                                   "    private int i = 0;\n" +
+                                   "    {\n" +
+                                   "    }\n" +
+                                   "}\n",
+                                   false,
+                                   "i");
+    }
+    
+    public void testFinalCandidatesVarInit3() throws Exception {
+        performFinalCandidatesTest("package test;\n" +
+                                   "public class Test {\n" +
+                                   "    private int i = 0;\n" +
+                                   "    {\n" +
+                                   "        this.i = 0;\n" +
+                                   "    }\n" +
+                                   "}\n",
+                                   false);
+    }
+    
+    public void testFinalCandidatesVarInit4() throws Exception {
+        performFinalCandidatesTest("package test;\n" +
+                                   "public class Test {\n" +
+                                   "    private int i = 0;\n" +
+                                   "    public Test() {\n" +
+                                   "        this.i = 0;\n" +
+                                   "    }\n" +
+                                   "}\n",
+                                   false);
+    }
+    
+    public void testFinalCandidatesUseBeforeDefining1() throws Exception {
+        performFinalCandidatesTest("package test;\n" +
+                                   "public class Test {\n" +
+                                   "    private int i;\n" +
+                                   "    public Test() {\n" +
+                                   "        this.i = i;\n" +
+                                   "    }\n" +
+                                   "}\n",
+                                   false);
+    }
+    
+    public void testFinalCandidatesUseBeforeDefining2() throws Exception {
+        performFinalCandidatesTest("package test;\n" +
+                                   "public class Test {\n" +
+                                   "    private int i;\n" +
+                                   "    public Test() {\n" +
+                                   "        this.i = 0;\n" +
+                                   "    }\n" +
+                                   "    public void test() {\n" +
+                                   "        int ii = this.i;\n" +
+                                   "    }\n" +
+                                   "}\n",
+                                   false,
+                                   "i");
+    }
+    
+    public void testFinalCandidatesUseBeforeDefining3() throws Exception {
+        performFinalCandidatesTest("package test;\n" +
+                                   "public class Test {\n" +
+                                   "    private int i;\n" +
+                                   "    public Test() {\n" +
+                                   "        int ii = this.i;\n" +
+                                   "    }\n" +
+                                   "    {\n" +
+                                   "        this.i = 0;\n" +
+                                   "    }\n" +
+                                   "}\n",
+                                   false,
+                                   "i");
+    }
+    
+    public void testFinalCandidatesStatic1() throws Exception {
+        performFinalCandidatesTest("package test;\n" +
+                                   "public class Test {\n" +
+                                   "    private static int i;\n" +
+                                   "    public Test() {\n" +
+                                   "        i = 0;\n" +
+                                   "    }\n" +
+                                   "}\n",
+                                   false);
+    }
+    
+    public void testFinalCandidatesStatic2() throws Exception {
+        performFinalCandidatesTest("package test;\n" +
+                                   "public class Test {\n" +
+                                   "    private static int i;\n" +
+                                   "    {\n" +
+                                   "        i = 0;\n" +
+                                   "    }\n" +
+                                   "}\n",
+                                   false);
+    }
+    
+    public void testFinalCandidatesStatic3() throws Exception {
+        performFinalCandidatesTest("package test;\n" +
+                                   "public class Test {\n" +
+                                   "    private static int i;\n" +
+                                   "    static {\n" +
+                                   "        i = 0;\n" +
+                                   "    }\n" +
+                                   "}\n",
+                                   false,
+                                   "i");
+    }
+    
+    public void testFinalCandidatesReturnInConstructor1() throws Exception {
+        performFinalCandidatesTest("package test;\n" +
+                                   "public class Test {\n" +
+                                   "    private int i;\n" +
+                                   "    public Test(boolean b) {\n" +
+                                   "        if (b) return ;\n" +
+                                   "        i = 0;\n" +
+                                   "    }\n" +
+                                   "}\n",
+                                   false);
+    }
+    
+    public void testFinalCandidatesReturnInConstructor2() throws Exception {
+        performFinalCandidatesTest("package test;\n" +
+                                   "public class Test {\n" +
+                                   "    private int i;\n" +
+                                   "    public Test(boolean b) {\n" +
+                                   "        if (b) {" +
+                                   "            i = 0;\n" +
+                                   "            return ;\n" +
+                                   "        }" +
+                                   "        i = 0;\n" +
+                                   "    }\n" +
+                                   "}\n",
+                                   false,
+                                   "i");
+    }
+    
+    private void performFinalCandidatesTest(String code, boolean allowErrors, String... finalCandidates) throws Exception {
+        prepareTest(code, allowErrors);
+
+        FlowResult actual = Flow.assignmentsForUse(info, new AtomicBoolean());
+        List<String> computedCandidates = new ArrayList<String>();
+        
+        for (VariableElement ve : actual.getFinalCandidates()) {
+            computedCandidates.add(ve.getSimpleName().toString());
+        }
+        
+        Collections.sort(computedCandidates);
+        
+        assertEquals(Arrays.asList(finalCandidates), computedCandidates);
     }
 }

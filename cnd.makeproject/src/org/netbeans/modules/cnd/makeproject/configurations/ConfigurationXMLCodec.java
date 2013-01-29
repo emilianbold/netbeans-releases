@@ -89,6 +89,7 @@ import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -618,7 +619,10 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 path = path.substring(2);
             }
             path = getString(adjustOffset(path));
-            currentFolder.addItem(createItem(path));
+            PerformanceLogger.PerformaceAction performanceEvent = PerformanceLogger.getLogger().start(Folder.CREATE_ITEM_PERFORMANCE_EVENT, null);
+            Item createItem = createItem(path);
+            currentFolder.addItem(createItem);
+            performanceEvent.log(createItem);
         } else if (element.equals(ItemXMLCodec.ITEM_EXCLUDED_ELEMENT) || element.equals(ItemXMLCodec.EXCLUDED_ELEMENT)) {
             CndUtils.assertNotNullInConsole(currentItemConfiguration, "null currentItemConfiguration"); //NOI18N
             if (currentItemConfiguration != null) {

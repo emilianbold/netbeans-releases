@@ -58,6 +58,7 @@ import com.sun.source.tree.TryTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -82,6 +83,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.TypeMirrorHandle;
@@ -401,7 +403,7 @@ public final class UncaughtException implements ErrorRule<Void> {
                     if (tree == null) {
                         Logger.getLogger(UncaughtException.class.getName()).log(Level.WARNING, "Cannot resolve Handle." +
                                 "fqn: " + fqn +
-                                "method: " + method.getQualifiedName());
+                                "method: " + Arrays.asList(SourceUtils.getJVMSignature(method)).toString());
                         return;
                     }
                     assert tree.getKind() == Kind.METHOD;

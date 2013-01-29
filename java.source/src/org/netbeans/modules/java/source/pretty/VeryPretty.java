@@ -763,7 +763,8 @@ public final class VeryPretty extends JCTree.Visitor {
             boolean oldPrintingMethodParams = printingMethodParams;
             printingMethodParams = true;
             wrapTrees(tree.params, cs.wrapMethodParams(), cs.alignMultilineMethodParams()
-                    ? out.col : out.leftMargin + cs.getContinuationIndentSize());
+                    ? out.col : out.leftMargin + cs.getContinuationIndentSize(),
+                      true);
             printingMethodParams = oldPrintingMethodParams;
             if (cs.spaceWithinMethodDeclParens() && tree.params.nonEmpty())
                 needSpace();
@@ -771,7 +772,8 @@ public final class VeryPretty extends JCTree.Visitor {
             if (tree.thrown.nonEmpty()) {
                 wrap("throws ", cs.wrapThrowsKeyword());
                 wrapTrees(tree.thrown, cs.wrapThrowsList(), cs.alignMultilineThrows()
-                        ? out.col : out.leftMargin + cs.getContinuationIndentSize());
+                        ? out.col : out.leftMargin + cs.getContinuationIndentSize(),
+                          true);
             }
             if (tree.body != null) {
                 printBlock(tree.body, tree.body.stats, cs.getMethodDeclBracePlacement(), cs.spaceBeforeMethodDeclLeftBrace());
@@ -835,31 +837,18 @@ public final class VeryPretty extends JCTree.Visitor {
         }
     }
 
-    public void printVarInit(JCVariableDecl tree) {
+    public void printVarInit(final JCVariableDecl tree) {
         int col = out.col;
         if (!ERROR.contentEquals(tree.name))
             col -= tree.name.getByteLength();
         if (cs.spaceAroundAssignOps())
             print(' ');
         print('=');
-        int rm = cs.getRightMargin();
-        switch(cs.wrapAssignOps()) {
-        case WRAP_IF_LONG:
-            if (widthEstimator.estimateWidth(tree.init, rm - out.col) + out.col <= cs.getRightMargin()) {
-                if(cs.spaceAroundAssignOps())
-                    print(' ');
-                break;
+        wrapTree(cs.wrapAssignOps(), cs.spaceAroundAssignOps(), cs.alignMultilineAssignment() ? col : out.leftMargin + cs.getContinuationIndentSize(), new Runnable() {
+            @Override public void run() {
+                printNoParenExpr(tree.init);
             }
-        case WRAP_ALWAYS:
-            newline();
-            toColExactly(cs.alignMultilineAssignment() ? col : out.leftMargin + cs.getContinuationIndentSize());
-            break;
-        case WRAP_NEVER:
-            if(cs.spaceAroundAssignOps())
-                print(' ');
-            break;
-        }
-        printNoParenExpr(tree.init);
+        });
     }
 
     @Override
@@ -1358,7 +1347,7 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     @Override
-    public void visitAssign(JCAssign tree) {
+    public void visitAssign(final JCAssign tree) {
         int col = out.col;
 	printExpr(tree.lhs, TreeInfo.assignPrec + 1);
         boolean spaceAroundAssignOps = cs.spaceAroundAssignOps();
@@ -1366,23 +1355,11 @@ public final class VeryPretty extends JCTree.Visitor {
             print(' ');
 	print('=');
 	int rm = cs.getRightMargin();
-        switch(cs.wrapAssignOps()) {
-        case WRAP_IF_LONG:
-            if (widthEstimator.estimateWidth(tree.rhs, rm - out.col) + out.col <= cs.getRightMargin()) {
-                if(spaceAroundAssignOps)
-                    print(' ');
-                break;
+        wrapTree(cs.wrapAssignOps(), spaceAroundAssignOps, cs.alignMultilineAssignment() ? col : out.leftMargin + cs.getContinuationIndentSize(), new Runnable() {
+            @Override public void run() {
+                printExpr(tree.rhs, TreeInfo.assignPrec);
             }
-        case WRAP_ALWAYS:
-            newline();
-            toColExactly(cs.alignMultilineAssignment() ? col : out.leftMargin + cs.getContinuationIndentSize());
-            break;
-        case WRAP_NEVER:
-            if(spaceAroundAssignOps)
-                print(' ');
-            break;
-        }
-	printExpr(tree.rhs, TreeInfo.assignPrec);
+        });
     }
 
     @Override
@@ -2049,39 +2026,14 @@ public final class VeryPretty extends JCTree.Visitor {
                 printBlock(tree, cs.getOtherBracePlacement(), spaceBeforeLeftBrace);
                 return;
             }
-            int old = indent();
-            switch(wrapStat) {
-            case WRAP_NEVER:
-                if (spaceBeforeLeftBrace)
-                    needSpace();
-                printStat(tree);
-                undent(old);
-                return;
-            case WRAP_IF_LONG:
-                int oldhm = out.harden();
-                int oldc = out.col;
-                int oldu = out.used;
-                int oldm = out.leftMargin;
-                try {
-                    if (spaceBeforeLeftBrace)
-                        needSpace();
-                    printStat(tree);
+            final int old = indent();
+            final JCTree toPrint = tree;
+            wrapTree(wrapStat, spaceBeforeLeftBrace, out.leftMargin, new Runnable() {
+                @Override public void run() {
+                    printStat(toPrint);
                     undent(old);
-                    out.restore(oldhm);
-                    return;
-                } catch(Throwable t) {
-                    out.restore(oldhm);
-                    out.col = oldc;
-                    out.used = oldu;
-                    out.leftMargin = oldm;
                 }
-            case WRAP_ALWAYS:
-                if (out.col > 0)
-                    newline();
-                toLeftMargin();
-                printStat(tree);
-                undent(old);
-            }
+            });
 	}
     }
 
@@ -2384,15 +2336,23 @@ public final class VeryPretty extends JCTree.Visitor {
     }
 
     private <T extends JCTree> void wrapTrees(List<T> trees, WrapStyle wrapStyle, int wrapIndent) {
+        wrapTrees(trees, wrapStyle, wrapIndent, false); //TODO: false for "compatibility", with the previous release, but maybe should be true for everyone?
+    }
+    
+    private <T extends JCTree> void wrapTrees(List<T> trees, WrapStyle wrapStyle, int wrapIndent, boolean wrapFirst) {
         boolean first = true;
         for (List < T > l = trees; l.nonEmpty(); l = l.tail) {
             if (!first) {
                 print(cs.spaceBeforeComma() ? " ," : ",");
-                switch(wrapStyle) {
+            }
+            
+            if (!first || wrapFirst) {
+                switch(first && wrapStyle != WrapStyle.WRAP_NEVER ? WrapStyle.WRAP_IF_LONG : wrapStyle) {
                 case WRAP_IF_LONG:
                     int rm = cs.getRightMargin();
-                    if (widthEstimator.estimateWidth(l.head, rm - out.col) + out.col + 1 <= rm) {
-                        if (cs.spaceAfterComma())
+                    boolean space = cs.spaceAfterComma() && !first;
+                    if (widthEstimator.estimateWidth(l.head, rm - out.col) + out.col + (space ? 1 : 0) <= rm) {
+                        if (space)
                             print(' ');
                         break;
                     }
@@ -2401,13 +2361,47 @@ public final class VeryPretty extends JCTree.Visitor {
                     toColExactly(wrapIndent);
                     break;
                 case WRAP_NEVER:
-                    if (cs.spaceAfterComma())
+                    if (cs.spaceAfterComma() && !first)
                         print(' ');
                     break;
                 }
             }
             printNoParenExpr(l.head);
             first = false;
+        }
+    }
+    
+    private void wrapTree(WrapStyle wrapStyle, boolean needsSpaceBefore, int colAfterWrap, Runnable print) {
+        switch(wrapStyle) {
+        case WRAP_NEVER:
+            if (needsSpaceBefore)
+                needSpace();
+            print.run();
+            return;
+        case WRAP_IF_LONG:
+            int oldhm = out.harden();
+            int oldc = out.col;
+            int oldu = out.used;
+            int oldm = out.leftMargin;
+            int oldPrec = prec;
+            try {
+                if (needsSpaceBefore)
+                    needSpace();
+                print.run();
+                out.restore(oldhm);
+                return;
+            } catch(Throwable t) {
+                out.restore(oldhm);
+                out.col = oldc;
+                out.used = oldu;
+                out.leftMargin = oldm;
+                prec = oldPrec;
+            }
+        case WRAP_ALWAYS:
+            if (out.col > 0)
+                newline();
+            toColExactly(colAfterWrap);
+            print.run();
         }
     }
 

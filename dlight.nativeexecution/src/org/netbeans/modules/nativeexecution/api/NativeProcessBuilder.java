@@ -68,6 +68,7 @@ import org.netbeans.modules.nativeexecution.pty.NbStartUtility;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.UserQuestionException;
 import org.openide.util.Utilities;
 
@@ -171,9 +172,9 @@ public final class NativeProcessBuilder implements Callable<Process> {
      * @throws IOException if the process could not be created
      * @throws UserQuestionException in case the system is not yet connected
      */
-    @NbBundle.Messages({
-        "#{0} - display name of execution environment", // NOI18N
-        "EXC_NotConnectedQuestion=No connection to {0}. Connect now?" // NOI18N
+    @Messages({
+        "# {0} - display name of execution environment",
+        "EXC_NotConnectedQuestion=No connection to {0}. Connect now?"
     })
     @Override
     public NativeProcess call() throws IOException {

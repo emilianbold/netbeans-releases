@@ -46,6 +46,7 @@ package org.openide.awt;
 
 import org.netbeans.modules.openide.loaders.AWTTask;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.Insets;
 import java.io.IOException;
 import java.util.EventListener;
@@ -69,6 +70,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.FolderInstance;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Mutex;
 import org.openide.util.Task;
 import org.openide.util.actions.Presenter;
 
@@ -141,6 +143,22 @@ public class Toolbar extends ToolbarWithOverflow /*implemented by patchsuperclas
         initAll(folder.getName(), false);
         putClientProperty("folder", folder); //NOI18N
     }
+
+    @Override
+    public void updateUI() {
+        if (EventQueue.isDispatchThread()) {
+            superUpdateUI();
+        } else {
+            Mutex.EVENT.readAccess(new Runnable() {
+                @Override
+                public void run() {
+                    superUpdateUI();
+                }
+            });
+        }
+    }
+    
+    
 
     @Override
     public boolean isOpaque() {
@@ -324,6 +342,10 @@ public class Toolbar extends ToolbarWithOverflow /*implemented by patchsuperclas
      * on the contrary to the programmatic name */
     public void setDisplayName (String displayName) {
         this.displayName = displayName;
+    }
+
+    final void superUpdateUI() {
+        super.updateUI();
     }
     
     /**
