@@ -41,64 +41,39 @@
  */
 package org.netbeans.modules.search.ui;
 
-import java.awt.EventQueue;
-import org.netbeans.modules.search.MatchingObject;
-import org.netbeans.modules.search.TextDetail;
-import org.openide.cookies.EditCookie;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
+import java.awt.event.ActionEvent;
+import org.openide.actions.DeleteAction;
 import org.openide.util.HelpCtx;
-import org.openide.util.actions.NodeAction;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.CallbackSystemAction;
+import org.openide.util.actions.SystemAction;
 
 /**
- * Action that opens currently selected matching objects in editor.
  *
  * @author jhavlin
  */
-public class OpenMatchingObjectsAction extends NodeAction {
+@NbBundle.Messages({"HideResultAction.displayName=Hide"})
+public class HideResultAction extends CallbackSystemAction {
+
+    CallbackSystemAction delegate = SystemAction.get(DeleteAction.class);
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        delegate.actionPerformed(e);
+    }
 
     @Override
     public String getName() {
-        return UiUtils.getText("LBL_EditAction");                       //NOI18N
+        return Bundle.HideResultAction_displayName();
     }
 
     @Override
     public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
+        return delegate.getHelpCtx();
     }
 
     @Override
-    protected void performAction(Node[] activatedNodes) {
-
-        for (Node n : activatedNodes) {
-            final MatchingObject mo = n.getLookup().lookup(
-                    MatchingObject.class);
-            if (mo != null) {
-                if (mo.getTextDetails() != null
-                        && !mo.getTextDetails().isEmpty()) { // #219428
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            mo.getTextDetails().get(0).showDetail(
-                                    TextDetail.DH_GOTO);
-                        }
-                    });
-                } else {
-                    DataObject dob = mo.getDataObject();
-                    if (dob != null) {
-                        EditCookie editCookie = dob.getLookup().lookup(
-                                EditCookie.class);
-                        if (editCookie != null) {
-                            editCookie.edit();
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        return activatedNodes != null && activatedNodes.length > 0;
+    public boolean isEnabled() {
+        return true;
     }
 }

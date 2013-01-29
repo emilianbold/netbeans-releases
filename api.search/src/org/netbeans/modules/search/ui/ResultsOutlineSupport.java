@@ -88,6 +88,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 
@@ -125,7 +126,7 @@ public class ResultsOutlineSupport {
         this.details = details;
         this.resultModel = resultModel;
         this.basicComposition = basicComposition;
-        this.resultsNode = new ResultsNode();
+        this.resultsNode = new ResultsNode(resultModel);
         this.infoNode = infoNode;
         this.invisibleRoot = new RootNode(resultsNode, infoNode);
         this.matchingObjectNodes = new LinkedList<MatchingObjectNode>();
@@ -312,7 +313,7 @@ public class ResultsOutlineSupport {
         private FolderTreeChildren folderTreeChildren;
         private String htmlDisplayName = null;
 
-        public ResultsNode() {
+        public ResultsNode(ResultModel model) {
             super(new FlatChildren());
             this.flatChildren = (FlatChildren) this.getChildren();
             this.folderTreeChildren = new FolderTreeChildren(rootPathItem);
@@ -386,6 +387,16 @@ public class ResultsOutlineSupport {
      * Shows list of matching data objects.
      */
     private class FlatChildren extends Children.Keys<MatchingObject> {
+
+        public FlatChildren() {
+            resultModel.addPropertyChangeListener(ResultModel.PROP_RESULTS_EDIT,
+                    new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    update();
+                }
+            });
+        }
 
         @Override
         protected Node[] createNodes(MatchingObject key) {
@@ -479,11 +490,11 @@ public class ResultsOutlineSupport {
                     return;
                 }
             }
-            parentItem.addChild(new FolderTreeItem(matchingObject));
+            parentItem.addChild(new FolderTreeItem(matchingObject, parentItem));
         } else {
             try {
                 FolderTreeItem newChild = new FolderTreeItem(
-                        DataObject.find(path.get(0)));
+                        DataObject.find(path.get(0)), parentItem);
                 parentItem.addChild(newChild);
                 createInTreeView(newChild, path.subList(1, path.size()),
                         matchingObject);
@@ -493,10 +504,11 @@ public class ResultsOutlineSupport {
         }
     }
 
-    private class FolderTreeItem implements Selectable {
+    static class FolderTreeItem implements Selectable {
 
-        private static final String PROP_SELECTED = "selected";         //NOI18N
-        private static final String PROP_CHILDREN = "children";         //NOI18N
+        static final String PROP_SELECTED = "selected";                 //NOI18N
+        static final String PROP_CHILDREN = "children";                 //NOI18N
+        private FolderTreeItem parent;
         private DataObject folder = null;
         private MatchingObject matchingObject = null;
         private List<FolderTreeItem> children =
@@ -508,9 +520,12 @@ public class ResultsOutlineSupport {
          * Constructor for root node
          */
         public FolderTreeItem() {
+            this.parent = null;
         }
 
-        public FolderTreeItem(MatchingObject matchingObject) {
+        public FolderTreeItem(MatchingObject matchingObject,
+                FolderTreeItem parent) {
+            this.parent = parent;
             this.matchingObject = matchingObject;
             matchingObject.addPropertyChangeListener(
                     new PropertyChangeListener() {
@@ -520,16 +535,19 @@ public class ResultsOutlineSupport {
                     if (pn.equals(MatchingObject.PROP_SELECTED)) {
                         setSelected(FolderTreeItem.this.matchingObject
                                 .isSelected());
+                    } else if (pn.equals(MatchingObject.PROP_REMOVED)) {
+                        remove();
                     }
                 }
             });
         }
 
-        public FolderTreeItem(DataObject file) {
+        public FolderTreeItem(DataObject file, FolderTreeItem parent) {
+            this.parent = parent;
             this.folder = file;
         }
 
-        void addChild(FolderTreeItem pathItem) {
+        synchronized void addChild(FolderTreeItem pathItem) {
             children.add(pathItem);
             firePropertyChange(PROP_CHILDREN, null, null);
         }
@@ -538,8 +556,38 @@ public class ResultsOutlineSupport {
             return folder;
         }
 
-        public List<FolderTreeItem> getChildren() {
-            return children;
+        public synchronized List<FolderTreeItem> getChildren() {
+            return new ArrayList<FolderTreeItem>(children);
+        }
+
+        public synchronized void remove() {
+            // remove children first, then...
+            // NOTE uses a copy of the children to prevent a ConcurrentModifcationException
+            for (FolderTreeItem fti : new ArrayList<FolderTreeItem>(children)) {
+                if (fti.isPathLeaf()) {
+                    // remove the matching node
+                    fti.getMatchingObject().remove();
+                } else {
+                    // remove all folder children - starts a recursion
+                    fti.remove();
+                }
+            }
+            // ... then try to remove itself
+            if (parent != null) {
+                parent.removeChild(this);
+            }
+        }
+
+        private synchronized void removeChild(FolderTreeItem child) {
+            boolean result = children.remove(child);
+            if (result) {
+                child.parent = null;
+            }
+            if (children.isEmpty() && parent != null) {
+                remove();
+            } else {
+                firePropertyChange(PROP_CHILDREN, null, null);
+            }
         }
 
         public MatchingObject getMatchingObject() {
@@ -607,7 +655,13 @@ public class ResultsOutlineSupport {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     fireIconChange();
-                    toggleParentSelected(FolderTreeNode.this);
+                    String prop = evt.getPropertyName();
+                    if (prop.equals(FolderTreeItem.PROP_SELECTED)) {
+                        toggleParentSelected(
+                                FolderTreeNode.this.getParentNode());
+                    } else if (prop.equals(FolderTreeItem.PROP_CHILDREN)) {
+                        toggleParentSelected(FolderTreeNode.this);
+                    }
                 }
             });
             if (!pathItem.isPathLeaf()) {
@@ -627,13 +681,24 @@ public class ResultsOutlineSupport {
         }
 
         @Override
+        public boolean canDestroy () {
+            return true;
+        }
+
+        @Override
+        public void destroy () throws IOException {
+            FolderTreeItem folder = this.getLookup().lookup(FolderTreeItem.class);
+            folder.remove();
+        }
+
+        @Override
         public Transferable drag() throws IOException {
             return UiUtils.DISABLE_TRANSFER;
         }
 
         @Override
         public Action[] getActions(boolean context) {
-            return new Action[0];
+            return new Action[]{SystemAction.get(HideResultAction.class)};
         }
     }
 
@@ -675,8 +740,7 @@ public class ResultsOutlineSupport {
         }
     }
 
-    public static void toggleParentSelected(Node node) {
-        Node parent = node.getParentNode();
+    public static void toggleParentSelected(Node parent) {
         if (parent == null) {
             return;
         }

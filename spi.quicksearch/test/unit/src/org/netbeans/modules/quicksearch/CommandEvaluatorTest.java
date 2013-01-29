@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,68 +37,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.search.ui;
+package org.netbeans.modules.quicksearch;
 
-import java.awt.EventQueue;
-import org.netbeans.modules.search.MatchingObject;
-import org.netbeans.modules.search.TextDetail;
-import org.openide.cookies.EditCookie;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.actions.NodeAction;
+import java.util.HashSet;
+import java.util.Set;
+import static org.junit.Assert.*;
+import org.junit.Test;
+import org.netbeans.modules.quicksearch.ProviderModel.Category;
 
 /**
- * Action that opens currently selected matching objects in editor.
  *
  * @author jhavlin
  */
-public class OpenMatchingObjectsAction extends NodeAction {
+public class CommandEvaluatorTest {
 
-    @Override
-    public String getName() {
-        return UiUtils.getText("LBL_EditAction");                       //NOI18N
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-
-        for (Node n : activatedNodes) {
-            final MatchingObject mo = n.getLookup().lookup(
-                    MatchingObject.class);
-            if (mo != null) {
-                if (mo.getTextDetails() != null
-                        && !mo.getTextDetails().isEmpty()) { // #219428
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            mo.getTextDetails().get(0).showDetail(
-                                    TextDetail.DH_GOTO);
-                        }
-                    });
-                } else {
-                    DataObject dob = mo.getDataObject();
-                    if (dob != null) {
-                        EditCookie editCookie = dob.getLookup().lookup(
-                                EditCookie.class);
-                        if (editCookie != null) {
-                            editCookie.edit();
-                        }
-                    }
-                }
+    @Test
+    public void testGetSetEvalCats() {
+        Set<ProviderModel.Category> evalCats = CommandEvaluator.getEvalCats();
+        Category recent = null;
+        for (Category c : evalCats) {
+            if (CommandEvaluator.RECENT.equals(c.getName())) {
+                recent = c;
             }
         }
-    }
-
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        return activatedNodes != null && activatedNodes.length > 0;
+        assertNotNull("Recent category should be enabled", recent);
+        CommandEvaluator.setEvalCats(new HashSet<Category>());
+        assertEquals(0, CommandEvaluator.getEvalCats().size());
+        CommandEvaluator.setEvalCats(null);
+        assertNotNull(ProviderModel.getInstance().getCategories());
+        assertNotNull(CommandEvaluator.getEvalCats());
+        assertEquals(ProviderModel.getInstance().getCategories().size(),
+                CommandEvaluator.getEvalCats().size());
+        CommandEvaluator.setEvalCats(evalCats);
     }
 }

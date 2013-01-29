@@ -50,6 +50,7 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.io.CharConversionException;
+import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -451,6 +452,7 @@ public final class TextDetail implements Selectable {
         /** Cached toString value. */
         private String name;
         private String htmlDisplayName;
+        private final MatchingObject mo;
         
         /**
          * Constructs a node representing the specified information about
@@ -458,11 +460,13 @@ public final class TextDetail implements Selectable {
          *
          * @param txtDetail  information to be represented by this node
          */
-        public DetailNode(TextDetail txtDetail, boolean replacing) {
+        public DetailNode(TextDetail txtDetail, boolean replacing,
+                MatchingObject mo) {
             super(Children.LEAF, Lookups.fixed(txtDetail,
                     new ReplaceCheckableNode(txtDetail, replacing)));
             
             this.txtDetail = txtDetail;
+            this.mo = mo;
             
             setValue(SearchDisplayer.ATTR_OUTPUT_LINE,
                      DetailNode.getFullDesc(txtDetail));
@@ -475,7 +479,8 @@ public final class TextDetail implements Selectable {
                 @Override
                 public void stateChanged(ChangeEvent e) {
                     fireIconChange();
-                    ResultsOutlineSupport.toggleParentSelected(DetailNode.this);
+                    ResultsOutlineSupport.toggleParentSelected(
+                            DetailNode.this.getParentNode());
                 }
             });
             setIconBaseWithExtension(ICON);
@@ -823,6 +828,15 @@ public final class TextDetail implements Selectable {
         protected void createPasteTypes(Transferable t, List<PasteType> s) {
         }
         
+        @Override
+        public boolean canDestroy() {
+            return true;
+        }
+
+        @Override
+        public void destroy() throws IOException {
+            this.mo.removeDetail(txtDetail);
+        }
     } // End of DetailNode class.
 
     /**

@@ -57,6 +57,7 @@ import org.netbeans.modules.search.PatternSandbox;
 import org.netbeans.modules.search.ui.CheckBoxWithButtonPanel;
 import org.netbeans.modules.search.ui.FormLayoutHelper;
 import org.netbeans.modules.search.ui.UiUtils;
+import org.openide.util.NbBundle;
 
 /**
  * Component controller for setting search scope options.
@@ -116,6 +117,8 @@ public final class ScopeOptionsController extends ComponentController<JPanel> {
     private void init() {
         btnTestFileNamePattern = new JButton();
         chkFileNameRegex = new JCheckBox();
+        chkFileNameRegex.setToolTipText(UiUtils.getText(
+                "BasicSearchForm.chkFileNameRegex.tooltip"));           //NOI18N
 
         if (!replacing) {
             chkArchives = new JCheckBox();
