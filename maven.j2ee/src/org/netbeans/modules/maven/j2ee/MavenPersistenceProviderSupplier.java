@@ -46,7 +46,9 @@ package org.netbeans.modules.maven.j2ee;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -54,16 +56,22 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
+import org.netbeans.modules.javaee.specs.support.api.JpaProvider;
+import org.netbeans.modules.javaee.specs.support.api.JpaSupport;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
- * An implementation of PersistenceProviderSupplier for web project.
- * hard copy from web projects..
- * 
+ * An implementation of PersistenceProviderSupplier for Maven project.
+ * TODO:
+ *      The implementation of the this method (and whole PersistenceProviderSupplier)
+ *      is pretty much identical with the Ant implementation, should be refactored to
+ *      some common class.
+ *
  * @author Erno Mononen
  * @author Milos Kleint
  */
@@ -72,59 +80,80 @@ import org.netbeans.spi.project.ProjectServiceProvider;
     "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
     "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT
 })
-public class MavenPersistenceProviderSupplier implements PersistenceProviderSupplier{
-    
+public class MavenPersistenceProviderSupplier implements PersistenceProviderSupplier {
+
     private final Project project;
-    
+
 
     public MavenPersistenceProviderSupplier(Project project) {
         this.project = project;
     }
-    
+
     @Override
     public List<Provider> getSupportedProviders() {
-        J2eePlatform platform = null;
         try {
-            // TODO: the implementation of the this method (and whole PersistenceProviderSupplier)
-            // is pretty much identical with the EJB implementation,
-            // should be refactored to some common class.
             J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
             ServerInstance si = Deployment.getDefault().getServerInstance(j2eeModuleProvider.getServerInstanceID());
             if (si == null) {
-                return Collections.<Provider>emptyList();
+                return Collections.emptyList();
             }
-            platform = si.getJ2eePlatform();
+            J2eePlatform platform = si.getJ2eePlatform();
             if (platform == null) {
-                return Collections.<Provider>emptyList();
+                return Collections.emptyList();
+            } else {
+                return findPersistenceProviders(platform);
             }
         } catch (InstanceRemovedException ex) {
-            return Collections.<Provider>emptyList();
+            return Collections.emptyList();
         }
-        List<Provider> result = new ArrayList<Provider>();
-        addPersistenceProvider(ProviderUtil.HIBERNATE_PROVIDER, "hibernatePersistenceProviderIsDefault1.0", platform, result); // NOI18N
-        addPersistenceProvider(ProviderUtil.HIBERNATE_PROVIDER2_0, "hibernatePersistenceProviderIsDefault2.0", platform, result); // NOI18N
-        addPersistenceProvider(ProviderUtil.HIBERNATE_PROVIDER2_1, "hibernatePersistenceProviderIsDefault2.1", platform, result); // NOI18N
-        addPersistenceProvider(ProviderUtil.TOPLINK_PROVIDER1_0, "toplinkPersistenceProviderIsDefault", platform, result); // NOI18N
-        addPersistenceProvider(ProviderUtil.KODO_PROVIDER, "kodoPersistenceProviderIsDefault", platform, result); // NOI18N
-        addPersistenceProvider(ProviderUtil.OPENJPA_PROVIDER, "openJpaPersistenceProviderIsDefault2.0", platform, result); // NOI18N
-        addPersistenceProvider(ProviderUtil.OPENJPA_PROVIDER1_0, "openJpaPersistenceProviderIsDefault1.0", platform, result); // NOI18N
-        addPersistenceProvider(ProviderUtil.ECLIPSELINK_PROVIDER1_0, "eclipseLinkPersistenceProviderIsDefault1.0", platform, result); // NOI18N
-        addPersistenceProvider(ProviderUtil.ECLIPSELINK_PROVIDER2_0, "eclipseLinkPersistenceProviderIsDefault2.0", platform, result); // NOI18N
-        addPersistenceProvider(ProviderUtil.ECLIPSELINK_PROVIDER, "eclipseLinkPersistenceProviderIsDefault2.1", platform, result); // NOI18N
-        return result;
     }
-    
-    private void addPersistenceProvider(Provider provider, String defaultProvider, J2eePlatform platform, List<Provider> providers){
-        // would need an api for this..
-        if (platform.isToolSupported(provider.getProviderClass())){
-            if (platform.isToolSupported(defaultProvider)){
-                providers.add(0, provider);
-            } else {
-                providers.add(provider);
+
+    private List<Provider> findPersistenceProviders(J2eePlatform platform) {
+        final List<Provider> providers = new ArrayList<Provider>();
+        final Map<String, JpaProvider> jpaProviderMap = createProviderMap(platform);
+
+        boolean defaultFound = false; // see issue #225071
+
+        // Here we are mapping the JpaProvider to the correct Provider
+        for (Provider provider : ProviderUtil.getAllProviders()) {
+
+            // Find JpaProvider for corespond Provider --> we are using concrete class for that
+            JpaProvider jpa = jpaProviderMap.get(provider.getProviderClass());
+            if (jpa != null) {
+                String version = ProviderUtil.getVersion(provider);
+                if (version == null
+                        || (version.equals(Persistence.VERSION_2_1) && jpa.isJpa21Supported())
+                        || (version.equals(Persistence.VERSION_2_0) && jpa.isJpa2Supported())
+                        || (version.equals(Persistence.VERSION_1_0) && jpa.isJpa1Supported())) {
+
+                    if (jpa.isDefault() && !defaultFound) {
+                        providers.add(0, provider);
+                        defaultFound = true;
+                    } else {
+                        providers.add(provider);
+                    }
+                }
             }
         }
+        return providers;
     }
-    
+
+    private Map<String, JpaProvider> createProviderMap(J2eePlatform platform) {
+        final JpaSupport jpaSupport = JpaSupport.getInstance(platform);
+        final Map<String, JpaProvider> providerMap = new HashMap<String, JpaProvider>();
+
+        for (JpaProvider provider : jpaSupport.getProviders()) {
+            providerMap.put(provider.getClassName(), provider);
+        }
+
+        JpaProvider defaultProvider = jpaSupport.getDefaultProvider();
+        if (defaultProvider != null) {
+            providerMap.put(defaultProvider.getClassName(), defaultProvider);
+        }
+
+        return providerMap;
+    }
+
     @Override
     public boolean supportsDefaultProvider() {
         final J2eeProjectCapabilities capabilities = J2eeProjectCapabilities.forProject(project);
