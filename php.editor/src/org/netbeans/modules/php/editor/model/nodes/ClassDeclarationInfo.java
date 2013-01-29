@@ -141,8 +141,8 @@ public class ClassDeclarationInfo extends ASTNodeInfo<ClassDeclaration> {
         private List<UseTraitStatementPart> useParts = new LinkedList<UseTraitStatementPart>();
 
         @Override
-        public void visit(UseTraitStatement node) {
-            useParts = node.getParts();
+        public void visit(UseTraitStatementPart node) {
+            useParts.add(node);
         }
 
         public Collection<QualifiedName> getUsedTraits() {

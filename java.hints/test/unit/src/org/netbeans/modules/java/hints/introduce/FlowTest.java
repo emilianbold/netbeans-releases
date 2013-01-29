@@ -919,6 +919,18 @@ public class FlowTest extends NbTestCase {
                     "toResume.getParent()");
     }
     
+    public void testDoNotGeneralizeIfsWithElse() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "     public static void t(int yy) {\n" +
+                    "          if (yy > 0) return;\n" +
+                    "          else yy++;" +
+                    "          System.err.println(y`y);\n" +
+                    "     }\n" +
+                    "}\n",
+                    "yy++");
+    }
+    
     public void testDeadBranch207514() throws Exception {
         performDeadBranchTest("package test;\n" +
                               "public class Test {\n" +

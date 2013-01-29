@@ -45,6 +45,8 @@ import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ResourceBundle;
 import javax.accessibility.AccessibleContext;
@@ -74,7 +76,7 @@ import org.openide.util.NbBundle;
  * @author jhavlin
  */
 public abstract class BasicAbstractResultsPanel
-        extends AbstractSearchResultsPanel {
+        extends AbstractSearchResultsPanel implements PropertyChangeListener {
 
     @StaticResource
     private static final String SHOW_DETAILS_ICON =
@@ -95,6 +97,7 @@ public abstract class BasicAbstractResultsPanel
     protected BasicComposition composition;
     protected final ResultsOutlineSupport resultsOutlineSupport;
     private NodeListener resultsNodeAdditionListener;
+    private volatile boolean finished = false;
     protected static final boolean isMacLaf =
             "Aqua".equals(UIManager.getLookAndFeel().getID());          //NOI18N
     protected static final Color macBackground =
@@ -120,8 +123,19 @@ public abstract class BasicAbstractResultsPanel
         setRootDisplayName(NbBundle.getMessage(ResultView.class,
                 "TEXT_SEARCHING___"));                                  //NOI18N
         initAccessibility();
+        this.resultModel.addPropertyChangeListener(
+                ResultModel.PROP_RESULTS_EDIT, this);
     }
 
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        // update the root node after change in model
+        if (finished) {
+            setFinalRootNodeText();
+        } else {
+            updateRootNodeText();
+        }
+    }
 
     public void update() {
         if (details && btnExpand.isVisible() && !btnExpand.isEnabled()) {
@@ -246,6 +260,7 @@ public abstract class BasicAbstractResultsPanel
     @Override
     public void searchFinished() {
         super.searchFinished();
+        this.finished = true;
         if (details && resultModel.size() > 0 && showDetailsButton != null) {
             showDetailsButton.setEnabled(true);
         }
