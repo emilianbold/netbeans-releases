@@ -129,7 +129,12 @@ CLASS      Brejla                          [PUBLIC]   test211230.php
 CLASS      Buuu                            [PUBLIC]   ShowMe
 CLASS      C                               [PUBLIC]   test.php
 CLASS      CallableClass                   [PUBLIC]   callableTypeHint.php
+CLASS      Child                           [PUBLIC]   useCase2.php
 CLASS      ChildClass                      [PUBLIC]   class_member_visibility.php
+CLASS      ChildP                          [PUBLIC]   useCase3.php
+CLASS      ChildSe                         [PUBLIC]   useCase2.php
+CLASS      ChildSt                         [PUBLIC]   useCase1.php
+CLASS      ChildTh                         [PUBLIC]   useCase1.php
 CLASS      ClassName                       [PUBLIC]   Fom\Bom
 CLASS      ClassName                       [PUBLIC]   issue194300.php
 CLASS      ClassName123                    [PUBLIC]   issue209608.php
@@ -222,7 +227,12 @@ CLASS      Omg                             [PUBLIC]   test204104_05.php
 CLASS      OmgCls                          [PUBLIC]   declarations.php
 CLASS      Ondrej                          [PUBLIC]   test211230.php
 CLASS      PagePresenter                   [PUBLIC]   AdminModule
+CLASS      Parent7                         [PUBLIC]   useCase2.php
 CLASS      ParentClass                     [PUBLIC]   class_member_visibility.php
+CLASS      ParentP                         [PUBLIC]   useCase3.php
+CLASS      ParentSe                        [PUBLIC]   useCase2.php
+CLASS      ParentSt                        [PUBLIC]   useCase1.php
+CLASS      ParentTh                        [PUBLIC]   useCase1.php
 CLASS      Person148213                    [PUBLIC]   issue148213.php
 CLASS      PhpDoc01Magazine                [PUBLIC]   typeInPHPDoc01.php
 CLASS      PhpDoc01News                    [PUBLIC]   typeInPHPDoc01.php
@@ -232,6 +242,7 @@ CLASS      Request                         [PUBLIC]   Brite\Base
 CLASS      SecuredPresenter                [PUBLIC]   AdminModule
 CLASS      SetFoo                          [PUBLIC]   test221725.php
 CLASS      SmartCompletion                 [PUBLIC]   issue201032.php
+CLASS      SomeClass                       [PUBLIC]   useCase4.php
 CLASS      Space                           [PUBLIC]   Test\Space
 CLASS      SpaceUniverse                   [PUBLIC]   Test\Space
 CLASS      Strings                         [PUBLIC]   Nette\Utils

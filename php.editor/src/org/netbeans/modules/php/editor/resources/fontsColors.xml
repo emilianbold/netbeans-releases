@@ -82,6 +82,8 @@
     <fontcolor name="mod-class" >
         <font style="bold" />
     </fontcolor>
+    <fontcolor name="mod-deprecated" strikeThrough="000000" />
+
 <!--currently not used:-->
 <!--    <fontcolor name="mod-interface" />
     <fontcolor name="mod-annotation-type" />

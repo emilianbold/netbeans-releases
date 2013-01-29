@@ -59,6 +59,7 @@ import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
+import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.openide.util.Parameters;
@@ -83,8 +84,9 @@ public final class ClassElementImpl extends TypeElementImpl implements ClassElem
             final int flags,
             final Collection<QualifiedName> usedTraits,
             final String fileUrl,
-            final ElementQuery elementQuery) {
-        super(qualifiedName, offset, ifaceNames, fqSuperInterfaces, flags, fileUrl, elementQuery);
+            final ElementQuery elementQuery,
+            final boolean isDeprecated) {
+        super(qualifiedName, offset, ifaceNames, fqSuperInterfaces, flags, fileUrl, elementQuery, isDeprecated);
         this.superClass = superClsName;
         this.possibleFQSuperClassNames = possibleFQSuperClassNames;
         this.usedTraits = usedTraits;
@@ -117,7 +119,8 @@ public final class ClassElementImpl extends TypeElementImpl implements ClassElem
             retval = new ClassElementImpl(signParser.getQualifiedName(), signParser.getOffset(),
                     signParser.getSuperClassName(), signParser.getPossibleFQSuperClassName(),
                     signParser.getSuperInterfaces(), signParser.getFQSuperInterfaces(), signParser.getFlags(),
-                    signParser.getUsedTraits(), indexResult.getUrl().toString(), indexScopeQuery);
+                    signParser.getUsedTraits(), indexResult.getUrl().toString(), indexScopeQuery,
+                    signParser.isDeprecated());
         }
         return retval;
     }
@@ -131,7 +134,7 @@ public final class ClassElementImpl extends TypeElementImpl implements ClassElem
                 fullyQualifiedName.append(info.getName()), info.getRange().getStart(),
                 info.getSuperClassName(), Collections.<QualifiedName>emptySet(), info.getInterfaceNames(),
                 Collections.<QualifiedName>emptySet(), info.getAccessModifiers().toFlags(), info.getUsedTraits(),
-                fileQuery.getURL().toExternalForm(), fileQuery);
+                fileQuery.getURL().toExternalForm(), fileQuery, VariousUtils.isDeprecatedFromPHPDoc(fileQuery.getResult().getProgram(), node));
     }
 
     public static ClassElement fromFrameworks(final PhpClass clz, final ElementQuery elementQuery) {
@@ -140,7 +143,7 @@ public final class ClassElementImpl extends TypeElementImpl implements ClassElem
         String fullyQualifiedName = clz.getFullyQualifiedName();
         ClassElementImpl retval = new ClassElementImpl(QualifiedName.create(fullyQualifiedName == null ? clz.getName() : fullyQualifiedName),
                 clz.getOffset(), null, Collections.<QualifiedName>emptySet(), Collections.<QualifiedName>emptySet(),
-                Collections.<QualifiedName>emptySet(), PhpModifiers.NO_FLAGS, Collections.<QualifiedName>emptySet(), null, elementQuery);
+                Collections.<QualifiedName>emptySet(), PhpModifiers.NO_FLAGS, Collections.<QualifiedName>emptySet(), null, elementQuery, false);
         retval.setFileObject(clz.getFile());
         return retval;
     }
@@ -209,6 +212,7 @@ public final class ClassElementImpl extends TypeElementImpl implements ClassElem
             sb.append(traitSb);
         }
         sb.append(";"); //NOI18N
+        sb.append(isDeprecated() ? 1 : 0).append(";"); //NOI18N
 
         checkClassSignature(sb);
         return sb.toString();
@@ -375,6 +379,10 @@ public final class ClassElementImpl extends TypeElementImpl implements ClassElem
                 retval.add(QualifiedName.create(trait));
             }
             return retval;
+        }
+
+        boolean isDeprecated() {
+            return signature.integer(8) == 1;
         }
     }
 }
