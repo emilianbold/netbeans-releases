@@ -43,13 +43,18 @@
 package org.netbeans.modules.quicksearch;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.quicksearch.ProviderModel.Category;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
@@ -61,6 +66,8 @@ import org.openide.util.RequestProcessor.Task;
 public class CommandEvaluator {
     
     final static String RECENT = "Recent";
+    private static final String PROP_ENABLED_CATEGORIES =
+            "enabledCategories";                                        //NOI18N
     
     /**
      * command pattern is:
@@ -68,15 +75,14 @@ public class CommandEvaluator {
      */
     private static Pattern COMMAND_PATTERN = Pattern.compile("(\\w+)(\\s+)(.+)");
 
-    /** Narrow evaluation only to specified category if non null.
-     * Evaluate all categories otherwise
-     */
-    private static ProviderModel.Category evalCat;
-
     /** Temporary narrow evaluation to only specified category **/
     private static boolean isCatTemporary;
 
     private static final RequestProcessor RP = new RequestProcessor("QuickSearch Command Evaluator", 10); // NOI18N
+    /**
+     * Narrow evaluation to specified set of categories.
+     */
+    private static Set<ProviderModel.Category> evalCats = loadEvalCats();
     
     /**
      * Runs evaluation.
@@ -113,12 +119,57 @@ public class CommandEvaluator {
         return new Wait4AllTask(tasks);
     }
 
-    public static Category getEvalCat () {
-        return evalCat;
+    private static Set<Category> loadEvalCats() {
+        final Set<Category> cats = new HashSet<Category>(
+                ProviderModel.getInstance().getCategories());
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                String ec = NbPreferences.forModule(CommandEvaluator.class).get(
+                        PROP_ENABLED_CATEGORIES, null);
+                if (ec != null) {
+                    Set<String> categoryNames = new HashSet<String>();
+                    categoryNames.addAll(Arrays.asList(ec.split(":"))); //NOI18N
+                    Iterator<Category> iterator = cats.iterator();
+                    while (iterator.hasNext()) {
+                        Category category = iterator.next();
+                        if (!categoryNames.contains(category.getName())
+                                && !RECENT.equals(category.getName())) {
+                            iterator.remove();
+                        }
+                    }
+                }
+            }
+        });
+        return cats;
     }
 
-    public static void setEvalCat (Category cat) {
-        CommandEvaluator.evalCat = cat;
+    private static void storeEvalCats() {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                StringBuilder sb = new StringBuilder();
+                for (Category category : evalCats) {
+                    if (!RECENT.equals(category.getName())) {
+                        sb.append(category.getName());
+                        sb.append(':');
+                    }
+                }
+                NbPreferences.forModule(CommandEvaluator.class).put(
+                        PROP_ENABLED_CATEGORIES, sb.toString());
+            }
+        });
+    }
+
+    public static Set<Category> getEvalCats () {
+        return evalCats;
+    }
+
+    public static void setEvalCats(Set<Category> cat) {
+        CommandEvaluator.evalCats = (cat == null)
+                ? new HashSet<Category>(ProviderModel.getInstance()
+                .getCategories())
+                : cat;
     }
 
     public static boolean isCatTemporary () {
@@ -127,6 +178,9 @@ public class CommandEvaluator {
 
     public static void setCatTemporary (boolean isCatTemporary) {
         CommandEvaluator.isCatTemporary = isCatTemporary;
+        if (!isCatTemporary) {
+            storeEvalCats();
+        }
     }
 
     private static String[] parseCommand (String command) {
@@ -180,15 +234,8 @@ public class CommandEvaluator {
             }
         }
 
-        // evaluation narrowed to category perhaps?
-        if (evalCat != null) {
-            result.add(evalCat);
-            return true;
-        }
-
-        // no narrowing
-        result.clear();
-        result.addAll(cats);
+        //no narrowing
+        result.addAll(evalCats);
 
         return false;
     }
