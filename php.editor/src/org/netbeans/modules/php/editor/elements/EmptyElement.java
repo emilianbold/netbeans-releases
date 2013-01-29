@@ -53,7 +53,13 @@ public class EmptyElement extends PhpElementImpl implements TypeMemberElement {
     private final TypeElement enclosingType;
 
     public EmptyElement(final TypeElement enclosingType) {
-        super("__EMPTY__", enclosingType.getName(), enclosingType.getFilenameUrl(), enclosingType.getOffset(), enclosingType.getElementQuery()); //NOI18N
+        super(
+                "__EMPTY__", //NOI18N
+                enclosingType.getName(),
+                enclosingType.getFilenameUrl(),
+                enclosingType.getOffset(),
+                enclosingType.getElementQuery(),
+                enclosingType.isDeprecated());
         this.enclosingType = enclosingType;
     }
 

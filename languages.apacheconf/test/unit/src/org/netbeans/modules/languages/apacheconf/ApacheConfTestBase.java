@@ -41,10 +41,9 @@
  */
 package org.netbeans.modules.languages.apacheconf;
 
-import java.io.File;
 import org.netbeans.modules.csl.api.test.CslTestBase;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.languages.apacheconf.csl.ApacheConfLanguageConfig;
 
 /**
  *
@@ -63,31 +62,13 @@ public abstract class ApacheConfTestBase extends CslTestBase {
     }
 
     @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    protected String getPreferredMimeType() {
+        return ApacheConfLanguageConfig.MIME_TYPE;
     }
 
-    protected abstract String getTestResult(String filename) throws Exception ;
-
-    protected void performTest(String filename) throws Exception {
-        // parse the file
-        String result = getTestResult(filename);
-        String fullClassName = this.getClass().getName();
-        String goldenFileDir = fullClassName.replace('.', '/');
-        // try to find golden file
-        String goldenFolder = getDataSourceDir().getAbsolutePath() + "/goldenfiles/" + goldenFileDir + "/";
-        File goldenFile = new File(goldenFolder + filename + ".pass");
-        if (!goldenFile.exists()) {
-            // if doesn't exist, create it
-            FileObject goldenFO = touch(goldenFolder, filename + ".pass");
-            copyStringToFileObject(goldenFO, result);
-        } else {
-            // if exist, compare it.
-            goldenFile = getGoldenFile(filename + ".pass");
-            FileObject resultFO = touch(getWorkDir(), filename + ".result");
-            copyStringToFileObject(resultFO, result);
-            assertFile(FileUtil.toFile(resultFO), goldenFile, getWorkDir());
-        }
+    @Override
+    protected DefaultLanguageConfig getPreferredLanguage() {
+        return new ApacheConfLanguageConfig();
     }
 
 }
