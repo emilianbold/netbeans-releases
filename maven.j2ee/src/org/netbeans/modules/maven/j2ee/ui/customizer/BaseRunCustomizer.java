@@ -90,11 +90,6 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
 
     //mkleint: this method should only be run from within the ApplyChangesCustomizer.applyChanges() method
     protected void changeServer(JComboBox selectedServerComboBox) {
-//        SessionContent sc = project.getLookup().lookup(SessionContent.class);
-//        if (serverModelUpdater.getValue().getServerID() != null) {
-//            sc.setServerInstanceId(null);
-//        }
-
         Server selectedServer = (Server) selectedServerComboBox.getSelectedItem();
         // User is trying to set <No Server> option
         if (ExecutionChecker.DEV_NULL.equals(selectedServer.getServerInstanceID())) {
@@ -125,8 +120,8 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
         });
     }
 
-    protected void initServerModel(JComboBox serverCBox, JLabel serverLabel) {
-        ServerComboBoxUpdater.create(handle, serverCBox, serverLabel);
+    protected void initServerModel(JComboBox serverCBox, JLabel serverLabel, J2eeModule.Type projectType) {
+        ServerComboBoxUpdater.create(handle, serverCBox, serverLabel, projectType);
     }
 
     protected void initVersionModel(JComboBox javaeeVersionCBox, JLabel javaeeVersionLabel) {
@@ -148,21 +143,5 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
         } else {
             dosDescription.setText(DosDescriptionIfDisabled_text());
         }
-    }
-
-    protected void loadServerModel(JComboBox serverModel, J2eeModule.Type type, Profile profile) {
-        String[] ids = Deployment.getDefault().getServerInstanceIDs(Collections.singleton(type), profile);
-        Collection<Server> col = new ArrayList<Server>();
-
-        SessionContent sc = project.getLookup().lookup(SessionContent.class);
-        if (sc != null && sc.getServerInstanceId() != null) {
-            col.add(new Server(ExecutionChecker.DEV_NULL, sc.getServerInstanceId()));
-        } else {
-            col.add(new Server(ExecutionChecker.DEV_NULL));
-        }
-        for (String id : ids) {
-            col.add(new Server(id));
-        }
-        serverModel.setModel(new DefaultComboBoxModel(col.toArray()));
     }
 }

@@ -64,13 +64,12 @@ public class CustomizerRunEar extends BaseRunCustomizer {
 
         module = Ear.getEar(project.getProjectDirectory());
         if (module != null) {
-            loadServerModel(comServer, J2eeModule.Type.EAR, module.getJ2eeProfile());
-            txtJ2EEVersion.setText(module.getJ2eePlatformVersion());
+            txtJ2EEVersion.setText(module.getJ2eeProfile().getDisplayName());
         }
 
         initValues();
         initDeployOnSave(jCheckBoxDeployOnSave, dosDescription);
-        //TODO: initServerComponent(comServer, lblServer);
+        initServerModel(comServer, lblServer, J2eeModule.Type.EAR);
     }
 
     private void initValues() {

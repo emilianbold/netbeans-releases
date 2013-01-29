@@ -61,12 +61,11 @@ public class CustomizerRunEjb extends BaseRunCustomizer {
 
         module = EjbJar.getEjbJar(project.getProjectDirectory());
         if (module != null) {
-            loadServerModel(comServer, J2eeModule.Type.EJB, module.getJ2eeProfile());
             txtJ2EEVersion.setText(module.getJ2eeProfile().getDisplayName());
         }
 
         initDeployOnSave(jCheckBoxDeployOnSave, dosDescription);
-        //TODO: initServerModel(comServer, lblServer);
+        initServerModel(comServer, lblServer, J2eeModule.Type.EJB);
     }
 
     @Override

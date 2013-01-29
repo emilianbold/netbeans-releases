@@ -49,6 +49,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
@@ -97,7 +98,7 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
         }
 
         initValues();
-        initServerModel(serverCBox, serverLabel);
+        initServerModel(serverCBox, serverLabel, J2eeModule.Type.WAR);
         initVersionModel(javaeeVersionCBox, javaeeVersionLabel);
         initDeployOnSave(jCheckBoxDeployOnSave, dosDescription);
     }

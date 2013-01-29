@@ -64,12 +64,12 @@ public final class ServerComboBoxUpdater extends ComboBoxUpdater<Server> {
     private final Server defaultValue;
 
 
-    private ServerComboBoxUpdater(ModelHandle2 handle, JComboBox serverCBox, JLabel serverLabel) {
+    private ServerComboBoxUpdater(ModelHandle2 handle, JComboBox serverCBox, JLabel serverLabel, J2eeModule.Type projectType) {
         super(serverCBox, serverLabel);
         assert (handle != null);
         assert (serverCBox != null);
 
-        serverCBox.setModel(new DefaultComboBoxModel(ServerUtils.findServersFor(J2eeModule.Type.WAR).toArray()));
+        serverCBox.setModel(new DefaultComboBoxModel(ServerUtils.findServersFor(projectType).toArray()));
 
         this.handle = handle;
         this.serverCBox = serverCBox;
@@ -87,8 +87,8 @@ public final class ServerComboBoxUpdater extends ComboBoxUpdater<Server> {
      * @param serverCBox Server selection combo box for which we want to create updater
      * @param serverLabel Server selection label typically just before combo box
      */
-    public static void create(ModelHandle2 handle, JComboBox serverCBox, JLabel serverLabel) {
-        new ServerComboBoxUpdater(handle, serverCBox, serverLabel);
+    public static void create(ModelHandle2 handle, JComboBox serverCBox, JLabel serverLabel, J2eeModule.Type projectType) {
+        new ServerComboBoxUpdater(handle, serverCBox, serverLabel, projectType);
     }
 
     @Override
