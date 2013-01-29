@@ -119,6 +119,7 @@ import javax.swing.text.Position;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.ModificationResult;
@@ -1253,17 +1254,30 @@ public class Utilities {
     }
 
     public enum Visibility {
-        PRIVATE,
-        PACKAGE_PRIVATE,
-        PROTECTED,
-        PUBLIC;
+        PRIVATE(EnumSet.of(Modifier.PRIVATE)),
+        PACKAGE_PRIVATE(EnumSet.noneOf(Modifier.class)),
+        PROTECTED(EnumSet.of(Modifier.PROTECTED)),
+        PUBLIC(EnumSet.of(Modifier.PUBLIC));
+        private final Set<Modifier> modifiers;
+        private Visibility(Set<Modifier> modifiers) {
+            this.modifiers = modifiers;
+        }
         public Visibility enclosedBy(Visibility encl) {
             return Visibility.values()[Math.min(ordinal(), encl.ordinal())];
+        }
+        public Set<Modifier> getRequiredModifiers() {
+            return modifiers;
         }
         public static Visibility forModifiers(ModifiersTree mt) {
             if (mt.getFlags().contains(Modifier.PUBLIC)) return PUBLIC;
             if (mt.getFlags().contains(Modifier.PROTECTED)) return PROTECTED;
             if (mt.getFlags().contains(Modifier.PRIVATE)) return PRIVATE;
+            return PACKAGE_PRIVATE;
+        }
+        public static Visibility forElement(Element el) {
+            if (el.getModifiers().contains(Modifier.PUBLIC)) return PUBLIC;
+            if (el.getModifiers().contains(Modifier.PROTECTED)) return PROTECTED;
+            if (el.getModifiers().contains(Modifier.PRIVATE)) return PRIVATE;
             return PACKAGE_PRIVATE;
         }
         public static Visibility forTree(Tree t) {
@@ -1277,6 +1291,52 @@ public class Utilities {
                 default: return null;
             }
         }
+    }
+
+    /**
+     * Detects if targets file is non-null and writable
+     * @return true if target's file is writable
+     */
+    public static boolean isTargetWritable(@NonNull TypeElement target, @NonNull CompilationInfo info) {
+        TypeElement outermostType = info.getElementUtilities().outermostTypeElement(target);
+        FileObject fo = SourceUtils.getFile(ElementHandle.create(outermostType), info.getClasspathInfo());
+	if(fo != null && fo.canWrite())
+	    return true;
+	else
+	    return false;
+    }
+
+
+    public static Visibility getAccessModifiers(@NonNull CompilationInfo info, @NullAllowed TypeElement source, @NonNull TypeElement target) {
+        if (target.getKind().isInterface()) {
+            return Visibility.PUBLIC;
+        }
+
+        TypeElement outterMostSource = source != null ? info.getElementUtilities().outermostTypeElement(source) : null;
+        TypeElement outterMostTarget = info.getElementUtilities().outermostTypeElement(target);
+
+        if (outterMostTarget.equals(outterMostSource)) {
+            return Visibility.PRIVATE;
+        }
+
+        Element sourcePackage;
+
+        if (outterMostSource != null) {
+            sourcePackage = outterMostSource.getEnclosingElement();
+        } else if (info.getCompilationUnit().getPackageName() != null) {
+            sourcePackage = info.getTrees().getElement(new TreePath(new TreePath(info.getCompilationUnit()), info.getCompilationUnit().getPackageName()));
+        } else {
+            sourcePackage = info.getElements().getPackageElement("");
+        }
+
+        Element targetPackage = outterMostTarget.getEnclosingElement();
+
+        if (sourcePackage.equals(targetPackage)) {
+            return Visibility.PACKAGE_PRIVATE;
+        }
+
+        //TODO: protected?
+        return Visibility.PUBLIC;
     }
     
     public static boolean isVariableShadowedInScope(CharSequence variableName, Scope localScope) {

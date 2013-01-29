@@ -345,7 +345,8 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
 
         JPopupMenu menu = new JPopupMenu();
         JMenuItem item;
-        boolean onlyIncluded = true;
+        boolean containsExcluded = false;
+        boolean containsIncluded = false;
         boolean anyDirectory = false;
         boolean addAllowed = true;
         for (int rowIndex : table.getSelectedRows()) {
@@ -353,7 +354,9 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
             SvnFileNode node = tableModel.getNode(row);
             FileInformation fileInfo = node.getInformation();
             if (CommitOptions.EXCLUDE.equals(tableModel.getOptions(row))) {
-                onlyIncluded = false;
+                containsExcluded = true;
+            } else {
+                containsIncluded = true;
             }
             if (fileInfo.isDirectory()) {
                 anyDirectory = true;
@@ -362,24 +365,44 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
                 addAllowed = false;
             }
         }
-        final boolean include = !onlyIncluded;
-        item = menu.add(new PopupAction(NbBundle.getMessage(CommitTable.class, include ? "CTL_CommitTable_IncludeAction" : "CTL_CommitTable_ExcludeAction")) { // NOI18N
-            @Override
-            public void performAction (ActionEvent e) {
-                int[] rows = getRows();
-                tableModel.setIncluded(rows, include, false);
-            }
-        });
-        Mnemonics.setLocalizedText(item, item.getText());
-        item = menu.add(new PopupAction(NbBundle.getMessage(CommitTable.class, include ? "CTL_CommitTable_IncludeRecursivelyAction" : "CTL_CommitTable_ExcludeRecursivelyAction")) { // NOI18N
-            @Override
-            public void performAction (ActionEvent e) {
-                int[] rows = getRows();
-                tableModel.setIncluded(rows, include, true);
-            }
-        });
-        Mnemonics.setLocalizedText(item, item.getText());
-        item.setEnabled(anyDirectory);
+        if (containsExcluded) {
+            item = menu.add(new PopupAction(NbBundle.getMessage(CommitTable.class, "CTL_CommitTable_IncludeAction")) { // NOI18N
+                @Override
+                public void performAction (ActionEvent e) {
+                    int[] rows = getRows();
+                    tableModel.setIncluded(rows, true, false);
+                }
+            });
+            Mnemonics.setLocalizedText(item, item.getText());
+            item = menu.add(new PopupAction(NbBundle.getMessage(CommitTable.class, "CTL_CommitTable_IncludeRecursivelyAction")) { // NOI18N
+                @Override
+                public void performAction (ActionEvent e) {
+                    int[] rows = getRows();
+                    tableModel.setIncluded(rows, true, true);
+                }
+            });
+            Mnemonics.setLocalizedText(item, item.getText());
+            item.setEnabled(anyDirectory);
+        }
+        if (containsIncluded) {
+            item = menu.add(new PopupAction(NbBundle.getMessage(CommitTable.class, "CTL_CommitTable_ExcludeAction")) { // NOI18N
+                @Override
+                public void performAction (ActionEvent e) {
+                    int[] rows = getRows();
+                    tableModel.setIncluded(rows, false, false);
+                }
+            });
+            Mnemonics.setLocalizedText(item, item.getText());
+            item = menu.add(new PopupAction(NbBundle.getMessage(CommitTable.class, "CTL_CommitTable_ExcludeRecursivelyAction")) { // NOI18N
+                @Override
+                public void performAction (ActionEvent e) {
+                    int[] rows = getRows();
+                    tableModel.setIncluded(rows, false, true);
+                }
+            });
+            Mnemonics.setLocalizedText(item, item.getText());
+            item.setEnabled(anyDirectory);
+        }
         item = menu.add(new PopupAction(NbBundle.getMessage(CommitTable.class, "CTL_CommitTable_AddTextAction")) { // NOI18N
             @Override
             public void performAction (ActionEvent e) {
@@ -401,12 +424,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
         item = menu.add(new AbstractAction(NbBundle.getMessage(CommitTable.class, "CTL_CommitTable_DiffAction")) { // NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
-                int[] rows = table.getSelectedRows();
-                SvnFileNode[] nodes = new SvnFileNode[rows.length];
-                for (int i = 0; i < rows.length; ++i) {
-                    nodes[i] = tableModel.getNode(sorter.modelIndex(rows[i]));
-                }
-                commitPanel.openDiff(nodes);
+                openDiff();
             }
         });
         Mnemonics.setLocalizedText(item, item.getText());
@@ -438,7 +456,18 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        // not interested
+        if (e.getClickCount() == 2) {
+            openDiff();
+        }
+    }
+
+    private void openDiff () {
+        int[] rows = table.getSelectedRows();
+        SvnFileNode[] nodes = new SvnFileNode[rows.length];
+        for (int i = 0; i < rows.length; ++i) {
+            nodes[i] = tableModel.getNode(sorter.modelIndex(rows[i]));
+        }
+        commitPanel.openDiff(nodes);
     }
 
     /**

@@ -140,8 +140,16 @@ public final class MakeBasedProjectFactorySingleton implements ProjectFactory2 {
     public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
         FileObject projectFile = projectDirectory.getFileObject(PROJECT_XML_PATH);
         //#54488: Added check for virtual
-        if (projectFile == null || !projectFile.isData() || projectFile.isVirtual()) {
-            LOG.log(Level.FINE, "not concrete data file {0}/nbproject/project.xml", projectDirectory);
+        if (projectFile == null) {
+            LOG.log(Level.FINE, "not found data file {0}/nbproject/project.xml", projectDirectory.getPath()); // NOI18N
+            return null;
+        }
+        if (!projectFile.isData()) {
+            LOG.log(Level.FINE, "not found plain file {0}/nbproject/project.xml", projectDirectory.getPath()); // NOI18N
+            return null;
+        }
+        if (projectFile.isVirtual()) {
+            LOG.log(Level.FINE, "not concrete data file {0}/nbproject/project.xml", projectDirectory.getPath()); // NOI18N
             return null;
         }
         Document projectXml = loadProjectXml(projectFile);
@@ -166,7 +174,6 @@ public final class MakeBasedProjectFactorySingleton implements ProjectFactory2 {
         }
         MakeProjectHelperImpl helper = MakeProjectHelperImpl.create(projectDirectory, projectXml, state, provider);
         Project project = provider.createProject(helper);
-        notifyProjectActivity(project);
         project2Helper.put(project, new WeakReference<MakeProjectHelperImpl>(helper));
         synchronized (helper2Project) {
             helper2Project.put(helper, new WeakReference<Project>(project));
@@ -259,11 +266,5 @@ public final class MakeBasedProjectFactorySingleton implements ProjectFactory2 {
             return ref.get();
         }
         return null;
-    }
-
-    private void notifyProjectActivity(Project project) {
-        for (MakeProjectLife service : Lookup.getDefault().lookupAll(MakeProjectLife.class)) {
-            service.start(project);
-        }
     }
 }

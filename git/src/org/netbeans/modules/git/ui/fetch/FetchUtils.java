@@ -46,38 +46,38 @@ import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitTransportUpdate;
 import org.netbeans.libs.git.GitTransportUpdate.Type;
-import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
-import static org.netbeans.modules.git.ui.fetch.Bundle.*;
 import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author ondra
  */
-abstract class GetRemoteChangesAction extends SingleRepositoryAction {
-    protected void log (Map<String, GitTransportUpdate> updates, OutputLogger logger) {
+final class FetchUtils {
+    @Messages({
+        "MSG_GetRemoteChangesAction.updates.noChange=No update",
+        "# {0} - branch name",
+        "# {1} - previous branch head",
+        "# {2} - expected new branch head",
+        "# {3} - real current branch head",
+        "MSG_GetRemoteChangesAction.updates.updateBranch=Branch  : {0}\nOld Id : {1}\nNew Id : {2}\nResult : {3}\n",
+        "# {0} - tag name",
+        "# {1} - revision id",
+        "MSG_GetRemoteChangesAction.updates.updateTag=Tag    : {0}\nResult : {1}\n"
+    })
+    static void log (Map<String, GitTransportUpdate> updates, OutputLogger logger) {
         if (updates.isEmpty()) {
-            logger.output(NbBundle.getMessage(GetRemoteChangesAction.class, "MSG_GetRemoteChangesAction.updates.noChange")); //NOI18N
+            logger.output(Bundle.MSG_GetRemoteChangesAction_updates_noChange()); //NOI18N
         } else {
             for (Map.Entry<String, GitTransportUpdate> e : updates.entrySet()) {
                 GitTransportUpdate update = e.getValue();
                 if (update.getType() == Type.BRANCH) {
-                    logger.output(NbBundle.getMessage(GetRemoteChangesAction.class, "MSG_GetRemoteChangesAction.updates.updateBranch", new Object[] { //NOI18N
-                        update.getLocalName(), 
-                        update.getOldObjectId(),
-                        update.getNewObjectId(),
-                        update.getResult(),
-                    }));
+                    logger.output(Bundle.MSG_GetRemoteChangesAction_updates_updateBranch(update.getLocalName(), update.getOldObjectId(), update.getNewObjectId(), update.getResult()));
                 } else {
-                    logger.output(NbBundle.getMessage(GetRemoteChangesAction.class, "MSG_GetRemoteChangesAction.updates.updateTag", new Object[] { //NOI18N
-                        update.getLocalName(), 
-                        update.getResult(),
-                    }));
+                    logger.output(Bundle.MSG_GetRemoteChangesAction_updates_updateTag(update.getLocalName(), update.getResult()));
                 }
             }
         }
@@ -94,7 +94,7 @@ abstract class GetRemoteChangesAction extends SingleRepositoryAction {
 
     @Messages({"# {0} - branch name", "MSG_Err.noTrackedBranch=No tracked remote branch specified for local {0}",
         "# {0} - branch name", "MSG_Err.trackedBranchLocal=Tracked branch {0} is not a remote branch"})
-    protected GitBranch getTrackedBranch (RepositoryInfo info, String errorLabel) {
+    static GitBranch getTrackedBranch (RepositoryInfo info, String errorLabel) {
         GitBranch activeBranch = info.getActiveBranch();
         if (activeBranch == null) {
             return null;
@@ -102,11 +102,11 @@ abstract class GetRemoteChangesAction extends SingleRepositoryAction {
         GitBranch trackedBranch = activeBranch.getTrackedBranch();
         if (trackedBranch == null) {
             notifyError(errorLabel,
-                    MSG_Err_noTrackedBranch(activeBranch.getName())); //NOI18N
+                    Bundle.MSG_Err_noTrackedBranch(activeBranch.getName())); //NOI18N
             return null;
         }
         if (!trackedBranch.isRemote()) {
-            notifyError(errorLabel, MSG_Err_trackedBranchLocal(trackedBranch.getName())); //NOI18N
+            notifyError(errorLabel, Bundle.MSG_Err_trackedBranchLocal(trackedBranch.getName())); //NOI18N
             return null;
         }
         return trackedBranch;
@@ -115,20 +115,20 @@ abstract class GetRemoteChangesAction extends SingleRepositoryAction {
     @Messages({"# {0} - branch name", "MSG_Err.noRemote=No remote found for branch {0}",
         "# {0} - branch name", "MSG_Err.noUri=No URI specified for remote {0}",
         "# {0} - branch name", "MSG_Err.noSpecs=No fetch ref specs specified for remote {0}"})
-    protected static GitRemoteConfig getRemoteConfigForActiveBranch (GitBranch trackedBranch, RepositoryInfo info, String errorLabel) {
+    static GitRemoteConfig getRemoteConfigForActiveBranch (GitBranch trackedBranch, RepositoryInfo info, String errorLabel) {
         Map<String, GitRemoteConfig> remotes = info.getRemotes();
         String remoteName = parseRemote(trackedBranch.getName());
         GitRemoteConfig cfg = remoteName == null ? null : remotes.get(remoteName);
         if (cfg == null) {
-            notifyError(errorLabel, MSG_Err_noRemote(trackedBranch.getName()));
+            notifyError(errorLabel, Bundle.MSG_Err_noRemote(trackedBranch.getName()));
             return null;
         }
         if (cfg.getUris().isEmpty()) {
-            notifyError(errorLabel, MSG_Err_noUri(cfg.getRemoteName()));
+            notifyError(errorLabel, Bundle.MSG_Err_noUri(cfg.getRemoteName()));
             return null;
         }
         if (cfg.getFetchRefSpecs().isEmpty()) {
-            notifyError(errorLabel, MSG_Err_noSpecs(cfg.getRemoteName()));
+            notifyError(errorLabel, Bundle.MSG_Err_noSpecs(cfg.getRemoteName()));
             return null;
         }
         return cfg;
@@ -143,5 +143,9 @@ abstract class GetRemoteChangesAction extends SingleRepositoryAction {
             new Object[]{NotifyDescriptor.OK_OPTION},
             NotifyDescriptor.OK_OPTION);
         DialogDisplayer.getDefault().notify(nd);
+    }
+    
+    private FetchUtils() {
+        
     }
 }

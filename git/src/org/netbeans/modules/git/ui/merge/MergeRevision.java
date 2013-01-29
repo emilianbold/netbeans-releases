@@ -48,6 +48,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import javax.swing.JButton;
 import org.netbeans.modules.git.ui.repository.RevisionDialogController;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -66,6 +67,7 @@ public class MergeRevision {
 
     MergeRevision (File repository, File[] roots, String initialRevision) {
         revisionPicker = new RevisionDialogController(repository, roots, initialRevision);
+        revisionPicker.setMergingInto(GitUtils.HEAD);
         panel = new MergeRevisionPanel(revisionPicker.getPanel());
     }
 

@@ -48,5 +48,17 @@ import org.netbeans.api.project.Project;
  * @author Alexander Simon
  */
 public interface MakeProjectLife {
+    /**
+     * Early project registration.
+     * Event is sent before reading project configurations.
+     * 
+     * @param project MakeProject
+     */
     void start(Project project);
+    
+    /**
+     * 
+     * @param project MakeProject
+     */
+    void stop(Project project);
 }

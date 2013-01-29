@@ -46,7 +46,10 @@ import java.awt.EventQueue;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -99,6 +102,7 @@ class FilesystemInterceptor extends VCSInterceptor {
     private static boolean AUTOMATIC_REFRESH_ENABLED = !"true".equals(System.getProperty("versioning.git.autoRefreshDisabled", "false")); //NOI18N
     private static final String INDEX_FILE_NAME = "index"; //NOI18N
     private static final String HEAD_FILE_NAME = "HEAD"; //NOI18N
+    private static final String REFS_FILE_NAME = "refs"; //NOI18N
     private static final Logger LOG = Logger.getLogger(FilesystemInterceptor.class.getName());
 
     public FilesystemInterceptor () {
@@ -116,6 +120,22 @@ class FilesystemInterceptor extends VCSInterceptor {
             Git.STATUS_LOG.log(Level.FINER, "Interceptor.refreshRecursively: {0}", dir.getAbsolutePath()); //NOI18N
             children.clear();
             retval = gitFolderEventsHandler.refreshAdminFolder(dir);
+            File[] ch = dir.listFiles(new FilenameFilter() {
+                @Override
+                public boolean accept (File dir, String name) {
+                    return REFS_FILE_NAME.equals(name);
+                }
+            });
+            if (ch != null) {
+                children.addAll(Arrays.asList(ch));
+            }
+        } else if (GitUtils.isPartOfGitMetadata(dir)) {
+            // the condition above is to limit number of following code invocations
+            // changes done in metadata not present under .git folder are not recognized - there's still the manual refresh
+            File metadataFolder = gitFolderEventsHandler.getMetadataForReferences(dir);
+            if (metadataFolder != null) {
+                gitFolderEventsHandler.refreshReferences(metadataFolder, dir);
+            }
         }
         return retval;
     }
@@ -700,7 +720,8 @@ class FilesystemInterceptor extends VCSInterceptor {
         private final File refFile;
         private final long refFileTS;
         private final File gitFolder;
-        private File metadataFolder;
+        private final File metadataFolder;
+        private long referencesFolderTS;
 
         public GitFolderTimestamps (File indexFile, File headFile, File refFile, File gitFolder, File metadataFolder) {
             this.indexFile = indexFile;
@@ -711,6 +732,7 @@ class FilesystemInterceptor extends VCSInterceptor {
             this.refFileTS = refFile.lastModified();
             this.gitFolder = gitFolder;
             this.metadataFolder = metadataFolder;
+            referencesFolderTS = System.currentTimeMillis();
         }
 
         private File getIndexFile () {
@@ -749,6 +771,16 @@ class FilesystemInterceptor extends VCSInterceptor {
                 upToDate = refFileTS >= refFile.lastModified();
             }
             return !upToDate;
+        }
+
+        private boolean updateReferences (File triggerFolder) {
+            boolean updated = false;
+            long ts = triggerFolder.lastModified();
+            if (ts > referencesFolderTS) {
+                updated = true;
+                referencesFolderTS = System.currentTimeMillis();
+            }
+            return updated;
         }
     }
 
@@ -1001,6 +1033,28 @@ class FilesystemInterceptor extends VCSInterceptor {
             return lastModified;
         }
 
+        private void refreshReferences (File metadataFolder, File triggerFolder) {
+            if (AUTOMATIC_REFRESH_ENABLED && !"false".equals(System.getProperty("versioning.git.handleExternalEvents", "true"))) { //NOI18N
+                metadataFolder = FileUtil.normalizeFile(metadataFolder);
+                Git.STATUS_LOG.log(Level.FINER, "refreshReferences: special FS event handling for {0}", triggerFolder.getAbsolutePath()); //NOI18N
+                boolean refreshNeeded = false;
+                GitFolderTimestamps cached;
+                File gitFolder = translateToGitFolder(metadataFolder);
+                if (isEnabled(gitFolder)) {
+                    synchronized (timestamps) {
+                        cached = timestamps.get(gitFolder);
+                    }
+                    if (cached != null && cached.updateReferences(triggerFolder)) {
+                        refreshNeeded = true;
+                    }
+                    if (refreshNeeded) {
+                        File repository = gitFolder.getParentFile();
+                        RepositoryInfo.refreshAsync(repository);
+                    }
+                }
+            }
+        }
+
         private void refreshOpenFiles (File repository) {
             boolean refreshPlanned;
             synchronized (refreshedRepositories) {
@@ -1094,6 +1148,23 @@ class FilesystemInterceptor extends VCSInterceptor {
             synchronized (timestamps) {
                 return metadataToGitFolder.containsKey(dir);
             }
+        }
+
+        private File getMetadataForReferences (File file) {
+            List<File> metadataFolders;
+            synchronized (timestamps) {
+                metadataFolders = new ArrayList<File>(metadataToGitFolder.keySet());
+            }
+            File candidate = null;
+            for (File metadataFolder : metadataFolders) {
+                String refsPath = new File(metadataFolder.getAbsolutePath(), REFS_FILE_NAME).getAbsolutePath();
+                if (file.getAbsolutePath().startsWith(refsPath)) {
+                    if (candidate == null || candidate.getAbsolutePath().length() < metadataFolder.getAbsolutePath().length()) {
+                        candidate = metadataFolder;
+                    }
+                }
+            }
+            return candidate;
         }
     }
 

@@ -342,7 +342,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                     for (TypeUsage typeHere : resolvedHere) {
                         if (typeHere.getOffset() > 0) {
                             JsObject jsObject = ModelUtils.findJsObjectByName(global, typeHere.getType());
-                            if (jsObject == null && typeHere.getType().indexOf('.') == -1) {
+                            if (jsObject == null && typeHere.getType().indexOf('.') == -1 && global instanceof DeclarationScope) {
                                 DeclarationScope declarationScope = ModelUtils.getDeclarationScope((DeclarationScope)global, typeHere.getOffset());
                                 jsObject = ModelUtils.getJsObjectByName(declarationScope, typeHere.getType());
                                 if (jsObject == null) {

@@ -370,12 +370,19 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
 
                 @Override
                 public long refreshRecursively(VCSFileProxy dir, long lastTimeStamp, List<? super VCSFileProxy> children) {
-                    List<? super File> files = new ArrayList<File>(children.size());
+                    List<File> files = new ArrayList<File>(children.size());
                     for (Iterator<? super VCSFileProxy> it = children.iterator(); it.hasNext();) {
                         VCSFileProxy fileProxy = (VCSFileProxy) it.next();
                         files.add(fileProxy.toFile());
                     }
-                    return getDelegate().getVCSInterceptor().refreshRecursively(dir.toFile(), lastTimeStamp, files);
+                    long ts = getDelegate().getVCSInterceptor().refreshRecursively(dir.toFile(), lastTimeStamp, files);
+                    if (ts != -1) {
+                        children.clear();
+                        for (File f : files) {
+                            children.add(VCSFileProxy.createFileProxy(f));
+                        }
+                    }
+                    return ts;
                 }
             };
         }

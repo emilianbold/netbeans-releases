@@ -39,16 +39,66 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.spi.utils;
+package org.netbeans.modules.java.hints.errors;
 
-import java.util.Map;
+import com.sun.source.util.TreePath;
+import java.util.List;
+import java.util.Set;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
+import org.netbeans.spi.editor.hints.Fix;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author inikiforov
+ * @author lahvac
  */
-public interface UsagesCounter {
+public class AccessErrorTest extends ErrorHintsTestBase  {
     
-    void count(String identity, Map<String, String> additionalInformation);
+    public AccessErrorTest(String name) {
+        super(name);
+    }
     
+    public void testSimple() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    {\n" +
+                       "        Acc.i = 0;\n" +
+                       "    }\n" +
+                       "}\n" +
+                       "class Acc {\n" +
+                       "    private static int i;\n" +
+                       "}\n",
+                       -1,
+                       "FIX_AccessError_PACKAGE_PRIVATE:i",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    {\n" +
+                        "        Acc.i = 0;\n" +
+                        "    }\n" +
+                        "}\n" +
+                        "class Acc {\n" +
+                        "    static int i;\n" +
+                        "}\n").replaceAll("[\\s]+", " "));
+    }
+
+    @Override
+    protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
+        return new AccessError().run(info, null, pos, path, null);
+    }
+
+    @Override
+    protected String toDebugString(CompilationInfo info, Fix f) {
+        return f.getText();
+    }
+
+    @Override
+    protected Set<String> getSupportedErrorKeys() {
+        return new AccessError().getCodes();
+    }
+
+    static {
+        NbBundle.setBranding("test");
+    }
 }
