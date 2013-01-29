@@ -89,7 +89,7 @@ public class HintsTest extends GeneralJavaScript {
         cleanFile(eo);
         eo.setCaretPositionToLine(1);
 
-        type(eo, "if (a == b) {}");
+        type(eo, "var a,b; if (a == b) {}");
         Object[] anns = getAnnotations(eo, 0);
         assertEquals("More annotations than expected", 1, anns.length);
         String ideal = "Expected \"===\" and instead saw \"==\".\n"
@@ -157,7 +157,7 @@ public class HintsTest extends GeneralJavaScript {
         cleanFile(eo);
         eo.setCaretPositionToLine(1);
 
-        type(eo, "while (a = b) {}");
+        type(eo, "var a,b; while (a = b) {}");
         Object[] anns = getAnnotations(eo, 0);
         assertEquals("More annotations than expected", 1, anns.length);
         String ideal = "Expected a conditional expression and instead saw an assignment.\n"
