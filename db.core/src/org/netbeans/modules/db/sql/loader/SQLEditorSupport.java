@@ -556,7 +556,7 @@ public class SQLEditorSupport extends DataEditorSupport
                         }
                     }
                     if (pageSize == -1) {
-                        pageSize = SQLExecuteHelper.DEFAULT_PAGE_SIZE;
+                        pageSize = DataViewPageContext.getStoredPageSize();
                     }
                     parent.closeExecutionResult();
 
