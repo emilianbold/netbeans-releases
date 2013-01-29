@@ -450,6 +450,16 @@ public abstract class ElementFilter {
         };
     }
 
+    public static ElementFilter forDeprecated(final boolean deprecatedOrNot) {
+        return new ElementFilter() {
+
+            @Override
+            public boolean isAccepted(PhpElement element) {
+                return element.isDeprecated() == deprecatedOrNot;
+            }
+        };
+    }
+
     public abstract boolean isAccepted(PhpElement element);
 
     public <T extends PhpElement> Set<T> filter(T original) {

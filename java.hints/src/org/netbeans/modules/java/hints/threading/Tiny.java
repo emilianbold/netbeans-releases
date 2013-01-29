@@ -53,6 +53,7 @@ import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import java.util.EnumSet;
@@ -67,6 +68,8 @@ import javax.lang.model.element.VariableElement;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.hints.errors.Utilities;
+import org.netbeans.modules.java.hints.introduce.Flow;
+import org.netbeans.modules.java.hints.introduce.Flow.FlowResult;
 import org.netbeans.spi.java.hints.ConstraintVariableType;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.TriggerPattern;
@@ -79,12 +82,19 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.hints.Hint.Options;
 import org.netbeans.spi.java.hints.JavaFixUtilities;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
+import org.netbeans.spi.java.hints.support.FixFactory;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author lahvac
  */
+@Messages({"DN_CanBeFinal=Field Can Be Final",
+           "DESC_CanBeFinal=Finds fields that can be made final, which can simplify sychronization and clarity",
+           "ERR_CanBeFinal=Field {0} can be final",
+           "FIX_CanBeFinal=Make {0} final"})
 public class Tiny {
 
     @Hint(displayName = "#DN_org.netbeans.modules.java.hints.threading.Tiny.notifyOnCondition", description = "#DESC_org.netbeans.modules.java.hints.threading.Tiny.notifyOnCondition", category="thread", suppressWarnings="NotifyCalledOnCondition")
@@ -481,5 +491,28 @@ public class Tiny {
         }
 
         return LOOP_KINDS.contains(inspect.getLeaf().getKind()) ? inspect : null;
+    }
+
+    @Hint(displayName = "#DN_CanBeFinal", description = "#DESC_CanBeFinal", category="thread", suppressWarnings="FieldMayBeFinal")
+    @TriggerTreeKind(Kind.VARIABLE)
+    public static ErrorDescription canBeFinal(HintContext ctx) {
+        Element ve = ctx.getInfo().getTrees().getElement(ctx.getPath());
+        
+        if (ve == null || ve.getKind() != ElementKind.FIELD || ve.getModifiers().contains(Modifier.FINAL) || /*TODO: the point of volatile?*/ve.getModifiers().contains(Modifier.VOLATILE)) return null;
+        
+        //we can't say much currently about non-private fields:
+        if (!ve.getModifiers().contains(Modifier.PRIVATE)) return null;
+        
+        FlowResult flow = Flow.assignmentsForUse(ctx);
+        
+        if (flow == null || ctx.isCanceled()) return null;
+        
+        if (flow.getFinalCandidates().contains(ve)) {
+            VariableTree vt = (VariableTree) ctx.getPath().getLeaf();
+            Fix fix = FixFactory.addModifiersFix(ctx.getInfo(), new TreePath(ctx.getPath(), vt.getModifiers()), EnumSet.of(Modifier.FINAL), Bundle.FIX_CanBeFinal(ve.getSimpleName().toString()));
+            return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_CanBeFinal(ve.getSimpleName().toString()), fix);
+        }
+        
+        return null;
     }
 }

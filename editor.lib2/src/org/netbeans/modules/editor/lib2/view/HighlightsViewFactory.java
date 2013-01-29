@@ -216,7 +216,6 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
         assert (startOffset < limitOffset) : "startOffset=" + startOffset + " >= limitOffset=" + limitOffset; // NOI18N
         // Possibly update lineEndOffset since updateHighlight() will read till it
         updateLineEndOffset(startOffset);
-        updateTabsAndHighlightsAndRTL(startOffset);
         HighlightsList hList = highlightsReader.highlightsList();
         if (hList.startOffset() < startOffset) {
             hList.skip(startOffset);
@@ -225,6 +224,7 @@ public final class HighlightsViewFactory extends EditorViewFactory implements Hi
             AttributeSet attrs = hList.cutSingleChar();
             return new NewlineView(attrs);
         } else { // Regular view with possible highlight(s) or tab view
+            updateTabsAndHighlightsAndRTL(startOffset);
             if (charType == TAB_CHAR_TYPE) {
                 int tabsEndOffset = nextTabOrRTLOffset; 
                 AttributeSet attrs;

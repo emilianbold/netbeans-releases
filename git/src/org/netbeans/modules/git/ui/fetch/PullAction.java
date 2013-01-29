@@ -59,6 +59,7 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.GitAction;
+import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
@@ -67,6 +68,7 @@ import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -74,7 +76,7 @@ import org.openide.util.NbBundle;
  */
 @ActionID(id = "org.netbeans.modules.git.ui.fetch.PullAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_PullAction_Name")
-public class PullAction extends GetRemoteChangesAction {
+public class PullAction extends SingleRepositoryAction {
     
     private static final Logger LOG = Logger.getLogger(PullAction.class.getName());
 
@@ -99,7 +101,10 @@ public class PullAction extends GetRemoteChangesAction {
         });
     }
     
-    public void pull (File repository, final String target, final List<String> fetchRefSpecs, final String branchToMerge, final String remoteNameToUpdate) {
+    @NbBundle.Messages({
+        "# {0} - repository name", "LBL_PullAction.progressName=Pulling - {0}"
+    })
+    public Task pull (File repository, final String target, final List<String> fetchRefSpecs, final String branchToMerge, final String remoteNameToUpdate) {
         GitProgressSupport supp = new GitProgressSupport() {
             @Override
             protected void perform () {
@@ -124,7 +129,7 @@ public class PullAction extends GetRemoteChangesAction {
                         cont = false;
                         try {
                             GitPullResult result = client.pull(target, fetchRefSpecs, branchToMerge, getProgressMonitor());
-                            log(result.getFetchResult(), getLogger());
+                            FetchUtils.log(result.getFetchResult(), getLogger());
                             mrp.processResult(result.getMergeResult());
                         } catch (GitException.CheckoutConflictException ex) {
                             if (LOG.isLoggable(Level.FINE)) {
@@ -142,6 +147,6 @@ public class PullAction extends GetRemoteChangesAction {
                 }
             }
         };
-        supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(PullAction.class, "LBL_PullAction.progressName")); //NOI18N
+        return supp.start(Git.getInstance().getRequestProcessor(repository), repository, Bundle.LBL_PullAction_progressName(repository.getName()));
     }
 }

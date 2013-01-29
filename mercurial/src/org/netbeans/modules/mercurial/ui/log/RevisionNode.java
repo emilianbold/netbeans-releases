@@ -46,17 +46,11 @@ package org.netbeans.modules.mercurial.ui.log;
 import java.awt.Color;
 import org.openide.nodes.*;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.NbBundle;
-import org.openide.util.HelpCtx;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.actions.NodeAction;
 import org.openide.ErrorManager;
-
 import javax.swing.*;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.lang.reflect.InvocationTargetException;
-import java.awt.event.ActionEvent;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.text.DateFormat;
@@ -124,15 +118,14 @@ class RevisionNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         if (context) return null;
-        // TODO: reuse action code from SummaryView
-        if (event == null) {
-            return new Action [] {
-                SystemAction.get(BackoutAction.class)
-            };
+        if (getLookup().lookup(SearchHistoryPanel.class).isIncomingSearch()) {
+            return new Action[0];
         } else {
-            return new Action [] {
-                new RollbackToAction()
-            };
+            if (event == null) {
+                return container.getActions();
+            } else {
+                return event.getActions();
+            }
         }
     }
     
@@ -290,62 +283,6 @@ class RevisionNode extends AbstractNode {
             } else {
                 return ""; // NOI18N
             }
-        }
-    }
-
-    private class RollbackToAction extends AbstractAction {
-
-        public RollbackToAction() {
-            putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackTo", // NOI18N
-                    event.getLogInfoHeader().getLog().getRevisionNumber()));
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            SummaryView.revertModifications(event);
-        }
-    }
-
-    private static class BackoutAction extends NodeAction {
-
-        @Override
-        protected void performAction(Node[] activatedNodes) {
-            RepositoryRevision.Event event = null;
-            RepositoryRevision repoRev = null;
-            for (Node n : activatedNodes) {
-                RevisionNode node = (RevisionNode) n;
-                if (node.event != null) {
-                    event = node.event;
-                    break;
-                } else {
-                    repoRev = node.container;
-                    break;
-                }
-            }
-            if(repoRev == null && event == null) return;
-            if(repoRev != null){
-                if(repoRev.getEvents().length > 0){
-                    event = repoRev.getEvents()[0];
-                }else if(event == null){
-                    return;
-                }
-            }
-            SummaryView.backout(event);
-        }
-
-        @Override
-        protected boolean enable(Node[] activatedNodes) {
-            return true;
-        }
-
-        @Override
-        public String getName() {
-            return NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackChange"); // NOI18N
-        }
-
-        @Override
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx(BackoutAction.class);
         }
     }
     

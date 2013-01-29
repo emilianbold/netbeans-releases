@@ -502,8 +502,11 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable {
     {
         String product = (String)properties.get(PROP_PRODUCTNAME);
         if (product == null) {
-            if (dmd != null) product = dmd.getDatabaseProductName().trim();
-            else return NOT_SET_STRING;
+            if (dmd != null && dmd.getDatabaseProductName() != null) {
+                product = dmd.getDatabaseProductName().trim();
+            } else {
+                return NOT_SET_STRING;
+            }
             properties.put(PROP_PRODUCTNAME, product);
         }
 

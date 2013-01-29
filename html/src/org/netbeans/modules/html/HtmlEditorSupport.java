@@ -141,7 +141,9 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
     public void saveDocument() throws IOException {
         updateEncoding();
         super.saveDocument();
-        HtmlEditorSupport.this.getDataObject().setModified(false);
+// DataObject.setModified() called as part of super.saveDocument(). The save action is now asynchronous
+// so super.saveDocument() uses carefull logic for handling the DO.modified flag properly.
+//        HtmlEditorSupport.this.getDataObject().setModified(false);
     }
 
     void updateEncoding() throws UserCancelException {

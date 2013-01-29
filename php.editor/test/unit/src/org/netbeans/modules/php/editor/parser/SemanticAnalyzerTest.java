@@ -65,159 +65,127 @@ public class SemanticAnalyzerTest extends PHPCodeCompletionTestBase {
     }
 
     public void testAnalysisFields() throws Exception {
-        checkSemantic("testfiles/class001.php");
+        checkSemantic("testfiles/semantic/class001.php");
     }
 
     public void testAnalysisStatic() throws Exception {
-        checkSemantic("testfiles/class002.php");
+        checkSemantic("testfiles/semantic/class002.php");
     }
 
     public void testAnalysisUnusedPrivateField() throws Exception {
-        checkSemantic("testfiles/class003.php");
+        checkSemantic("testfiles/semantic/class003.php");
     }
 
     public void testAnalysisUnusedPrivateMethod() throws Exception {
-        checkSemantic("testfiles/class004.php");
+        checkSemantic("testfiles/semantic/class004.php");
     }
 
     public void testAnalysisAll() throws Exception {
-        checkSemantic("testfiles/class005.php");
+        checkSemantic("testfiles/semantic/class005.php");
     }
 
     public void testAnalysisDeclarationAfterUsage() throws Exception {
-        checkSemantic("testfiles/class006.php");
+        checkSemantic("testfiles/semantic/class006.php");
     }
 
     public void testIssue142005() throws Exception {
-        checkSemantic("testfiles/class007.php");
+        checkSemantic("testfiles/semantic/class007.php");
     }
 
     // issue #139813
     public void testAbstract() throws Exception {
-        checkSemantic("testfiles/abstract01.php");
+        checkSemantic("testfiles/semantic/abstract01.php");
     }
 
     public void testIssue142644() throws Exception {
-        checkSemantic("testfiles/issue142644.php");
+        checkSemantic("testfiles/semantic/issue142644.php");
     }
 
     public void testIssue141041() throws Exception {
-        checkSemantic("testfiles/issue141041.php");
+        checkSemantic("testfiles/semantic/issue141041.php");
     }
 
     public void testIssue146193() throws Exception {
-        checkSemantic("testfiles/issue146193.php");
+        checkSemantic("testfiles/semantic/issue146193.php");
     }
 
     public void testIssue146197() throws Exception {
-        checkSemantic("testfiles/issue146197.php");
+        checkSemantic("testfiles/semantic/issue146197.php");
     }
 
     public void testIssue145694() throws Exception {
-        checkSemantic("testfiles/issue145694.php");
+        checkSemantic("testfiles/semantic/issue145694.php");
     }
 
     public void testIssue144195() throws Exception {
-        checkSemantic("testfiles/issue144195.php");
+        checkSemantic("testfiles/semantic/issue144195.php");
     }
 
     public void testIssue154876() throws Exception {
-        checkSemantic("testfiles/issue154876.php");
+        checkSemantic("testfiles/semantic/issue154876.php");
     }
 
     public void testVarComment01() throws Exception {
-        checkSemantic("testfiles/varcomment/simple01.php");
+        checkSemantic("testfiles/semantic/simple01.php");
     }
 
     public void testVarComment02() throws Exception {
-        checkSemantic("testfiles/varcomment/mixed01.php");
+        checkSemantic("testfiles/semantic/mixed01.php");
     }
 
     public void testIssue194535() throws Exception {
-        checkSemantic("testfiles/issue194535.php");
+        checkSemantic("testfiles/semantic/issue194535.php");
     }
 
     public void testTraits01() throws Exception {
-        checkSemantic("testfiles/traits_01.php");
+        checkSemantic("testfiles/semantic/traits_01.php");
     }
 
     public void testTraits02() throws Exception {
-        checkSemantic("testfiles/traits_02.php");
+        checkSemantic("testfiles/semantic/traits_02.php");
     }
 
     public void testTraits03() throws Exception {
-        checkSemantic("testfiles/traits_03.php");
+        checkSemantic("testfiles/semantic/traits_03.php");
     }
 
     public void testTraits04() throws Exception {
-        checkSemantic("testfiles/traits_04.php");
+        checkSemantic("testfiles/semantic/traits_04.php");
     }
 
     public void testTraits05() throws Exception {
-        checkSemantic("testfiles/traits_05.php");
+        checkSemantic("testfiles/semantic/traits_05.php");
     }
 
     public void testTraits06() throws Exception {
-        checkSemantic("testfiles/traits_06.php");
-    }
-
-    public void testUnusedUses01() throws Exception {
-        checkSemantic("testfiles/unusedUses_01.php");
-    }
-
-    public void testUnusedUses02() throws Exception {
-        checkSemantic("testfiles/unusedUses_02.php");
-    }
-
-    public void testUnusedUses03() throws Exception {
-        checkSemantic("testfiles/unusedUses_03.php");
-    }
-
-    public void testUnusedUses04() throws Exception {
-        checkSemantic("testfiles/unusedUses_04.php");
-    }
-
-    public void testUnusedUses05() throws Exception {
-        checkSemantic("testfiles/unusedUses_05.php");
-    }
-
-    public void testUnusedUses06() throws Exception {
-        checkSemantic("testfiles/unusedUses_06.php");
-    }
-
-    public void testUnusedUses07() throws Exception {
-        checkSemantic("testfiles/unusedUses_07.php");
-    }
-
-    public void testUnusedUses08() throws Exception {
-        checkSemantic("testfiles/unusedUses_08.php");
+        checkSemantic("testfiles/semantic/traits_06.php");
     }
 
     public void testConstantsColoring() throws Exception {
-        checkSemantic("testfiles/constantsColoring.php");
+        checkSemantic("testfiles/semantic/constantsColoring.php");
     }
 
     public void testConstAccessInFiledDeclaration() throws Exception {
-        checkSemantic("testfiles/constantsInFiledsDeclColoring.php");
+        checkSemantic("testfiles/semantic/constantsInFiledsDeclColoring.php");
     }
 
     public void testIssue213105() throws Exception {
-        checkSemantic("testfiles/issue213105.php");
+        checkSemantic("testfiles/semantic/issue213105.php");
     }
 
     public void testIssue213533() throws Exception {
-        checkSemantic("testfiles/issue213533.php");
+        checkSemantic("testfiles/semantic/issue213533.php");
     }
 
     public void testIssue217239() throws Exception {
-        checkSemantic("testfiles/issue217239.php");
+        checkSemantic("testfiles/semantic/issue217239.php");
     }
 
     public void testIssue216840() throws Exception {
-        checkSemantic("testfiles/issue216840.php");
+        checkSemantic("testfiles/semantic/issue216840.php");
     }
 
     public void testIssue216840_02() throws Exception {
-        checkSemantic("testfiles/issue216840_02.php");
+        checkSemantic("testfiles/semantic/issue216840_02.php");
     }
 }
