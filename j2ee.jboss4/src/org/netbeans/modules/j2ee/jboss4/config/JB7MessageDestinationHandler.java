@@ -39,61 +39,67 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.test.html5.debug;
+package org.netbeans.modules.j2ee.jboss4.config;
 
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.modules.debugger.BreakpointsWindowOperator;
-import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
-import org.netbeans.jellytools.modules.debugger.actions.DeleteAllBreakpointsAction;
-import org.netbeans.jemmy.Waitable;
-import org.netbeans.jemmy.Waiter;
-import org.netbeans.test.html5.GeneralHTMLProject;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  *
- * @author Vladimir Riha
+ * @author Petr Hejl
  */
-public class JavaScriptDebugger extends GeneralHTMLProject {
+public class JB7MessageDestinationHandler extends DefaultHandler {
 
-    public JavaScriptDebugger(String arg0) {
-        super(arg0);
+    private final List<JBossMessageDestination> messageDestinations = new ArrayList<JBossMessageDestination>();
+
+    private boolean isDestinations;
+
+    private boolean isDestination;
+
+    private List<String> jndiNames = new ArrayList<String>();
+
+    public List<JBossMessageDestination> getMessageDestinations() {
+        return messageDestinations;
     }
 
-    /**
-     * Sets breakpoint in editor on line with specified text.
-     *
-     * @param eo EditorOperator instance where to set breakpoint
-     * @param text text to find for setting breakpoint
-     * @return line number where breakpoint was set (starts from 1)
-     */
-    public int setLineBreakpoint(EditorOperator eo, String text) throws Exception {
-        eo.select(text); // NOI18N
-        final int line = eo.getLineNumber();
-        // toggle breakpoint via pop-up menu
-        new ToggleBreakpointAction().perform(eo.txtEditorPane());
-        // wait breakpoint established
-        new Waiter(new Waitable() {
-            @Override
-            public Object actionProduced(Object editorOper) {
-                Object[] annotations = ((EditorOperator) editorOper).getAnnotations(line);
-                for (int i = 0; i < annotations.length; i++) {
-                    if ("Breakpoint".equals(EditorOperator.getAnnotationType(annotations[i]))) { // NOI18N
-                        return Boolean.TRUE;
-                    }
+    @Override
+    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+        if ("jms-destinations".equals(qName)) {
+            isDestinations = true;
+        } else if (isDestinations && ("jms-queue".equals(qName) || "jms-topic".equals(qName))) {
+            isDestination = true;
+        } else if (isDestination && "entry".equals(qName)) {
+            jndiNames.add(attributes.getValue("name"));
+        }
+    }
+
+    @Override
+    public void endElement(String uri, String localName, String qName) throws SAXException {
+        if (isDestination) {
+            if ("jms-queue".equals(qName)) {
+                isDestination = false;
+                for (String name : jndiNames) {
+                    messageDestinations.add(new JBossMessageDestination(name, Type.QUEUE));
                 }
-                return null;
+                jndiNames.clear();
+            } else if ("jms-topic".equals(qName)) {
+                isDestination = false;
+                for (String name : jndiNames) {
+                    messageDestinations.add(new JBossMessageDestination(name, Type.TOPIC));
+                }
+                jndiNames.clear();
+            }    
+        } else if (isDestinations) {
+            if ("jms-destinations".equals(qName)) {
+                jndiNames.clear();
+                isDestination = false;
+                isDestinations = false;
             }
-
-            @Override
-            public String getDescription() {
-                return ("Wait breakpoint established on line " + line); // NOI18N
-            }
-        }).waitAction(eo);
-        return line;
+        }
     }
 
-    public void cleanBreakpoints() {
-        BreakpointsWindowOperator window = BreakpointsWindowOperator.invoke();
-        new DeleteAllBreakpointsAction().performPopup(window);
-    }
 }

@@ -39,61 +39,38 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.test.html5.debug;
+package org.netbeans.test.syntax;
 
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.modules.debugger.BreakpointsWindowOperator;
-import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
-import org.netbeans.jellytools.modules.debugger.actions.DeleteAllBreakpointsAction;
-import org.netbeans.jemmy.Waitable;
-import org.netbeans.jemmy.Waiter;
-import org.netbeans.test.html5.GeneralHTMLProject;
+import junit.framework.Test;
+import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
  * @author Vladimir Riha
  */
-public class JavaScriptDebugger extends GeneralHTMLProject {
+public class SyntaxSuite extends J2eeTestCase {
 
-    public JavaScriptDebugger(String arg0) {
-        super(arg0);
+    public SyntaxSuite(String name) {
+        super(name);
     }
 
-    /**
-     * Sets breakpoint in editor on line with specified text.
-     *
-     * @param eo EditorOperator instance where to set breakpoint
-     * @param text text to find for setting breakpoint
-     * @return line number where breakpoint was set (starts from 1)
-     */
-    public int setLineBreakpoint(EditorOperator eo, String text) throws Exception {
-        eo.select(text); // NOI18N
-        final int line = eo.getLineNumber();
-        // toggle breakpoint via pop-up menu
-        new ToggleBreakpointAction().perform(eo.txtEditorPane());
-        // wait breakpoint established
-        new Waiter(new Waitable() {
-            @Override
-            public Object actionProduced(Object editorOper) {
-                Object[] annotations = ((EditorOperator) editorOper).getAnnotations(line);
-                for (int i = 0; i < annotations.length; i++) {
-                    if ("Breakpoint".equals(EditorOperator.getAnnotationType(annotations[i]))) { // NOI18N
-                        return Boolean.TRUE;
-                    }
-                }
-                return null;
-            }
-
-            @Override
-            public String getDescription() {
-                return ("Wait breakpoint established on line " + line); // NOI18N
-            }
-        }).waitAction(eo);
-        return line;
-    }
-
-    public void cleanBreakpoints() {
-        BreakpointsWindowOperator window = BreakpointsWindowOperator.invoke();
-        new DeleteAllBreakpointsAction().performPopup(window);
+    public static Test suite() {
+        NbModuleSuite.Configuration conf = emptyConfiguration();
+        conf = addServerTests(J2eeTestCase.Server.GLASSFISH, conf, new String[0]);
+        conf = conf.addTest(AutoCompletionTest.SuiteCreator.class);
+        conf = conf.addTest(CommentActionTest.class);
+        conf = conf.addTest(CompletionTest.SuiteCreator.class);
+        conf = conf.addTest(CssCompletionTest.SuiteCreator.class);
+        conf = conf.addTest(RefactorActionTest.class);
+        conf = conf.addTest(IndentCasesTest.class);
+        conf = conf.addTest(IndentationTest.SuiteCreator.class);
+        conf = conf.addTest(J2EETest.SuiteCreator.class);
+        conf = conf.addTest(OpenFileTest.class);
+        conf = conf.addTest(TagAlignmentTest.class);
+        conf = conf.addTest(ReformatingTest.SuiteCreator.class);
+        conf = conf.addTest(TokensTest.class);
+        return conf.suite();
     }
 }

@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,66 +42,33 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.jboss4.nodes.actions;
+package org.netbeans.modules.j2ee.jboss4.config;
 
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.j2ee.jboss4.nodes.JBManagerNode;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CookieAction;
-import org.openide.awt.HtmlBrowser.URLDisplayer;
-
-/* Action that can always be invoked and work procedurally.
- * This action will display the URL for the given admin server node in the runtime explorer
+/**
+ *
+ * @author Libor Kotouc
  */
-public class ShowJMXConsoleAction extends CookieAction {
+public class JBossMessageDestination implements MessageDestination {
+
+    public static final String QUEUE_PREFIX = "queue/";
+    public static final String TOPIC_PREFIX = "topic/";
     
-    protected Class[] cookieClasses() {
-        return new Class[] {/* SourceCookie.class */};
+    private String name;
+    private Type type;
+    
+    public JBossMessageDestination(String name, Type type) {
+        this.name = name;
+        this.type = type;
     }
-    
-    protected int mode() {
-        return MODE_EXACTLY_ONE;
-        // return MODE_ALL;
-    }
-    
-    protected void performAction(Node[] nodes) {
-        if( (nodes == null) || (nodes.length < 1) )
-            return;
-        
-        for (int i = 0; i < nodes.length; i++) {
-            Object node = nodes[i].getLookup().lookup(JBManagerNode.class);
-            if (node instanceof JBManagerNode) {
-                try {
-                    URL url = new URL(((JBManagerNode) node).getJMXConsoleURL());
-                    URLDisplayer.getDefault().showURL(url);
-                } catch (MalformedURLException ex) {
-                    Logger.getLogger("global").log(Level.INFO, null, ex);
-                }
-            }
-        }
-    }
-    
+
     public String getName() {
-        return NbBundle.getMessage(ShowAdminToolAction.class, "LBL_ShowJMXConsoleAction");
+        return name;
+    }
+
+    public Type getType() {
+        return type;
     }
     
-    public HelpCtx getHelpCtx() {
-        return null; // HelpCtx.DEFAULT_HELP;
-        // If you will provide context help then use:
-        // return new HelpCtx(RefreshAction.class);
-    }
-    
-    protected boolean enable(Node[] nodes) {
-        return true;
-    }
-    
-    protected boolean asynchronous() {
-        return false;
-    }   
 }
