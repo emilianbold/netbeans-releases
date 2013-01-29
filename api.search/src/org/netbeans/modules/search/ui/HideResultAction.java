@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,67 +37,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.utils;
+package org.netbeans.modules.search.ui;
 
-import org.netbeans.modules.cnd.spi.utils.ComponentVersionProvider;
-import org.openide.util.Lookup;
+import java.awt.event.ActionEvent;
+import org.openide.actions.DeleteAction;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.CallbackSystemAction;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author inikiforov
+ * @author jhavlin
  */
-public enum ComponentType {
+@NbBundle.Messages({"HideResultAction.displayName=Hide"})
+public class HideResultAction extends CallbackSystemAction {
 
-    CND("cnd"), //NOI18N
-    OSS_IDE("sside"), //NOI18N
-    DBXTOOL("dbxtool"), //NOI18N
-    DLIGHTTOOL("dlighttool"), //NOI18N
-    CODE_ANALYZER("analytics"); //NOI18N
-    
-    private static ComponentType component;
-    private String version = ""; //NOI18N
-    private final String tag;
+    CallbackSystemAction delegate = SystemAction.get(DeleteAction.class);
 
-    private ComponentType(String tag) {
-        this.tag = tag;
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        delegate.actionPerformed(e);
     }
 
-    public String getTag() {
-        return tag;
+    @Override
+    public String getName() {
+        return Bundle.HideResultAction_displayName();
     }
 
-    public static ComponentType getComponent() {
-        if (component == null) {
-            component = CND;
-            String ide = System.getProperty("spro.ide.name"); // NOI18N
-            for (ComponentType c : ComponentType.values()) {
-                if (c.getTag().equals(ide)) {
-                    component = c;
-                    break;
-                }
-            }
-        }
-        return component;
+    @Override
+    public HelpCtx getHelpCtx() {
+        return delegate.getHelpCtx();
     }
 
-    public static String getVersion() {
-        ComponentType current = getComponent();
-        if (current.version == null) {
-            for (ComponentVersionProvider provider : Lookup.getDefault().lookupAll(ComponentVersionProvider.class)) {
-                String version = provider.getVersion(current.getTag());
-                if (version != null) {
-                    current.version = version;
-                    break;
-                }
-            }
-        }
-        return current.version;
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
-    
-    public static String getFullName() {
-        return getComponent().toString() + " " + getVersion(); //NOI18N
-    }
-    
 }

@@ -39,65 +39,43 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.utils;
+package org.netbeans.modules.php.editor;
 
-import org.netbeans.modules.cnd.spi.utils.ComponentVersionProvider;
-import org.openide.util.Lookup;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author inikiforov
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public enum ComponentType {
+public class PHPCodeCompletion225454Test extends PHPCodeCompletionTestBase {
 
-    CND("cnd"), //NOI18N
-    OSS_IDE("sside"), //NOI18N
-    DBXTOOL("dbxtool"), //NOI18N
-    DLIGHTTOOL("dlighttool"), //NOI18N
-    CODE_ANALYZER("analytics"); //NOI18N
-    
-    private static ComponentType component;
-    private String version = ""; //NOI18N
-    private final String tag;
-
-    private ComponentType(String tag) {
-        this.tag = tag;
+    public PHPCodeCompletion225454Test(String testName) {
+        super(testName);
     }
 
-    public String getTag() {
-        return tag;
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests225454/test225454.php", "$x->^requide_method();", false);
     }
 
-    public static ComponentType getComponent() {
-        if (component == null) {
-            component = CND;
-            String ide = System.getProperty("spro.ide.name"); // NOI18N
-            for (ComponentType c : ComponentType.values()) {
-                if (c.getTag().equals(ide)) {
-                    component = c;
-                    break;
-                }
-            }
-        }
-        return component;
+    public void testUseCase2() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests225454/test225454.php", "$y->^requide_method();", false);
     }
 
-    public static String getVersion() {
-        ComponentType current = getComponent();
-        if (current.version == null) {
-            for (ComponentVersionProvider provider : Lookup.getDefault().lookupAll(ComponentVersionProvider.class)) {
-                String version = provider.getVersion(current.getTag());
-                if (version != null) {
-                    current.version = version;
-                    break;
-                }
-            }
-        }
-        return current.version;
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/tests225454/"))
+            })
+        );
     }
-    
-    public static String getFullName() {
-        return getComponent().toString() + " " + getVersion(); //NOI18N
-    }
-    
+
 }

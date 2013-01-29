@@ -103,8 +103,8 @@ public class MatchingObjectNode extends AbstractNode {
     PropertySet[] propertySets;
 
     public MatchingObjectNode(Node original,
-            org.openide.nodes.Children children,
-            MatchingObject matchingObject, final boolean replacing) {
+            org.openide.nodes.Children children, MatchingObject matchingObject,
+            final boolean replacing) {
         this(original, children, matchingObject,
                 new ReplaceCheckableNode(matchingObject, replacing));
     }
@@ -130,8 +130,7 @@ public class MatchingObjectNode extends AbstractNode {
                 MatchingObject.PROP_INVALIDITY_STATUS,
                 validityListener);
         selectionListener = new SelectionListener();
-        matchingObject.addPropertyChangeListener(MatchingObject.PROP_SELECTED,
-                selectionListener);
+        matchingObject.addPropertyChangeListener(selectionListener);
     }
 
     @Override
@@ -165,7 +164,8 @@ public class MatchingObjectNode extends AbstractNode {
         if (!context) {
             return new Action[]{
                         SystemAction.get(OpenMatchingObjectsAction.class),
-                        new CopyPathAction()
+                        new CopyPathAction(),
+                        SystemAction.get(HideResultAction.class)
                     };
         } else {
             return new Action[0];
@@ -234,7 +234,7 @@ public class MatchingObjectNode extends AbstractNode {
 
     @Override
     public boolean canDestroy() {
-        return false;
+        return true;
     }
 
     public void clean() {
@@ -272,6 +272,12 @@ public class MatchingObjectNode extends AbstractNode {
                     matchingObject.getFileObject());
         }
         return propertySets;
+    }
+
+    @Override
+    public void destroy () throws IOException {
+        // when removing the node, the node's content is removed from model
+        this.matchingObject.remove();
     }
 
     /**
@@ -443,7 +449,7 @@ public class MatchingObjectNode extends AbstractNode {
 
             fireIconChange();
             ResultsOutlineSupport.toggleParentSelected(
-                    MatchingObjectNode.this);
+                    MatchingObjectNode.this.getParentNode());
         }
     }
 }

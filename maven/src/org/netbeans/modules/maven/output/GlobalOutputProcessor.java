@@ -54,6 +54,7 @@ import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
+import org.netbeans.modules.maven.execute.OutputColors;
 import org.netbeans.modules.maven.options.MavenOptionController;
 import static org.netbeans.modules.maven.output.Bundle.*;
 import org.netbeans.modules.options.java.api.JavaOptions;
@@ -210,7 +211,8 @@ public class GlobalOutputProcessor implements OutputProcessor {
 //            visitor.setLine(sequenceId);
         } else {
             visitor.setLine("[" + sequenceId.substring("mojo-execute#".length()) + "]"); //NOI18N
-            visitor.setColor(Color.GRAY);
+            OutputColors outputColors = new OutputColors();
+            visitor.setColor(outputColors.getSubduedTextColor());
         }
     }
 

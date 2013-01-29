@@ -1024,7 +1024,7 @@ public class Flow {
                 
                 if (st.getKind() == Kind.IF) {
                     IfTree it = (IfTree) st; 
-                    if (Utilities.exitsFromAllBranchers(info, new TreePath(new TreePath(getCurrentPath(), it), it.getThenStatement()))) {
+                    if (it.getElseStatement() == null && Utilities.exitsFromAllBranchers(info, new TreePath(new TreePath(getCurrentPath(), it), it.getThenStatement()))) {
                         generalizedIf(it.getCondition(), it.getThenStatement(), statements.subList(i + 1, statements.size()), false);
                         break;
                     }
