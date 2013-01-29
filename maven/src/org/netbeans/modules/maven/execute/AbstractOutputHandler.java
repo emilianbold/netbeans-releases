@@ -301,19 +301,23 @@ public abstract class AbstractOutputHandler {
         }
         if (!visitor.isLineSkipped()) {
             String line = visitor.getLine() == null ? input : visitor.getLine();
+            OutputColors outputColors = new OutputColors();
             if (visitor.getColor() == null && visitor.getOutputListener() == null) {
                 switch (level) {
                 case DEBUG:
-                    visitor.setColor(Color.GRAY);
+                    visitor.setColor(outputColors.getDebugColor());
                     break;
                 case WARNING:
-                    visitor.setColor(Color.ORANGE.darker());
+                    visitor.setColor(outputColors.getWarningColor());
                     break;
                 case ERROR:
-                    visitor.setColor(Color.RED);
+                    visitor.setColor(outputColors.getErrorColor());
                     break;
                 case FATAL:
-                    visitor.setColor(Color.MAGENTA);
+                    visitor.setColor(outputColors.getFatalColor());
+                    break;
+                case INFO:
+                    visitor.setColor(outputColors.getInfoColor());
                     break;
                 }
             }
