@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface ExtensionMethod<T> extends List<T> {
     
-    void sort(Comparator<T> c) default {
+    public default void sort(Comparator<? super T> c) {
         Collections.<T>sort(this, c);
     }
 

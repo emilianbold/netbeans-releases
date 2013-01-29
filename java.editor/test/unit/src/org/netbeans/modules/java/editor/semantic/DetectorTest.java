@@ -420,12 +420,12 @@ public class DetectorTest extends TestBase {
     }
 
     public void testLambdaAndFunctionType() throws Exception {
-        setSourceLevel("1.7");
+        setSourceLevel("1.8");
         performTest("LambdaAndFunctionType");
     }
 
     public void testExtensionMethod() throws Exception {
-        setSourceLevel("1.7");
+        setSourceLevel("1.8");
         performTest("ExtensionMethod");
     }
 
