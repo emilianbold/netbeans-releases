@@ -64,7 +64,10 @@ import org.netbeans.modules.php.editor.api.elements.ElementTransformation;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.TreeElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.api.elements.TypeNameResolver;
 import org.netbeans.modules.php.editor.codegen.CGSGenerator.GenWay;
+import org.netbeans.modules.php.editor.elements.TypeNameResolverImpl;
+import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -98,6 +101,7 @@ public final class CGSInfo {
     // cotain the class consructor?
     private boolean hasConstructor;
     private final List<Property> properties;
+    private final List<Property> instanceProperties;
     private final List<Property> possibleGetters;
     private final List<Property> possibleSetters;
     private final List<Property> possibleGettersSetters;
@@ -112,6 +116,7 @@ public final class CGSInfo {
 
     private CGSInfo(JTextComponent textComp) {
         properties = new ArrayList<Property>();
+        instanceProperties = new ArrayList<Property>();
         possibleGetters = new ArrayList<Property>();
         possibleSetters = new ArrayList<Property>();
         possibleGettersSetters = new ArrayList<Property>();
@@ -132,6 +137,10 @@ public final class CGSInfo {
 
     public List<Property> getProperties() {
         return properties;
+    }
+
+    public List<Property> getInstanceProperties() {
+        return instanceProperties;
     }
 
     public List<MethodProperty> getPossibleMethods() {
@@ -180,6 +189,19 @@ public final class CGSInfo {
 
     public void setFluentSetter(final boolean fluentSetter) {
         this.fluentSetter = fluentSetter;
+    }
+
+    public JTextComponent getComponent() {
+        return textComp;
+    }
+
+    public TypeNameResolver createTypeNameResolver(MethodElement method) {
+        return method.getParameters().isEmpty()
+                ? TypeNameResolverImpl.forNull()
+                : CodegenUtils.createSmarterTypeNameResolver(
+                        method,
+                        ModelUtils.getModel(Source.create(getComponent().getDocument()), 300),
+                        getComponent().getCaretPosition());
     }
 
     /**
@@ -296,13 +318,15 @@ public final class CGSInfo {
         @Override
         public void visit(FieldsDeclaration node) {
             List<SingleFieldDeclaration> fields = node.getFields();
-            if (!BodyDeclaration.Modifier.isStatic(node.getModifier())) {
-                for (SingleFieldDeclaration singleFieldDeclaration : fields) {
-                    Variable variable = singleFieldDeclaration.getName();
-                    if (variable != null && variable.getName() instanceof Identifier) {
-                        String name = ((Identifier) variable.getName()).getName();
-                        getProperties().add(new Property(name, node.getModifier(), getPropertyType(singleFieldDeclaration)));
+            for (SingleFieldDeclaration singleFieldDeclaration : fields) {
+                Variable variable = singleFieldDeclaration.getName();
+                if (variable != null && variable.getName() instanceof Identifier) {
+                    String name = ((Identifier) variable.getName()).getName();
+                    Property property = new Property(name, node.getModifier(), getPropertyType(singleFieldDeclaration));
+                    if (!BodyDeclaration.Modifier.isStatic(node.getModifier())) {
+                        getInstanceProperties().add(property);
                     }
+                    getProperties().add(property);
                 }
             }
         }

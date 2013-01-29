@@ -282,46 +282,46 @@ public class PHPLexerTest extends PHPLexerTestBase {
     }
 
     public void testHeroDoc_00() throws Exception {
-        performTest("heredoc00");
+        performTest("lexer/heredoc00");
     }
 
     public void testHeroDoc_01() throws Exception {
-        performTest("heredoc01");
+        performTest("lexer/heredoc01");
     }
 
     public void testIssue138261 () throws Exception {
-        performTest("issue138261");
+        performTest("lexer/issue138261");
     }
 
     public void testIssue144337 () throws Exception {
-        performTest("issue144337");
+        performTest("lexer/issue144337");
     }
 
     public void testIssue198572() throws Exception {
-        performTest("issue198572");
+        performTest("lexer/issue198572");
     }
 
     public void testIssue221484() throws Exception {
-        performTest("issue221484");
+        performTest("lexer/issue221484");
     }
 
     public void testHereDoc_02() throws Exception {
-        performTest("heredoc_02");
+        performTest("lexer/heredoc_02");
     }
 
     public void testHereDoc_03() throws Exception {
-        performTest("heredoc_03");
+        performTest("lexer/heredoc_03");
     }
 
     public void testHereDoc_04() throws Exception {
-        performTest("heredoc_04");
+        performTest("lexer/heredoc_04");
     }
 
     public void testIssue222092_01() throws Exception {
-        performTest("issue222092_01");
+        performTest("lexer/issue222092_01");
     }
 
     public void testIssue222092_02() throws Exception {
-        performTest("issue222092_02");
+        performTest("lexer/issue222092_02");
     }
 }
