@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,49 +37,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.db.dataview.api;
 
-package org.netbeans.modules.maven.api;
-
-import org.netbeans.validation.api.Validator;
-import org.netbeans.validation.api.ValidatorUtils;
-import org.netbeans.validation.api.builtin.stringvalidation.StringValidators;
-import org.openide.util.NbBundle;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author mkleint
+ * @author jhavlin
  */
-public class MavenValidators {
+public class DataViewPageContextTest extends NbTestCase {
 
-    public static Validator<String> createArtifactIdValidators() {
-        return ValidatorUtils.merge(
-                    StringValidators.REQUIRE_NON_EMPTY_STRING,
-//                  ValidatorUtils.merge(StringValidators.MAY_NOT_START_WITH_DIGIT,
-                    ValidatorUtils.merge(StringValidators.NO_WHITESPACE,
-                    StringValidators.regexp("[a-zA-Z0-9_\\-.]*[a-zA-Z0-9]{1}", NbBundle.getMessage(MavenValidators.class, "ERR_Coordinate_Invalid"), false)
-               ));
+    public DataViewPageContextTest(String name) {
+        super(name);
     }
 
-    public static Validator<String> createGroupIdValidators() {
-        return ValidatorUtils.merge(
-                    StringValidators.REQUIRE_NON_EMPTY_STRING,
-//                  ValidatorUtils.merge(StringValidators.MAY_NOT_START_WITH_DIGIT,
-                    ValidatorUtils.merge(StringValidators.NO_WHITESPACE,
-                    StringValidators.regexp("[a-zA-Z0-9_\\-.]*[a-zA-Z0-9]{1}", NbBundle.getMessage(MavenValidators.class, "ERR_Coordinate_Invalid"), false)
-               ));
-    }
+    public void testSetGetPageSize() {
+        int origSize = DataViewPageContext.getStoredPageSize();
+        assertTrue(origSize > 0);
+        int newSize = origSize + 1;
+        DataViewPageContext.setStoredPageSize(newSize);
+        assertEquals(newSize, DataViewPageContext.getStoredPageSize());
 
-    public static Validator<String> createVersionValidators() {
-        return ValidatorUtils.merge(
-                    StringValidators.REQUIRE_NON_EMPTY_STRING,
-//                  ValidatorUtils.merge(StringValidators.MAY_NOT_START_WITH_DIGIT,
-                    ValidatorUtils.merge(StringValidators.NO_WHITESPACE,
-                    StringValidators.regexp("[a-zA-Z0-9_\\-.]*[a-zA-Z0-9]{1}", NbBundle.getMessage(MavenValidators.class, "ERR_Coordinate_Invalid"),  false)
-               ));
+        boolean exception = false;
+        try {
+            DataViewPageContext.setStoredPageSize(0);
+        } catch (IllegalArgumentException e) {
+            exception = true;
+        }
+        assertTrue(exception);
     }
-    private MavenValidators() {
-    }
-
 }
