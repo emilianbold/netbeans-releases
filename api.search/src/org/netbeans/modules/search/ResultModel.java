@@ -69,6 +69,8 @@ public final class ResultModel {
     public static final String PROP_VALID = "valid";                    //NOI18N
     public static final String PROP_MATCHING_OBJECTS =
             "matchingObjects";                                          //NOI18N
+    /** Fired when results were modified by the user. */
+    public static final String PROP_RESULTS_EDIT = "resultsEdit";       //NOI18N
 
     /** */
     private long startTime;
@@ -114,6 +116,48 @@ public final class ResultModel {
 	basicCriteria = basicSearchCriteria;
 	isFullText = (basicCriteria != null) && basicCriteria.isFullText();        
         startTime = -1;
+    }
+
+    /**
+     * Remove the {@link MatchingObject} from the model and inform the
+     * listeners.
+     *
+     * @param mo Matching object to remove.
+     */
+    public synchronized boolean remove(MatchingObject mo) {
+        if (matchingObjects.remove(mo)) {
+            totalDetailsCount -= mo.getMatchesCount();
+            int deselected = 0;
+            if (mo.getTextDetails() != null) {
+                for (TextDetail td : mo.getTextDetails()) {
+                    deselected += td.isSelected() ? -1 : 0;
+                }
+            }
+            mo.cleanup();
+            // inform model listeners, old object contains removed object
+            propertyChangeSupport.firePropertyChange(PROP_RESULTS_EDIT,
+                    null, null);
+            if (deselected < 0) {
+                updateSelected(deselected);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    public synchronized void removeDetailMatch(MatchingObject mo,
+            TextDetail txtDetail) {
+
+        if (txtDetail.isSelected()) {
+            updateSelected(-1);
+        }
+        totalDetailsCount--;
+        propertyChangeSupport.firePropertyChange(PROP_RESULTS_EDIT,
+                null, null);
+        // delete parent node if no children left
+        if (mo.textDetails.isEmpty()) {
+            remove(mo);
+        }
     }
     
     /**

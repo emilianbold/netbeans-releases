@@ -126,6 +126,12 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
         this.searchProviderPresenter = searchProviderPresenter;
         initComponents();
         explorerManager = new ExplorerManager();
+
+        ActionMap map = this.getActionMap();
+        // map delete key to delete action
+        map.put("delete", //NOI18N
+                ExplorerUtils.actionDelete(explorerManager, false));
+
         lookup = ExplorerUtils.createLookup(explorerManager,
                 ResultView.getInstance().getActionMap());
         initActions();

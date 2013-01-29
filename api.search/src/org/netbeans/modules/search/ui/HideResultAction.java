@@ -39,61 +39,41 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.search;
+package org.netbeans.modules.search.ui;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.api.search.SearchPattern;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
+import java.awt.event.ActionEvent;
+import org.openide.actions.DeleteAction;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.CallbackSystemAction;
+import org.openide.util.actions.SystemAction;
 
 /**
- * Utilities for creation of search-related objects for testing.
  *
  * @author jhavlin
  */
-public final class SearchTestUtils {
+@NbBundle.Messages({"HideResultAction.displayName=Hide"})
+public class HideResultAction extends CallbackSystemAction {
 
-    /**
-     * Create a result model containing a single matching object. The matching
-     * file is an in-memory empty data file named test.txt.
-     */
-    public static ResultModel createResultModelWithOneMatch()
-            throws IOException {
+    CallbackSystemAction delegate = SystemAction.get(DeleteAction.class);
 
-        ResultModel rm = new ResultModel(new BasicSearchCriteria(), null);
-        FileObject fo = FileUtil.createMemoryFileSystem().getRoot().createData(
-                "test.txt");                                            //NOI18N
-        rm.objectFound(fo, Charset.defaultCharset(),
-                Collections.<TextDetail>emptyList());
-        return rm;
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        delegate.actionPerformed(e);
     }
 
-    /**
-     * Create result model with 10 matching files. The first matching file has 1
-     * text detail, the second has 2 details, the third has 3 details etc.
-     */
-    public static ResultModel createResultModelWithSampleData(boolean replace)
-            throws IOException {
-        ResultModel rm = new ResultModel(new BasicSearchCriteria(),
-                replace ? "replacement" : null);
-        FileObject root = FileUtil.createMemoryFileSystem().getRoot();
-        SearchPattern sp = SearchPattern.create("test", false, false, false);
-        for (int i = 0; i < 10; i++) {
-            FileObject fo = root.createData(i + ".txt");                //NOI18N
-            DataObject dob = DataObject.find(fo);
-            List<TextDetail> details = new ArrayList<TextDetail>(i);
-            for (int j = 0; j < i + 1; j++) {
-                TextDetail td = new TextDetail(dob, sp);
-                details.add(td);
-            }
-            rm.objectFound(fo, Charset.defaultCharset(),
-                    details);
-        }
-        return rm;
+    @Override
+    public String getName() {
+        return Bundle.HideResultAction_displayName();
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return delegate.getHelpCtx();
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 }
