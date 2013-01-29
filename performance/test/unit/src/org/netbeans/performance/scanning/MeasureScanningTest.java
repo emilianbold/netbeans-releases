@@ -56,6 +56,7 @@ public class MeasureScanningTest {
         NbTestSuite suite = new NbTestSuite("Scanning suite");
         System.setProperty("suitename", MeasureScanningTest.class.getCanonicalName());
         System.setProperty("suite", "Scanning suite");
+        System.setProperty("grails.home","/space/grails/"); //NOI18N
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScanProjectPerfTest.class)
                 .addTest(ScanSeveralProjectsPerfTest.class)
