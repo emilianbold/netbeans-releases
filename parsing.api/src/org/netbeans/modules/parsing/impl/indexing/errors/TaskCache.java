@@ -591,12 +591,12 @@ public class TaskCache {
     private static final class TransactionContext {
         private int depth;
         @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
         private Set<URL> toRefresh = new HashSet<URL>();
         @org.netbeans.api.annotations.common.SuppressWarnings(
-        value="DMI_COLLECTION_OF_URLS"
-        /*,justification="URLs have never host part"*/)
+        value="DMI_COLLECTION_OF_URLS",
+        justification="URLs have never host part")
         private Set<URL> rootsToRefresh = new HashSet<URL>();
     }
 }

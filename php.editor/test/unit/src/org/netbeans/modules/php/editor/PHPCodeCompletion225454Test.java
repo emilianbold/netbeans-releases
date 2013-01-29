@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,24 +37,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.editor;
 
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-@Schema2Beans(
-    schema="../../resources/weblogic-application_10_3_0.xsd",
-    schemaType=SchemaType.XML_SCHEMA,
-    outputType=OutputType.TRADITIONAL_BASEBEAN,
-    validate=true,
-    attrProp=true,
-    removeUnreferencedNodes=true,
-    docRoot="weblogic-application",
-    mddFile="../../resources/weblogic-application_10_3_0.mdd",
-    java5=true
-)
-@org.netbeans.api.annotations.common.SuppressWarnings(value="NM_SAME_SIMPLE_NAME_AS_INTERFACE", justification="Generated implementation classes")
-package org.netbeans.modules.j2ee.weblogic9.dd.ear1030;
+/**
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
+ */
+public class PHPCodeCompletion225454Test extends PHPCodeCompletionTestBase {
 
-import org.netbeans.modules.schema2beans.Schema2Beans;
-import org.netbeans.modules.schema2beans.Schema2Beans.OutputType;
-import org.netbeans.modules.schema2beans.Schema2Beans.SchemaType;
+    public PHPCodeCompletion225454Test(String testName) {
+        super(testName);
+    }
+
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests225454/test225454.php", "$x->^requide_method();", false);
+    }
+
+    public void testUseCase2() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests225454/test225454.php", "$y->^requide_method();", false);
+    }
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/tests225454/"))
+            })
+        );
+    }
+
+}

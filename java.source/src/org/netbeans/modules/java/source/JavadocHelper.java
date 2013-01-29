@@ -253,7 +253,7 @@ public class JavadocHelper {
         return getJavadoc(element, null);
     }
 
-    @org.netbeans.api.annotations.common.SuppressWarnings(value="DMI_COLLECTION_OF_URLS"/*,justification="URLs have never host part"*/)
+    @org.netbeans.api.annotations.common.SuppressWarnings(value="DMI_COLLECTION_OF_URLS", justification="URLs have never host part")
     private static TextStream doGetJavadoc(final Element element, final boolean allowRemoteJavadoc, final Callable<Boolean> cancel) {
         if (element == null) {
             throw new IllegalArgumentException("Cannot pass null as an argument of the SourceUtils.getJavadoc"); // NOI18N

@@ -67,7 +67,7 @@ import org.openide.util.Parameters;
  *
  * @author  Milan Kuchtiak
  */
-@org.netbeans.api.annotations.common.SuppressWarnings("DMI_COLLECTION_OF_URLS") // justification="File URLs only"
+@org.netbeans.api.annotations.common.SuppressWarnings(value="DMI_COLLECTION_OF_URLS", justification="File URLs only")
 public final class DDProvider {
     private static DDProvider ddProvider;
     private final Map<URL, WeakReference<WebAppProxy>> ddMap;

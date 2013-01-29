@@ -571,7 +571,7 @@ class RfsLocalController extends NamedRunnable {
             }
         } catch (FormatException ex) {
             if (err != null) {
-                err.printf("protocol errpr: %s\n", ex.getMessage()); // NOI18N
+                err.printf("protocol error: %s\n", ex.getMessage()); // NOI18N
             }
             return false;
         }
