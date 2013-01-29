@@ -124,6 +124,8 @@ public class ProgressObjectUtil {
                         }
                     } catch (InterruptedException e) {
                         LOGGER.log(Level.INFO, null, e);
+                        Thread.currentThread().interrupt();
+                        return false;
                     }
                 } else if (status.isCompleted()) {
                     completed.set(true);
