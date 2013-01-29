@@ -430,11 +430,12 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
      */
     private FileObject getFileObjectImpl() {
         PerformanceLogger.PerformaceAction performanceEvent = PerformanceLogger.getLogger().start(Folder.GET_ITEM_FILE_OBJECT_PERFORMANCE_EVENT, this);
+        FileObject fileObject = null;
         try {
+            performanceEvent.setTimeOut(Folder.FS_TIME_OUT);
             if (normalizedPath != null) {
-                return fileSystem.findResource(normalizedPath);
+                fileObject = fileSystem.findResource(normalizedPath);
             } else {
-                FileObject fileObject;
                 Folder f = getFolder();
                 if (f == null) {
                     // don't know file system, fall back to the default one
@@ -442,20 +443,18 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                     String p = getPath();
                     if (CndPathUtilitities.isPathAbsolute(p)) {// UNIX path
                         p = FileSystemProvider.normalizeAbsolutePath(p, fileSystem);                        
-                        return fileSystem.findResource(p);
-                    } else {
-                        return null; // no folder and relative path
+                        fileObject = fileSystem.findResource(p);
                     }
                 } else {                    
                     MakeConfigurationDescriptor cfgDescr = f.getConfigurationDescriptor();
                     FileObject baseDirFO = cfgDescr.getBaseDirFileObject();
                     fileObject = RemoteFileUtil.getFileObject(baseDirFO, getPath());
                 }
-                return fileObject;
             }
         } finally {
-            performanceEvent.log();
+            performanceEvent.log(fileObject);
         }
+        return fileObject;
     }
     
 
