@@ -61,6 +61,8 @@ import org.openide.util.NbBundle.Messages;
  */
 public final class Server implements Comparable<Server> {
 
+    public static final Server NO_SERVER_SELECTED = new Server(ExecutionChecker.DEV_NULL);
+
     private String serverInstanceId;
     private String sessionServerInstanceId;
 

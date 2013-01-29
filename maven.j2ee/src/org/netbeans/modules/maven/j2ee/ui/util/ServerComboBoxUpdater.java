@@ -74,6 +74,8 @@ public final class ServerComboBoxUpdater extends ComboBoxUpdater<Server> {
         this.handle = handle;
         this.serverCBox = serverCBox;
         this.defaultValue = getValue();
+
+        serverCBox.setSelectedItem(defaultValue);
     }
 
     /**
@@ -132,7 +134,7 @@ public final class ServerComboBoxUpdater extends ComboBoxUpdater<Server> {
         if (oldServerID != null) {
             return findServerByType(oldServerID, serverCBox);
         }
-        return null;
+        return Server.NO_SERVER_SELECTED;
     }
 
     private Server findServerByType(String serverId, JComboBox combo) {
@@ -142,7 +144,7 @@ public final class ServerComboBoxUpdater extends ComboBoxUpdater<Server> {
                 return serverWrapper;
             }
         }
-        return null;
+        return Server.NO_SERVER_SELECTED;
     }
 
     private Server findServerByInstance(String instanceId, JComboBox combo) {
@@ -152,6 +154,6 @@ public final class ServerComboBoxUpdater extends ComboBoxUpdater<Server> {
                 return serverWrapper;
             }
         }
-        return null;
+        return Server.NO_SERVER_SELECTED;
     }
 }

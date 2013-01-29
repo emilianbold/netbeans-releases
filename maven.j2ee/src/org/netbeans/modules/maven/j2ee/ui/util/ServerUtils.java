@@ -48,7 +48,6 @@ import java.util.List;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
-import org.netbeans.modules.maven.j2ee.ExecutionChecker;
 import org.netbeans.modules.maven.j2ee.ui.Server;
 
 /**
@@ -79,7 +78,7 @@ public final class ServerUtils {
         Collections.sort(servers);
 
         // We want to provide Maven project without server
-        servers.add(new Server(ExecutionChecker.DEV_NULL));
+        servers.add(Server.NO_SERVER_SELECTED);
 
         return servers;
     }
