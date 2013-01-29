@@ -42,7 +42,9 @@
 package org.netbeans.test.html5.debug;
 
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.modules.debugger.BreakpointsWindowOperator;
 import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
+import org.netbeans.jellytools.modules.debugger.actions.DeleteAllBreakpointsAction;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.test.html5.GeneralHTMLProject;
@@ -88,5 +90,10 @@ public class JavaScriptDebugger extends GeneralHTMLProject {
             }
         }).waitAction(eo);
         return line;
+    }
+
+    public void cleanBreakpoints() {
+        BreakpointsWindowOperator window = BreakpointsWindowOperator.invoke();
+        new DeleteAllBreakpointsAction().performPopup(window);
     }
 }
