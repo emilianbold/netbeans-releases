@@ -41,7 +41,9 @@
  */
 package org.netbeans.modules.search.ui;
 
+import java.awt.EventQueue;
 import org.netbeans.modules.search.MatchingObject;
+import org.netbeans.modules.search.TextDetail;
 import org.openide.cookies.EditCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -69,15 +71,26 @@ public class OpenMatchingObjectsAction extends NodeAction {
     protected void performAction(Node[] activatedNodes) {
 
         for (Node n : activatedNodes) {
-            MatchingObject mo = n.getLookup().lookup(
+            final MatchingObject mo = n.getLookup().lookup(
                     MatchingObject.class);
             if (mo != null) {
-                DataObject dob = mo.getDataObject();
-                if (dob != null) {
-                    EditCookie editCookie = dob.getLookup().lookup(
-                            EditCookie.class);
-                    if (editCookie != null) {
-                        editCookie.edit();
+                if (mo.getTextDetails() != null
+                        && !mo.getTextDetails().isEmpty()) { // #219428
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            mo.getTextDetails().get(0).showDetail(
+                                    TextDetail.DH_GOTO);
+                        }
+                    });
+                } else {
+                    DataObject dob = mo.getDataObject();
+                    if (dob != null) {
+                        EditCookie editCookie = dob.getLookup().lookup(
+                                EditCookie.class);
+                        if (editCookie != null) {
+                            editCookie.edit();
+                        }
                     }
                 }
             }

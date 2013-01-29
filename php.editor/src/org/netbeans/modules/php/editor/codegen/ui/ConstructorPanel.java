@@ -74,7 +74,7 @@ public class ConstructorPanel extends JPanel {
         initComponents();
         this.className = cgsInfo.getClassName();
         switch (genType) {
-            case CONSTRUCTOR: properties = cgsInfo.getProperties(); break;
+            case CONSTRUCTOR: properties = cgsInfo.getInstanceProperties(); break;
             case GETTER: properties = cgsInfo.getPossibleGetters(); break;
             case SETTER: properties = cgsInfo.getPossibleSetters(); break;
             case METHODS: properties = cgsInfo.getPossibleMethods(); break;

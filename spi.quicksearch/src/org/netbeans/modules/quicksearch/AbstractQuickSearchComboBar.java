@@ -43,6 +43,8 @@
 package org.netbeans.modules.quicksearch;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.FontMetrics;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
@@ -51,13 +53,23 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.lang.ref.WeakReference;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.MissingResourceException;
+import java.util.Set;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.JRadioButtonMenuItem;
 import javax.swing.KeyStroke;
+import javax.swing.MenuElement;
+import javax.swing.MenuSelectionManager;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
@@ -78,9 +90,7 @@ import org.openide.windows.TopComponent;
  * Quick search toolbar component
  * @author  Jan Becicka
  */
-public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel implements ActionListener {
-
-    private static final String CATEGORY = "cat";
+public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel {
 
     QuickSearchPopup displayer = new QuickSearchPopup(this);
     WeakReference<TopComponent> caller;
@@ -253,7 +263,7 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel imp
         setShowHint(false);
         if (CommandEvaluator.isCatTemporary()) {
             CommandEvaluator.setCatTemporary(false);
-            CommandEvaluator.setEvalCat(null);
+            CommandEvaluator.setEvalCats(null);
         }
     }
 
@@ -263,21 +273,18 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel imp
         }
 
         JPopupMenu pm = new JPopupMenu();
-        ProviderModel.Category evalCat = null;
+        final Set<ProviderModel.Category> evalCats =
+                new HashSet<ProviderModel.Category>();
         if (!CommandEvaluator.isCatTemporary()) {
-            evalCat = CommandEvaluator.getEvalCat();
+            evalCats.addAll(CommandEvaluator.getEvalCats());
         }
-
-        JRadioButtonMenuItem allCats = new JRadioButtonMenuItem(
-                NbBundle.getMessage(getClass(), "LBL_AllCategories"), evalCat == null);
-        allCats.addActionListener(this);
+        JMenuItem allCats = new AllMenuItem(evalCats);
         pm.add(allCats);
 
         for (ProviderModel.Category cat : ProviderModel.getInstance().getCategories()) {
             if (!CommandEvaluator.RECENT.equals(cat.getName())) {
-                JRadioButtonMenuItem item = new JRadioButtonMenuItem(cat.getDisplayName(), cat == evalCat);
-                item.putClientProperty(CATEGORY, cat);
-                item.addActionListener(this);
+                JCheckBoxMenuItem item = new CategoryCheckBoxMenuItem(cat,
+                        evalCats);
                 pm.add(item);
             }
         }
@@ -285,20 +292,30 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel imp
         pm.show(getInnerComponent(), 0, getInnerComponent().getHeight() - 1);
     }
 
-    /** ActionListener implementation, reaction to popup menu item invocation */
-    public void actionPerformed(ActionEvent e) {
-        JRadioButtonMenuItem item = (JRadioButtonMenuItem)e.getSource();
-        CommandEvaluator.setEvalCat((Category) item.getClientProperty(CATEGORY));
+    private void updateCats(Set<Category> evalCats) {
+        CommandEvaluator.setEvalCats(evalCats);
         CommandEvaluator.setCatTemporary(false);
         // refresh hint
         setShowHint(!command.isFocusOwner());
+    }
+
+    private void updateCheckBoxes(Container container, Set<Category> evalCats) {
+        Container parent = container.getParent();
+        for (Component c : parent.getComponents()) {
+            if (c instanceof CategoryCheckBoxMenuItem) {
+                CategoryCheckBoxMenuItem ci = (CategoryCheckBoxMenuItem) c;
+                ci.setSelected(evalCats.contains(ci.category));
+                ci.setTooltipText();
+            }
+        }
     }
 
     /** Runs evaluation narrowed to specified category
      *
      */
     public void evaluateCategory (Category cat, boolean temporary) {
-        CommandEvaluator.setEvalCat(cat);
+        CommandEvaluator.setEvalCats(
+                cat == null ? null : Collections.singleton(cat));
         CommandEvaluator.setCatTemporary(temporary);
         displayer.maybeEvaluate(command.getText());
     }
@@ -322,9 +339,16 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel imp
         }
         if (showHint) {
             command.setForeground(command.getDisabledTextColor());
-            Category evalCat = CommandEvaluator.getEvalCat();
-            if (evalCat != null && !CommandEvaluator.isCatTemporary()) {
-                command.setText(getHintText(evalCat));
+            Set<Category> evalCats = CommandEvaluator.getEvalCats();
+            if (evalCats.size() < 3 && !CommandEvaluator.isCatTemporary()) {
+                Category bestFound = null;
+                for (Category c : evalCats) {
+                    if (bestFound == null || CommandEvaluator.RECENT.equals(
+                            bestFound.getName())) {
+                        bestFound = c;
+                    }
+                }
+                command.setText(getHintText(bestFound));
             } else {
                 command.setText(getHintText(null));
             }
@@ -491,6 +515,164 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel imp
                     Bundle.MSG_INVALID_SEARCH_TEST(),
                     NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notifyLater(nd);
+        }
+    }
+
+    /**
+     * Show and select menu at a given path. Used to restore a menu after click.
+     */
+    private void showMenuPath(MenuElement[] selectedPath) {
+        if (selectedPath != null && selectedPath.length > 1) {
+            if (selectedPath[0] instanceof JPopupMenu) {
+                ((JPopupMenu) selectedPath[0]).setVisible(true);
+                MenuSelectionManager.defaultManager().setSelectedPath(
+                        selectedPath);
+            }
+        }
+    }
+
+    /**
+     * Menu item representing a single category.
+     */
+    private class CategoryCheckBoxMenuItem extends JCheckBoxMenuItem
+            implements ActionListener {
+
+        private MenuElement[] selectedPath = null;
+        private Category category;
+        private final Set<Category> evalCats;
+
+        public CategoryCheckBoxMenuItem(final Category category,
+                final Set<Category> evalCats) {
+            super(category.getDisplayName(), evalCats.contains(category));
+            this.category = category;
+            this.evalCats = evalCats;
+            setTooltipText();
+            getModel().addChangeListener(new ChangeListener() {
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    if (isShowing() && model.isArmed()) {
+                        selectedPath = MenuSelectionManager.defaultManager()
+                                .getSelectedPath();
+                    }
+                }
+            });
+            addActionListener(this);
+            addMouseListener(new MouseAdapter() {
+
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    mouseClickedOnItem(e);
+                }
+            });
+        }
+
+        @Override
+        public void doClick(int pressTime) {
+            super.doClick(pressTime);
+            setTooltipText();
+            showMenuPath(selectedPath);
+        }
+
+        private void mouseClickedOnItem(MouseEvent e) {
+            if (SwingUtilities.isRightMouseButton(e)) {
+                e.consume();
+                if (isSelected()) {
+                    Iterator<Category> iterator = evalCats.iterator();
+                    while (iterator.hasNext()) {
+                        Category c = iterator.next();
+                        if (!CommandEvaluator.RECENT.equals(c.getName())) {
+                            iterator.remove();
+                        }
+                    }
+                    evalCats.add(category);
+                } else {
+                    evalCats.addAll(
+                            ProviderModel.getInstance().getCategories());
+                    evalCats.remove(category);
+                }
+                updateCheckBoxes(CategoryCheckBoxMenuItem.this, evalCats);
+                updateCats(evalCats);
+            }
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (this.isSelected()) {
+                evalCats.add(category);
+            } else {
+                evalCats.remove(category);
+            }
+            updateCats(evalCats);
+        }
+
+        private void setTooltipText() throws MissingResourceException {
+
+            boolean selected = evalCats.contains(category);
+            String bundleKey = selected
+                    ? "MSG_RightClickEnablesAllOthers" //NOI18N
+                    : "MSG_RightClickDisablesOthers";  //NOI18N
+            setToolTipText(NbBundle.getMessage(
+                    AbstractQuickSearchComboBar.class, bundleKey));
+        }
+    }
+
+    /**
+     * Menu item for enabling or disabling all categories.
+     */
+    private class AllMenuItem extends JMenuItem implements ActionListener {
+
+        private Set<Category> evalCats;
+        private int totalCount;
+        private MenuElement[] selectedPath = null;
+
+        public AllMenuItem(Set<Category> evalCats) {
+            this.evalCats = evalCats;
+            this.totalCount = ProviderModel.getInstance()
+                    .getCategories().size();
+            getModel().addChangeListener(new ChangeListener() {
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    if (isShowing() && model.isArmed()) {
+                        selectedPath = MenuSelectionManager.defaultManager()
+                                .getSelectedPath();
+                    }
+                }
+            });
+            addActionListener(this);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (evalCats.size() == totalCount) {
+                Iterator<Category> iterator = evalCats.iterator();
+                while (iterator.hasNext()) {
+                    Category c = iterator.next();
+                    if (!CommandEvaluator.RECENT.equals(c.getName())) {
+                        iterator.remove();
+                    }
+                }
+            } else {
+                evalCats.addAll(ProviderModel.getInstance().getCategories());
+            }
+            updateCats(evalCats);
+            updateCheckBoxes(this, evalCats);
+        }
+
+        @Override
+        public void doClick(int pressTime) {
+            super.doClick(pressTime);
+            showMenuPath(selectedPath);
+        }
+
+        @Override
+        public String getText() {
+            if (evalCats == null || evalCats.size() != totalCount) {
+                return NbBundle.getMessage(getClass(),
+                        "LBL_AllCategories");                           //NOI18N
+            } else {
+                return NbBundle.getMessage(getClass(),
+                        "LBL_NoCategory");                              //NOI18N
+            }
         }
     }
 }

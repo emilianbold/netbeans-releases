@@ -144,7 +144,7 @@ public class TextDetailTest extends NbTestCase {
 
     public String createHtmlDisplayName(String line, String match) {
         TextDetail td = createMockTextDetail(line, match);
-        DetailNode detailNode = new TextDetail.DetailNode(td, false);
+        DetailNode detailNode = new TextDetail.DetailNode(td, false, null);
         String htmlDisplayName = detailNode.getHtmlDisplayName();
         Pattern p = Pattern.compile("(<html><font .*>\\s*\\d+: </font>)(.*?)(\\s+<font .*>\\[.*\\]</font></html>)");
         Matcher m = p.matcher(htmlDisplayName);

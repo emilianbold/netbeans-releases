@@ -332,7 +332,7 @@ public class CSSStylesSelectionPanel extends JPanel {
      *
      * @return Style Cascade section.
      */
-    @org.netbeans.api.annotations.common.SuppressWarnings("SE_NO_SUITABLE_CONSTRUCTOR_FOR_EXTERNALIZATION") // justification="The instances are never serialized." // NOI18N
+    @org.netbeans.api.annotations.common.SuppressWarnings(value="SE_NO_SUITABLE_CONSTRUCTOR_FOR_EXTERNALIZATION", justification="The instances are never serialized.") // NOI18N
     private JPanel initRulePane() {
         rulePane = new ListView() {
             {

@@ -672,7 +672,7 @@ public class SourceUtils {
      * incoming root, never returns null.
      * @since 0.10
      */
-    @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}/*,justification="URLs have never host part"*/)    //NOI18N
+    @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}, justification="URLs have never host part")    //NOI18N
     public static Set<URL> getDependentRoots (final URL root) {
         final Map<URL, List<URL>> sourceDeps = IndexingController.getDefault().getRootDependencies();
         final Map<URL, List<URL>> binaryDeps = IndexingController.getDefault().getBinaryRootDependencies();
@@ -691,14 +691,14 @@ public class SourceUtils {
      * root, never returns null.
      * @since 0.110
      */
-    @org.netbeans.api.annotations.common.SuppressWarnings(value = {"DMI_COLLECTION_OF_URLS"}/*,justification="URLs have never host part"*/)    //NOI18N
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = {"DMI_COLLECTION_OF_URLS"}, justification="URLs have never host part")    //NOI18N
     public static Set<URL> getDependentRoots(final URL root, boolean filterNonOpenedProjects) {
         final Map<URL, List<URL>> sourceDeps = IndexingController.getDefault().getRootDependencies();
         final Map<URL, List<URL>> binaryDeps = IndexingController.getDefault().getBinaryRootDependencies();
         return getDependentRootsImpl(root, sourceDeps, binaryDeps, filterNonOpenedProjects);
     }
 
-    @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}/*,justification="URLs have never host part"*/)    //NOI18N
+    @org.netbeans.api.annotations.common.SuppressWarnings(value={"DMI_COLLECTION_OF_URLS"}, justification="URLs have never host part")    //NOI18N
     static Set<URL> getDependentRootsImpl (final URL root, final Map<URL, List<URL>> sourceDeps, Map<URL, List<URL>> binaryDeps, boolean filterNonOpenedProjects) {
         Set<URL> urls;
 
