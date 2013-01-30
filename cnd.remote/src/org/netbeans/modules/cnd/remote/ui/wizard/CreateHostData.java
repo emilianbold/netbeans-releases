@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 
     private ToolsCacheManager cacheManager;
     private int port = 22;
-    private String hostName;
+    private String hostName = "";
     private String userName;
     private final boolean manageUser;
 
