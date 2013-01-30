@@ -103,4 +103,9 @@ public class Scalar extends Expression {
         visitor.visit(this);
     }
 
+    @Override
+    public String toString() {
+        return getScalarType() + " " + getStringValue(); //NOI18N
+    }
+
 }

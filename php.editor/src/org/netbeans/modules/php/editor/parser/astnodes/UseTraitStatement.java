@@ -72,4 +72,14 @@ public class UseTraitStatement extends Statement {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (UseTraitStatementPart useTraitStatementPart : parts) {
+            sb.append(useTraitStatementPart).append(","); //NOI18N
+        }
+        return "use " + sb.toString() + getBody(); //NOI18N
+    }
+
 }

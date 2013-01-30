@@ -46,7 +46,7 @@ package org.netbeans.modules.php.editor.parser.astnodes;
  * <pre>e.g.<pre>
  * (new Object())
  * (new Object)
- * 
+ *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class AnonymousObjectVariable extends Variable {
@@ -58,6 +58,11 @@ public class AnonymousObjectVariable extends Variable {
     @Override
     public void accept(Visitor visitor) {
         visitor.visit(this);
+    }
+
+    @Override
+    public String toString() {
+        return "(" + getName() + ")"; //NOI18N
     }
 
 }

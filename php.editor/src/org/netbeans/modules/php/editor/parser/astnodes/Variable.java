@@ -109,4 +109,9 @@ public class Variable extends VariableBase {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return (isDollared() ? "$" : "") + getName(); //NOI18N
+    }
 }

@@ -89,4 +89,14 @@ public class ClassDeclaration extends TypeDeclaration {
     public void accept(Visitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (Expression expression : getInterfaes()) {
+            sb.append(expression).append(","); //NOI18N
+        }
+        return getModifier() + "class " + getName() + " extends " + getSuperClass() + " implements " + sb + getBody(); //NOI18N
+    }
+
 }
