@@ -118,6 +118,7 @@ public class MavenWhiteListQueryImpl implements WhiteListQueryImplementation {
     
     @Override
     public WhiteListImplementation getWhiteList(FileObject file) {
+        //TODO decide if test or main source root.
         NbMavenProject mvn = project.getLookup().lookup(NbMavenProject.class);
         assert mvn != null;
         MavenProject mp = mvn.getMavenProject();
