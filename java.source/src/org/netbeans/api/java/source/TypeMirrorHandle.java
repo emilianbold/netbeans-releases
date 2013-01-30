@@ -54,6 +54,7 @@ import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.code.Types.DefaultTypeVisitor;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Names;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,6 +69,7 @@ import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ErrorType;
+import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.ReferenceType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -221,6 +223,12 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
             case UNION:
                 typeMirrors = new ArrayList<TypeMirrorHandle<? extends TypeMirror>>();
                 for (TypeMirror alternative : ((UnionType) tm).getAlternatives()) {
+                    typeMirrors.add(create(alternative, map));
+                }
+                break;
+            case INTERSECTION:
+                typeMirrors = new ArrayList<TypeMirrorHandle<? extends TypeMirror>>();
+                for (TypeMirror alternative : ((IntersectionType) tm).getBounds()) {
                     typeMirrors.add(create(alternative, map));
                 }
                 break;
@@ -381,6 +389,19 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
                 if (!lub.hasTag(TypeTag.CLASS)) return null;
 
                 return (T) new Type.UnionClassType((ClassType) lub, resolvedAlternatives);
+            case INTERSECTION:
+                ListBuffer<Type> resolvedBounds = new ListBuffer<Type>();
+                for (TypeMirrorHandle alternative : typeMirrors) {
+                    TypeMirror resolvedAlternative = alternative.resolve(info, map);
+                    if (resolvedAlternative == null) {
+                        return null;
+                    }
+                    resolvedBounds = resolvedBounds.append((Type) resolvedAlternative);
+                }
+                
+                t = Types.instance(info.impl.getJavacTask().getContext());
+                
+                return (T) t.makeCompoundType(resolvedBounds.toList());
             default:
                 throw new IllegalStateException("Internal error: unknown TypeHandle kind: " + kind);
         }
