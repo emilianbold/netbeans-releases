@@ -152,12 +152,12 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
 
     @Messages("UI_MAVEN_PROJECT_OPENED=A Maven project was opened. Appending the project's packaging type.")
     protected @Override void projectOpened() {
+        NbMavenProjectImpl project = proj.getLookup().lookup(NbMavenProjectImpl.class);
+        project.startHardReferencingMavenPoject();
         checkBinaryDownloads();
         checkSourceDownloads();
         checkJavadocDownloads();
-        NbMavenProjectImpl project = proj.getLookup().lookup(NbMavenProjectImpl.class);
         project.attachUpdater();
-        project.startHardReferencingMavenPoject();
         registerWithSubmodules(FileUtil.toFile(proj.getProjectDirectory()), new HashSet<File>());
         //manually register the listener for this project, we know it's loaded and should be listening on changes.
         //registerCoordinates() doesn't attach listeners
@@ -277,7 +277,6 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
         }
         
         project.detachUpdater();
-        project.stopHardReferencingMavenPoject();
         // unregister project's classpaths to GlobalPathRegistry
         ProjectSourcesClassPathProvider cpProvider = proj.getLookup().lookup(ProjectSourcesClassPathProvider.class);
         GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
@@ -290,6 +289,7 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
         if (transRepos != null) { // XXX #212555 projectOpened was not called first?
             transRepos.unregister();
         }
+        project.stopHardReferencingMavenPoject();
     }
    
    private void checkBinaryDownloads() {

@@ -120,7 +120,8 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run() {
-                setEnabled(OpenProjectList.getDefault().getOpenProjects().length > 0);
+//issue 192354 - getOpenProjects() is expensive at times, uses read mutex on projects.
+//                setEnabled(OpenProjectList.getDefault().getOpenProjects().length > 0);
                 setDisplayName(LBL_NewFileAction_Name());
             }
         });
