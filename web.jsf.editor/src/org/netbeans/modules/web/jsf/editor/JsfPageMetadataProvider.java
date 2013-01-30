@@ -75,7 +75,10 @@ public class JsfPageMetadataProvider implements WebPageMetadataProvider {
         JsfSupport jsfs = null;
         FileObject file = result.getSource().getSourceFileObject();
         if(file != null) {
-            jsfs = JsfSupportProvider.get(file);
+            if(org.netbeans.modules.web.jsf.editor.JsfUtils.XHTML_MIMETYPE.equals(file.getMIMEType())) {
+                //do not bother with .html and other files
+                jsfs = JsfSupportProvider.get(file);
+            }
         } else {
             //may be fileless source, try snapshot
             Snapshot snapshot = result.getSource().getSnapshot();
