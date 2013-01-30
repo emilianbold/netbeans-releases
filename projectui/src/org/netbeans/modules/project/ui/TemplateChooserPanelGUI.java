@@ -114,7 +114,6 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
      }
     
     public void readValues (@NullAllowed Project p, String category, String template) {
-        assert p != null : "Project can not be null";   //NOI18N
         boolean wf;
         synchronized (this) {
             this.project = p;
