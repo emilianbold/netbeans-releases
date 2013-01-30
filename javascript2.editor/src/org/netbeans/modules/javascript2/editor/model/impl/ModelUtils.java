@@ -204,7 +204,10 @@ public class ModelUtils {
         while (result.getParent() != null && !(result.getParent() instanceof DeclarationScope)) {
             result = result.getParent();
         }
-        return (DeclarationScope)result.getParent();
+        if (result != null && result.getParent() != null) {
+            result = result.getParent();
+        } 
+        return (DeclarationScope)result;
     }
 
     public static DeclarationScope getDeclarationScope(Model model, int offset) {
